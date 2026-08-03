@@ -24,6 +24,18 @@ export const DEFAULT_PERMISSIONS = [
   { key: 'product:read', description: 'Read catalog products' },
   { key: 'product:update', description: 'Update catalog products' },
   { key: 'product:delete', description: 'Delete catalog products' },
+  { key: 'category:create', description: 'Create catalog categories' },
+  { key: 'category:read', description: 'Read catalog categories' },
+  { key: 'category:update', description: 'Update catalog categories' },
+  { key: 'category:delete', description: 'Delete catalog categories' },
+  { key: 'collection:create', description: 'Create catalog collections' },
+  { key: 'collection:read', description: 'Read catalog collections' },
+  { key: 'collection:update', description: 'Update catalog collections' },
+  { key: 'collection:delete', description: 'Delete catalog collections' },
+  { key: 'brand:create', description: 'Create catalog brands' },
+  { key: 'brand:read', description: 'Read catalog brands' },
+  { key: 'brand:update', description: 'Update catalog brands' },
+  { key: 'brand:delete', description: 'Delete catalog brands' },
 ] as const;
 
 export type SeedAdminOptions = {
