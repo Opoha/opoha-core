@@ -256,6 +256,12 @@ export const DEFAULT_PERMISSIONS = [
     key: 'digital:issue',
     description: 'Issue digital download tokens and license keys',
   },
+  { key: 'subscription:read', description: 'Read subscription plans and subscriptions' },
+  { key: 'subscription:create', description: 'Subscribe a customer to a plan' },
+  {
+    key: 'subscription:manage',
+    description: 'Manage subscription plans, cancel, and trigger renewals',
+  },
 ] as const;
 
 export type SeedAdminOptions = {

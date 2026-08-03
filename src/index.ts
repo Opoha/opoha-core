@@ -207,6 +207,34 @@ export type {
   IssueDigitalLineInput,
 } from './modules/digital/public';
 export {
+  SubscriptionsModule,
+  SubscriptionService,
+  SubscriptionResolver,
+  SubscriptionPlanEntity,
+  SubscriptionEntity,
+  subscriptionEntities,
+  SUBSCRIPTION_STATUSES,
+  BILLING_INTERVAL_UNITS,
+  isSubscriptionStatus,
+  isBillingIntervalUnit,
+  addBillingInterval,
+  SubscriptionPlanType,
+  SubscriptionType,
+  SubscriptionRenewalResultType,
+  CreateSubscriptionPlanInput,
+  SubscribeToPlanInput,
+} from './modules/subscriptions/public';
+export type {
+  SubscriptionStatus,
+  BillingIntervalUnit,
+  SubscriptionPlanRecord,
+  SubscriptionRecord,
+  SubscriptionRenewalResult,
+  SubscriptionRenewedData,
+  SubscriptionRenewedEvent,
+  RenewSubscriptionOptions,
+} from './modules/subscriptions/public';
+export {
   LoyaltyModule,
   LoyaltyService,
   LoyaltyResolver,

@@ -26,6 +26,7 @@ import { LoyaltyModule } from './modules/loyalty/public';
 import { ReturnsModule } from './modules/returns/public';
 import { SegmentsModule } from './modules/segments/public';
 import { StoresModule } from './modules/stores/public';
+import { SubscriptionsModule } from './modules/subscriptions/public';
 import { resolveStoreContext } from './modules/stores/store-context';
 import { SupplyModule } from './modules/supply/public';
 import { VendorsModule } from './modules/vendors/public';
@@ -64,6 +65,7 @@ type GqlHttpRequest = {
     SupplyModule,
     VendorsModule,
     DigitalModule,
+    SubscriptionsModule,
     FulfillmentModule,
     GiftCardsModule,
     LoyaltyModule,
