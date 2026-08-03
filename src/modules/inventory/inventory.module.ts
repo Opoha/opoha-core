@@ -3,12 +3,13 @@ import { TypeOrmModule } from '@nestjs/typeorm';
 
 import { AuthModule } from '../auth/public';
 import { inventoryEntities } from './entities';
+import { InventoryEventsRegistrar } from './events/inventory-events.registrar';
 import { InventoryResolver } from './inventory.resolver';
 import { InventoryService } from './inventory.service';
 
 @Module({
   imports: [AuthModule, TypeOrmModule.forFeature([...inventoryEntities])],
-  providers: [InventoryService, InventoryResolver],
+  providers: [InventoryService, InventoryResolver, InventoryEventsRegistrar],
   exports: [InventoryService, TypeOrmModule],
 })
 export class InventoryModule {}

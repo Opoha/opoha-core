@@ -5,6 +5,7 @@ import {
 } from '@nestjs/common';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 
+import { CoreEventName } from '../event-bus/event-catalog';
 import { InventoryService } from './inventory.service';
 
 type ItemRow = {
@@ -44,6 +45,7 @@ describe('InventoryService (unit)', () => {
     find: ReturnType<typeof vi.fn>;
   };
   let dataSource: { transaction: ReturnType<typeof vi.fn> };
+  let eventBus: { publish: ReturnType<typeof vi.fn> };
 
   beforeEach(() => {
     itemStore = [
@@ -197,11 +199,16 @@ describe('InventoryService (unit)', () => {
       }),
     };
 
+    eventBus = {
+      publish: vi.fn(async () => ({ listenerCount: 0, failures: [] })),
+    };
+
     service = new InventoryService(
       itemsRepo as never,
       reservationsRepo as never,
       adjustmentsRepo as never,
       dataSource as never,
+      eventBus as never,
     );
   });
 
@@ -218,6 +225,18 @@ describe('InventoryService (unit)', () => {
     });
     expect(item.quantityOnHand).toBe(15);
     expect(item.quantityAvailable).toBe(13);
+    expect(eventBus.publish).toHaveBeenCalledWith(
+      expect.objectContaining({
+        eventName: CoreEventName.InventoryUpdated,
+        aggregateType: 'inventory_item',
+        data: expect.objectContaining({
+          variantId: 'var-1',
+          delta: 5,
+          quantityOnHand: 15,
+          reason: 'restock',
+        }),
+      }),
+    );
   });
 
   it('adjust rejects when result would go negative', async () => {
@@ -237,6 +256,18 @@ describe('InventoryService (unit)', () => {
     const item = await service.findByVariantId('var-1');
     expect(item.quantityReserved).toBe(5);
     expect(item.quantityAvailable).toBe(5);
+    expect(eventBus.publish).toHaveBeenCalledWith(
+      expect.objectContaining({
+        eventName: CoreEventName.InventoryReservationCreated,
+        aggregateType: 'inventory_reservation',
+        data: expect.objectContaining({
+          quantity: 3,
+          reference: 'cart-line-1',
+          quantityReserved: 5,
+          quantityAvailable: 5,
+        }),
+      }),
+    );
   });
 
   it('reserve rejects when insufficient available stock', async () => {
@@ -250,11 +281,24 @@ describe('InventoryService (unit)', () => {
       variantId: 'var-1',
       quantity: 4,
     });
+    eventBus.publish.mockClear();
     const released = await service.release(reservation.id);
     expect(released.status).toBe('released');
     const item = await service.findByVariantId('var-1');
     expect(item.quantityReserved).toBe(2);
     expect(item.quantityAvailable).toBe(8);
+    expect(eventBus.publish).toHaveBeenCalledWith(
+      expect.objectContaining({
+        eventName: CoreEventName.InventoryReservationReleased,
+        aggregateType: 'inventory_reservation',
+        data: expect.objectContaining({
+          reservationId: reservation.id,
+          quantity: 4,
+          quantityReserved: 2,
+          quantityAvailable: 8,
+        }),
+      }),
+    );
   });
 
   it('release rejects unknown reservation', async () => {

@@ -13,6 +13,8 @@ export const CoreEventName = {
   CustomerCreated: 'CustomerCreated',
   ProductCreated: 'ProductCreated',
   InventoryUpdated: 'InventoryUpdated',
+  InventoryReservationCreated: 'InventoryReservationCreated',
+  InventoryReservationReleased: 'InventoryReservationReleased',
   CartCreated: 'CartCreated',
   OrderCreated: 'OrderCreated',
   OrderPaid: 'OrderPaid',

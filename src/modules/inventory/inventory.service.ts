@@ -7,6 +7,8 @@ import {
 import { InjectRepository } from '@nestjs/typeorm';
 import { DataSource, QueryFailedError, Repository } from 'typeorm';
 
+import { CoreEventName } from '../event-bus/event-catalog';
+import { EventBusService } from '../event-bus/event-bus.service';
 import { InventoryAdjustmentEntity } from './entities/inventory-adjustment.entity';
 import { InventoryItemEntity } from './entities/inventory-item.entity';
 import { InventoryReservationEntity } from './entities/inventory-reservation.entity';
@@ -88,6 +90,7 @@ export class InventoryService {
     @InjectRepository(InventoryAdjustmentEntity)
     private readonly adjustments: Repository<InventoryAdjustmentEntity>,
     private readonly dataSource: DataSource,
+    private readonly eventBus: EventBusService,
   ) {}
 
   async findAll(): Promise<InventoryItemType[]> {
@@ -149,7 +152,7 @@ export class InventoryService {
       throw new BadRequestException('delta must be a non-zero integer');
     }
 
-    const itemId = await this.dataSource.transaction(async (manager) => {
+    const snapshot = await this.dataSource.transaction(async (manager) => {
       let item = await manager
         .getRepository(InventoryItemEntity)
         .createQueryBuilder('item')
@@ -209,10 +212,24 @@ export class InventoryService {
           quantityOnHandAfter: nextOnHand,
         }),
       );
-      return item.id;
+      return {
+        inventoryItemId: item.id,
+        variantId: item.variantId,
+        delta: input.delta,
+        quantityOnHand: nextOnHand,
+        quantityReserved: item.quantityReserved,
+        reason: input.reason?.trim() || null,
+      };
     });
 
-    return this.findById(itemId);
+    await this.eventBus.publish({
+      eventName: CoreEventName.InventoryUpdated,
+      aggregateType: 'inventory_item',
+      aggregateId: snapshot.inventoryItemId,
+      data: snapshot,
+    });
+
+    return this.findById(snapshot.inventoryItemId);
   }
 
   /**
@@ -225,7 +242,7 @@ export class InventoryService {
       throw new BadRequestException('quantity must be a positive integer');
     }
 
-    const reservationId = await this.dataSource.transaction(async (manager) => {
+    const snapshot = await this.dataSource.transaction(async (manager) => {
       let item = await manager
         .getRepository(InventoryItemEntity)
         .createQueryBuilder('item')
@@ -281,14 +298,31 @@ export class InventoryService {
           reference: input.reference?.trim() || null,
         }),
       );
-      return reservation.id;
+      return {
+        reservationId: reservation.id,
+        inventoryItemId: item.id,
+        variantId: item.variantId,
+        quantity: input.quantity,
+        reference: reservation.reference,
+        quantityReserved: item.quantityReserved,
+        quantityAvailable: item.quantityOnHand - item.quantityReserved,
+      };
+    });
+
+    await this.eventBus.publish({
+      eventName: CoreEventName.InventoryReservationCreated,
+      aggregateType: 'inventory_reservation',
+      aggregateId: snapshot.reservationId,
+      data: snapshot,
     });
 
     const row = await this.reservations.findOne({
-      where: { id: reservationId },
+      where: { id: snapshot.reservationId },
     });
     if (!row) {
-      throw new NotFoundException(`Reservation ${reservationId} not found`);
+      throw new NotFoundException(
+        `Reservation ${snapshot.reservationId} not found`,
+      );
     }
     return toReservationType(row);
   }
@@ -297,7 +331,7 @@ export class InventoryService {
    * Release an active reservation and free reserved quantity.
    */
   async release(reservationId: string): Promise<InventoryReservationType> {
-    await this.dataSource.transaction(async (manager) => {
+    const snapshot = await this.dataSource.transaction(async (manager) => {
       const reservation = await manager
         .getRepository(InventoryReservationEntity)
         .createQueryBuilder('res')
@@ -335,6 +369,22 @@ export class InventoryService {
 
       reservation.status = 'released';
       await manager.save(reservation);
+
+      return {
+        reservationId: reservation.id,
+        inventoryItemId: item.id,
+        variantId: item.variantId,
+        quantity: reservation.quantity,
+        quantityReserved: item.quantityReserved,
+        quantityAvailable: item.quantityOnHand - item.quantityReserved,
+      };
+    });
+
+    await this.eventBus.publish({
+      eventName: CoreEventName.InventoryReservationReleased,
+      aggregateType: 'inventory_reservation',
+      aggregateId: snapshot.reservationId,
+      data: snapshot,
     });
 
     const row = await this.reservations.findOne({
