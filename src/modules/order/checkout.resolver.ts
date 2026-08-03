@@ -17,7 +17,7 @@ export class CheckoutResolver {
   @Mutation(() => CheckoutPreviewType, {
     name: 'prepareCheckout',
     description:
-      'Validate stock via reservations and return totals stub (tax/shipping = 0)',
+      'Validate stock via reservations and return totals (shipping from cart selection; tax stub until Phase C)',
   })
   @RequirePermission('cart:checkout')
   prepareCheckout(

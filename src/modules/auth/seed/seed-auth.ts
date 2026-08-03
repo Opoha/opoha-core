@@ -73,6 +73,10 @@ export const DEFAULT_PERMISSIONS = [
   { key: 'payment:capture', description: 'Capture an authorized payment' },
   { key: 'payment:refund', description: 'Refund a captured payment' },
   {
+    key: 'shipping:read',
+    description: 'List shipping methods and quote rates',
+  },
+  {
     key: 'localization:read',
     description: 'Read deployment localization settings',
   },

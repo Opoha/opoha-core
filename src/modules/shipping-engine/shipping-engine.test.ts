@@ -181,6 +181,64 @@ describe('ShippingEngine', () => {
     });
   });
 
+  it('quote returns rates from flat-rate and DHL carrier (shipping gate / B-05)', async () => {
+    const engine = new ShippingEngine(new ShippingMethodRegistry());
+    engine.register(
+      stubMethod({
+        code: 'flat-rate',
+        displayName: 'Flat rate',
+        async quoteRates(input) {
+          return [
+            {
+              code: 'flat-rate',
+              displayName: 'Flat rate',
+              amount: {
+                amountMinor: '500',
+                currencyCode: input.currencyCode,
+              },
+            },
+          ];
+        },
+      }),
+    );
+    engine.register(
+      stubMethod({
+        code: 'dhl',
+        displayName: 'DHL Express',
+        async quoteRates(input) {
+          return [
+            {
+              code: 'P',
+              displayName: 'DHL EXPRESS WORLDWIDE',
+              amount: {
+                amountMinor: '2063',
+                currencyCode: input.currencyCode,
+              },
+              minTransitDays: 3,
+              maxTransitDays: 3,
+            },
+            {
+              code: 'Y',
+              displayName: 'DHL EXPRESS 12:00',
+              amount: {
+                amountMinor: '2655',
+                currencyCode: input.currencyCode,
+              },
+              minTransitDays: 2,
+              maxTransitDays: 2,
+            },
+          ];
+        },
+      }),
+    );
+
+    const result = await engine.quote(sampleQuoteInput);
+    const methodCodes = new Set(result.rates.map((r) => r.methodCode));
+    expect(methodCodes.has('flat-rate')).toBe(true);
+    expect(methodCodes.has('dhl')).toBe(true);
+    expect(result.rates.filter((r) => r.methodCode === 'dhl')).toHaveLength(2);
+  });
+
   it('quote skips methods that throw', async () => {
     const engine = new ShippingEngine(new ShippingMethodRegistry());
     engine.register(
