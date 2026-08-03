@@ -5,6 +5,7 @@ import {
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 
+import { CurrencyConversionService } from '../currency/public';
 import { CoreEventName } from '../event-bus/event-catalog';
 import { EventBusService } from '../event-bus/event-bus.service';
 import { GiftCardService } from '../gift-cards/public';
@@ -39,6 +40,7 @@ import {
  * loyalty via LoyaltyService quote (Phase 4 C-03).
  * Publishes CheckoutPrepared for analytics sinks (Phase 4 F-02).
  * Phase 5 B-02: validates cart storeId against request store context.
+ * Phase 5 D-03: converts settlement totals to display currency via rates.
  */
 @Injectable()
 export class CheckoutService {
@@ -53,11 +55,13 @@ export class CheckoutService {
     private readonly loyalty: LoyaltyService,
     private readonly eventBus: EventBusService,
     private readonly stores: StoreService,
+    private readonly currencyConversion: CurrencyConversionService,
   ) {}
 
   async prepare(
     cartId: string,
     context?: StoreContextRef | null,
+    displayCurrencyCode?: string | null,
   ): Promise<CheckoutPreviewType> {
     const { cart, lines } = await this.carts.getEntityWithLines(cartId);
 
@@ -195,10 +199,26 @@ export class CheckoutService {
       },
     });
 
+    const displayTotals = await this.currencyConversion.convertTotals(
+      cart.storeId,
+      {
+        currencyCode: totals.currencyCode,
+        subtotalMinor: totals.subtotalMinor,
+        discountMinor: totals.discountMinor,
+        giftCardMinor: totals.giftCardMinor,
+        loyaltyMinor: totals.loyaltyMinor,
+        taxMinor: totals.taxMinor,
+        shippingMinor: totals.shippingMinor,
+        totalMinor: totals.totalMinor,
+      },
+      displayCurrencyCode,
+    );
+
     return {
       cartId,
       cart: refreshed,
       totals,
+      displayTotals,
       reservationIds,
     };
   }

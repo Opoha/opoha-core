@@ -41,6 +41,9 @@ describe('CheckoutService (unit)', () => {
     findById: ReturnType<typeof vi.fn>;
     findByCode: ReturnType<typeof vi.fn>;
   };
+  let currencyConversion: {
+    convertTotals: ReturnType<typeof vi.fn>;
+  };
   let service: CheckoutService;
 
   const baseCart = {
@@ -168,6 +171,16 @@ describe('CheckoutService (unit)', () => {
       findByCode: vi.fn(),
     };
 
+    currencyConversion = {
+      convertTotals: vi.fn(async (_storeId, totals) => ({
+        ...totals,
+        settlementCurrencyCode: totals.currencyCode,
+        displayCurrencyCode: totals.currencyCode,
+        rate: 1,
+        roundingMode: 'half_up',
+      })),
+    };
+
     service = new CheckoutService(
       cartService as unknown as CartService,
       inventory as never,
@@ -178,6 +191,7 @@ describe('CheckoutService (unit)', () => {
       loyalty as never,
       eventBus as never,
       stores as never,
+      currencyConversion as never,
     );
   });
 
@@ -198,6 +212,8 @@ describe('CheckoutService (unit)', () => {
     expect(preview.totals.taxMinor).toBe('0');
     expect(preview.totals.shippingMinor).toBe('0');
     expect(preview.totals.totalMinor).toBe('2500');
+    expect(preview.displayTotals.totalMinor).toBe('2500');
+    expect(preview.displayTotals.rate).toBe(1);
     expect(preview.reservationIds).toEqual(['res-1', 'res-2']);
     expect(cartService.attachReservations).toHaveBeenCalledWith([
       { lineId: 'line-1', reservationId: 'res-1' },

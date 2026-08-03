@@ -22,13 +22,26 @@ export class CheckoutResolver {
   @Mutation(() => CheckoutPreviewType, {
     name: 'prepareCheckout',
     description:
-      'Validate stock via reservations and return totals; enforces cart store vs request store context (B-02)',
+      'Validate stock via reservations and return settlement + display totals; ' +
+      'enforces cart store vs request store context (B-02). ' +
+      'displayCurrencyCode must be enabled for the store (D-03); defaults to primary display.',
   })
   @RequirePermission('cart:checkout')
   prepareCheckout(
     @Args('cartId', { type: () => ID }) cartId: string,
+    @Args('displayCurrencyCode', {
+      type: () => String,
+      nullable: true,
+      description:
+        'Optional display currency (ISO 4217); defaults to store displayCurrencyCode',
+    })
+    displayCurrencyCode: string | undefined,
     @Context() ctx: GqlStoreContext,
   ): Promise<CheckoutPreviewType> {
-    return this.checkoutService.prepare(cartId, ctx.storeContext);
+    return this.checkoutService.prepare(
+      cartId,
+      ctx.storeContext,
+      displayCurrencyCode,
+    );
   }
 }

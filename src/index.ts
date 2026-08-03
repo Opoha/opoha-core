@@ -270,6 +270,10 @@ export {
   CurrencyModule,
   StoreCurrencyConfigService,
   ExchangeRateService,
+  CurrencyConversionService,
+  CURRENCY_ROUNDING_MODE,
+  convertMinorWithRate,
+  roundHalfUpToMinor,
   StoreCurrencyConfigEntity,
   ExchangeRateEntity,
   currencyEntities,
@@ -286,6 +290,10 @@ export type {
   StoreCurrencyConfigUpdatedEvent,
   ExchangeRateUpdatedData,
   ExchangeRateUpdatedEvent,
+  ConvertedAmount,
+  DisplayTotalsInput,
+  DisplayTotalsResult,
+  CurrencyRoundingMode,
 } from './modules/currency/public';
 export {
   AdminOpsModule,

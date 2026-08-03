@@ -253,7 +253,7 @@ Per-store display vs settlement currency owned by the currency module (`store_cu
 | Q | `storeCurrencyConfigList` | `currency:read` |
 | M | `updateStoreCurrencyConfig` | `currency:update` |
 
-Defaults are created on first read and when a store is created (`StoreCreated` listener). Cart conversion (D-03) follows.
+Defaults are created on first read and when a store is created (`StoreCreated` listener). Cart/checkout display conversion: see D-03 below.
 
 ## Exchange rates (Phase 5 D-02)
 
@@ -269,6 +269,24 @@ Global FX table `exchange_rates` (currency module). Rate semantics: **1 `fromCur
 | M | `deleteExchangeRate` | `currency:update` |
 
 Mutations publish `ExchangeRateUpdated` (delete sets `rate: null`, `deleted: true`). Same-currency `getRate` returns `1` without a row.
+
+## Cart / checkout display conversion (Phase 5 D-03)
+
+Settlement amounts stay on `cart.currencyCode` / `CheckoutTotals` (payment capture). Display conversion uses store-enabled currencies + `exchange_rates`.
+
+| Op | Name | Notes |
+|----|------|-------|
+| Q | `cartDisplayTotals(cartId, displayCurrencyCode?)` | Converts cart line/shipping/tax/discount snapshot; defaults to store `displayCurrencyCode` |
+| M | `prepareCheckout(cartId, displayCurrencyCode?)` | Returns `totals` (settlement) + `displayTotals` (converted) |
+
+### Rounding
+
+- Rate semantics: **1 settlement = `rate` × display** (major units). Opoha stores money as **2-decimal minor units** for all currencies (same as `formatMinorAmount`), so the rate multiplies minor amounts directly.
+- Final minor units: **`half_up`** (`Math.round` on non-negative intermediates) to the nearest integer minor unit.
+- Same-currency display: identity, `rate: 1`, no drift.
+- Missing cross-currency rate → `BadRequest` asking to configure a manual rate before using that display currency.
+
+`createCart` defaults `currencyCode` to the store’s `settlementCurrencyCode` when omitted.
 
 ## Multi-store catalog filters (Phase 5 B-04)
 

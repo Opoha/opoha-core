@@ -7,6 +7,10 @@ import { InjectRepository } from '@nestjs/typeorm';
 import { QueryFailedError, Repository } from 'typeorm';
 
 import { ProductVariantEntity } from '../catalog/public';
+import {
+  CurrencyConversionService,
+  StoreCurrencyConfigService,
+} from '../currency/public';
 import { CoreEventName } from '../event-bus/event-catalog';
 import { EventBusService } from '../event-bus/event-bus.service';
 import { ShippingEngine } from '../shipping-engine/public';
@@ -27,6 +31,7 @@ import type {
   SetCartTaxContextInput,
   UpdateCartLineInput,
 } from './order.types';
+import type { DisplayTotalsResult } from '../currency/public';
 import {
   isProductVisibleInStore,
   requireActiveStore,
@@ -96,6 +101,8 @@ export class CartService {
     private readonly eventBus: EventBusService,
     private readonly shipping: ShippingEngine,
     private readonly stores: StoreService,
+    private readonly storeCurrency: StoreCurrencyConfigService,
+    private readonly currencyConversion: CurrencyConversionService,
   ) {}
 
   async findAll(storeId?: string | null): Promise<CartType[]> {
@@ -113,6 +120,47 @@ export class CartService {
       throw new NotFoundException(`Cart ${id} not found`);
     }
     return this.hydrate(row);
+  }
+
+  /**
+   * Convert cart's last persisted money fields to a display currency (D-03).
+   * Uses settlement amounts on the cart (not a full checkout recompute).
+   */
+  async getDisplayTotals(
+    cartId: string,
+    displayCurrencyCode?: string | null,
+  ): Promise<DisplayTotalsResult> {
+    const cart = await this.carts.findOne({ where: { id: cartId } });
+    if (!cart) {
+      throw new NotFoundException(`Cart ${cartId} not found`);
+    }
+    const lines = await this.lines.find({ where: { cartId } });
+    let subtotal = 0n;
+    for (const line of lines) {
+      subtotal +=
+        BigInt(String(line.unitPriceMinor)) * BigInt(line.quantity);
+    }
+    return this.currencyConversion.convertTotals(
+      cart.storeId,
+      {
+        currencyCode: cart.currencyCode,
+        subtotalMinor: subtotal.toString(),
+        discountMinor: String(cart.discountMinor ?? '0'),
+        giftCardMinor: String(cart.giftCardMinor ?? '0'),
+        loyaltyMinor: String(cart.loyaltyMinor ?? '0'),
+        taxMinor: String(cart.taxMinor ?? '0'),
+        shippingMinor: String(cart.shippingMinor ?? '0'),
+        totalMinor: (
+          subtotal +
+          BigInt(String(cart.shippingMinor ?? '0')) +
+          BigInt(String(cart.taxMinor ?? '0')) -
+          BigInt(String(cart.discountMinor ?? '0')) -
+          BigInt(String(cart.giftCardMinor ?? '0')) -
+          BigInt(String(cart.loyaltyMinor ?? '0'))
+        ).toString(),
+      },
+      displayCurrencyCode,
+    );
   }
 
   /** Internal: load entity + lines (for checkout). */
@@ -135,20 +183,27 @@ export class CartService {
     input: CreateCartInput,
     context?: StoreContextRef | null,
   ): Promise<CartType> {
-    const currency =
-      input.currencyCode?.trim().toUpperCase() || 'USD';
-    if (!/^[A-Z]{3}$/.test(currency)) {
-      throw new BadRequestException(
-        'currencyCode must be a 3-letter ISO code',
-      );
-    }
-
     const storeId = await resolveCartStoreId({
       stores: this.stores,
       inputStoreId: input.storeId,
       context,
     });
     await requireActiveStore(this.stores, storeId);
+
+    // Settlement currency is authoritative on the cart (D-01/D-03).
+    // Prefer explicit input, else store settlement config, else USD.
+    let currency: string;
+    if (input.currencyCode?.trim()) {
+      currency = input.currencyCode.trim().toUpperCase();
+      if (!/^[A-Z]{3}$/.test(currency)) {
+        throw new BadRequestException(
+          'currencyCode must be a 3-letter ISO code',
+        );
+      }
+    } else {
+      const config = await this.storeCurrency.getForStore(storeId);
+      currency = config.settlementCurrencyCode;
+    }
 
     const cart = this.carts.create({
       storeId,

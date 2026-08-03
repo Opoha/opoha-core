@@ -3,6 +3,7 @@ import { TypeOrmModule } from '@nestjs/typeorm';
 
 import { AuthModule } from '../auth/public';
 import { StoresModule } from '../stores/public';
+import { CurrencyConversionService } from './currency-conversion.service';
 import { currencyEntities } from './entities';
 import { CurrencyEventsRegistrar } from './events/currency-events.registrar';
 import { ExchangeRateResolver } from './exchange-rate.resolver';
@@ -12,8 +13,8 @@ import { StoreCurrencyConfigResolver } from './store-currency-config.resolver';
 import { StoreCurrencyConfigService } from './store-currency-config.service';
 
 /**
- * Currency module — store display/settlement config (D-01) + exchange rates (D-02).
- * Cart conversion lands in D-03.
+ * Currency module — store display/settlement config (D-01), exchange rates (D-02),
+ * and cart/checkout display conversion (D-03).
  */
 @Module({
   imports: [
@@ -26,12 +27,14 @@ import { StoreCurrencyConfigService } from './store-currency-config.service';
     StoreCurrencyConfigResolver,
     ExchangeRateService,
     ExchangeRateResolver,
+    CurrencyConversionService,
     CurrencyEventsRegistrar,
     StoreCreatedCurrencyConfigListener,
   ],
   exports: [
     StoreCurrencyConfigService,
     ExchangeRateService,
+    CurrencyConversionService,
     TypeOrmModule,
   ],
 })

@@ -11,6 +11,7 @@ import { CartService } from './cart.service';
 import {
   AddCartLineInput,
   CartType,
+  CheckoutDisplayTotalsType,
   CreateCartInput,
   SelectCartShippingInput,
   SetCartCouponInput,
@@ -50,10 +51,32 @@ export class CartResolver {
     return this.cartService.findById(id);
   }
 
+  @Query(() => CheckoutDisplayTotalsType, {
+    name: 'cartDisplayTotals',
+    description:
+      'Convert cart line/shipping/tax/discount amounts to a store-enabled ' +
+      'display currency using configured exchange rates (Phase 5 D-03). ' +
+      'Settlement currency remains cart.currencyCode. Rounding: half_up.',
+  })
+  @RequirePermission('cart:read')
+  cartDisplayTotals(
+    @Args('cartId', { type: () => ID }) cartId: string,
+    @Args('displayCurrencyCode', {
+      type: () => String,
+      nullable: true,
+      description:
+        'Optional display currency; defaults to store displayCurrencyCode',
+    })
+    displayCurrencyCode?: string,
+  ): Promise<CheckoutDisplayTotalsType> {
+    return this.cartService.getDisplayTotals(cartId, displayCurrencyCode);
+  }
+
   @Mutation(() => CartType, {
     name: 'createCart',
     description:
-      'Create an empty shopping cart bound to a store (input, header, or default)',
+      'Create an empty shopping cart bound to a store (input, header, or default). ' +
+      'currencyCode is settlement currency; defaults to store settlement config (D-03).',
   })
   @RequirePermission('cart:create')
   createCart(

@@ -148,7 +148,11 @@ export class CreateCartInput {
   @Field(() => ID, { nullable: true })
   customerId?: string;
 
-  @Field(() => String, { nullable: true, defaultValue: 'USD' })
+  @Field(() => String, {
+    nullable: true,
+    description:
+      'Settlement currency (ISO 4217). Defaults to store settlementCurrencyCode when omitted (D-03).',
+  })
   currencyCode?: string;
 }
 
@@ -178,7 +182,9 @@ export class UpdateCartLineInput {
     'Checkout totals — shipping + TaxEngine tax + PromotionsEngine discount + gift card + loyalty',
 })
 export class CheckoutTotalsType {
-  @Field(() => String)
+  @Field(() => String, {
+    description: 'Settlement currency (capture); cart.currencyCode',
+  })
   currencyCode!: string;
 
   @Field(() => String)
@@ -211,6 +217,59 @@ export class CheckoutTotalsType {
 
 @ObjectType({
   description:
+    'Checkout totals converted to a store-enabled display currency (Phase 5 D-03). ' +
+    'Rounding: half_up to nearest minor unit; rate is 1 from=settlement → to=display.',
+})
+export class CheckoutDisplayTotalsType {
+  @Field(() => String, {
+    description: 'Settlement currency (source of totals)',
+  })
+  settlementCurrencyCode!: string;
+
+  @Field(() => String, {
+    description: 'Customer-facing display currency',
+  })
+  displayCurrencyCode!: string;
+
+  @Field(() => String, {
+    description: 'Alias of displayCurrencyCode for client convenience',
+  })
+  currencyCode!: string;
+
+  @Field(() => Number, {
+    description: 'FX rate applied (1 settlement = rate × display)',
+  })
+  rate!: number;
+
+  @Field(() => String, {
+    description: 'Rounding mode used for minor-unit conversion (half_up)',
+  })
+  roundingMode!: string;
+
+  @Field(() => String)
+  subtotalMinor!: string;
+
+  @Field(() => String)
+  discountMinor!: string;
+
+  @Field(() => String)
+  giftCardMinor!: string;
+
+  @Field(() => String)
+  loyaltyMinor!: string;
+
+  @Field(() => String)
+  taxMinor!: string;
+
+  @Field(() => String)
+  shippingMinor!: string;
+
+  @Field(() => String)
+  totalMinor!: string;
+}
+
+@ObjectType({
+  description:
     'Result of preparing checkout — reservations + totals (incl. shipping)',
 })
 export class CheckoutPreviewType {
@@ -220,8 +279,17 @@ export class CheckoutPreviewType {
   @Field(() => CartType)
   cart!: CartType;
 
-  @Field(() => CheckoutTotalsType)
+  @Field(() => CheckoutTotalsType, {
+    description: 'Settlement-currency totals (authoritative for payment)',
+  })
   totals!: CheckoutTotalsType;
+
+  @Field(() => CheckoutDisplayTotalsType, {
+    description:
+      'Display-currency totals via configured exchange rates (D-03). ' +
+      'Defaults to store primary display currency when displayCurrencyCode omitted.',
+  })
+  displayTotals!: CheckoutDisplayTotalsType;
 
   @Field(() => [ID], {
     description: 'Inventory reservation ids created for cart lines',

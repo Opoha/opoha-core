@@ -4,6 +4,18 @@
 export { CurrencyModule } from '../currency.module';
 export { StoreCurrencyConfigService } from '../store-currency-config.service';
 export { ExchangeRateService } from '../exchange-rate.service';
+export { CurrencyConversionService } from '../currency-conversion.service';
+export type {
+  ConvertedAmount,
+  DisplayTotalsInput,
+  DisplayTotalsResult,
+} from '../currency-conversion.service';
+export {
+  CURRENCY_ROUNDING_MODE,
+  convertMinorWithRate,
+  roundHalfUpToMinor,
+} from '../currency-conversion';
+export type { CurrencyRoundingMode } from '../currency-conversion';
 export {
   StoreCurrencyConfigEntity,
   ExchangeRateEntity,

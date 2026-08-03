@@ -85,6 +85,12 @@ describe('CartService (unit)', () => {
     findByCode: ReturnType<typeof vi.fn>;
     findDefault: ReturnType<typeof vi.fn>;
   };
+  let storeCurrency: {
+    getForStore: ReturnType<typeof vi.fn>;
+  };
+  let currencyConversion: {
+    convertTotals: ReturnType<typeof vi.fn>;
+  };
 
   beforeEach(() => {
     cartStore = [];
@@ -235,6 +241,27 @@ describe('CartService (unit)', () => {
       })),
     };
 
+    storeCurrency = {
+      getForStore: vi.fn(async () => ({
+        storeId: 'store-default',
+        settlementCurrencyCode: 'USD',
+        displayCurrencyCode: 'USD',
+        enabledDisplayCurrencies: ['USD'],
+        createdAt: now,
+        updatedAt: now,
+      })),
+    };
+
+    currencyConversion = {
+      convertTotals: vi.fn(async (_storeId, totals) => ({
+        ...totals,
+        settlementCurrencyCode: totals.currencyCode,
+        displayCurrencyCode: totals.currencyCode,
+        rate: 1,
+        roundingMode: 'half_up',
+      })),
+    };
+
     service = new CartService(
       cartsRepo as never,
       linesRepo as never,
@@ -242,6 +269,8 @@ describe('CartService (unit)', () => {
       eventBus as never,
       shipping as never,
       stores as never,
+      storeCurrency as never,
+      currencyConversion as never,
     );
   });
 
