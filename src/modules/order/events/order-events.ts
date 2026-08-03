@@ -80,7 +80,6 @@ export const orderCreatedDataSchema = z
     customerId: z.string().uuid().nullable(),
     /** Phase 7 omnichannel channel — additive field retained in v1.0 freeze. */
     orderSource: orderSourceSchema.optional().default('web'),
-    orderSource: z.string().min(1).optional(),
     status: orderStatusSchema,
     currencyCode: z.string().min(1),
     totalMinor: z.string().min(1),
