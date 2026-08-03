@@ -258,6 +258,10 @@ export class OrdersService {
         );
       }
       await this.companies.assertCanBuy(cart.companyId, cart.customerId);
+      await this.companies.assertWithinCreditLimit(
+        cart.companyId,
+        totalMinor.toString(),
+      );
 
       const order = await this.orders.save(
         this.orders.create({

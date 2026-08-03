@@ -70,6 +70,7 @@ describe('OrdersService place + status (D-04 / D-05 / D-06 / A-04)', () => {
   let companies: {
     assertCanBuy: ReturnType<typeof vi.fn>;
     assertCanApprove: ReturnType<typeof vi.fn>;
+    assertWithinCreditLimit: ReturnType<typeof vi.fn>;
   };
 
   beforeEach(() => {
@@ -261,6 +262,7 @@ describe('OrdersService place + status (D-04 / D-05 / D-06 / A-04)', () => {
     companies = {
       assertCanBuy: vi.fn(async () => undefined),
       assertCanApprove: vi.fn(async () => undefined),
+      assertWithinCreditLimit: vi.fn(async () => undefined),
     };
 
     service = new OrdersService(
@@ -694,6 +696,10 @@ describe('OrdersService place + status (D-04 / D-05 / D-06 / A-04)', () => {
     expect(order.status).toBe('draft');
     expect(order.companyId).toBe(companyId);
     expect(companies.assertCanBuy).toHaveBeenCalledWith(companyId, customerId);
+    expect(companies.assertWithinCreditLimit).toHaveBeenCalledWith(
+      companyId,
+      '2000',
+    );
     expect(payments.authorize).not.toHaveBeenCalled();
     expect(inventory.commit).toHaveBeenCalledWith(reservationId);
     expect(carts.setStatus).toHaveBeenCalledWith(cartId, 'converted');

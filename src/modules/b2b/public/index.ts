@@ -6,6 +6,7 @@ export { CompanyService } from '../company.service';
 export {
   CompanyEntity,
   CompanyMembershipEntity,
+  CompanyPriceEntity,
   COMPANY_BUYER_ROLES,
   isCompanyBuyerRole,
   b2bEntities,
@@ -14,11 +15,14 @@ export type { CompanyBuyerRole } from '../entities';
 export {
   CompanyType,
   CompanyMembershipType,
+  CompanyPriceListItemType,
   CreateCompanyInput,
   UpdateCompanyInput,
   AddCompanyMemberInput,
   UpdateCompanyMemberRoleInput,
   RemoveCompanyMemberInput,
+  SetCompanyPriceListItemInput,
+  RemoveCompanyPriceListItemInput,
   ApproveB2bOrderInput,
   ConfirmB2bOrderInput,
 } from '../company.types';

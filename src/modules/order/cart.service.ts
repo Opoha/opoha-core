@@ -6,6 +6,7 @@ import {
 import { InjectRepository } from '@nestjs/typeorm';
 import { QueryFailedError, Repository } from 'typeorm';
 
+import { CompanyService } from '../b2b/public';
 import { ProductVariantEntity } from '../catalog/public';
 import {
   CurrencyConversionService,
@@ -104,6 +105,7 @@ export class CartService {
     private readonly stores: StoreService,
     private readonly storeCurrency: StoreCurrencyConfigService,
     private readonly currencyConversion: CurrencyConversionService,
+    private readonly companies: CompanyService,
   ) {}
 
   async findAll(storeId?: string | null): Promise<CartType[]> {
@@ -283,13 +285,19 @@ export class CartService {
       );
     }
 
+    const unitPriceMinor = await this.companies.resolveUnitPriceMinor(
+      cart.companyId,
+      input.variantId,
+      String(variant.priceMinor),
+    );
+
     const existing = await this.lines.findOne({
       where: { cartId: cart.id, variantId: input.variantId },
     });
 
     if (existing) {
       existing.quantity += input.quantity;
-      existing.unitPriceMinor = String(variant.priceMinor);
+      existing.unitPriceMinor = unitPriceMinor;
       existing.reservationId = null;
       const saved = await this.lines.save(existing);
       await this.eventBus.publish({
@@ -311,7 +319,7 @@ export class CartService {
           cartId: cart.id,
           variantId: input.variantId,
           quantity: input.quantity,
-          unitPriceMinor: String(variant.priceMinor),
+          unitPriceMinor,
           reservationId: null,
         }),
       );
@@ -446,6 +454,44 @@ export class CartService {
     cart.shippingMinor = '0';
     await this.carts.save(cart);
     return this.hydrate(cart);
+  }
+
+  /**
+   * Re-apply company price list overrides to open/locked cart lines (F-04).
+   * No-op when cart has no companyId. Used by checkout prepare.
+   */
+  async applyCompanyPriceList(cartId: string): Promise<void> {
+    const cart = await this.carts.findOne({ where: { id: cartId } });
+    if (!cart) {
+      throw new NotFoundException(`Cart ${cartId} not found`);
+    }
+    if (!cart.companyId) {
+      return;
+    }
+    if (cart.status === 'converted' || cart.status === 'abandoned') {
+      throw new BadRequestException(
+        `Cart ${cartId} is ${cart.status} and cannot be repriced`,
+      );
+    }
+
+    const lines = await this.lines.find({ where: { cartId } });
+    for (const line of lines) {
+      const variant = await this.variants.findOne({
+        where: { id: line.variantId },
+      });
+      if (!variant) {
+        continue;
+      }
+      const unitPriceMinor = await this.companies.resolveUnitPriceMinor(
+        cart.companyId,
+        line.variantId,
+        String(variant.priceMinor),
+      );
+      if (String(line.unitPriceMinor) !== unitPriceMinor) {
+        line.unitPriceMinor = unitPriceMinor;
+        await this.lines.save(line);
+      }
+    }
   }
 
   /**

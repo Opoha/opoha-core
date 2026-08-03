@@ -9,6 +9,7 @@ describe('CheckoutService (unit)', () => {
   const now = new Date('2026-08-03T12:00:00Z');
   let cartService: {
     getEntityWithLines: ReturnType<typeof vi.fn>;
+    applyCompanyPriceList: ReturnType<typeof vi.fn>;
     attachReservations: ReturnType<typeof vi.fn>;
     persistTaxResult: ReturnType<typeof vi.fn>;
     persistDiscountResult: ReturnType<typeof vi.fn>;
@@ -98,6 +99,7 @@ describe('CheckoutService (unit)', () => {
           },
         ],
       })),
+      applyCompanyPriceList: vi.fn(async () => undefined),
       attachReservations: vi.fn(async () => undefined),
       persistTaxResult: vi.fn(async () => undefined),
       persistDiscountResult: vi.fn(async () => undefined),

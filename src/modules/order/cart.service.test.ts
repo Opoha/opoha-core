@@ -11,6 +11,7 @@ type CartRow = {
   id: string;
   storeId: string;
   customerId: string | null;
+  companyId: string | null;
   status: 'open' | 'locked' | 'converted' | 'abandoned';
   currencyCode: string;
   shippingMethodCode: string | null;
@@ -91,6 +92,9 @@ describe('CartService (unit)', () => {
   let currencyConversion: {
     convertTotals: ReturnType<typeof vi.fn>;
   };
+  let companies: {
+    resolveUnitPriceMinor: ReturnType<typeof vi.fn>;
+  };
 
   beforeEach(() => {
     cartStore = [];
@@ -121,6 +125,7 @@ describe('CartService (unit)', () => {
         id: `cart-${++cartSeq}`,
         storeId: 'store-default',
         customerId: null,
+        companyId: null,
         status: 'open' as const,
         currencyCode: 'USD',
         shippingMethodCode: null,
@@ -262,6 +267,16 @@ describe('CartService (unit)', () => {
       })),
     };
 
+    companies = {
+      resolveUnitPriceMinor: vi.fn(
+        async (
+          _companyId: string | null,
+          _variantId: string,
+          catalog: string,
+        ) => catalog,
+      ),
+    };
+
     service = new CartService(
       cartsRepo as never,
       linesRepo as never,
@@ -271,6 +286,7 @@ describe('CartService (unit)', () => {
       stores as never,
       storeCurrency as never,
       currencyConversion as never,
+      companies as never,
     );
   });
 

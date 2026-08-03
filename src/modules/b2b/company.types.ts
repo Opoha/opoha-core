@@ -115,6 +115,50 @@ export class RemoveCompanyMemberInput {
   customerId!: string;
 }
 
+@ObjectType({ description: 'Customer-specific price list item (Phase 5 F-04)' })
+export class CompanyPriceListItemType {
+  @Field(() => ID)
+  id!: string;
+
+  @Field(() => ID)
+  companyId!: string;
+
+  @Field(() => ID)
+  variantId!: string;
+
+  @Field(() => String)
+  priceMinor!: string;
+
+  @Field(() => Date)
+  createdAt!: Date;
+
+  @Field(() => Date)
+  updatedAt!: Date;
+}
+
+@InputType()
+export class SetCompanyPriceListItemInput {
+  @Field(() => ID)
+  companyId!: string;
+
+  @Field(() => ID)
+  variantId!: string;
+
+  @Field(() => String, {
+    description: 'Negotiated price in minor units (non-negative integer)',
+  })
+  priceMinor!: string;
+}
+
+@InputType()
+export class RemoveCompanyPriceListItemInput {
+  @Field(() => ID)
+  companyId!: string;
+
+  @Field(() => ID)
+  variantId!: string;
+}
+
 @InputType()
 export class ApproveB2bOrderInput {
   @Field(() => ID)

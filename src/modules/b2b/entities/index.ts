@@ -4,12 +4,18 @@ import {
   CompanyMembershipEntity,
   isCompanyBuyerRole,
 } from './company-membership.entity';
+import { CompanyPriceEntity } from './company-price.entity';
 
-export const b2bEntities = [CompanyEntity, CompanyMembershipEntity] as const;
+export const b2bEntities = [
+  CompanyEntity,
+  CompanyMembershipEntity,
+  CompanyPriceEntity,
+] as const;
 
 export {
   CompanyEntity,
   CompanyMembershipEntity,
+  CompanyPriceEntity,
   COMPANY_BUYER_ROLES,
   isCompanyBuyerRole,
 };

@@ -30,17 +30,28 @@ type MembershipRow = {
   updatedAt: Date;
 };
 
+type PriceListRow = {
+  id: string;
+  companyId: string;
+  variantId: string;
+  priceMinor: string;
+  createdAt: Date;
+  updatedAt: Date;
+};
+
 function uniqueViolation(): QueryFailedError {
   return new QueryFailedError('INSERT', [], { code: '23505' } as never);
 }
 
-describe('CompanyService (F-01 / F-02)', () => {
+describe('CompanyService (F-01 / F-02 / F-04)', () => {
   const now = new Date('2026-08-03T20:00:00Z');
   const storeId = 'aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa';
   const customerId = 'bbbbbbbb-bbbb-4bbb-8bbb-bbbbbbbbbbbb';
+  const variantId = 'ffffffff-ffff-4fff-8fff-ffffffffffff';
 
   let companies: CompanyRow[];
   let memberships: MembershipRow[];
+  let priceListRows: PriceListRow[];
   let service: CompanyService;
   let companiesRepo: {
     find: ReturnType<typeof vi.fn>;
@@ -55,6 +66,13 @@ describe('CompanyService (F-01 / F-02)', () => {
     save: ReturnType<typeof vi.fn>;
     remove: ReturnType<typeof vi.fn>;
   };
+  let priceListRepo: {
+    find: ReturnType<typeof vi.fn>;
+    findOne: ReturnType<typeof vi.fn>;
+    create: ReturnType<typeof vi.fn>;
+    save: ReturnType<typeof vi.fn>;
+    remove: ReturnType<typeof vi.fn>;
+  };
   let stores: { findById: ReturnType<typeof vi.fn> };
   let customers: { findById: ReturnType<typeof vi.fn> };
   let eventBus: { publish: ReturnType<typeof vi.fn> };
@@ -62,6 +80,7 @@ describe('CompanyService (F-01 / F-02)', () => {
   beforeEach(() => {
     companies = [];
     memberships = [];
+    priceListRows = [];
     companiesRepo = {
       find: vi.fn(async ({ where }: { where?: Partial<CompanyRow> } = {}) => {
         if (where?.storeId) {
@@ -131,6 +150,39 @@ describe('CompanyService (F-01 / F-02)', () => {
         return row;
       }),
     };
+    priceListRepo = {
+      find: vi.fn(async ({ where }: { where: Partial<PriceListRow> }) => {
+        return priceListRows.filter((r) => r.companyId === where.companyId);
+      }),
+      findOne: vi.fn(async ({ where }: { where: Partial<PriceListRow> }) => {
+        return (
+          priceListRows.find(
+            (r) =>
+              r.companyId === where.companyId &&
+              r.variantId === where.variantId,
+          ) ?? null
+        );
+      }),
+      create: vi.fn((data: Partial<PriceListRow>) => ({
+        id: 'price-new',
+        createdAt: now,
+        updatedAt: now,
+        ...data,
+      })),
+      save: vi.fn(async (row: PriceListRow) => {
+        const idx = priceListRows.findIndex((r) => r.id === row.id);
+        if (idx >= 0) {
+          priceListRows[idx] = row;
+          return row;
+        }
+        priceListRows.push(row);
+        return row;
+      }),
+      remove: vi.fn(async (row: PriceListRow) => {
+        priceListRows = priceListRows.filter((r) => r.id !== row.id);
+        return row;
+      }),
+    };
     stores = {
       findById: vi.fn(async (id: string) => ({ id, code: 'default' })),
     };
@@ -141,6 +193,7 @@ describe('CompanyService (F-01 / F-02)', () => {
     service = new CompanyService(
       companiesRepo as never,
       membershipsRepo as never,
+      priceListRepo as never,
       stores as never,
       customers as never,
       eventBus as never,
@@ -297,5 +350,68 @@ describe('CompanyService (F-01 / F-02)', () => {
     await expect(service.findById('missing')).rejects.toBeInstanceOf(
       NotFoundException,
     );
+  });
+
+  it('setPriceListItem + resolveUnitPriceMinor apply negotiated price (F-04)', async () => {
+    companies.push({
+      id: 'company-1',
+      storeId,
+      name: 'Acme',
+      creditLimitMinor: '10000',
+      isActive: true,
+      createdAt: now,
+      updatedAt: now,
+    });
+
+    const item = await service.setPriceListItem({
+      companyId: 'company-1',
+      variantId,
+      priceMinor: '750',
+    });
+    expect(item.priceMinor).toBe('750');
+
+    await expect(
+      service.resolveUnitPriceMinor('company-1', variantId, '1999'),
+    ).resolves.toBe('750');
+    await expect(
+      service.resolveUnitPriceMinor(null, variantId, '1999'),
+    ).resolves.toBe('1999');
+    await expect(
+      service.resolveUnitPriceMinor('company-1', 'other-variant', '1999'),
+    ).resolves.toBe('1999');
+  });
+
+  it('assertWithinCreditLimit rejects totals above limit (F-04)', async () => {
+    companies.push({
+      id: 'company-1',
+      storeId,
+      name: 'Acme',
+      creditLimitMinor: '1000',
+      isActive: true,
+      createdAt: now,
+      updatedAt: now,
+    });
+
+    await expect(
+      service.assertWithinCreditLimit('company-1', '1000'),
+    ).resolves.toBeUndefined();
+    await expect(
+      service.assertWithinCreditLimit('company-1', '1001'),
+    ).rejects.toBeInstanceOf(BadRequestException);
+  });
+
+  it('assertWithinCreditLimit no-ops when limit unset (F-04)', async () => {
+    companies.push({
+      id: 'company-1',
+      storeId,
+      name: 'Acme',
+      creditLimitMinor: null,
+      isActive: true,
+      createdAt: now,
+      updatedAt: now,
+    });
+    await expect(
+      service.assertWithinCreditLimit('company-1', '999999'),
+    ).resolves.toBeUndefined();
   });
 });

@@ -87,8 +87,15 @@ export class CheckoutService {
       contextStoreId,
     });
 
+    // Re-apply B2B company price list overrides before tax/promo (F-04).
+    await this.carts.applyCompanyPriceList(cartId);
+    let pricedLines = lines;
+    if (cart.companyId) {
+      pricedLines = (await this.carts.getEntityWithLines(cartId)).lines;
+    }
+
     // Release any prior active reservations on lines (re-prepare).
-    for (const line of lines) {
+    for (const line of pricedLines) {
       if (line.reservationId) {
         try {
           await this.inventory.release(line.reservationId);
@@ -104,7 +111,7 @@ export class CheckoutService {
     const attachments: Array<{ lineId: string; reservationId: string }> = [];
 
     try {
-      for (const line of lines) {
+      for (const line of pricedLines) {
         const reservation = await this.inventory.reserveForStore({
           variantId: line.variantId,
           storeId: cart.storeId,
@@ -131,10 +138,10 @@ export class CheckoutService {
 
     await this.carts.attachReservations(attachments);
 
-    const promoInput = buildPromotionApplyInput(cart, lines);
+    const promoInput = buildPromotionApplyInput(cart, pricedLines);
     const promoResult = await this.promotions.applyOrZero(promoInput);
 
-    const taxInput = buildTaxCalculateInput(cart, lines);
+    const taxInput = buildTaxCalculateInput(cart, pricedLines);
     const taxResult = await this.tax.calculateOrZero(
       taxInput,
       cart.taxProviderCode ?? undefined,
@@ -145,7 +152,7 @@ export class CheckoutService {
 
     let totals = totalsWithTax({
       currencyCode: cart.currencyCode,
-      subtotalMinor: lineSubtotalMinor(lines),
+      subtotalMinor: lineSubtotalMinor(pricedLines),
       shippingMinor: BigInt(String(cart.shippingMinor ?? '0')),
       tax: taxResult,
       discountMinor: BigInt(String(promoResult.discountMinor || '0')),
@@ -197,7 +204,7 @@ export class CheckoutService {
         taxMinor: totals.taxMinor,
         discountMinor: totals.discountMinor,
         totalMinor: totals.totalMinor,
-        lineCount: lines.length,
+        lineCount: pricedLines.length,
       },
     });
 

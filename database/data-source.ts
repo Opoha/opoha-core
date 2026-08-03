@@ -63,6 +63,7 @@ import { ExchangeRatesInit1722719200000 } from './migrations/1722719200000-Excha
 import { StoreWarehousesInit1722720300000 } from './migrations/1722720300000-StoreWarehousesInit';
 import { B2bCompaniesInit1722721400000 } from './migrations/1722721400000-B2bCompaniesInit';
 import { B2bOrderApproval1722722500000 } from './migrations/1722722500000-B2bOrderApproval';
+import { B2bPriceLists1722723600000 } from './migrations/1722723600000-B2bPriceLists';
 
 loadDotenv();
 
@@ -138,6 +139,7 @@ export default new DataSource({
     StoreWarehousesInit1722720300000,
     B2bCompaniesInit1722721400000,
     B2bOrderApproval1722722500000,
+    B2bPriceLists1722723600000,
   ],
   synchronize: false,
 });

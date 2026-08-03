@@ -8,6 +8,7 @@ Plugins must not alter these tables.
 |-------|---------|
 | `companies` | B2B company accounts scoped to a store channel |
 | `company_memberships` | Customer ↔ company buyer roles (`buyer`, `approver`, `admin`) |
+| `company_price_list_items` | Customer-specific (company ↔ variant) negotiated prices (F-04) |
 
 Cross-module references use UUID columns only (`stores.id`, `customers.id`) — no TypeORM relations into other modules.
 
