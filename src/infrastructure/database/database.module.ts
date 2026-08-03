@@ -11,6 +11,7 @@ import { inventoryEntities } from '../../modules/inventory/entities';
 import { loyaltyEntities } from '../../modules/loyalty/entities';
 import { returnEntities } from '../../modules/returns/entities';
 import { segmentEntities } from '../../modules/segments/entities';
+import { storeEntities } from '../../modules/stores/entities';
 import { supplyEntities } from '../../modules/supply/entities';
 import { warehouseEntities } from '../../modules/warehouses/entities';
 import { localizationEntities } from '../../modules/localization/entities';
@@ -42,6 +43,7 @@ import { DatabaseHealthService } from './database-health.service';
           ...giftCardEntities,
           ...loyaltyEntities,
           ...segmentEntities,
+          ...storeEntities,
           ...returnEntities,
           ...supplyEntities,
           ...warehouseEntities,

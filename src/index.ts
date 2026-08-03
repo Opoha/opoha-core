@@ -230,6 +230,28 @@ export type {
   SegmentUpdatedEvent,
 } from './modules/segments/public';
 export {
+  StoresModule,
+  StoreService,
+  StoreEntity,
+  storeEntities,
+  STORE_ID_HEADER,
+  STORE_CODE_HEADER,
+  extractStoreContextFromHeaders,
+  extractStoreContextFromJwt,
+  resolveStoreContext,
+} from './modules/stores/public';
+export type {
+  StoreContextRef,
+  StoreJwtClaim,
+  CreateStoreInput,
+  UpdateStoreInput,
+  StoreType,
+  StoreCreatedData,
+  StoreCreatedEvent,
+  StoreUpdatedData,
+  StoreUpdatedEvent,
+} from './modules/stores/public';
+export {
   AdminOpsModule,
   ReportsService,
   BulkOpsService,

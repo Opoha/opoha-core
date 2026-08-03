@@ -53,6 +53,8 @@ export const CoreEventName = {
   LoyaltyPointsAccrued: 'LoyaltyPointsAccrued',
   LoyaltyPointsRedeemed: 'LoyaltyPointsRedeemed',
   SegmentUpdated: 'SegmentUpdated',
+  StoreCreated: 'StoreCreated',
+  StoreUpdated: 'StoreUpdated',
 } as const;
 
 export type CoreEventName =

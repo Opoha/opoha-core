@@ -21,6 +21,8 @@ import { GiftCardsModule } from './modules/gift-cards/public';
 import { LoyaltyModule } from './modules/loyalty/public';
 import { ReturnsModule } from './modules/returns/public';
 import { SegmentsModule } from './modules/segments/public';
+import { StoresModule } from './modules/stores/public';
+import { resolveStoreContext } from './modules/stores/store-context';
 import { SupplyModule } from './modules/supply/public';
 import { WarehousesModule } from './modules/warehouses/public';
 import { LocalizationModule } from './modules/localization/public';
@@ -35,6 +37,10 @@ import { TaxEngineModule } from './modules/tax-engine/public';
 import { NotificationsModule } from './modules/notifications/public';
 import { PromotionsEngineModule } from './modules/promotions-engine/public';
 import { SearchEngineModule } from './modules/search-engine/public';
+
+type GqlHttpRequest = {
+  headers?: Record<string, string | string[] | undefined>;
+};
 
 @Module({
   imports: [
@@ -55,6 +61,7 @@ import { SearchEngineModule } from './modules/search-engine/public';
     GiftCardsModule,
     LoyaltyModule,
     SegmentsModule,
+    StoresModule,
     ReturnsModule,
     AdminOpsModule,
     CustomerModule,
@@ -73,7 +80,14 @@ import { SearchEngineModule } from './modules/search-engine/public';
       sortSchema: true,
       playground: true,
       path: '/graphql',
-      context: ({ req }: { req: unknown }) => ({ req }),
+      context: ({ req }: { req: GqlHttpRequest }) => ({
+        req,
+        // Header-only at factory time (JWT auth runs later in guards).
+        // Use resolveStoreContext({ headers, jwt: req.user }) after auth when needed.
+        storeContext: resolveStoreContext({
+          headers: req.headers ?? {},
+        }),
+      }),
     }),
     HealthModule,
   ],

@@ -181,6 +181,10 @@ export const DEFAULT_PERMISSIONS = [
   { key: 'segment:create', description: 'Create customer segments' },
   { key: 'segment:update', description: 'Update customer segments' },
   { key: 'segment:delete', description: 'Delete customer segments' },
+  { key: 'store:create', description: 'Create application stores / brands' },
+  { key: 'store:read', description: 'Read application stores / brands' },
+  { key: 'store:update', description: 'Update application stores / brands' },
+  { key: 'store:delete', description: 'Delete application stores / brands' },
   {
     key: 'localization:read',
     description: 'Read deployment localization settings',
