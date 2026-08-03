@@ -2,43 +2,53 @@ import { UseGuards } from '@nestjs/common';
 import { Args, ID, Mutation, Query, Resolver } from '@nestjs/graphql';
 
 import { GqlAuthGuard } from '../jwt/gql-auth.guard';
+import { PermissionsGuard } from '../permissions/permissions.guard';
+import { RequirePermission } from '../permissions/require-permission.decorator';
 import { AssignRoleInput, RoleType } from './role.types';
 import { RolesService } from './roles.service';
 
 @Resolver(() => RoleType)
-@UseGuards(GqlAuthGuard)
+@UseGuards(GqlAuthGuard, PermissionsGuard)
 export class RolesResolver {
   constructor(private readonly rolesService: RolesService) {}
 
   @Query(() => [RoleType], {
     name: 'roles',
-    description: 'List roles with permissions (authenticated staff only)',
+    description: 'List roles with permissions',
   })
+  @RequirePermission('role:read')
   roles(): Promise<RoleType[]> {
     return this.rolesService.findAll();
   }
 
   @Query(() => RoleType, {
     name: 'role',
-    description: 'Get role by id (authenticated staff only)',
+    description: 'Get role by id',
   })
+  @RequirePermission('role:read')
   role(@Args('id', { type: () => ID }) id: string): Promise<RoleType> {
     return this.rolesService.findById(id);
   }
 
   @Mutation(() => RoleType, {
     name: 'assignRole',
-    description: 'Assign a role to a staff user (authenticated staff only)',
+    description: 'Assign a role to a staff user',
   })
-  assignRole(@Args('input', { type: () => AssignRoleInput }) input: AssignRoleInput): Promise<RoleType> {
+  @RequirePermission('role:update')
+  assignRole(
+    @Args('input', { type: () => AssignRoleInput }) input: AssignRoleInput,
+  ): Promise<RoleType> {
     return this.rolesService.assignRole(input.userId, input.roleId);
   }
 
   @Mutation(() => RoleType, {
     name: 'removeRole',
-    description: 'Remove a role from a staff user (authenticated staff only)',
+    description: 'Remove a role from a staff user',
   })
-  removeRole(@Args('input', { type: () => AssignRoleInput }) input: AssignRoleInput): Promise<RoleType> {
+  @RequirePermission('role:update')
+  removeRole(
+    @Args('input', { type: () => AssignRoleInput }) input: AssignRoleInput,
+  ): Promise<RoleType> {
     return this.rolesService.removeRole(input.userId, input.roleId);
   }
 }

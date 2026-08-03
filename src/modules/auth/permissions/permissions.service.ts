@@ -22,6 +22,26 @@ export class PermissionsService {
     return this.toPermissionType(row);
   }
 
+  /** Distinct permission keys granted to a user via their roles. */
+  async listKeysForUser(userId: string): Promise<string[]> {
+    const rows = await this.prisma.permission.findMany({
+      where: {
+        roles: {
+          some: {
+            role: {
+              users: {
+                some: { userId },
+              },
+            },
+          },
+        },
+      },
+      select: { key: true },
+      orderBy: { key: 'asc' },
+    });
+    return rows.map((row) => row.key);
+  }
+
   private toPermissionType(row: {
     id: string;
     key: string;
