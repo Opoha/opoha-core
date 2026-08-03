@@ -45,7 +45,7 @@ describe('OrdersService place + status (D-04 / D-05 / D-06 / A-04)', () => {
     storeId: string;
     customerId: null | string;
     companyId: null | string;
-    cartId: string;
+    cartId: string | null;
     status: string;
     currencyCode: string;
     subtotalMinor: string;
@@ -265,6 +265,37 @@ describe('OrdersService place + status (D-04 / D-05 / D-06 / A-04)', () => {
       assertWithinCreditLimit: vi.fn(async () => undefined),
     };
 
+    const quotes = {
+      requireAcceptedForConvert: vi.fn(async () => ({
+        quote: {
+          id: 'quote-1',
+          companyId: 'cccccccc-cccc-4ccc-8ccc-cccccccccccc',
+          storeId: 'store-a',
+          customerId: 'bbbbbbbb-bbbb-4bbb-8bbb-bbbbbbbbbbbb',
+          poNumber: 'PO-100',
+          status: 'accepted',
+          currencyCode: 'USD',
+          notes: null,
+          orderId: null,
+        },
+        lines: [
+          {
+            id: 'ql-1',
+            quoteId: 'quote-1',
+            variantId,
+            quantity: 2,
+            unitPriceMinor: '1000',
+          },
+        ],
+        subtotalMinor: '2000',
+      })),
+      markConverted: vi.fn(async () => ({
+        id: 'quote-1',
+        status: 'converted',
+        orderId,
+      })),
+    };
+
     service = new OrdersService(
       ordersRepo as never,
       linesRepo as never,
@@ -278,6 +309,7 @@ describe('OrdersService place + status (D-04 / D-05 / D-06 / A-04)', () => {
       loyalty as never,
       stores as never,
       companies as never,
+      quotes as never,
     );
   });
 
@@ -734,6 +766,41 @@ describe('OrdersService place + status (D-04 / D-05 / D-06 / A-04)', () => {
     expect(payments.authorize).toHaveBeenCalledWith(
       expect.objectContaining({
         idempotencyKey: `confirm-b2b-order:${orderId}`,
+      }),
+    );
+  });
+
+  it('convertB2bQuote creates draft order from accepted quote (F-05)', async () => {
+    const companyId = 'cccccccc-cccc-4ccc-8ccc-cccccccccccc';
+    const customerId = 'bbbbbbbb-bbbb-4bbb-8bbb-bbbbbbbbbbbb';
+    orderRow = {
+      ...orderRow,
+      storeId: 'store-a',
+      customerId,
+      companyId,
+      cartId: null,
+      status: 'draft',
+      subtotalMinor: '2000',
+      totalMinor: '2000',
+    };
+    ordersRepo.findOne.mockResolvedValue({ ...orderRow });
+
+    const order = await service.convertB2bQuote({ quoteId: 'quote-1' });
+    expect(order.status).toBe('draft');
+    expect(order.companyId).toBe(companyId);
+    expect(order.totalMinor).toBe('2000');
+    expect(companies.assertCanBuy).toHaveBeenCalledWith(companyId, customerId);
+    expect(companies.assertWithinCreditLimit).toHaveBeenCalledWith(
+      companyId,
+      '2000',
+    );
+    expect(eventBus.publish).toHaveBeenCalledWith(
+      expect.objectContaining({
+        eventName: CoreEventName.OrderCreated,
+        data: expect.objectContaining({
+          paymentMethod: 'b2b_quote',
+          cartId: null,
+        }),
       }),
     );
   });

@@ -219,6 +219,31 @@ export const DEFAULT_PERMISSIONS = [
     key: 'translation:update',
     description: 'Create, update, or delete catalog locale translations',
   },
+  {
+    key: 'b2b:read',
+    description: 'Read B2B companies, memberships, price lists, and quotes',
+  },
+  {
+    key: 'b2b:create',
+    description: 'Create B2B companies and buyer quotes',
+  },
+  {
+    key: 'b2b:update',
+    description:
+      'Update B2B companies, memberships, price lists, and quote status',
+  },
+  {
+    key: 'b2b:delete',
+    description: 'Remove B2B company memberships',
+  },
+  {
+    key: 'b2b:approve',
+    description: 'Approve draft B2B orders and confirm approved B2B orders',
+  },
+  {
+    key: 'b2b:convert',
+    description: 'Convert accepted B2B quotes to draft orders',
+  },
 ] as const;
 
 export type SeedAdminOptions = {

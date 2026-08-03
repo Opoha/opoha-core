@@ -29,7 +29,7 @@ export class CompanyResolver {
     name: 'companies',
     description: 'List B2B companies. Optional storeId filters to that store.',
   })
-  @RequirePermission('company:read')
+  @RequirePermission('b2b:read')
   companies(
     @Args('storeId', { type: () => ID, nullable: true }) storeId?: string,
   ): Promise<CompanyType[]> {
@@ -40,7 +40,7 @@ export class CompanyResolver {
     name: 'company',
     description: 'Get B2B company by id',
   })
-  @RequirePermission('company:read')
+  @RequirePermission('b2b:read')
   company(@Args('id', { type: () => ID }) id: string): Promise<CompanyType> {
     return this.companyService.findById(id);
   }
@@ -49,7 +49,7 @@ export class CompanyResolver {
     name: 'companyMembers',
     description: 'List buyer memberships for a B2B company',
   })
-  @RequirePermission('company:read')
+  @RequirePermission('b2b:read')
   companyMembers(
     @Args('companyId', { type: () => ID }) companyId: string,
   ): Promise<CompanyMembershipType[]> {
@@ -60,7 +60,7 @@ export class CompanyResolver {
     name: 'companyPriceListItems',
     description: 'List customer-specific price list items for a company (F-04)',
   })
-  @RequirePermission('company:read')
+  @RequirePermission('b2b:read')
   companyPriceListItems(
     @Args('companyId', { type: () => ID }) companyId: string,
   ): Promise<CompanyPriceListItemType[]> {
@@ -71,7 +71,7 @@ export class CompanyResolver {
     name: 'createCompany',
     description: 'Create a B2B company account',
   })
-  @RequirePermission('company:create')
+  @RequirePermission('b2b:create')
   createCompany(
     @Args('input', { type: () => CreateCompanyInput })
     input: CreateCompanyInput,
@@ -83,7 +83,7 @@ export class CompanyResolver {
     name: 'updateCompany',
     description: 'Update a B2B company account',
   })
-  @RequirePermission('company:update')
+  @RequirePermission('b2b:update')
   updateCompany(
     @Args('input', { type: () => UpdateCompanyInput })
     input: UpdateCompanyInput,
@@ -95,7 +95,7 @@ export class CompanyResolver {
     name: 'addCompanyMember',
     description: 'Add a buyer membership to a B2B company',
   })
-  @RequirePermission('company-membership:create')
+  @RequirePermission('b2b:update')
   addCompanyMember(
     @Args('input', { type: () => AddCompanyMemberInput })
     input: AddCompanyMemberInput,
@@ -107,7 +107,7 @@ export class CompanyResolver {
     name: 'updateCompanyMemberRole',
     description: "Update a company member's buyer role",
   })
-  @RequirePermission('company-membership:update')
+  @RequirePermission('b2b:update')
   updateCompanyMemberRole(
     @Args('input', { type: () => UpdateCompanyMemberRoleInput })
     input: UpdateCompanyMemberRoleInput,
@@ -119,7 +119,7 @@ export class CompanyResolver {
     name: 'removeCompanyMember',
     description: 'Remove a buyer membership from a B2B company',
   })
-  @RequirePermission('company-membership:delete')
+  @RequirePermission('b2b:delete')
   removeCompanyMember(
     @Args('input', { type: () => RemoveCompanyMemberInput })
     input: RemoveCompanyMemberInput,
@@ -132,7 +132,7 @@ export class CompanyResolver {
     description:
       'Create or update a customer-specific negotiated price for a variant (F-04)',
   })
-  @RequirePermission('company-price-list:update')
+  @RequirePermission('b2b:update')
   setCompanyPriceListItem(
     @Args('input', { type: () => SetCompanyPriceListItemInput })
     input: SetCompanyPriceListItemInput,
@@ -144,7 +144,7 @@ export class CompanyResolver {
     name: 'removeCompanyPriceListItem',
     description: "Remove a company's negotiated price for a variant (F-04)",
   })
-  @RequirePermission('company-price-list:update')
+  @RequirePermission('b2b:update')
   removeCompanyPriceListItem(
     @Args('input', { type: () => RemoveCompanyPriceListItemInput })
     input: RemoveCompanyPriceListItemInput,

@@ -6,6 +6,11 @@ import {
   PermissionsGuard,
   RequirePermission,
 } from '../auth/public';
+import {
+  ApproveB2bOrderInput,
+  ConfirmB2bOrderInput,
+  ConvertB2bQuoteInput,
+} from '../b2b/public';
 import type { StoreContextRef } from '../stores/public';
 import { OrdersService } from './orders.service';
 import {
@@ -66,5 +71,43 @@ export class OrdersResolver {
     @Args('input') input: UpdateOrderStatusInput,
   ): Promise<OrderType> {
     return this.ordersService.updateStatus(input);
+  }
+
+  @Mutation(() => OrderType, {
+    name: 'approveB2bOrder',
+    description: 'Approve a B2B draft order (draft → approved) (F-03 / F-06)',
+  })
+  @RequirePermission('b2b:approve')
+  approveB2bOrder(
+    @Args('input', { type: () => ApproveB2bOrderInput })
+    input: ApproveB2bOrderInput,
+  ): Promise<OrderType> {
+    return this.ordersService.approveB2bOrder(input);
+  }
+
+  @Mutation(() => OrderType, {
+    name: 'confirmB2bOrder',
+    description:
+      'Confirm an approved B2B order with payment (approved → confirmed) (F-03 / F-06)',
+  })
+  @RequirePermission('b2b:approve')
+  confirmB2bOrder(
+    @Args('input', { type: () => ConfirmB2bOrderInput })
+    input: ConfirmB2bOrderInput,
+  ): Promise<OrderType> {
+    return this.ordersService.confirmB2bOrder(input);
+  }
+
+  @Mutation(() => OrderType, {
+    name: 'convertB2bQuote',
+    description:
+      'Convert an accepted B2B quote to a draft company order (F-05 foundation)',
+  })
+  @RequirePermission('b2b:convert')
+  convertB2bQuote(
+    @Args('input', { type: () => ConvertB2bQuoteInput })
+    input: ConvertB2bQuoteInput,
+  ): Promise<OrderType> {
+    return this.ordersService.convertB2bQuote(input);
   }
 }

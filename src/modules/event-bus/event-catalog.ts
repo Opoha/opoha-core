@@ -61,6 +61,9 @@ export const CoreEventName = {
   ExchangeRateUpdated: 'ExchangeRateUpdated',
   CompanyCreated: 'CompanyCreated',
   CompanyMembershipUpdated: 'CompanyMembershipUpdated',
+  B2bQuoteCreated: 'B2bQuoteCreated',
+  B2bQuoteStatusChanged: 'B2bQuoteStatusChanged',
+  B2bQuoteConverted: 'B2bQuoteConverted',
 } as const;
 
 export type CoreEventName =

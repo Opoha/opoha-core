@@ -6,7 +6,7 @@ import {
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 
-import { CompanyService } from '../b2b/public';
+import { B2bQuoteService, CompanyService } from '../b2b/public';
 import { GiftCardService } from '../gift-cards/public';
 import { InventoryService } from '../inventory/public';
 import { CoreEventName } from '../event-bus/event-catalog';
@@ -125,6 +125,7 @@ export class OrdersService {
     private readonly loyalty: LoyaltyService,
     private readonly stores: StoreService,
     private readonly companies: CompanyService,
+    private readonly quotes: B2bQuoteService,
   ) {}
 
   async findAll(storeId?: string | null): Promise<OrderType[]> {
@@ -513,6 +514,90 @@ export class OrdersService {
     return this.transitionStatus(order.id, 'confirmed', {
       note: `Auto-confirmed after ${methodLabel} payment path (${payment.status})`,
     });
+  }
+
+  /**
+   * Convert an accepted B2B quote into a draft company order (F-05 foundation).
+   * Skips cart/inventory reservation — full CPQ/checkout path deferred.
+   */
+  async convertB2bQuote(input: { quoteId: string }): Promise<OrderType> {
+    const { quote, lines, subtotalMinor } =
+      await this.quotes.requireAcceptedForConvert(input.quoteId);
+
+    await this.companies.assertCanBuy(quote.companyId, quote.customerId);
+    await this.companies.assertWithinCreditLimit(
+      quote.companyId,
+      subtotalMinor,
+    );
+    await requireActiveStore(this.stores, quote.storeId);
+
+    const order = await this.orders.save(
+      this.orders.create({
+        storeId: quote.storeId,
+        customerId: quote.customerId,
+        companyId: quote.companyId,
+        cartId: null,
+        status: 'draft',
+        currencyCode: quote.currencyCode,
+        subtotalMinor,
+        taxMinor: '0',
+        shippingMinor: '0',
+        discountMinor: '0',
+        couponCode: null,
+        giftCardCode: null,
+        giftCardMinor: '0',
+        loyaltyPointsRedeemed: 0,
+        loyaltyMinor: '0',
+        shippingMethodCode: null,
+        shippingRateCode: null,
+        totalMinor: subtotalMinor,
+      }),
+    );
+
+    await this.lines.save(
+      lines.map((line) =>
+        this.lines.create({
+          orderId: order.id,
+          variantId: line.variantId,
+          quantity: line.quantity,
+          unitPriceMinor: String(line.unitPriceMinor),
+          lineTotalMinor: lineTotalMinor(
+            String(line.unitPriceMinor),
+            line.quantity,
+          ),
+        }),
+      ),
+    );
+
+    await this.quotes.markConverted(quote.id, order.id);
+
+    const poNote = quote.poNumber ? `; buyer PO ${quote.poNumber}` : '';
+    await this.eventBus.publish({
+      eventName: CoreEventName.OrderCreated,
+      aggregateType: 'order',
+      aggregateId: order.id,
+      data: {
+        orderId: order.id,
+        cartId: null,
+        storeId: quote.storeId,
+        customerId: quote.customerId,
+        status: 'draft',
+        currencyCode: quote.currencyCode,
+        totalMinor: subtotalMinor,
+        paymentMethod: 'b2b_quote',
+      },
+    });
+
+    await this.publishTimeline({
+      orderId: order.id,
+      type: 'created',
+      fromStatus: null,
+      toStatus: 'draft',
+      paymentMethod: 'b2b_quote',
+      note: `Draft order from B2B quote ${quote.id}${poNote}; awaiting approval`,
+    });
+
+    return this.hydrate(order);
   }
 
   /**
