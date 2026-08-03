@@ -218,18 +218,19 @@ Single-country deployment foundation — **not** multi-store / multi-currency / 
 
 Table `localization_settings` is a singleton (`key = 'default'`). Full i18n string catalogs and FX rates remain out of scope until Phase 5.
 
-## Walking skeleton (H-01)
+## Walking skeleton (H-01 / G-02)
 
-Automated MVP spine check (no catalog/cart/checkout):
+Automated spine check including Commerce Core catalog → order smoke:
 
 ```bash
 pnpm walking-skeleton
 # or: SKIP_DOCKER=1 pnpm walking-skeleton   # when Postgres/Redis already up
+# SKIP_COMMERCE=1 to run MVP auth/plugin/doctor path only
 ```
 
-Steps: `docker compose up` → migrate → seed → boot → `/health/*` → GraphQL `login` + `me` → (local multi-repo) `opoha plugin install` + `opoha doctor`.
+Steps: `docker compose up` → migrate → seed → boot → `/health/*` → GraphQL `login` + `me` → createProduct → createInventoryItem → cart → prepareCheckout → placeOrder → (local multi-repo) `opoha plugin install` + `opoha doctor`.
 
-CI: `.github/workflows/walking-skeleton.yml` checks out sibling `opoha-cli`, `opoha-plugin-sdk`, and `plugin-manual-payment`, builds them, then runs the skeleton **with doctor + plugin install** (H-04). Boundary job: `pnpm test:boundary` (H-02).
+CI: `.github/workflows/walking-skeleton.yml` checks out sibling `opoha-cli`, `opoha-plugin-sdk`, and `plugin-manual-payment`, builds them, then runs the skeleton **with doctor + plugin install** (H-04) and commerce smoke (G-02). Boundary job: `pnpm test:boundary` (H-02).
 
 Full multi-repo path (create-opoha + admin UI) is described in the workspace design doc; this package owns the runtime gate.
 
@@ -239,8 +240,8 @@ Full multi-repo path (create-opoha + admin UI) is described in the workspace des
 pnpm build
 pnpm start
 pnpm test
-pnpm test:boundary      # H-02 core → plugin / provider SDK audit
-pnpm walking-skeleton   # H-01 MVP spine
+pnpm test:boundary      # H-02 / G-03 core → plugin / provider SDK audit
+pnpm walking-skeleton   # H-01 + G-02 commerce smoke
 pnpm lint
 pnpm db:migrate
 pnpm db:seed

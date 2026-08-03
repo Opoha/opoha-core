@@ -1,8 +1,9 @@
 #!/usr/bin/env node
 /**
- * H-01 MVP walking skeleton (core slice).
+ * H-01 MVP + G-02 Commerce Core walking skeleton (core slice).
  *
- * Proves: docker deps → migrate → seed → boot → health → staff login → me.
+ * Proves: docker deps → migrate → seed → boot → health → staff login → me
+ *   → catalog product+variant → inventory → cart → prepareCheckout → placeOrder.
  * When sibling CLI + plugin paths exist (local multi-repo), also:
  *   opoha plugin install, plugin GraphQL probe, opoha doctor.
  *
@@ -15,6 +16,7 @@
  *   SKIP_DOCKER=1     skip `docker compose up`
  *   SKIP_PLUGIN=1     skip plugin install / GraphQL probe
  *   SKIP_DOCTOR=1     skip opoha doctor
+ *   SKIP_COMMERCE=1   skip catalog→order smoke (G-02)
  *   WALKING_SKELETON_PORT  override listen port for spawned core (default 4000)
  */
 import { spawn, execFileSync } from 'node:child_process';
@@ -35,6 +37,7 @@ const PORT = process.env.WALKING_SKELETON_PORT ?? process.env.PORT ?? '4000';
 const SKIP_DOCKER = process.env.SKIP_DOCKER === '1';
 const SKIP_PLUGIN = process.env.SKIP_PLUGIN === '1';
 const SKIP_DOCTOR = process.env.SKIP_DOCTOR === '1';
+const SKIP_COMMERCE = process.env.SKIP_COMMERCE === '1';
 
 const PLUGIN_PATH = join(SIBLING, 'plugin-manual-payment');
 const CLI_BIN = join(SIBLING, 'opoha-cli', 'dist', 'cli.js');
@@ -246,6 +249,133 @@ async function main() {
       fail('auth', `me email mismatch: ${meData.me.email}`);
     }
     log('auth', 'me OK');
+
+    if (!SKIP_COMMERCE) {
+      const stamp = Date.now().toString(36);
+      const slug = `ws-smoke-${stamp}`;
+      const sku = `WS-SKU-${stamp}`;
+
+      log('commerce', 'createProduct + variant');
+      const productData = await gql(
+        `mutation($input: CreateProductInput!) {
+          createProduct(input: $input) {
+            id
+            slug
+            variants { id sku priceMinor }
+          }
+        }`,
+        {
+          input: {
+            name: `Walking Skeleton ${stamp}`,
+            slug,
+            description: 'G-02 commerce smoke product',
+            variants: [
+              {
+                sku,
+                name: 'Default',
+                priceMinor: '1500',
+                currencyCode: 'USD',
+              },
+            ],
+          },
+        },
+        token,
+      );
+      const variantId = productData.createProduct?.variants?.[0]?.id;
+      if (!variantId) {
+        fail('commerce', 'createProduct returned no variant id');
+      }
+      log('commerce', `product ${productData.createProduct.id} variant ${variantId}`);
+
+      log('commerce', 'createInventoryItem');
+      const invData = await gql(
+        `mutation($input: CreateInventoryItemInput!) {
+          createInventoryItem(input: $input) {
+            id
+            variantId
+            quantityOnHand
+            quantityAvailable
+          }
+        }`,
+        { input: { variantId, quantityOnHand: 5 } },
+        token,
+      );
+      if (invData.createInventoryItem.quantityOnHand !== 5) {
+        fail(
+          'commerce',
+          `unexpected on-hand ${invData.createInventoryItem.quantityOnHand}`,
+        );
+      }
+
+      log('commerce', 'createCart + addCartLine');
+      const cartData = await gql(
+        `mutation {
+          createCart(input: { currencyCode: "USD" }) { id status currencyCode }
+        }`,
+        undefined,
+        token,
+      );
+      const cartId = cartData.createCart.id;
+      await gql(
+        `mutation($input: AddCartLineInput!) {
+          addCartLine(input: $input) {
+            id
+            lines { id variantId quantity }
+          }
+        }`,
+        { input: { cartId, variantId, quantity: 1 } },
+        token,
+      );
+
+      log('commerce', 'prepareCheckout');
+      const checkoutData = await gql(
+        `mutation($cartId: ID!) {
+          prepareCheckout(cartId: $cartId) {
+            cartId
+            reservationIds
+            totals { totalMinor currencyCode }
+            cart { status }
+          }
+        }`,
+        { cartId },
+        token,
+      );
+      if (!checkoutData.prepareCheckout.reservationIds?.length) {
+        fail('commerce', 'prepareCheckout produced no reservations');
+      }
+      if (checkoutData.prepareCheckout.cart.status !== 'locked') {
+        fail(
+          'commerce',
+          `cart not locked after prepareCheckout (status=${checkoutData.prepareCheckout.cart.status})`,
+        );
+      }
+
+      log('commerce', 'placeOrder (manual)');
+      const orderData = await gql(
+        `mutation($input: PlaceOrderInput!) {
+          placeOrder(input: $input) {
+            id
+            status
+            cartId
+            totalMinor
+            lines { variantId quantity }
+          }
+        }`,
+        { input: { cartId, paymentMethod: 'manual' } },
+        token,
+      );
+      const order = orderData.placeOrder;
+      if (!order?.id) fail('commerce', 'placeOrder returned no order id');
+      if (order.status !== 'confirmed') {
+        fail('commerce', `expected confirmed order, got ${order.status}`);
+      }
+      log(
+        'commerce',
+        `order ${order.id} status=${order.status} total=${order.totalMinor} OK`,
+      );
+    } else {
+      log('commerce', 'skipped (SKIP_COMMERCE=1)');
+    }
 
     if (!SKIP_PLUGIN && existsSync(CLI_BIN) && existsSync(PLUGIN_PATH)) {
       log('plugin', 'opoha plugin install');
