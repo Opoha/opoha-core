@@ -4,19 +4,25 @@ import { describe, expect, it, vi } from 'vitest';
 
 import { PermissionsGuard } from '../auth/permissions/permissions.guard';
 import { REQUIRE_PERMISSION_KEY } from '../auth/permissions/require-permission.decorator';
+import { CustomerAddressesResolver } from './customer-addresses.resolver';
 import { CustomersResolver } from './customers.resolver';
 import { CustomerGroupsResolver } from './customer-groups.resolver';
 
 /**
- * C-02 — customer GraphQL permission metadata + RBAC deny path.
+ * C-02 / C-05 — customer GraphQL permission metadata + RBAC deny path.
  */
 describe('customer RBAC (resolver metadata + PermissionsGuard deny)', () => {
-  function gqlContext(req: { user?: unknown }) {
+  function gqlContext(
+    req: { user?: unknown },
+    handler: (...args: never[]) => unknown = CustomersResolver.prototype
+      .createCustomer,
+    resolverClass: new (...args: never[]) => unknown = CustomersResolver,
+  ) {
     return {
       getType: () => 'graphql',
       getArgs: () => [{}, {}, { req }, {}],
-      getClass: () => CustomersResolver,
-      getHandler: () => CustomersResolver.prototype.createCustomer,
+      getClass: () => resolverClass,
+      getHandler: () => handler,
     };
   }
 
@@ -38,6 +44,34 @@ describe('customer RBAC (resolver metadata + PermissionsGuard deny)', () => {
       reflector.get(
         REQUIRE_PERMISSION_KEY,
         CustomersResolver.prototype.updateCustomer,
+      ),
+    ).toEqual(['customer:update']);
+  });
+
+  it('CustomerAddressesResolver declares customer:* permission keys', () => {
+    const reflector = new Reflector();
+    expect(
+      reflector.get(
+        REQUIRE_PERMISSION_KEY,
+        CustomerAddressesResolver.prototype.customerAddresses,
+      ),
+    ).toEqual(['customer:read']);
+    expect(
+      reflector.get(
+        REQUIRE_PERMISSION_KEY,
+        CustomerAddressesResolver.prototype.createCustomerAddress,
+      ),
+    ).toEqual(['customer:update']);
+    expect(
+      reflector.get(
+        REQUIRE_PERMISSION_KEY,
+        CustomerAddressesResolver.prototype.updateCustomerAddress,
+      ),
+    ).toEqual(['customer:update']);
+    expect(
+      reflector.get(
+        REQUIRE_PERMISSION_KEY,
+        CustomerAddressesResolver.prototype.deleteCustomerAddress,
       ),
     ).toEqual(['customer:update']);
   });
@@ -107,6 +141,64 @@ describe('customer RBAC (resolver metadata + PermissionsGuard deny)', () => {
 
     await expect(
       permissionsGuard.canActivate(gqlContext(req) as never),
+    ).resolves.toBe(true);
+  });
+
+  it('PermissionsGuard denies createCustomerAddress without customer:update', async () => {
+    const req = {
+      headers: {},
+      user: {
+        userId: 'u1',
+        email: 'clerk@example.com',
+        apiKeyId: 'ak-1',
+        permissions: ['customer:read'],
+      },
+    };
+    const permissionsGuard = new PermissionsGuard(
+      {
+        getAllAndOverride: vi.fn((key: string) =>
+          key === REQUIRE_PERMISSION_KEY ? ['customer:update'] : undefined,
+        ),
+      } as unknown as Reflector,
+      { listKeysForUser: vi.fn() } as never,
+    );
+
+    await expect(
+      permissionsGuard.canActivate(
+        gqlContext(
+          req,
+          CustomerAddressesResolver.prototype.createCustomerAddress,
+          CustomerAddressesResolver,
+        ) as never,
+      ),
+    ).rejects.toBeInstanceOf(ForbiddenException);
+  });
+
+  it('PermissionsGuard allows createCustomerAddress when customer:update is granted', async () => {
+    const req = {
+      headers: {},
+      user: {
+        userId: 'u1',
+        email: 'admin@example.com',
+        apiKeyId: 'ak-1',
+        permissions: ['customer:update', 'customer:read'],
+      },
+    };
+    const permissionsGuard = new PermissionsGuard(
+      {
+        getAllAndOverride: vi.fn().mockReturnValue(['customer:update']),
+      } as unknown as Reflector,
+      { listKeysForUser: vi.fn() } as never,
+    );
+
+    await expect(
+      permissionsGuard.canActivate(
+        gqlContext(
+          req,
+          CustomerAddressesResolver.prototype.createCustomerAddress,
+          CustomerAddressesResolver,
+        ) as never,
+      ),
     ).resolves.toBe(true);
   });
 });

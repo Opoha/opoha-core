@@ -3,6 +3,7 @@
  */
 export { CustomerModule } from '../customer.module';
 export { CustomersService } from '../customers.service';
+export { CustomerAddressesService } from '../customer-addresses.service';
 export { CustomerGroupsService } from '../customer-groups.service';
 export {
   CustomerAddressEntity,
@@ -17,6 +18,11 @@ export type {
   RegisterCustomerInput,
   UpdateCustomerInput,
 } from '../customer.types';
+export type {
+  CreateCustomerAddressInput,
+  CustomerAddressType,
+  UpdateCustomerAddressInput,
+} from '../customer-address.types';
 export type {
   AddCustomerToGroupInput,
   CreateCustomerGroupInput,
