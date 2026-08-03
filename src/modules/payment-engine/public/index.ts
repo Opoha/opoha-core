@@ -28,3 +28,11 @@ export type {
   PaymentWebhookInput,
   PaymentWebhookResult,
 } from '../payment-provider';
+export {
+  AuthorizePaymentInput as AuthorizePaymentGqlInput,
+  CapturePaymentInput as CapturePaymentGqlInput,
+  MoneyAmountInput,
+  PaymentProviderType,
+  PaymentType,
+  RefundPaymentInput as RefundPaymentGqlInput,
+} from '../payment.types';

@@ -65,6 +65,13 @@ export const DEFAULT_PERMISSIONS = [
   { key: 'order:create', description: 'Create orders (place order)' },
   { key: 'order:read', description: 'Read orders' },
   { key: 'order:update', description: 'Update order status and details' },
+  { key: 'payment:read', description: 'Read payments and provider status' },
+  {
+    key: 'payment:authorize',
+    description: 'Authorize a new payment against an order',
+  },
+  { key: 'payment:capture', description: 'Capture an authorized payment' },
+  { key: 'payment:refund', description: 'Refund a captured payment' },
   {
     key: 'localization:read',
     description: 'Read deployment localization settings',
