@@ -27,6 +27,7 @@
     "automation-smoke": "node ./scripts/automation-smoke.mjs",
     "perf-bench": "vitest run src/modules/perf/perf-benchmark.smoke.test.ts src/modules/perf/perf-timing.test.ts src/boundary.test.ts",
     "plugin-compat-smoke": "vitest run src/modules/plugin-loader/plugin-compat.integration.test.ts src/boundary.test.ts",
+    "stable-smoke": "node ./scripts/stable-smoke.mjs",
     "walking-skeleton": "node ./scripts/walking-skeleton.mjs",
     "lint": "eslint .",
     "format": "prettier --write .",
