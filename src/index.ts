@@ -130,20 +130,22 @@ export type {
 export {
   ReturnsModule,
   ReturnsService,
+  ReturnsResolver,
   ReturnEntity,
   ReturnLineEntity,
   returnEntities,
   RETURN_STATUSES,
   RETURN_RESOLUTIONS,
   canTransitionReturnStatus,
+  CreateReturnInput,
+  CreateReturnLineInput,
+  CompleteRefundInput,
+  ReturnType,
+  ReturnLineType,
 } from './modules/returns/public';
 export type {
   ReturnStatus,
   ReturnResolution,
-  CreateReturnInput,
-  CompleteRefundInput,
-  ReturnType,
-  ReturnLineType,
 } from './modules/returns/public';
 export {
   NotificationsModule,

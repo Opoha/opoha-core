@@ -1,8 +1,9 @@
 /**
- * Phase 3 E-01/E-02 — core RMA (returns) public surface.
+ * Phase 3 E-01–E-03 — core RMA (returns) public surface.
  */
 export { ReturnsModule } from '../returns.module';
 export { ReturnsService } from '../returns.service';
+export { ReturnsResolver } from '../returns.resolver';
 export {
   ReturnEntity,
   ReturnLineEntity,
@@ -17,7 +18,7 @@ export {
   isReturnStatus,
   isReturnResolution,
 } from '../return-status';
-export type {
+export {
   CreateReturnInput,
   CreateReturnLineInput,
   CompleteRefundInput,

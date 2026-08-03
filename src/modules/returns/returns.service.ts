@@ -131,6 +131,7 @@ export class ReturnsService {
         `Invalid resolution "${input.resolution}"; expected refund or exchange`,
       );
     }
+    const resolution = input.resolution;
 
     const orderLineIds = new Set<string>();
     for (const line of input.lines) {
@@ -190,7 +191,7 @@ export class ReturnsService {
         orderId: input.orderId,
         warehouseId: input.warehouseId,
         status: 'requested',
-        resolution: input.resolution,
+        resolution,
         reason: input.reason ?? null,
         notes: input.notes ?? null,
         paymentId: null,

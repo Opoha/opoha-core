@@ -80,6 +80,22 @@ export const DEFAULT_PERMISSIONS = [
     key: 'fulfillment:cancel',
     description: 'Cancel pending or picked fulfillments',
   },
+  { key: 'return:read', description: 'Read returns / RMAs' },
+  { key: 'return:create', description: 'Create returns / RMAs' },
+  { key: 'return:approve', description: 'Approve requested returns / RMAs' },
+  {
+    key: 'return:receive',
+    description: 'Mark returns / RMAs received and restock inventory',
+  },
+  {
+    key: 'return:refund',
+    description: 'Complete a refund-resolution return via the payment engine',
+  },
+  {
+    key: 'return:exchange',
+    description: 'Complete an exchange-resolution return (replacement order stub)',
+  },
+  { key: 'return:cancel', description: 'Cancel requested or approved returns / RMAs' },
   { key: 'customer:create', description: 'Create customer accounts (staff)' },
   { key: 'customer:read', description: 'Read customer accounts' },
   { key: 'customer:update', description: 'Update customer profiles' },
