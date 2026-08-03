@@ -18,6 +18,22 @@ export type WarehouseUpdatedData = z.infer<typeof warehouseUpdatedDataSchema>;
 
 export type WarehouseUpdatedEvent = DomainEvent<WarehouseUpdatedData>;
 
+export const storeWarehouseUpdatedDataSchema = z
+  .object({
+    storeId: z.string().uuid(),
+    warehouseId: z.string().uuid(),
+    isPrimary: z.boolean(),
+    action: z.enum(['linked', 'unlinked']),
+  })
+  .strict();
+
+export type StoreWarehouseUpdatedData = z.infer<
+  typeof storeWarehouseUpdatedDataSchema
+>;
+
+export type StoreWarehouseUpdatedEvent =
+  DomainEvent<StoreWarehouseUpdatedData>;
+
 /** Register warehouse event payload schemas on the bus (call once at module init). */
 export function warehouseEventSchemas(): Array<{
   eventName: string;
@@ -27,6 +43,10 @@ export function warehouseEventSchemas(): Array<{
     {
       eventName: CoreEventName.WarehouseUpdated,
       schema: warehouseUpdatedDataSchema,
+    },
+    {
+      eventName: CoreEventName.StoreWarehouseUpdated,
+      schema: storeWarehouseUpdatedDataSchema,
     },
   ];
 }

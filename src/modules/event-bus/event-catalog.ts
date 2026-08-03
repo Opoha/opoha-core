@@ -23,6 +23,7 @@ export const CoreEventName = {
   StockTransferReceived: 'StockTransferReceived',
   StockTransferCancelled: 'StockTransferCancelled',
   WarehouseUpdated: 'WarehouseUpdated',
+  StoreWarehouseUpdated: 'StoreWarehouseUpdated',
   SupplierUpdated: 'SupplierUpdated',
   PurchaseOrderCreated: 'PurchaseOrderCreated',
   PurchaseOrderReceived: 'PurchaseOrderReceived',

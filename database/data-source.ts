@@ -59,6 +59,7 @@ import { StoreChannelSettingsInit1722715900000 } from './migrations/172271590000
 import { CatalogTranslationsInit1722717000000 } from './migrations/1722717000000-CatalogTranslationsInit';
 import { StoreCurrencyConfigInit1722718100000 } from './migrations/1722718100000-StoreCurrencyConfigInit';
 import { ExchangeRatesInit1722719200000 } from './migrations/1722719200000-ExchangeRatesInit';
+import { StoreWarehousesInit1722720300000 } from './migrations/1722720300000-StoreWarehousesInit';
 
 loadDotenv();
 
@@ -130,6 +131,7 @@ export default new DataSource({
     CatalogTranslationsInit1722717000000,
     StoreCurrencyConfigInit1722718100000,
     ExchangeRatesInit1722719200000,
+    StoreWarehousesInit1722720300000,
   ],
   synchronize: false,
 });
