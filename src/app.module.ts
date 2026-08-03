@@ -20,6 +20,7 @@ import { FulfillmentModule } from './modules/fulfillment/public';
 import { GiftCardsModule } from './modules/gift-cards/public';
 import { LoyaltyModule } from './modules/loyalty/public';
 import { ReturnsModule } from './modules/returns/public';
+import { SegmentsModule } from './modules/segments/public';
 import { SupplyModule } from './modules/supply/public';
 import { WarehousesModule } from './modules/warehouses/public';
 import { LocalizationModule } from './modules/localization/public';
@@ -53,6 +54,7 @@ import { SearchEngineModule } from './modules/search-engine/public';
     FulfillmentModule,
     GiftCardsModule,
     LoyaltyModule,
+    SegmentsModule,
     ReturnsModule,
     AdminOpsModule,
     CustomerModule,

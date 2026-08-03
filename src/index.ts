@@ -193,6 +193,25 @@ export {
 } from './modules/loyalty/public';
 export type { LoyaltyTransactionType } from './modules/loyalty/public';
 export {
+  SegmentsModule,
+  SegmentsService,
+  CustomerSegmentEntity,
+  segmentEntities,
+  evaluateSegmentRules,
+} from './modules/segments/public';
+export type {
+  SegmentRules,
+  SegmentTagRules,
+  SegmentOrderCountRules,
+  SegmentSpendRules,
+  SegmentMembershipContext,
+  CustomerSegmentType,
+  CreateCustomerSegmentInput,
+  UpdateCustomerSegmentInput,
+  SegmentUpdatedData,
+  SegmentUpdatedEvent,
+} from './modules/segments/public';
+export {
   AdminOpsModule,
   ReportsService,
   BulkOpsService,

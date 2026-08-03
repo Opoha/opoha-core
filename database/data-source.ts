@@ -11,6 +11,7 @@ import { giftCardEntities } from '../src/modules/gift-cards/entities';
 import { inventoryEntities } from '../src/modules/inventory/entities';
 import { loyaltyEntities } from '../src/modules/loyalty/entities';
 import { returnEntities } from '../src/modules/returns/entities';
+import { segmentEntities } from '../src/modules/segments/entities';
 import { supplyEntities } from '../src/modules/supply/entities';
 import { warehouseEntities } from '../src/modules/warehouses/entities';
 import { localizationEntities } from '../src/modules/localization/entities';
@@ -46,6 +47,7 @@ import { ReturnsInit1722707100000 } from './migrations/1722707100000-ReturnsInit
 import { GiftCardsInit1722708200000 } from './migrations/1722708200000-GiftCardsInit';
 import { CartGiftCardOnCheckout1722708300000 } from './migrations/1722708300000-CartGiftCardOnCheckout';
 import { LoyaltyInit1722709300000 } from './migrations/1722709300000-LoyaltyInit';
+import { SegmentsInit1722711500000 } from './migrations/1722711500000-SegmentsInit';
 
 loadDotenv();
 
@@ -66,6 +68,7 @@ export default new DataSource({
     ...fulfillmentEntities,
     ...giftCardEntities,
     ...loyaltyEntities,
+    ...segmentEntities,
     ...returnEntities,
     ...supplyEntities,
     ...warehouseEntities,
@@ -104,6 +107,7 @@ export default new DataSource({
     GiftCardsInit1722708200000,
     CartGiftCardOnCheckout1722708300000,
     LoyaltyInit1722709300000,
+    SegmentsInit1722711500000,
   ],
   synchronize: false,
 });

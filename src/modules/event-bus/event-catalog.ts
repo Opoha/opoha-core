@@ -48,6 +48,7 @@ export const CoreEventName = {
   GiftCardRedeemed: 'GiftCardRedeemed',
   LoyaltyPointsAccrued: 'LoyaltyPointsAccrued',
   LoyaltyPointsRedeemed: 'LoyaltyPointsRedeemed',
+  SegmentUpdated: 'SegmentUpdated',
 } as const;
 
 export type CoreEventName =
