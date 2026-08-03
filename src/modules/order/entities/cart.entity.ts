@@ -34,6 +34,13 @@ export class CartEntity {
   @Column({ name: 'customer_id', type: 'uuid', nullable: true })
   customerId!: string | null;
 
+  /**
+   * Optional B2B company for approval workflow (Phase 5 F-03).
+   * FK to `companies.id` (cross-module ID reference only).
+   */
+  @Column({ name: 'company_id', type: 'uuid', nullable: true })
+  companyId!: string | null;
+
   @Column({ type: 'text', default: 'open' })
   status!: CartStatus;
 

@@ -2,6 +2,7 @@ import { Global, Module } from '@nestjs/common';
 import { TypeOrmModule } from '@nestjs/typeorm';
 
 import { authEntities } from '../../modules/auth/entities';
+import { b2bEntities } from '../../modules/b2b/entities';
 import { catalogEntities } from '../../modules/catalog/entities';
 import { customerEntities } from '../../modules/customer/entities';
 import { filesEntities } from '../../modules/files/entities';
@@ -37,6 +38,7 @@ import { DatabaseHealthService } from './database-health.service';
         url: config.get('DATABASE_URL'),
         entities: [
           ...authEntities,
+          ...b2bEntities,
           ...catalogEntities,
           ...customerEntities,
           ...filesEntities,

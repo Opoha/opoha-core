@@ -42,6 +42,12 @@ export class CartType {
   @Field(() => ID, { nullable: true })
   customerId!: string | null;
 
+  @Field(() => ID, {
+    nullable: true,
+    description: 'B2B company for approval workflow (Phase 5 F-03)',
+  })
+  companyId!: string | null;
+
   @Field(() => String)
   status!: string;
 
@@ -147,6 +153,12 @@ export class CreateCartInput {
 
   @Field(() => ID, { nullable: true })
   customerId?: string;
+
+  @Field(() => ID, {
+    nullable: true,
+    description: 'B2B company id; enables draft → approve → confirm (F-03)',
+  })
+  companyId?: string;
 
   @Field(() => String, {
     nullable: true,
@@ -333,6 +345,12 @@ export class OrderType {
 
   @Field(() => ID, { nullable: true })
   customerId!: string | null;
+
+  @Field(() => ID, {
+    nullable: true,
+    description: 'B2B company when order requires approval (Phase 5 F-03)',
+  })
+  companyId!: string | null;
 
   @Field(() => ID, { nullable: true })
   cartId!: string | null;

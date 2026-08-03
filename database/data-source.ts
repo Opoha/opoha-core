@@ -3,6 +3,7 @@ import { config as loadDotenv } from 'dotenv';
 import { DataSource } from 'typeorm';
 
 import { authEntities } from '../src/modules/auth/entities';
+import { b2bEntities } from '../src/modules/b2b/entities';
 import { catalogEntities } from '../src/modules/catalog/entities';
 import { customerEntities } from '../src/modules/customer/entities';
 import { filesEntities } from '../src/modules/files/entities';
@@ -60,6 +61,8 @@ import { CatalogTranslationsInit1722717000000 } from './migrations/1722717000000
 import { StoreCurrencyConfigInit1722718100000 } from './migrations/1722718100000-StoreCurrencyConfigInit';
 import { ExchangeRatesInit1722719200000 } from './migrations/1722719200000-ExchangeRatesInit';
 import { StoreWarehousesInit1722720300000 } from './migrations/1722720300000-StoreWarehousesInit';
+import { B2bCompaniesInit1722721400000 } from './migrations/1722721400000-B2bCompaniesInit';
+import { B2bOrderApproval1722722500000 } from './migrations/1722722500000-B2bOrderApproval';
 
 loadDotenv();
 
@@ -73,6 +76,7 @@ export default new DataSource({
   url,
   entities: [
     ...authEntities,
+    ...b2bEntities,
     ...catalogEntities,
     ...customerEntities,
     ...filesEntities,
@@ -132,6 +136,8 @@ export default new DataSource({
     StoreCurrencyConfigInit1722718100000,
     ExchangeRatesInit1722719200000,
     StoreWarehousesInit1722720300000,
+    B2bCompaniesInit1722721400000,
+    B2bOrderApproval1722722500000,
   ],
   synchronize: false,
 });

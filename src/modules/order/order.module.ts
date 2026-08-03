@@ -2,6 +2,7 @@ import { Module } from '@nestjs/common';
 import { TypeOrmModule } from '@nestjs/typeorm';
 
 import { AuthModule } from '../auth/public';
+import { B2bModule } from '../b2b/public';
 import { ProductVariantEntity } from '../catalog/public';
 import { CurrencyModule } from '../currency/public';
 import { CustomerModule } from '../customer/public';
@@ -28,6 +29,7 @@ import { OrdersService } from './orders.service';
 @Module({
   imports: [
     AuthModule,
+    B2bModule,
     CustomerModule,
     InventoryModule,
     PaymentEngineModule,

@@ -33,6 +33,13 @@ export class OrderEntity {
   @Column({ name: 'customer_id', type: 'uuid', nullable: true })
   customerId!: string | null;
 
+  /**
+   * Optional B2B company copied from the cart (Phase 5 F-03).
+   * FK to `companies.id` (cross-module ID reference only).
+   */
+  @Column({ name: 'company_id', type: 'uuid', nullable: true })
+  companyId!: string | null;
+
   /** Source cart when placed via checkout (D-04). */
   @Column({ name: 'cart_id', type: 'uuid', nullable: true })
   cartId!: string | null;

@@ -301,6 +301,31 @@ export type {
   RegisteredFXRateProvider,
 } from './modules/currency/public';
 export {
+  B2bModule,
+  CompanyService,
+  CompanyEntity,
+  CompanyMembershipEntity,
+  COMPANY_BUYER_ROLES,
+  isCompanyBuyerRole,
+  b2bEntities,
+  CompanyType,
+  CompanyMembershipType,
+  CreateCompanyInput,
+  UpdateCompanyInput,
+  AddCompanyMemberInput,
+  UpdateCompanyMemberRoleInput,
+  RemoveCompanyMemberInput,
+  ApproveB2bOrderInput,
+  ConfirmB2bOrderInput,
+} from './modules/b2b/public';
+export type {
+  CompanyBuyerRole,
+  CompanyCreatedData,
+  CompanyCreatedEvent,
+  CompanyMembershipUpdatedData,
+  CompanyMembershipUpdatedEvent,
+} from './modules/b2b/public';
+export {
   AdminOpsModule,
   ReportsService,
   BulkOpsService,

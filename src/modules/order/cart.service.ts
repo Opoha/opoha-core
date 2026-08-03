@@ -66,6 +66,7 @@ function toCartType(row: CartEntity, lines: CartLineEntity[]): CartType {
     id: row.id,
     storeId: row.storeId,
     customerId: row.customerId,
+    companyId: row.companyId ?? null,
     status: row.status,
     currencyCode: row.currencyCode,
     shippingMethodCode: row.shippingMethodCode ?? null,
@@ -208,6 +209,7 @@ export class CartService {
     const cart = this.carts.create({
       storeId,
       customerId: input.customerId ?? null,
+      companyId: input.companyId ?? null,
       status: 'open',
       currencyCode: currency,
       shippingMethodCode: null,

@@ -8,6 +8,7 @@ import { ApiVersionMiddleware } from './modules/api-versioning/api-version.middl
 import { ApiVersioningModule } from './modules/api-versioning/api-versioning.module';
 import { AdminOpsModule } from './modules/admin-ops/public';
 import { AuthModule } from './modules/auth/auth.module';
+import { B2bModule } from './modules/b2b/public';
 import { CatalogModule } from './modules/catalog/public';
 import { ConfigModule } from './modules/config/config.module';
 import { ConfigurationSettingsModule } from './modules/config/public';
@@ -69,6 +70,7 @@ type GqlHttpRequest = {
     ReturnsModule,
     AdminOpsModule,
     CustomerModule,
+    B2bModule,
     OrderModule,
     LocalizationModule,
     PaymentEngineModule,

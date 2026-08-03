@@ -43,7 +43,8 @@ describe('OrdersService place + status (D-04 / D-05 / D-06 / A-04)', () => {
   let orderRow: {
     id: string;
     storeId: string;
-    customerId: null;
+    customerId: null | string;
+    companyId: null | string;
     cartId: string;
     status: string;
     currencyCode: string;
@@ -66,12 +67,17 @@ describe('OrdersService place + status (D-04 / D-05 / D-06 / A-04)', () => {
     findById: ReturnType<typeof vi.fn>;
     findByCode: ReturnType<typeof vi.fn>;
   };
+  let companies: {
+    assertCanBuy: ReturnType<typeof vi.fn>;
+    assertCanApprove: ReturnType<typeof vi.fn>;
+  };
 
   beforeEach(() => {
     orderRow = {
       id: orderId,
       storeId: 'store-a',
       customerId: null,
+      companyId: null,
       cartId,
       status: 'pending',
       currencyCode: 'USD',
@@ -97,6 +103,7 @@ describe('OrdersService place + status (D-04 / D-05 / D-06 / A-04)', () => {
           id: cartId,
           storeId: 'store-a',
           customerId: null,
+          companyId: null,
           status: 'locked',
           currencyCode: 'USD',
           shippingMethodCode: null,
@@ -251,6 +258,11 @@ describe('OrdersService place + status (D-04 / D-05 / D-06 / A-04)', () => {
       findByCode: vi.fn(),
     };
 
+    companies = {
+      assertCanBuy: vi.fn(async () => undefined),
+      assertCanApprove: vi.fn(async () => undefined),
+    };
+
     service = new OrdersService(
       ordersRepo as never,
       linesRepo as never,
@@ -263,6 +275,7 @@ describe('OrdersService place + status (D-04 / D-05 / D-06 / A-04)', () => {
       giftCards as never,
       loyalty as never,
       stores as never,
+      companies as never,
     );
   });
 
@@ -626,6 +639,96 @@ describe('OrdersService place + status (D-04 / D-05 / D-06 / A-04)', () => {
     ordersRepo.findOne.mockResolvedValueOnce(null);
     await expect(service.findById('missing')).rejects.toBeInstanceOf(
       NotFoundException,
+    );
+  });
+
+  it('B2B placeOrder creates draft without payment (F-03)', async () => {
+    const companyId = 'cccccccc-cccc-4ccc-8ccc-cccccccccccc';
+    const customerId = 'dddddddd-dddd-4ddd-8ddd-dddddddddddd';
+    carts.getEntityWithLines.mockResolvedValue({
+      cart: {
+        id: cartId,
+        storeId: 'store-a',
+        customerId,
+        companyId,
+        status: 'locked',
+        currencyCode: 'USD',
+        shippingMethodCode: null,
+        shippingRateCode: null,
+        shippingMinor: '0',
+        taxPricingMode: 'exclusive',
+        taxCountryCode: 'US',
+        taxPostalCode: null,
+        taxProvince: null,
+        taxProviderCode: null,
+        taxMinor: '0',
+        couponCode: null,
+        discountMinor: '0',
+        giftCardCode: null,
+        giftCardMinor: '0',
+        loyaltyPointsToRedeem: 0,
+        loyaltyMinor: '0',
+      },
+      lines: [
+        {
+          id: lineId,
+          cartId,
+          variantId,
+          quantity: 2,
+          unitPriceMinor: '1000',
+          reservationId,
+        },
+      ],
+    });
+    ordersRepo.create.mockImplementation((data: typeof orderRow) => ({
+      ...data,
+      id: orderId,
+    }));
+    ordersRepo.save.mockImplementation(async (row: typeof orderRow) => {
+      orderRow = { ...orderRow, ...row, updatedAt: now };
+      return { ...orderRow };
+    });
+
+    const order = await service.placeOrder({ cartId, paymentMethod: 'manual' });
+
+    expect(order.status).toBe('draft');
+    expect(order.companyId).toBe(companyId);
+    expect(companies.assertCanBuy).toHaveBeenCalledWith(companyId, customerId);
+    expect(payments.authorize).not.toHaveBeenCalled();
+    expect(inventory.commit).toHaveBeenCalledWith(reservationId);
+    expect(carts.setStatus).toHaveBeenCalledWith(cartId, 'converted');
+  });
+
+  it('B2B approve then confirm reaches confirmed (F-03)', async () => {
+    const companyId = 'cccccccc-cccc-4ccc-8ccc-cccccccccccc';
+    const approverId = 'eeeeeeee-eeee-4eee-8eee-eeeeeeeeeeee';
+    orderRow.status = 'draft';
+    orderRow.companyId = companyId;
+    orderRow.customerId = 'dddddddd-dddd-4ddd-8ddd-dddddddddddd';
+    ordersRepo.findOne.mockResolvedValue({ ...orderRow });
+
+    const approved = await service.approveB2bOrder({
+      orderId,
+      approverCustomerId: approverId,
+    });
+    expect(approved.status).toBe('approved');
+    expect(companies.assertCanApprove).toHaveBeenCalledWith(
+      companyId,
+      approverId,
+    );
+
+    orderRow.status = 'approved';
+    ordersRepo.findOne.mockResolvedValue({ ...orderRow });
+
+    const confirmed = await service.confirmB2bOrder({
+      orderId,
+      paymentMethod: 'manual',
+    });
+    expect(confirmed.status).toBe('confirmed');
+    expect(payments.authorize).toHaveBeenCalledWith(
+      expect.objectContaining({
+        idempotencyKey: `confirm-b2b-order:${orderId}`,
+      }),
     );
   });
 });

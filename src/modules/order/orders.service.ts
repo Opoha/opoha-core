@@ -6,6 +6,7 @@ import {
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 
+import { CompanyService } from '../b2b/public';
 import { GiftCardService } from '../gift-cards/public';
 import { InventoryService } from '../inventory/public';
 import { CoreEventName } from '../event-bus/event-catalog';
@@ -65,6 +66,7 @@ function toOrderType(row: OrderEntity, lines: OrderLineEntity[]): OrderType {
     id: row.id,
     storeId: row.storeId,
     customerId: row.customerId,
+    companyId: row.companyId ?? null,
     cartId: row.cartId,
     status: row.status,
     currencyCode: row.currencyCode,
@@ -122,6 +124,7 @@ export class OrdersService {
     private readonly giftCards: GiftCardService,
     private readonly loyalty: LoyaltyService,
     private readonly stores: StoreService,
+    private readonly companies: CompanyService,
   ) {}
 
   async findAll(storeId?: string | null): Promise<OrderType[]> {
@@ -144,6 +147,8 @@ export class OrdersService {
   /**
    * Place order from a locked cart (Phase 2 A-04).
    * Authorizes via PaymentEngine; `zero` also captures immediately.
+   * B2B carts with `companyId` create a `draft` order (F-03) — no payment until
+   * `approveB2bOrder` → `confirmB2bOrder`.
    */
   async placeOrder(
     input: PlaceOrderInput,
@@ -239,10 +244,90 @@ export class OrdersService {
     const effectiveShipping = BigInt(totals.shippingMinor);
     const totalMinor = BigInt(totals.totalMinor);
 
-    if (methodLabel === 'zero' && totalMinor !== 0n) {
+    if (methodLabel === 'zero' && totalMinor !== 0n && !cart.companyId) {
       throw new BadRequestException(
         `Zero payment requires a zero total (got ${totalMinor.toString()})`,
       );
+    }
+
+    // B2B path (F-03): draft order, defer payment + gift/loyalty redeem.
+    if (cart.companyId) {
+      if (!cart.customerId) {
+        throw new BadRequestException(
+          'B2B carts require a customerId for company membership checks',
+        );
+      }
+      await this.companies.assertCanBuy(cart.companyId, cart.customerId);
+
+      const order = await this.orders.save(
+        this.orders.create({
+          storeId: cart.storeId,
+          customerId: cart.customerId,
+          companyId: cart.companyId,
+          cartId: cart.id,
+          status: 'draft',
+          currencyCode: cart.currencyCode,
+          subtotalMinor: subtotal.toString(),
+          taxMinor: taxMinor.toString(),
+          shippingMinor: effectiveShipping.toString(),
+          discountMinor: discountMinor.toString(),
+          couponCode: cart.couponCode ?? null,
+          giftCardCode: giftCode ? giftCode.toUpperCase() : null,
+          giftCardMinor: giftCardMinor.toString(),
+          loyaltyPointsRedeemed,
+          loyaltyMinor: loyaltyMinor.toString(),
+          shippingMethodCode: cart.shippingMethodCode ?? null,
+          shippingRateCode: cart.shippingRateCode ?? null,
+          totalMinor: totalMinor.toString(),
+        }),
+      );
+
+      await this.lines.save(
+        lines.map((line) =>
+          this.lines.create({
+            orderId: order.id,
+            variantId: line.variantId,
+            quantity: line.quantity,
+            unitPriceMinor: String(line.unitPriceMinor),
+            lineTotalMinor: lineTotalMinor(
+              String(line.unitPriceMinor),
+              line.quantity,
+            ),
+          }),
+        ),
+      );
+
+      for (const line of lines) {
+        await this.inventory.commit(line.reservationId!);
+      }
+      await this.carts.setStatus(cart.id, 'converted');
+
+      await this.eventBus.publish({
+        eventName: CoreEventName.OrderCreated,
+        aggregateType: 'order',
+        aggregateId: order.id,
+        data: {
+          orderId: order.id,
+          cartId: cart.id,
+          storeId: cart.storeId,
+          customerId: cart.customerId,
+          status: 'draft',
+          currencyCode: cart.currencyCode,
+          totalMinor: totalMinor.toString(),
+          paymentMethod: 'b2b_approval',
+        },
+      });
+
+      await this.publishTimeline({
+        orderId: order.id,
+        type: 'created',
+        fromStatus: null,
+        toStatus: 'draft',
+        paymentMethod: 'b2b_approval',
+        note: `B2B draft order for company ${cart.companyId}; awaiting approval`,
+      });
+
+      return this.hydrate(order);
     }
 
     if (!this.payments.get(providerCode)) {
@@ -255,6 +340,7 @@ export class OrdersService {
       this.orders.create({
         storeId: cart.storeId,
         customerId: cart.customerId,
+        companyId: null,
         cartId: cart.id,
         status: 'pending',
         currencyCode: cart.currencyCode,
@@ -422,6 +508,182 @@ export class OrdersService {
 
     return this.transitionStatus(order.id, 'confirmed', {
       note: `Auto-confirmed after ${methodLabel} payment path (${payment.status})`,
+    });
+  }
+
+  /**
+   * Approve a B2B draft order (F-03): draft → approved.
+   */
+  async approveB2bOrder(input: {
+    orderId: string;
+    approverCustomerId: string;
+  }): Promise<OrderType> {
+    const row = await this.orders.findOne({ where: { id: input.orderId } });
+    if (!row) {
+      throw new NotFoundException(`Order ${input.orderId} not found`);
+    }
+    if (!row.companyId) {
+      throw new BadRequestException(
+        `Order ${input.orderId} is not a B2B company order`,
+      );
+    }
+    if (row.status !== 'draft') {
+      throw new BadRequestException(
+        `Order ${input.orderId} must be draft to approve (status=${row.status})`,
+      );
+    }
+    await this.companies.assertCanApprove(
+      row.companyId,
+      input.approverCustomerId,
+    );
+    return this.transitionStatus(row.id, 'approved', {
+      note: `Approved by customer ${input.approverCustomerId}`,
+    });
+  }
+
+  /**
+   * Confirm an approved B2B order with payment (F-03): approved → confirmed.
+   */
+  async confirmB2bOrder(input: {
+    orderId: string;
+    paymentMethod?: string;
+  }): Promise<OrderType> {
+    const paymentMethod = (input.paymentMethod ?? 'manual').trim();
+    if (!paymentMethod) {
+      throw new BadRequestException('paymentMethod is required');
+    }
+    const { providerCode, captureImmediately, methodLabel } =
+      resolvePaymentPath(paymentMethod);
+
+    const row = await this.orders.findOne({ where: { id: input.orderId } });
+    if (!row) {
+      throw new NotFoundException(`Order ${input.orderId} not found`);
+    }
+    if (!row.companyId) {
+      throw new BadRequestException(
+        `Order ${input.orderId} is not a B2B company order`,
+      );
+    }
+    if (row.status !== 'approved') {
+      throw new BadRequestException(
+        `Order ${input.orderId} must be approved before confirm (status=${row.status})`,
+      );
+    }
+
+    const totalMinor = BigInt(String(row.totalMinor));
+    if (methodLabel === 'zero' && totalMinor !== 0n) {
+      throw new BadRequestException(
+        `Zero payment requires a zero total (got ${totalMinor.toString()})`,
+      );
+    }
+
+    const giftCode = row.giftCardCode?.trim();
+    const giftCardMinor = BigInt(String(row.giftCardMinor ?? '0'));
+    if (giftCode && giftCardMinor > 0n) {
+      try {
+        await this.giftCards.redeem({
+          code: giftCode,
+          amountMinor: giftCardMinor.toString(),
+          orderId: row.id,
+          note: `Redeemed on B2B order ${row.id}`,
+        });
+      } catch (err) {
+        await this.transitionStatus(row.id, 'cancelled', {
+          note: 'Gift card redeem failed during confirmB2bOrder',
+        });
+        if (err instanceof BadRequestException) {
+          throw err;
+        }
+        throw new BadRequestException(
+          err instanceof Error ? err.message : 'Gift card redeem failed',
+        );
+      }
+    }
+
+    const loyaltyPoints = row.loyaltyPointsRedeemed ?? 0;
+    if (loyaltyPoints > 0 && row.customerId) {
+      try {
+        await this.loyalty.redeem({
+          customerId: row.customerId,
+          points: loyaltyPoints,
+          orderId: row.id,
+          note: `Redeemed on B2B order ${row.id}`,
+        });
+      } catch (err) {
+        await this.transitionStatus(row.id, 'cancelled', {
+          note: 'Loyalty redeem failed during confirmB2bOrder',
+        });
+        if (err instanceof BadRequestException) {
+          throw err;
+        }
+        throw new BadRequestException(
+          err instanceof Error ? err.message : 'Loyalty redeem failed',
+        );
+      }
+    }
+
+    if (!this.payments.get(providerCode)) {
+      throw new BadRequestException(
+        `Payment provider "${providerCode}" is not registered or inactive`,
+      );
+    }
+
+    let payment;
+    try {
+      payment = await this.payments.authorize({
+        providerCode,
+        orderId: row.id,
+        amount: {
+          amountMinor: totalMinor.toString(),
+          currencyCode: row.currencyCode,
+        },
+        idempotencyKey: `confirm-b2b-order:${row.id}`,
+        metadata: {
+          companyId: row.companyId,
+          paymentMethod: methodLabel,
+        },
+      });
+
+      if (payment.status === 'failed') {
+        throw new BadRequestException(
+          payment.errorMessage ?? 'Payment authorization failed',
+        );
+      }
+
+      if (captureImmediately && payment.status !== 'captured') {
+        payment = await this.payments.capture({
+          paymentId: payment.id,
+          idempotencyKey: `confirm-b2b-order-capture:${row.id}`,
+        });
+        if (payment.status === 'failed') {
+          throw new BadRequestException(
+            payment.errorMessage ?? 'Payment capture failed',
+          );
+        }
+      }
+    } catch (err) {
+      await this.transitionStatus(row.id, 'cancelled', {
+        note: `Payment failed during confirmB2bOrder (${methodLabel})`,
+      });
+      if (err instanceof BadRequestException) {
+        throw err;
+      }
+      throw new BadRequestException(
+        err instanceof Error ? err.message : 'Payment processing failed',
+      );
+    }
+
+    await this.publishTimeline({
+      orderId: row.id,
+      type: 'payment_recorded',
+      fromStatus: 'approved',
+      toStatus: 'approved',
+      paymentMethod: methodLabel,
+      note: `Payment ${payment.id} ${payment.status} via ${providerCode}`,
+    });
+
+    return this.transitionStatus(row.id, 'confirmed', {
+      note: `B2B confirmed after ${methodLabel} payment (${payment.status})`,
     });
   }
 
