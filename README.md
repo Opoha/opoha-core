@@ -210,7 +210,7 @@ pnpm walking-skeleton
 
 Steps: `docker compose up` → migrate → seed → boot → `/health/*` → GraphQL `login` + `me` → (local multi-repo) `opoha plugin install` + `opoha doctor`.
 
-CI: `.github/workflows/walking-skeleton.yml` runs the same script against service containers, plus `pnpm test:boundary` (H-02).
+CI: `.github/workflows/walking-skeleton.yml` checks out sibling `opoha-cli`, `opoha-plugin-sdk`, and `plugin-manual-payment`, builds them, then runs the skeleton **with doctor + plugin install** (H-04). Boundary job: `pnpm test:boundary` (H-02).
 
 Full multi-repo path (create-opoha + admin UI) is described in the workspace design doc; this package owns the runtime gate.
 

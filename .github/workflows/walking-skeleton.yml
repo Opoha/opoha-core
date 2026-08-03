@@ -1,7 +1,7 @@
 name: Walking skeleton
 
-# H-01 — MVP walking skeleton + H-02 boundary audit.
-# Expects sibling `opoha-devkit` under the same GitHub owner (file: deps).
+# H-01 / H-04 — MVP walking skeleton + doctor/plugin in CI; H-02 boundary audit.
+# Expects sibling repos under the same GitHub owner (file: deps).
 
 on:
   push:
@@ -40,7 +40,7 @@ jobs:
         run: pnpm test:boundary
 
   walking-skeleton:
-    name: H-01 walking skeleton
+    name: H-01/H-04 walking skeleton + doctor
     runs-on: ubuntu-latest
     defaults:
       run:
@@ -77,8 +77,6 @@ jobs:
       PORT: '4000'
       NODE_ENV: development
       SKIP_DOCKER: '1'
-      SKIP_PLUGIN: '1'
-      SKIP_DOCTOR: '1'
     steps:
       - name: Checkout core
         uses: actions/checkout@v4
@@ -89,6 +87,21 @@ jobs:
         with:
           repository: ${{ github.repository_owner }}/opoha-devkit
           path: opoha-devkit
+      - name: Checkout CLI (doctor + plugin install)
+        uses: actions/checkout@v4
+        with:
+          repository: ${{ github.repository_owner }}/opoha-cli
+          path: opoha-cli
+      - name: Checkout plugin-sdk
+        uses: actions/checkout@v4
+        with:
+          repository: ${{ github.repository_owner }}/opoha-plugin-sdk
+          path: opoha-plugin-sdk
+      - name: Checkout plugin-manual-payment
+        uses: actions/checkout@v4
+        with:
+          repository: ${{ github.repository_owner }}/plugin-manual-payment
+          path: plugin-manual-payment
       - uses: pnpm/action-setup@v4
         with:
           version: 11.7.0
@@ -96,7 +109,11 @@ jobs:
         with:
           node-version: '22'
           cache: pnpm
-          cache-dependency-path: opoha-core/pnpm-lock.yaml
+          cache-dependency-path: |
+            opoha-core/pnpm-lock.yaml
+            opoha-cli/pnpm-lock.yaml
+            opoha-plugin-sdk/pnpm-lock.yaml
+            plugin-manual-payment/pnpm-lock.yaml
       - name: Prepare .env
         run: |
           cp .env.example .env
@@ -105,5 +122,17 @@ jobs:
           echo "SEED_ADMIN_PASSWORD=$SEED_ADMIN_PASSWORD" >> .env
           echo "DATABASE_URL=$DATABASE_URL" >> .env
           echo "REDIS_URL=$REDIS_URL" >> .env
-      - name: Walking skeleton
+      - name: Build CLI
+        working-directory: opoha-cli
+        run: |
+          pnpm install
+          pnpm build
+      - name: Build plugin-sdk + manual-payment
+        working-directory: plugin-manual-payment
+        run: |
+          pnpm install --dir ../opoha-plugin-sdk
+          pnpm --dir ../opoha-plugin-sdk build
+          pnpm install
+          pnpm build
+      - name: Walking skeleton (incl. doctor + plugin)
         run: pnpm walking-skeleton
