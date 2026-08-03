@@ -13,8 +13,15 @@ export type AppendAuditLogInput = {
   metadata?: Record<string, unknown> | null;
 };
 
+export type ListAuditLogsInput = {
+  limit?: number;
+  actionPrefix?: string | null;
+  resourceType?: string | null;
+  since?: Date | null;
+};
+
 /**
- * Append-only audit trail for sensitive auth / identity actions (AC-MVP-021).
+ * Append-only audit trail for sensitive auth / identity / ops actions.
  * No update or delete APIs — records are immutable once written.
  */
 @Injectable()
@@ -38,11 +45,34 @@ export class AuditLogsService {
   }
 
   async listRecent(limit = 50): Promise<AuditLogType[]> {
-    const take = Math.min(Math.max(limit, 1), 200);
-    const rows = await this.auditLogs.find({
-      order: { createdAt: 'DESC' },
-      take,
-    });
+    return this.list({ limit });
+  }
+
+  /**
+   * Filtered activity / audit listing (newest first). Caps at 200 rows.
+   */
+  async list(input: ListAuditLogsInput = {}): Promise<AuditLogType[]> {
+    const take = Math.min(Math.max(input.limit ?? 50, 1), 200);
+    const qb = this.auditLogs
+      .createQueryBuilder('a')
+      .orderBy('a.createdAt', 'DESC')
+      .take(take);
+
+    if (input.actionPrefix) {
+      qb.andWhere('a.action LIKE :actionPrefix', {
+        actionPrefix: `${input.actionPrefix}%`,
+      });
+    }
+    if (input.resourceType) {
+      qb.andWhere('a.resourceType = :resourceType', {
+        resourceType: input.resourceType,
+      });
+    }
+    if (input.since) {
+      qb.andWhere('a.createdAt >= :since', { since: input.since });
+    }
+
+    const rows = await qb.getMany();
     return rows.map((row) => this.toType(row));
   }
 

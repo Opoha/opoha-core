@@ -6,6 +6,7 @@ import { DatabaseModule } from './infrastructure/database/database.module';
 import { RedisModule } from './infrastructure/redis/redis.module';
 import { ApiVersionMiddleware } from './modules/api-versioning/api-version.middleware';
 import { ApiVersioningModule } from './modules/api-versioning/api-versioning.module';
+import { AdminOpsModule } from './modules/admin-ops/public';
 import { AuthModule } from './modules/auth/auth.module';
 import { CatalogModule } from './modules/catalog/public';
 import { ConfigModule } from './modules/config/config.module';
@@ -48,6 +49,7 @@ import { PromotionsEngineModule } from './modules/promotions-engine/public';
     SupplyModule,
     FulfillmentModule,
     ReturnsModule,
+    AdminOpsModule,
     CustomerModule,
     OrderModule,
     LocalizationModule,

@@ -17,6 +17,14 @@ export const AuditAction = {
   PLUGIN_ENABLE: 'plugin.enable',
   PLUGIN_DISABLE: 'plugin.disable',
   PLUGIN_CONFIGURE: 'plugin.configure',
+  WAREHOUSE_CREATE: 'warehouse.create',
+  WAREHOUSE_UPDATE: 'warehouse.update',
+  WAREHOUSE_DELETE: 'warehouse.delete',
+  FULFILLMENT_SHIP: 'fulfillment.ship',
+  RETURN_CREATE: 'return.create',
+  RETURN_REFUND: 'return.refund',
+  BULK_PRODUCT_UPDATE: 'bulk.product.update',
+  BULK_INVENTORY_ADJUST: 'bulk.inventory.adjust',
 } as const;
 
 export type AuditActionValue =

@@ -17,7 +17,19 @@ export const DEFAULT_PERMISSIONS = [
   { key: 'api-key:create', description: 'Create API keys' },
   { key: 'api-key:read', description: 'Read API keys' },
   { key: 'api-key:revoke', description: 'Revoke API keys' },
-  { key: 'audit:read', description: 'Read audit logs' },
+  { key: 'audit:read', description: 'Read audit / activity logs' },
+  {
+    key: 'report:read',
+    description: 'Read operational reports (orders, inventory, fulfillment)',
+  },
+  {
+    key: 'bulk:product',
+    description: 'Run bulk product update operations',
+  },
+  {
+    key: 'bulk:inventory',
+    description: 'Run bulk inventory adjustment operations',
+  },
   { key: 'plugin:read', description: 'Read plugin status and admin extension manifests' },
   { key: 'plugin:manage', description: 'Install, enable, disable, and uninstall plugins' },
   { key: 'product:create', description: 'Create catalog products' },

@@ -148,6 +148,11 @@ export type {
   ReturnResolution,
 } from './modules/returns/public';
 export {
+  AdminOpsModule,
+  ReportsService,
+  BulkOpsService,
+} from './modules/admin-ops/public';
+export {
   NotificationsModule,
   NotificationsService,
   NotificationProviderRegistry,

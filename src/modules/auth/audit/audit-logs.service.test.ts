@@ -36,10 +36,11 @@ describe('AuditLogsService', () => {
   });
 
   it('lists recent rows newest-first with capped limit', async () => {
-    const repo = {
-      create: vi.fn(),
-      save: vi.fn(),
-      find: vi.fn().mockResolvedValue([
+    const qb = {
+      orderBy: vi.fn().mockReturnThis(),
+      take: vi.fn().mockReturnThis(),
+      andWhere: vi.fn().mockReturnThis(),
+      getMany: vi.fn().mockResolvedValue([
         {
           id: 'aud-2',
           actorUserId: null,
@@ -51,14 +52,50 @@ describe('AuditLogsService', () => {
         },
       ]),
     };
+    const repo = {
+      create: vi.fn(),
+      save: vi.fn(),
+      createQueryBuilder: vi.fn().mockReturnValue(qb),
+    };
     const service = new AuditLogsService(repo as never);
 
     const rows = await service.listRecent(999);
     expect(rows).toHaveLength(1);
     expect(rows[0]?.metadataJson).toBeNull();
-    expect(repo.find).toHaveBeenCalledWith({
-      order: { createdAt: 'DESC' },
-      take: 200,
+    expect(qb.take).toHaveBeenCalledWith(200);
+  });
+
+  it('filters activity logs by actionPrefix and resourceType', async () => {
+    const qb = {
+      orderBy: vi.fn().mockReturnThis(),
+      take: vi.fn().mockReturnThis(),
+      andWhere: vi.fn().mockReturnThis(),
+      getMany: vi.fn().mockResolvedValue([]),
+    };
+    const repo = {
+      create: vi.fn(),
+      save: vi.fn(),
+      createQueryBuilder: vi.fn().mockReturnValue(qb),
+    };
+    const service = new AuditLogsService(repo as never);
+
+    await service.list({
+      limit: 10,
+      actionPrefix: 'warehouse.',
+      resourceType: 'warehouse',
+      since: now,
+    });
+
+    expect(qb.andWhere).toHaveBeenCalledWith(
+      'a.action LIKE :actionPrefix',
+      { actionPrefix: 'warehouse.%' },
+    );
+    expect(qb.andWhere).toHaveBeenCalledWith(
+      'a.resourceType = :resourceType',
+      { resourceType: 'warehouse' },
+    );
+    expect(qb.andWhere).toHaveBeenCalledWith('a.createdAt >= :since', {
+      since: now,
     });
   });
 });
