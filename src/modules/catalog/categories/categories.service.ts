@@ -3,11 +3,15 @@ import {
   ConflictException,
   Injectable,
   NotFoundException,
+  Optional,
 } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { IsNull, QueryFailedError, Repository } from 'typeorm';
+import { QueryFailedError, Repository } from 'typeorm';
 
+import type { StoreCatalogMode } from '../../config/public';
+import { StoreChannelSettingsService } from '../../config/public';
 import { CategoryEntity } from '../entities/category.entity';
+import { catalogStoreWhere } from '../store-catalog-scope';
 import type {
   CategoryType,
   CreateCategoryInput,
@@ -67,22 +71,43 @@ export class CategoriesService {
   constructor(
     @InjectRepository(CategoryEntity)
     private readonly categories: Repository<CategoryEntity>,
+    @Optional()
+    private readonly channelSettings?: StoreChannelSettingsService,
   ) {}
 
   /**
-   * List categories. When `storeId` is provided, returns shared (`storeId` null)
-   * plus store-owned rows for that store. Omit for admin/global listing.
+   * List categories (Phase 5 B-04).
+   * When `storeId` is set:
+   * - `shared` → shared (`storeId` null) ∪ store-owned
+   * - `isolated` → store-owned only
+   * Omit `catalogMode` to resolve from store channel settings (default shared).
+   * Omit `storeId` for admin/global listing.
    */
-  async findAll(storeId?: string | null): Promise<CategoryType[]> {
+  async findAll(
+    storeId?: string | null,
+    catalogMode?: StoreCatalogMode | null,
+  ): Promise<CategoryType[]> {
     const scope = normalizeStoreId(storeId);
+    const mode = await this.resolveCatalogMode(scope, catalogMode);
     const rows = await this.categories.find({
-      where:
-        scope === undefined || scope === null
-          ? undefined
-          : [{ storeId: IsNull() }, { storeId: scope }],
+      where: catalogStoreWhere<CategoryEntity>(scope, mode),
       order: { sortOrder: 'ASC', createdAt: 'ASC' },
     });
     return rows.map(toCategoryType);
+  }
+
+  private async resolveCatalogMode(
+    storeId: string | null | undefined,
+    catalogMode?: StoreCatalogMode | null,
+  ): Promise<StoreCatalogMode> {
+    if (catalogMode === 'shared' || catalogMode === 'isolated') {
+      return catalogMode;
+    }
+    if (storeId && this.channelSettings) {
+      const settings = await this.channelSettings.getForStore(storeId);
+      return settings.catalogMode;
+    }
+    return 'shared';
   }
 
   async findById(id: string): Promise<CategoryType> {

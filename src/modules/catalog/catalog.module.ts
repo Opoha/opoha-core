@@ -2,6 +2,7 @@ import { Module } from '@nestjs/common';
 import { TypeOrmModule } from '@nestjs/typeorm';
 
 import { AuthModule } from '../auth/public';
+import { ConfigurationSettingsModule } from '../config/public';
 import { EventBusModule } from '../event-bus/event-bus.module';
 import { FilesModule } from '../files/public';
 import { PluginLoaderModule } from '../plugin-loader/public';
@@ -22,6 +23,7 @@ import { ProductsService } from './products/products.service';
 @Module({
   imports: [
     AuthModule,
+    ConfigurationSettingsModule,
     EventBusModule,
     FilesModule,
     PluginLoaderModule,

@@ -237,6 +237,15 @@ Per-store channel configuration owned by the configuration module (`store_channe
 
 Defaults are created on first read and when a store is created (`StoreCreated` listener). Display vs settlement currency FX remains Phase 5 D.
 
+## Multi-store catalog filters (Phase 5 B-04)
+
+| Op | Args | Behavior |
+|----|------|----------|
+| Q | `products(storeId?, catalogMode?)` | Store-scoped list; `shared` = shared∪owned, `isolated` = owned-only |
+| Q | `categories(storeId?, catalogMode?)` | Same scoping rules as products |
+
+Omit `catalogMode` to use the store’s channel setting. Omit `storeId` for admin/global listing.
+
 ## Walking skeleton (H-01 / G-02)
 
 Automated spine check including Commerce Core catalog → order smoke:

@@ -6,6 +6,8 @@ import {
   PermissionsGuard,
   RequirePermission,
 } from '../../auth/public';
+import { StoreCatalogModeGql } from '../../config/public';
+import type { StoreCatalogMode } from '../../config/public';
 import {
   CategoryType,
   CreateCategoryInput,
@@ -21,13 +23,18 @@ export class CategoriesResolver {
   @Query(() => [CategoryType], {
     name: 'categories',
     description:
-      'List catalog categories. Optional storeId returns shared + store-owned rows for that store.',
+      'List catalog categories. Optional storeId scopes the list; optional catalogMode overrides channel settings (shared = shared∪owned, isolated = owned-only).',
   })
   @RequirePermission('category:read')
   categories(
     @Args('storeId', { type: () => ID, nullable: true }) storeId?: string,
+    @Args('catalogMode', {
+      type: () => StoreCatalogModeGql,
+      nullable: true,
+    })
+    catalogMode?: StoreCatalogMode,
   ): Promise<CategoryType[]> {
-    return this.categoriesService.findAll(storeId);
+    return this.categoriesService.findAll(storeId, catalogMode);
   }
 
   @Query(() => CategoryType, {

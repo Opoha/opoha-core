@@ -14,6 +14,8 @@ import {
   PermissionsGuard,
   RequirePermission,
 } from '../../auth/public';
+import { StoreCatalogModeGql } from '../../config/public';
+import type { StoreCatalogMode } from '../../config/public';
 import { ContributionRegistry } from '../../plugin-loader/public';
 import {
   CreateProductInput,
@@ -72,13 +74,18 @@ export class ProductsResolver {
   @Query(() => [ProductType], {
     name: 'products',
     description:
-      'List catalog products. Optional storeId returns shared + store-owned rows for that store.',
+      'List catalog products. Optional storeId scopes the list; optional catalogMode overrides channel settings (shared = shared∪owned, isolated = owned-only).',
   })
   @RequirePermission('product:read')
   products(
     @Args('storeId', { type: () => ID, nullable: true }) storeId?: string,
+    @Args('catalogMode', {
+      type: () => StoreCatalogModeGql,
+      nullable: true,
+    })
+    catalogMode?: StoreCatalogMode,
   ): Promise<ProductType[]> {
-    return this.productsService.findAll(storeId);
+    return this.productsService.findAll(storeId, catalogMode);
   }
 
   @Query(() => ProductType, {

@@ -68,10 +68,11 @@ describe('ProductsService', () => {
     productRepo.find = vi.fn(async (opts?: { where?: unknown }) => {
       let rows = [...products.values()];
       const where = opts?.where;
-      if (Array.isArray(where)) {
+      const clauses = Array.isArray(where) ? where : where ? [where] : [];
+      if (clauses.length > 0) {
         rows = rows.filter((row) => {
           const sid = row.storeId ?? null;
-          return where.some((clause: { storeId?: unknown }) => {
+          return clauses.some((clause: { storeId?: unknown }) => {
             const op = clause.storeId;
             if (
               typeof op === 'object' &&
@@ -132,6 +133,49 @@ describe('ProductsService', () => {
 
     const all = await service.findAll();
     expect(all).toHaveLength(3);
+  });
+
+  it('scopes findAll to store-owned only when catalogMode is isolated', async () => {
+    await service.create({ name: 'Shared', slug: 'shared' });
+    await service.create({
+      name: 'Store A',
+      slug: 'a-only',
+      storeId: 'store-a',
+    });
+    await service.create({
+      name: 'Store B',
+      slug: 'b-only',
+      storeId: 'store-b',
+    });
+
+    const forA = await service.findAll('store-a', 'isolated');
+    expect(forA.map((p) => p.slug)).toEqual(['a-only']);
+
+    const forB = await service.findAll('store-b', 'isolated');
+    expect(forB.map((p) => p.slug)).toEqual(['b-only']);
+  });
+
+  it('resolves catalogMode from channel settings when omitted', async () => {
+    await service.create({ name: 'Shared', slug: 'shared' });
+    await service.create({
+      name: 'Store A',
+      slug: 'a-only',
+      storeId: 'store-a',
+    });
+
+    const channelSettings = {
+      getForStore: vi.fn(async () => ({ catalogMode: 'isolated' as const })),
+    };
+    const scoped = new ProductsService(
+      productRepo as never,
+      createVariantRepo(variantsByProduct) as never,
+      undefined,
+      channelSettings as never,
+    );
+
+    const forA = await scoped.findAll('store-a');
+    expect(channelSettings.getForStore).toHaveBeenCalledWith('store-a');
+    expect(forA.map((p) => p.slug)).toEqual(['a-only']);
   });
 
   it('rejects non-integer priceMinor', async () => {

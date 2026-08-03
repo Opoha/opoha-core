@@ -37,10 +37,11 @@ describe('CategoriesService', () => {
     repo.find = vi.fn(async (opts?: { where?: unknown }) => {
       let rows = [...store.values()];
       const where = opts?.where;
-      if (Array.isArray(where)) {
+      const clauses = Array.isArray(where) ? where : where ? [where] : [];
+      if (clauses.length > 0) {
         rows = rows.filter((row) => {
           const sid = row.storeId ?? null;
-          return where.some((clause: { storeId?: unknown }) => {
+          return clauses.some((clause: { storeId?: unknown }) => {
             const op = clause.storeId;
             if (
               typeof op === 'object' &&
@@ -89,6 +90,23 @@ describe('CategoriesService', () => {
 
     const forA = await service.findAll('store-a');
     expect(forA.map((c) => c.slug).sort()).toEqual(['a-only', 'shared']);
+  });
+
+  it('scopes findAll to store-owned only when catalogMode is isolated', async () => {
+    await service.create({ name: 'Shared', slug: 'shared' });
+    await service.create({
+      name: 'A only',
+      slug: 'a-only',
+      storeId: 'store-a',
+    });
+    await service.create({
+      name: 'B only',
+      slug: 'b-only',
+      storeId: 'store-b',
+    });
+
+    const forA = await service.findAll('store-a', 'isolated');
+    expect(forA.map((c) => c.slug)).toEqual(['a-only']);
   });
 
   it('rejects cycles when reparenting', async () => {

@@ -6,12 +6,15 @@ import {
   Optional,
 } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { IsNull, QueryFailedError, Repository } from 'typeorm';
+import { QueryFailedError, Repository } from 'typeorm';
 
+import type { StoreCatalogMode } from '../../config/public';
+import { StoreChannelSettingsService } from '../../config/public';
 import { EventBusService } from '../../event-bus/event-bus.service';
 import { CoreEventName } from '../../event-bus/event-catalog';
 import { ProductVariantEntity } from '../entities/product-variant.entity';
 import { ProductEntity } from '../entities/product.entity';
+import { catalogStoreWhere } from '../store-catalog-scope';
 import type {
   CreateProductInput,
   CreateProductVariantInput,
@@ -98,23 +101,44 @@ export class ProductsService {
     @InjectRepository(ProductVariantEntity)
     private readonly variants: Repository<ProductVariantEntity>,
     @Optional() private readonly eventBus?: EventBusService,
+    @Optional()
+    private readonly channelSettings?: StoreChannelSettingsService,
   ) {}
 
   /**
-   * List products. When `storeId` is provided, returns shared (`storeId` null)
-   * plus store-owned rows for that store. Omit for admin/global listing.
+   * List products (Phase 5 B-04).
+   * When `storeId` is set:
+   * - `shared` → shared (`storeId` null) ∪ store-owned
+   * - `isolated` → store-owned only
+   * Omit `catalogMode` to resolve from store channel settings (default shared).
+   * Omit `storeId` for admin/global listing.
    */
-  async findAll(storeId?: string | null): Promise<ProductType[]> {
+  async findAll(
+    storeId?: string | null,
+    catalogMode?: StoreCatalogMode | null,
+  ): Promise<ProductType[]> {
     const scope = normalizeStoreId(storeId);
+    const mode = await this.resolveCatalogMode(scope, catalogMode);
     const rows = await this.products.find({
-      where:
-        scope === undefined || scope === null
-          ? undefined
-          : [{ storeId: IsNull() }, { storeId: scope }],
+      where: catalogStoreWhere<ProductEntity>(scope, mode),
       order: { createdAt: 'ASC' },
       relations: { variants: true },
     });
     return rows.map(toProductType);
+  }
+
+  private async resolveCatalogMode(
+    storeId: string | null | undefined,
+    catalogMode?: StoreCatalogMode | null,
+  ): Promise<StoreCatalogMode> {
+    if (catalogMode === 'shared' || catalogMode === 'isolated') {
+      return catalogMode;
+    }
+    if (storeId && this.channelSettings) {
+      const settings = await this.channelSettings.getForStore(storeId);
+      return settings.catalogMode;
+    }
+    return 'shared';
   }
 
   async findById(id: string): Promise<ProductType> {
