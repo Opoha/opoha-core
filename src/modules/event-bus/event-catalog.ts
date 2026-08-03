@@ -55,6 +55,7 @@ export const CoreEventName = {
   SegmentUpdated: 'SegmentUpdated',
   StoreCreated: 'StoreCreated',
   StoreUpdated: 'StoreUpdated',
+  StoreChannelSettingsUpdated: 'StoreChannelSettingsUpdated',
 } as const;
 
 export type CoreEventName =

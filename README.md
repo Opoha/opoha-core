@@ -218,6 +218,25 @@ Single-country deployment foundation — **not** multi-store / multi-currency / 
 
 Table `localization_settings` is a singleton (`key = 'default'`). Full i18n string catalogs and FX rates remain out of scope until Phase 5.
 
+## Store channel settings (Phase 5 B-03)
+
+Per-store channel configuration owned by the configuration module (`store_channel_settings`).
+
+| Field | Meaning | Default |
+|-------|---------|---------|
+| `timezone` | IANA zone | `UTC` |
+| `countryCode` | ISO 3166-1 alpha-2 | `US` |
+| `catalogMode` | `shared` \| `isolated` catalog preference | `shared` |
+| `settingsJson` | Extensible opaque JSON bag | `{}` |
+
+| Op | Name | Permission |
+|----|------|------------|
+| Q | `storeChannelSettings(storeId)` | `settings:read` |
+| Q | `storeChannelSettingsList` | `settings:read` |
+| M | `updateStoreChannelSettings` | `settings:update` |
+
+Defaults are created on first read and when a store is created (`StoreCreated` listener). Display vs settlement currency FX remains Phase 5 D.
+
 ## Walking skeleton (H-01 / G-02)
 
 Automated spine check including Commerce Core catalog → order smoke:

@@ -10,6 +10,7 @@ import { AdminOpsModule } from './modules/admin-ops/public';
 import { AuthModule } from './modules/auth/auth.module';
 import { CatalogModule } from './modules/catalog/public';
 import { ConfigModule } from './modules/config/config.module';
+import { ConfigurationSettingsModule } from './modules/config/public';
 import { CustomerModule } from './modules/customer/public';
 import { EventBusModule } from './modules/event-bus/event-bus.module';
 import { FilesModule } from './modules/files/public';
@@ -62,6 +63,7 @@ type GqlHttpRequest = {
     LoyaltyModule,
     SegmentsModule,
     StoresModule,
+    ConfigurationSettingsModule,
     ReturnsModule,
     AdminOpsModule,
     CustomerModule,

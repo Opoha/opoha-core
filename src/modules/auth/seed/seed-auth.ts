@@ -186,6 +186,14 @@ export const DEFAULT_PERMISSIONS = [
   { key: 'store:update', description: 'Update application stores / brands' },
   { key: 'store:delete', description: 'Delete application stores / brands' },
   {
+    key: 'settings:read',
+    description: 'Read store-scoped channel / configuration settings',
+  },
+  {
+    key: 'settings:update',
+    description: 'Update store-scoped channel / configuration settings',
+  },
+  {
     key: 'localization:read',
     description: 'Read deployment localization settings',
   },

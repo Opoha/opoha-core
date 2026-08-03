@@ -16,6 +16,7 @@ import { storeEntities } from '../src/modules/stores/entities';
 import { supplyEntities } from '../src/modules/supply/entities';
 import { warehouseEntities } from '../src/modules/warehouses/entities';
 import { localizationEntities } from '../src/modules/localization/entities';
+import { configurationEntities } from '../src/modules/config/entities';
 import { orderEntities } from '../src/modules/order/entities';
 import { paymentEntities } from '../src/modules/payment-engine/entities';
 import { pluginLoaderEntities } from '../src/modules/plugin-loader/entities';
@@ -53,6 +54,7 @@ import { SegmentsInit1722711500000 } from './migrations/1722711500000-SegmentsIn
 import { StoresInit1722712600000 } from './migrations/1722712600000-StoresInit';
 import { CatalogStoreScope1722713700000 } from './migrations/1722713700000-CatalogStoreScope';
 import { OrderCartStoreScope1722714800000 } from './migrations/1722714800000-OrderCartStoreScope';
+import { StoreChannelSettingsInit1722715900000 } from './migrations/1722715900000-StoreChannelSettingsInit';
 
 loadDotenv();
 
@@ -75,6 +77,7 @@ export default new DataSource({
     ...loyaltyEntities,
     ...segmentEntities,
     ...storeEntities,
+    ...configurationEntities,
     ...returnEntities,
     ...supplyEntities,
     ...warehouseEntities,
@@ -118,6 +121,7 @@ export default new DataSource({
     StoresInit1722712600000,
     CatalogStoreScope1722713700000,
     OrderCartStoreScope1722714800000,
+    StoreChannelSettingsInit1722715900000,
   ],
   synchronize: false,
 });

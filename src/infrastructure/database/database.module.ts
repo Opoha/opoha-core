@@ -15,6 +15,7 @@ import { storeEntities } from '../../modules/stores/entities';
 import { supplyEntities } from '../../modules/supply/entities';
 import { warehouseEntities } from '../../modules/warehouses/entities';
 import { localizationEntities } from '../../modules/localization/entities';
+import { configurationEntities } from '../../modules/config/entities';
 import { orderEntities } from '../../modules/order/entities';
 import { paymentEntities } from '../../modules/payment-engine/entities';
 import { pluginLoaderEntities } from '../../modules/plugin-loader/entities';
@@ -44,6 +45,7 @@ import { DatabaseHealthService } from './database-health.service';
           ...loyaltyEntities,
           ...segmentEntities,
           ...storeEntities,
+          ...configurationEntities,
           ...returnEntities,
           ...supplyEntities,
           ...warehouseEntities,

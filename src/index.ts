@@ -252,6 +252,21 @@ export type {
   StoreUpdatedEvent,
 } from './modules/stores/public';
 export {
+  ConfigurationSettingsModule,
+  StoreChannelSettingsService,
+  StoreChannelSettingsEntity,
+  configurationEntities,
+  DEFAULT_STORE_CHANNEL_SETTINGS,
+  StoreCatalogModeGql,
+  StoreChannelSettingsType,
+  UpdateStoreChannelSettingsInput,
+} from './modules/config/public';
+export type {
+  StoreCatalogMode,
+  StoreChannelSettingsUpdatedData,
+  StoreChannelSettingsUpdatedEvent,
+} from './modules/config/public';
+export {
   AdminOpsModule,
   ReportsService,
   BulkOpsService,
