@@ -1,10 +1,11 @@
 #!/usr/bin/env node
 /**
- * H-01 MVP + Phase 1 G-02 commerce + Phase 2 G-02 commerce-ops walking skeleton.
+ * MVP + Phase 1–3 walking skeleton.
  *
  * Proves: docker deps → migrate → seed → boot → health → staff login → me
- *   → catalog product+variant → inventory → cart
- *   → (ops) select shipping + tax context → prepareCheckout → placeOrder (payment).
+ *   → catalog product+variant → multi-location inventory/transfer
+ *   → cart → (ops) select shipping + tax → prepareCheckout → placeOrder
+ *   → (store-mgmt) fulfillment pick/pack/ship → RMA refund path (Phase 3 H-02).
  * When sibling CLI + plugin paths exist (local multi-repo), also:
  *   opoha plugin install, plugin GraphQL probe, opoha doctor.
  *
@@ -19,6 +20,7 @@
  *   SKIP_DOCTOR=1     skip opoha doctor
  *   SKIP_COMMERCE=1   skip catalog→order smoke (G-02)
  *   SKIP_COMMERCE_OPS=1  skip payment+shipping+tax assertions (Phase 2 G-02)
+ *   SKIP_STORE_MGMT=1    skip multi-location + fulfillment + RMA (Phase 3 H-02)
  *   OPOHA_FLAT_RATE_AMOUNT / OPOHA_TAX_STANDARD_DEFAULT_RATE_BPS  ops smoke defaults
  *   WALKING_SKELETON_PORT  override listen port for spawned core (default 4000)
  */
@@ -42,6 +44,7 @@ const SKIP_PLUGIN = process.env.SKIP_PLUGIN === '1';
 const SKIP_DOCTOR = process.env.SKIP_DOCTOR === '1';
 const SKIP_COMMERCE = process.env.SKIP_COMMERCE === '1';
 const SKIP_COMMERCE_OPS = process.env.SKIP_COMMERCE_OPS === '1';
+const SKIP_STORE_MGMT = process.env.SKIP_STORE_MGMT === '1';
 
 /** Phase 2 G-02 ops plugins (payment + shipping + tax). */
 const OPS_PLUGIN_DIRS = [
@@ -384,24 +387,159 @@ async function main() {
       }
       log('commerce', `product ${productData.createProduct.id} variant ${variantId}`);
 
+      let defaultWarehouseId = null;
+      let eastWarehouseId = null;
+
+      if (!SKIP_STORE_MGMT) {
+        log('store-mgmt', 'multi-location stock smoke (Phase 3 H-02)');
+        const defaultWh = await gql(
+          `query { defaultWarehouse { id code isDefault } }`,
+          undefined,
+          token,
+        );
+        defaultWarehouseId = defaultWh.defaultWarehouse?.id;
+        if (!defaultWarehouseId) {
+          fail('store-mgmt', 'defaultWarehouse missing after seed/migrate');
+        }
+
+        const east = await gql(
+          `mutation($input: CreateWarehouseInput!) {
+            createWarehouse(input: $input) {
+              id
+              code
+              name
+              isDefault
+            }
+          }`,
+          {
+            input: {
+              code: `EAST-${stamp}`,
+              name: `East Hub ${stamp}`,
+              countryCode: 'US',
+              city: 'Boston',
+            },
+          },
+          token,
+        );
+        eastWarehouseId = east.createWarehouse?.id;
+        if (!eastWarehouseId) {
+          fail('store-mgmt', 'createWarehouse returned no id');
+        }
+        log(
+          'store-mgmt',
+          `warehouses default=${defaultWarehouseId} east=${eastWarehouseId}`,
+        );
+      }
+
       log('commerce', 'createInventoryItem');
       const invData = await gql(
         `mutation($input: CreateInventoryItemInput!) {
           createInventoryItem(input: $input) {
             id
             variantId
+            warehouseId
             quantityOnHand
             quantityAvailable
           }
         }`,
-        { input: { variantId, quantityOnHand: 5 } },
+        {
+          input: {
+            variantId,
+            quantityOnHand: SKIP_STORE_MGMT ? 5 : 10,
+            ...(defaultWarehouseId ? { warehouseId: defaultWarehouseId } : {}),
+          },
+        },
         token,
       );
-      if (invData.createInventoryItem.quantityOnHand !== 5) {
+      if (
+        invData.createInventoryItem.quantityOnHand !==
+        (SKIP_STORE_MGMT ? 5 : 10)
+      ) {
         fail(
           'commerce',
           `unexpected on-hand ${invData.createInventoryItem.quantityOnHand}`,
         );
+      }
+
+      if (!SKIP_STORE_MGMT) {
+        const transfer = await gql(
+          `mutation($input: CreateStockTransferInput!) {
+            createStockTransfer(input: $input) {
+              id
+              status
+              fromWarehouseId
+              toWarehouseId
+              lines { variantId quantity }
+            }
+          }`,
+          {
+            input: {
+              fromWarehouseId: defaultWarehouseId,
+              toWarehouseId: eastWarehouseId,
+              lines: [{ variantId, quantity: 2 }],
+              notes: 'walking-skeleton multi-location',
+            },
+          },
+          token,
+        );
+        const transferId = transfer.createStockTransfer?.id;
+        if (!transferId) {
+          fail('store-mgmt', 'createStockTransfer returned no id');
+        }
+        if (transfer.createStockTransfer.status !== 'draft') {
+          fail(
+            'store-mgmt',
+            `expected draft transfer, got ${transfer.createStockTransfer.status}`,
+          );
+        }
+
+        const shippedXfer = await gql(
+          `mutation($id: ID!) {
+            shipStockTransfer(id: $id) { id status }
+          }`,
+          { id: transferId },
+          token,
+        );
+        if (shippedXfer.shipStockTransfer.status !== 'in_transit') {
+          fail(
+            'store-mgmt',
+            `expected in_transit, got ${shippedXfer.shipStockTransfer.status}`,
+          );
+        }
+
+        const receivedXfer = await gql(
+          `mutation($id: ID!) {
+            receiveStockTransfer(id: $id) { id status }
+          }`,
+          { id: transferId },
+          token,
+        );
+        if (receivedXfer.receiveStockTransfer.status !== 'received') {
+          fail(
+            'store-mgmt',
+            `expected received transfer, got ${receivedXfer.receiveStockTransfer.status}`,
+          );
+        }
+
+        const eastInv = await gql(
+          `query($variantId: ID!, $warehouseId: ID) {
+            inventoryItemByVariant(variantId: $variantId, warehouseId: $warehouseId) {
+              warehouseId
+              quantityOnHand
+            }
+          }`,
+          { variantId, warehouseId: eastWarehouseId },
+          token,
+        );
+        const eastQty =
+          eastInv.inventoryItemByVariant?.quantityOnHand;
+        if (eastQty !== 2) {
+          fail(
+            'store-mgmt',
+            `east warehouse on-hand expected 2, got ${eastQty}`,
+          );
+        }
+        log('store-mgmt', 'stock transfer default→east qty=2 OK');
       }
 
       log('commerce', 'createCart + addCartLine');
@@ -590,7 +728,7 @@ async function main() {
             shippingMinor
             taxMinor
             shippingMethodCode
-            lines { variantId quantity }
+            lines { id variantId quantity }
           }
         }`,
         { input: { cartId, paymentMethod: 'manual' } },
@@ -628,6 +766,205 @@ async function main() {
         'commerce',
         `order ${order.id} status=${order.status} total=${order.totalMinor} shipping=${order.shippingMinor} tax=${order.taxMinor} OK`,
       );
+
+      if (!SKIP_STORE_MGMT) {
+        if (!hasManual) {
+          fail(
+            'store-mgmt',
+            'Phase 3 H-02 RMA refund requires plugin-manual-payment (set SKIP_STORE_MGMT=1 to skip)',
+          );
+        }
+        const orderLineId = order.lines?.[0]?.id;
+        if (!orderLineId) {
+          fail('store-mgmt', 'placeOrder returned no order line id');
+        }
+        if (!defaultWarehouseId) {
+          fail('store-mgmt', 'defaultWarehouseId unset before fulfillment');
+        }
+
+        log('store-mgmt', 'fulfillment pick → pack → ship');
+        const fulfillment = await gql(
+          `mutation($input: CreateFulfillmentInput!) {
+            createFulfillment(input: $input) {
+              id
+              status
+              warehouseId
+              lines { orderLineId quantity }
+            }
+          }`,
+          {
+            input: {
+              orderId: order.id,
+              warehouseId: defaultWarehouseId,
+              lines: [{ orderLineId, quantity: 1 }],
+            },
+          },
+          token,
+        );
+        const fulfillmentId = fulfillment.createFulfillment?.id;
+        if (!fulfillmentId) {
+          fail('store-mgmt', 'createFulfillment returned no id');
+        }
+
+        const picked = await gql(
+          `mutation($id: ID!) {
+            pickFulfillment(id: $id) { id status }
+          }`,
+          { id: fulfillmentId },
+          token,
+        );
+        if (picked.pickFulfillment.status !== 'picked') {
+          fail(
+            'store-mgmt',
+            `expected picked, got ${picked.pickFulfillment.status}`,
+          );
+        }
+
+        const packed = await gql(
+          `mutation($id: ID!) {
+            packFulfillment(id: $id) { id status }
+          }`,
+          { id: fulfillmentId },
+          token,
+        );
+        if (packed.packFulfillment.status !== 'packed') {
+          fail(
+            'store-mgmt',
+            `expected packed, got ${packed.packFulfillment.status}`,
+          );
+        }
+
+        const shipped = await gql(
+          `mutation($id: ID!, $input: ShipFulfillmentInput) {
+            shipFulfillment(id: $id, input: $input) {
+              id
+              status
+            }
+          }`,
+          { id: fulfillmentId, input: { skipLabel: true } },
+          token,
+        );
+        if (shipped.shipFulfillment.status !== 'shipped') {
+          fail(
+            'store-mgmt',
+            `expected shipped, got ${shipped.shipFulfillment.status}`,
+          );
+        }
+        log('store-mgmt', `fulfillment ${fulfillmentId} shipped OK`);
+
+        log('store-mgmt', 'capture payment for RMA refund');
+        const payments = await gql(
+          `query($orderId: ID!) {
+            paymentsByOrder(orderId: $orderId) {
+              id
+              status
+              amountMinor
+            }
+          }`,
+          { orderId: order.id },
+          token,
+        );
+        const payment = (payments.paymentsByOrder ?? [])[0];
+        if (!payment?.id) {
+          fail('store-mgmt', 'no payment found for order');
+        }
+        if (payment.status !== 'captured') {
+          const captured = await gql(
+            `mutation($input: CapturePaymentInput!) {
+              capturePayment(input: $input) { id status }
+            }`,
+            { input: { paymentId: payment.id } },
+            token,
+          );
+          if (captured.capturePayment.status !== 'captured') {
+            fail(
+              'store-mgmt',
+              `capturePayment expected captured, got ${captured.capturePayment.status}`,
+            );
+          }
+        }
+
+        log('store-mgmt', 'RMA create → approve → receive → refund');
+        const rma = await gql(
+          `mutation($input: CreateReturnInput!) {
+            createReturn(input: $input) {
+              id
+              status
+              resolution
+            }
+          }`,
+          {
+            input: {
+              orderId: order.id,
+              warehouseId: defaultWarehouseId,
+              resolution: 'refund',
+              reason: 'walking-skeleton smoke',
+              lines: [{ orderLineId, quantity: 1 }],
+            },
+          },
+          token,
+        );
+        const returnId = rma.createReturn?.id;
+        if (!returnId) fail('store-mgmt', 'createReturn returned no id');
+        if (rma.createReturn.status !== 'requested') {
+          fail(
+            'store-mgmt',
+            `expected requested RMA, got ${rma.createReturn.status}`,
+          );
+        }
+
+        const approved = await gql(
+          `mutation($id: ID!) {
+            approveReturn(id: $id) { id status }
+          }`,
+          { id: returnId },
+          token,
+        );
+        if (approved.approveReturn.status !== 'approved') {
+          fail(
+            'store-mgmt',
+            `expected approved, got ${approved.approveReturn.status}`,
+          );
+        }
+
+        const received = await gql(
+          `mutation($id: ID!) {
+            receiveReturn(id: $id) { id status }
+          }`,
+          { id: returnId },
+          token,
+        );
+        if (received.receiveReturn.status !== 'received') {
+          fail(
+            'store-mgmt',
+            `expected received RMA, got ${received.receiveReturn.status}`,
+          );
+        }
+
+        const refunded = await gql(
+          `mutation($input: CompleteRefundInput!) {
+            completeReturnRefund(input: $input) {
+              id
+              status
+              refundAmountMinor
+            }
+          }`,
+          { input: { returnId } },
+          token,
+        );
+        if (refunded.completeReturnRefund.status !== 'refunded') {
+          fail(
+            'store-mgmt',
+            `expected refunded, got ${refunded.completeReturnRefund.status}`,
+          );
+        }
+        log(
+          'store-mgmt',
+          `RMA ${returnId} refunded amount=${refunded.completeReturnRefund.refundAmountMinor} OK`,
+        );
+      } else {
+        log('store-mgmt', 'skipped (SKIP_STORE_MGMT=1)');
+      }
     } else {
       log('commerce', 'skipped (SKIP_COMMERCE=1)');
     }
