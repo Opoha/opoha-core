@@ -5,6 +5,8 @@ export { PromotionsEngineModule } from '../promotions-engine.module';
 export { PromotionsEngine } from '../promotions-engine.service';
 export { PromotionRuleRegistry } from '../promotion-rule.registry';
 export { TypeOrmPromotionProvider } from '../typeorm-promotion.provider';
+export { CouponsService } from '../coupons.service';
+export { DiscountRulesService } from '../discount-rules.service';
 export { CouponEntity } from '../entities/coupon.entity';
 export { DiscountRuleEntity } from '../entities/discount-rule.entity';
 export { promotionsEntities } from '../entities';

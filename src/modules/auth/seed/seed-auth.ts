@@ -81,6 +81,22 @@ export const DEFAULT_PERMISSIONS = [
   { key: 'tax:update', description: 'Update tax classes and rules' },
   { key: 'tax:delete', description: 'Delete tax classes and rules' },
   {
+    key: 'promotion:read',
+    description: 'Read coupons, discount rules, and promotion providers',
+  },
+  {
+    key: 'promotion:create',
+    description: 'Create coupons and discount rules',
+  },
+  {
+    key: 'promotion:update',
+    description: 'Update coupons and discount rules',
+  },
+  {
+    key: 'promotion:delete',
+    description: 'Delete coupons and discount rules',
+  },
+  {
     key: 'localization:read',
     description: 'Read deployment localization settings',
   },
