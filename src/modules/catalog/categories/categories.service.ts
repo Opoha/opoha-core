@@ -12,6 +12,7 @@ import type { StoreCatalogMode } from '../../config/public';
 import { StoreChannelSettingsService } from '../../config/public';
 import { CategoryEntity } from '../entities/category.entity';
 import { catalogStoreWhere } from '../store-catalog-scope';
+import { CatalogTranslationsService } from '../translations/catalog-translations.service';
 import type {
   CategoryType,
   CreateCategoryInput,
@@ -73,19 +74,23 @@ export class CategoriesService {
     private readonly categories: Repository<CategoryEntity>,
     @Optional()
     private readonly channelSettings?: StoreChannelSettingsService,
+    @Optional()
+    private readonly translations?: CatalogTranslationsService,
   ) {}
 
   /**
-   * List categories (Phase 5 B-04).
+   * List categories (Phase 5 B-04 / C-02).
    * When `storeId` is set:
    * - `shared` → shared (`storeId` null) ∪ store-owned
    * - `isolated` → store-owned only
    * Omit `catalogMode` to resolve from store channel settings (default shared).
    * Omit `storeId` for admin/global listing.
+   * Optional `locale` overlays translated name/slug/description.
    */
   async findAll(
     storeId?: string | null,
     catalogMode?: StoreCatalogMode | null,
+    locale?: string | null,
   ): Promise<CategoryType[]> {
     const scope = normalizeStoreId(storeId);
     const mode = await this.resolveCatalogMode(scope, catalogMode);
@@ -93,7 +98,11 @@ export class CategoriesService {
       where: catalogStoreWhere<CategoryEntity>(scope, mode),
       order: { sortOrder: 'ASC', createdAt: 'ASC' },
     });
-    return rows.map(toCategoryType);
+    const categories = rows.map(toCategoryType);
+    if (this.translations) {
+      return this.translations.applyCategoryLocaleMany(categories, locale);
+    }
+    return categories;
   }
 
   private async resolveCatalogMode(
@@ -110,12 +119,19 @@ export class CategoriesService {
     return 'shared';
   }
 
-  async findById(id: string): Promise<CategoryType> {
+  async findById(
+    id: string,
+    locale?: string | null,
+  ): Promise<CategoryType> {
     const row = await this.categories.findOne({ where: { id } });
     if (!row) {
       throw new NotFoundException(`Category ${id} not found`);
     }
-    return toCategoryType(row);
+    const category = toCategoryType(row);
+    if (this.translations) {
+      return this.translations.applyCategoryLocale(category, locale);
+    }
+    return category;
   }
 
   async create(input: CreateCategoryInput): Promise<CategoryType> {

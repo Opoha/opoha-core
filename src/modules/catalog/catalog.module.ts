@@ -19,6 +19,7 @@ import { ProductMediaResolver } from './media/product-media.resolver';
 import { ProductMediaService } from './media/product-media.service';
 import { ProductsResolver } from './products/products.resolver';
 import { ProductsService } from './products/products.service';
+import { CatalogTranslationsService } from './translations/catalog-translations.service';
 
 @Module({
   imports: [
@@ -30,6 +31,7 @@ import { ProductsService } from './products/products.service';
     TypeOrmModule.forFeature([...catalogEntities]),
   ],
   providers: [
+    CatalogTranslationsService,
     ProductsService,
     ProductsResolver,
     CategoriesService,
@@ -44,6 +46,7 @@ import { ProductsService } from './products/products.service';
     ProductMediaResolver,
   ],
   exports: [
+    CatalogTranslationsService,
     ProductsService,
     CategoriesService,
     CollectionsService,

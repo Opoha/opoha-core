@@ -15,6 +15,7 @@ import { CoreEventName } from '../../event-bus/event-catalog';
 import { ProductVariantEntity } from '../entities/product-variant.entity';
 import { ProductEntity } from '../entities/product.entity';
 import { catalogStoreWhere } from '../store-catalog-scope';
+import { CatalogTranslationsService } from '../translations/catalog-translations.service';
 import type {
   CreateProductInput,
   CreateProductVariantInput,
@@ -103,19 +104,23 @@ export class ProductsService {
     @Optional() private readonly eventBus?: EventBusService,
     @Optional()
     private readonly channelSettings?: StoreChannelSettingsService,
+    @Optional()
+    private readonly translations?: CatalogTranslationsService,
   ) {}
 
   /**
-   * List products (Phase 5 B-04).
+   * List products (Phase 5 B-04 / C-02).
    * When `storeId` is set:
    * - `shared` → shared (`storeId` null) ∪ store-owned
    * - `isolated` → store-owned only
    * Omit `catalogMode` to resolve from store channel settings (default shared).
    * Omit `storeId` for admin/global listing.
+   * Optional `locale` overlays translated name/slug/description.
    */
   async findAll(
     storeId?: string | null,
     catalogMode?: StoreCatalogMode | null,
+    locale?: string | null,
   ): Promise<ProductType[]> {
     const scope = normalizeStoreId(storeId);
     const mode = await this.resolveCatalogMode(scope, catalogMode);
@@ -124,7 +129,11 @@ export class ProductsService {
       order: { createdAt: 'ASC' },
       relations: { variants: true },
     });
-    return rows.map(toProductType);
+    const products = rows.map(toProductType);
+    if (this.translations) {
+      return this.translations.applyProductLocaleMany(products, locale);
+    }
+    return products;
   }
 
   private async resolveCatalogMode(
@@ -141,7 +150,10 @@ export class ProductsService {
     return 'shared';
   }
 
-  async findById(id: string): Promise<ProductType> {
+  async findById(
+    id: string,
+    locale?: string | null,
+  ): Promise<ProductType> {
     const row = await this.products.findOne({
       where: { id },
       relations: { variants: true },
@@ -149,7 +161,11 @@ export class ProductsService {
     if (!row) {
       throw new NotFoundException(`Product ${id} not found`);
     }
-    return toProductType(row);
+    const product = toProductType(row);
+    if (this.translations) {
+      return this.translations.applyProductLocale(product, locale);
+    }
+    return product;
   }
 
   async create(input: CreateProductInput): Promise<ProductType> {

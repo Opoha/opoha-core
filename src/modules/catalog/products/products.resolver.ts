@@ -1,6 +1,7 @@
 import { UseGuards } from '@nestjs/common';
 import {
   Args,
+  Context,
   ID,
   Mutation,
   Parent,
@@ -17,6 +18,7 @@ import {
 import { StoreCatalogModeGql } from '../../config/public';
 import type { StoreCatalogMode } from '../../config/public';
 import { ContributionRegistry } from '../../plugin-loader/public';
+import { resolveLocalePreference } from '../translations/locale';
 import {
   CreateProductInput,
   ProductReviewAggregateType,
@@ -39,6 +41,10 @@ export type ReviewAggregateProvider = {
 };
 
 export const REVIEW_AGGREGATE_PROVIDER_TOKEN = 'product-review.reviews';
+
+type GqlRequestContext = {
+  req?: { headers?: Record<string, string | string[] | undefined> };
+};
 
 @Resolver(() => ProductType)
 @UseGuards(GqlAuthGuard, PermissionsGuard)
@@ -74,7 +80,7 @@ export class ProductsResolver {
   @Query(() => [ProductType], {
     name: 'products',
     description:
-      'List catalog products. Optional storeId scopes the list; optional catalogMode overrides channel settings (shared = shared∪owned, isolated = owned-only).',
+      'List catalog products. Optional storeId scopes the list; optional catalogMode overrides channel settings (shared = shared∪owned, isolated = owned-only). Optional locale (or Accept-Language) overlays translations.',
   })
   @RequirePermission('product:read')
   products(
@@ -84,17 +90,42 @@ export class ProductsResolver {
       nullable: true,
     })
     catalogMode?: StoreCatalogMode,
+    @Args('locale', {
+      type: () => String,
+      nullable: true,
+      description: 'BCP 47 locale; falls back to Accept-Language when omitted',
+    })
+    locale?: string,
+    @Context() ctx?: GqlRequestContext,
   ): Promise<ProductType[]> {
-    return this.productsService.findAll(storeId, catalogMode);
+    const resolved = resolveLocalePreference({
+      localeArg: locale,
+      headers: ctx?.req?.headers,
+    });
+    return this.productsService.findAll(storeId, catalogMode, resolved);
   }
 
   @Query(() => ProductType, {
     name: 'product',
-    description: 'Get catalog product by id',
+    description:
+      'Get catalog product by id. Optional locale (or Accept-Language) overlays translations.',
   })
   @RequirePermission('product:read')
-  product(@Args('id', { type: () => ID }) id: string): Promise<ProductType> {
-    return this.productsService.findById(id);
+  product(
+    @Args('id', { type: () => ID }) id: string,
+    @Args('locale', {
+      type: () => String,
+      nullable: true,
+      description: 'BCP 47 locale; falls back to Accept-Language when omitted',
+    })
+    locale?: string,
+    @Context() ctx?: GqlRequestContext,
+  ): Promise<ProductType> {
+    const resolved = resolveLocalePreference({
+      localeArg: locale,
+      headers: ctx?.req?.headers,
+    });
+    return this.productsService.findById(id, resolved);
   }
 
   @Mutation(() => ProductType, {

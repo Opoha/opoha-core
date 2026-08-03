@@ -55,6 +55,7 @@ import { StoresInit1722712600000 } from './migrations/1722712600000-StoresInit';
 import { CatalogStoreScope1722713700000 } from './migrations/1722713700000-CatalogStoreScope';
 import { OrderCartStoreScope1722714800000 } from './migrations/1722714800000-OrderCartStoreScope';
 import { StoreChannelSettingsInit1722715900000 } from './migrations/1722715900000-StoreChannelSettingsInit';
+import { CatalogTranslationsInit1722717000000 } from './migrations/1722717000000-CatalogTranslationsInit';
 
 loadDotenv();
 
@@ -122,6 +123,7 @@ export default new DataSource({
     CatalogStoreScope1722713700000,
     OrderCartStoreScope1722714800000,
     StoreChannelSettingsInit1722715900000,
+    CatalogTranslationsInit1722717000000,
   ],
   synchronize: false,
 });
