@@ -14,6 +14,7 @@ import { AdminExtensionRegistry } from './admin-extension-registry';
 import { AdminExtensionsResolver } from './admin-extensions.resolver';
 import { ContributionRegistry } from './contribution-registry';
 import { PluginStateEntity } from './entities/plugin-state.entity';
+import { PluginBootstrapService } from './plugin-bootstrap.service';
 import { PluginLoaderService } from './plugin-loader.service';
 import { PluginManagementService } from './plugin-management.service';
 import { PluginsResolver } from './plugins.resolver';
@@ -36,6 +37,7 @@ import { PluginsResolver } from './plugins.resolver';
     AdminExtensionRegistry,
     PluginLoaderService,
     PluginManagementService,
+    PluginBootstrapService,
     AdminExtensionsResolver,
     PluginsResolver,
   ],

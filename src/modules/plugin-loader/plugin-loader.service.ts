@@ -328,15 +328,21 @@ export class PluginLoaderService implements OnModuleInit {
 
 /**
  * Dynamically import a plugin entry module. Never statically import plugin packages.
+ * Uses a Function-wrapped `import()` so TypeScript/CJS emit does not rewrite to
+ * `require()` — official plugins are ESM (`"type": "module"`).
  */
 export async function importPluginDefinition(
   entryPath: string,
 ): Promise<PluginDefinition> {
   const href = pathToFileURL(entryPath).href;
-  const mod = (await import(href)) as {
+  const dynamicImport = new Function(
+    'specifier',
+    'return import(specifier)',
+  ) as (specifier: string) => Promise<{
     default?: PluginDefinition;
     plugin?: PluginDefinition;
-  };
+  }>;
+  const mod = await dynamicImport(href);
   const definition = mod.default ?? mod.plugin;
   if (
     !definition ||

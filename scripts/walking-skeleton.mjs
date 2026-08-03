@@ -1,9 +1,10 @@
 #!/usr/bin/env node
 /**
- * H-01 MVP + G-02 Commerce Core walking skeleton (core slice).
+ * H-01 MVP + Phase 1 G-02 commerce + Phase 2 G-02 commerce-ops walking skeleton.
  *
  * Proves: docker deps → migrate → seed → boot → health → staff login → me
- *   → catalog product+variant → inventory → cart → prepareCheckout → placeOrder.
+ *   → catalog product+variant → inventory → cart
+ *   → (ops) select shipping + tax context → prepareCheckout → placeOrder (payment).
  * When sibling CLI + plugin paths exist (local multi-repo), also:
  *   opoha plugin install, plugin GraphQL probe, opoha doctor.
  *
@@ -17,6 +18,8 @@
  *   SKIP_PLUGIN=1     skip plugin install / GraphQL probe
  *   SKIP_DOCTOR=1     skip opoha doctor
  *   SKIP_COMMERCE=1   skip catalog→order smoke (G-02)
+ *   SKIP_COMMERCE_OPS=1  skip payment+shipping+tax assertions (Phase 2 G-02)
+ *   OPOHA_FLAT_RATE_AMOUNT / OPOHA_TAX_STANDARD_DEFAULT_RATE_BPS  ops smoke defaults
  *   WALKING_SKELETON_PORT  override listen port for spawned core (default 4000)
  */
 import { spawn, execFileSync } from 'node:child_process';
@@ -38,9 +41,27 @@ const SKIP_DOCKER = process.env.SKIP_DOCKER === '1';
 const SKIP_PLUGIN = process.env.SKIP_PLUGIN === '1';
 const SKIP_DOCTOR = process.env.SKIP_DOCTOR === '1';
 const SKIP_COMMERCE = process.env.SKIP_COMMERCE === '1';
+const SKIP_COMMERCE_OPS = process.env.SKIP_COMMERCE_OPS === '1';
 
+/** Phase 2 G-02 ops plugins (payment + shipping + tax). */
+const OPS_PLUGIN_DIRS = [
+  'plugin-manual-payment',
+  'plugin-shipping-flat-rate',
+  'plugin-tax-standard',
+];
 const PLUGIN_PATH = join(SIBLING, 'plugin-manual-payment');
+const FLAT_RATE_PLUGIN_PATH = join(SIBLING, 'plugin-shipping-flat-rate');
+const TAX_STANDARD_PLUGIN_PATH = join(SIBLING, 'plugin-tax-standard');
 const CLI_BIN = join(SIBLING, 'opoha-cli', 'dist', 'cli.js');
+
+const OPS_FLAT_RATE_AMOUNT = process.env.OPOHA_FLAT_RATE_AMOUNT ?? '500';
+const OPS_TAX_RATE_BPS = process.env.OPOHA_TAX_STANDARD_DEFAULT_RATE_BPS ?? '1000';
+
+function resolveOpsPluginPaths() {
+  return OPS_PLUGIN_DIRS.map((name) => join(SIBLING, name)).filter((p) =>
+    existsSync(p),
+  );
+}
 
 function log(step, msg) {
   console.log(`[walking-skeleton] ${step}: ${msg}`);
@@ -146,6 +167,14 @@ function ensureEnvFile(dot) {
   return { email, password };
 }
 
+function ensurePluginBuilt(pluginRoot) {
+  // Always rebuild so ops smoke is not tripped by stale dist (e.g. Phase 2
+  // authorize/capture added after an older dist/index.js existed).
+  log('plugin', `building ${pluginRoot}`);
+  run('pnpm', ['install'], { cwd: pluginRoot });
+  run('pnpm', ['build'], { cwd: pluginRoot });
+}
+
 async function main() {
   log('start', `root=${ROOT}`);
 
@@ -176,18 +205,60 @@ async function main() {
     },
   });
 
-  const pluginEnv =
-    !SKIP_PLUGIN && existsSync(PLUGIN_PATH)
-      ? { OPOHA_PLUGINS: PLUGIN_PATH }
-      : {};
-
-  if (pluginEnv.OPOHA_PLUGINS) {
-    log('plugin', `OPOHA_PLUGINS=${PLUGIN_PATH}`);
-    if (!existsSync(join(PLUGIN_PATH, 'dist', 'index.js'))) {
-      log('plugin', 'building plugin-manual-payment');
-      run('pnpm', ['install'], { cwd: PLUGIN_PATH });
-      run('pnpm', ['build'], { cwd: PLUGIN_PATH });
+  // Clear plugin settings so env bootstrap (amount/rate) is not overridden by stale rows.
+  try {
+    const databaseUrl =
+      process.env.DATABASE_URL ?? dot.DATABASE_URL ?? '';
+    if (databaseUrl.includes('postgresql')) {
+      execFileSync(
+        'psql',
+        [
+          databaseUrl,
+          '-v',
+          'ON_ERROR_STOP=0',
+          '-c',
+          `DO $$ BEGIN
+             EXECUTE 'TRUNCATE shipping_flat_rate_settings RESTART IDENTITY';
+           EXCEPTION WHEN undefined_table THEN NULL;
+           END $$;
+           DO $$ BEGIN
+             EXECUTE 'TRUNCATE tax_standard_rates RESTART IDENTITY';
+           EXCEPTION WHEN undefined_table THEN NULL;
+           END $$;`,
+        ],
+        { stdio: 'ignore' },
+      );
+      log('plugin', 'cleared flat-rate/tax-standard settings tables (if present)');
     }
+  } catch {
+    log('plugin', 'settings truncate skipped (psql unavailable or tables missing)');
+  }
+
+  const opsPluginPaths = !SKIP_PLUGIN ? resolveOpsPluginPaths() : [];
+  const hasManual = opsPluginPaths.includes(PLUGIN_PATH);
+  const hasFlatRate = opsPluginPaths.includes(FLAT_RATE_PLUGIN_PATH);
+  const hasTaxStandard = opsPluginPaths.includes(TAX_STANDARD_PLUGIN_PATH);
+
+  const pluginEnv = {};
+  if (opsPluginPaths.length > 0) {
+    for (const p of opsPluginPaths) {
+      ensurePluginBuilt(p);
+    }
+    pluginEnv.OPOHA_PLUGINS = opsPluginPaths.join(',');
+    // Always pin ops smoke amounts (override .env / parent) so quotes are non-zero.
+    if (hasFlatRate) {
+      pluginEnv.OPOHA_FLAT_RATE_AMOUNT =
+        process.env.OPOHA_FLAT_RATE_AMOUNT ?? OPS_FLAT_RATE_AMOUNT;
+    }
+    if (hasTaxStandard) {
+      pluginEnv.OPOHA_TAX_STANDARD_DEFAULT_RATE_BPS =
+        process.env.OPOHA_TAX_STANDARD_DEFAULT_RATE_BPS ?? OPS_TAX_RATE_BPS;
+    }
+    log('plugin', `OPOHA_PLUGINS=${pluginEnv.OPOHA_PLUGINS}`);
+    log(
+      'plugin',
+      `ops env flatRate=${pluginEnv.OPOHA_FLAT_RATE_AMOUNT ?? 'n/a'} taxBps=${pluginEnv.OPOHA_TAX_STANDARD_DEFAULT_RATE_BPS ?? 'n/a'}`,
+    );
   }
 
   log('boot', `starting core on :${PORT}`);
@@ -249,6 +320,32 @@ async function main() {
       fail('auth', `me email mismatch: ${meData.me.email}`);
     }
     log('auth', 'me OK');
+
+    // Enable ops plugins so Payment/Shipping/Tax registries are active (G-02).
+    if (!SKIP_PLUGIN && opsPluginPaths.length > 0) {
+      const pluginIds = [];
+      if (hasManual) pluginIds.push('manual-payment');
+      if (hasFlatRate) pluginIds.push('shipping-flat-rate');
+      if (hasTaxStandard) pluginIds.push('tax-standard');
+      for (const id of pluginIds) {
+        const enabled = await gql(
+          `mutation($id: ID!) {
+            enablePlugin(id: $id) { id state enabled }
+          }`,
+          { id },
+          token,
+        );
+        const state = enabled.enablePlugin?.state;
+        const isEnabled = enabled.enablePlugin?.enabled;
+        if (state !== 'enabled' && isEnabled !== true) {
+          fail(
+            'plugin',
+            `enablePlugin(${id}) expected enabled, got ${JSON.stringify(enabled.enablePlugin)}`,
+          );
+        }
+        log('plugin', `enablePlugin(${id}) → state=${state}`);
+      }
+    }
 
     if (!SKIP_COMMERCE) {
       const stamp = Date.now().toString(36);
@@ -327,14 +424,123 @@ async function main() {
         token,
       );
 
+      const wantOps =
+        !SKIP_COMMERCE_OPS && (hasManual || hasFlatRate || hasTaxStandard);
+
+      if (!SKIP_COMMERCE_OPS && (!hasManual || !hasFlatRate || !hasTaxStandard)) {
+        fail(
+          'commerce-ops',
+          'Phase 2 G-02 requires sibling plugins plugin-manual-payment, plugin-shipping-flat-rate, and plugin-tax-standard (set SKIP_COMMERCE_OPS=1 to skip)',
+        );
+      }
+
+      if (wantOps) {
+        log('commerce-ops', 'payment + shipping + tax smoke (Phase 2 G-02)');
+
+        if (hasManual) {
+          const providers = await gql(
+            `query { paymentProviders { code displayName } }`,
+            undefined,
+            token,
+          );
+          const codes = (providers.paymentProviders ?? []).map((p) => p.code);
+          if (!codes.includes('manual')) {
+            fail(
+              'commerce-ops',
+              `expected paymentProviders to include "manual", got ${JSON.stringify(codes)}`,
+            );
+          }
+          log('commerce-ops', `paymentProviders OK (${codes.join(',')})`);
+        }
+
+        if (hasFlatRate) {
+          const methods = await gql(
+            `query { shippingMethods { code displayName } }`,
+            undefined,
+            token,
+          );
+          const methodCodes = (methods.shippingMethods ?? []).map((m) => m.code);
+          if (!methodCodes.includes('flat-rate')) {
+            fail(
+              'commerce-ops',
+              `expected shippingMethods to include "flat-rate", got ${JSON.stringify(methodCodes)}`,
+            );
+          }
+
+          const shipped = await gql(
+            `mutation($input: SelectCartShippingInput!) {
+              selectCartShipping(input: $input) {
+                id
+                shippingMethodCode
+                shippingRateCode
+                shippingMinor
+              }
+            }`,
+            {
+              input: {
+                cartId,
+                methodCode: 'flat-rate',
+                rateCode: 'flat-rate',
+                destinationCountryCode: 'US',
+                destinationPostalCode: '10001',
+              },
+            },
+            token,
+          );
+          const shipAmt = shipped.selectCartShipping.shippingMinor;
+          if (shipAmt !== OPS_FLAT_RATE_AMOUNT) {
+            fail(
+              'commerce-ops',
+              `expected shippingMinor=${OPS_FLAT_RATE_AMOUNT}, got ${shipAmt}`,
+            );
+          }
+          log(
+            'commerce-ops',
+            `selectCartShipping OK shippingMinor=${shipAmt}`,
+          );
+        }
+
+        if (hasTaxStandard) {
+          await gql(
+            `mutation($input: SetCartTaxContextInput!) {
+              setCartTaxContext(input: $input) {
+                id
+                taxPricingMode
+                taxCountryCode
+                taxProviderCode
+              }
+            }`,
+            {
+              input: {
+                cartId,
+                pricingMode: 'exclusive',
+                countryCode: 'US',
+                providerCode: 'standard',
+              },
+            },
+            token,
+          );
+          log('commerce-ops', 'setCartTaxContext exclusive/US/standard OK');
+        }
+      } else if (SKIP_COMMERCE_OPS) {
+        log('commerce-ops', 'skipped (SKIP_COMMERCE_OPS=1)');
+      }
+
       log('commerce', 'prepareCheckout');
       const checkoutData = await gql(
         `mutation($cartId: ID!) {
           prepareCheckout(cartId: $cartId) {
             cartId
             reservationIds
-            totals { totalMinor currencyCode }
-            cart { status }
+            totals {
+              subtotalMinor
+              shippingMinor
+              taxMinor
+              discountMinor
+              totalMinor
+              currencyCode
+            }
+            cart { status shippingMethodCode shippingMinor taxMinor }
           }
         }`,
         { cartId },
@@ -350,6 +556,29 @@ async function main() {
         );
       }
 
+      const totals = checkoutData.prepareCheckout.totals;
+      if (wantOps && hasFlatRate) {
+        if (totals.shippingMinor !== OPS_FLAT_RATE_AMOUNT) {
+          fail(
+            'commerce-ops',
+            `prepareCheckout shippingMinor expected ${OPS_FLAT_RATE_AMOUNT}, got ${totals.shippingMinor}`,
+          );
+        }
+      }
+      if (wantOps && hasTaxStandard) {
+        const taxMinor = BigInt(String(totals.taxMinor ?? '0'));
+        if (taxMinor <= 0n) {
+          fail(
+            'commerce-ops',
+            `prepareCheckout taxMinor expected > 0 (rate ${OPS_TAX_RATE_BPS} bps), got ${totals.taxMinor}`,
+          );
+        }
+        log(
+          'commerce-ops',
+          `prepareCheckout totals shipping=${totals.shippingMinor} tax=${totals.taxMinor} total=${totals.totalMinor}`,
+        );
+      }
+
       log('commerce', 'placeOrder (manual)');
       const orderData = await gql(
         `mutation($input: PlaceOrderInput!) {
@@ -358,6 +587,9 @@ async function main() {
             status
             cartId
             totalMinor
+            shippingMinor
+            taxMinor
+            shippingMethodCode
             lines { variantId quantity }
           }
         }`,
@@ -369,9 +601,32 @@ async function main() {
       if (order.status !== 'confirmed') {
         fail('commerce', `expected confirmed order, got ${order.status}`);
       }
+      if (wantOps && hasFlatRate) {
+        if (order.shippingMinor !== OPS_FLAT_RATE_AMOUNT) {
+          fail(
+            'commerce-ops',
+            `order.shippingMinor expected ${OPS_FLAT_RATE_AMOUNT}, got ${order.shippingMinor}`,
+          );
+        }
+        if (order.shippingMethodCode !== 'flat-rate') {
+          fail(
+            'commerce-ops',
+            `order.shippingMethodCode expected flat-rate, got ${order.shippingMethodCode}`,
+          );
+        }
+      }
+      if (wantOps && hasTaxStandard) {
+        const orderTax = BigInt(String(order.taxMinor ?? '0'));
+        if (orderTax <= 0n) {
+          fail(
+            'commerce-ops',
+            `order.taxMinor expected > 0, got ${order.taxMinor}`,
+          );
+        }
+      }
       log(
         'commerce',
-        `order ${order.id} status=${order.status} total=${order.totalMinor} OK`,
+        `order ${order.id} status=${order.status} total=${order.totalMinor} shipping=${order.shippingMinor} tax=${order.taxMinor} OK`,
       );
     } else {
       log('commerce', 'skipped (SKIP_COMMERCE=1)');

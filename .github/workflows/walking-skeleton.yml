@@ -102,6 +102,16 @@ jobs:
         with:
           repository: ${{ github.repository_owner }}/plugin-manual-payment
           path: plugin-manual-payment
+      - name: Checkout plugin-shipping-flat-rate
+        uses: actions/checkout@v4
+        with:
+          repository: ${{ github.repository_owner }}/plugin-shipping-flat-rate
+          path: plugin-shipping-flat-rate
+      - name: Checkout plugin-tax-standard
+        uses: actions/checkout@v4
+        with:
+          repository: ${{ github.repository_owner }}/plugin-tax-standard
+          path: plugin-tax-standard
       - uses: pnpm/action-setup@v4
         with:
           version: 11.7.0
@@ -114,6 +124,8 @@ jobs:
             opoha-cli/pnpm-lock.yaml
             opoha-plugin-sdk/pnpm-lock.yaml
             plugin-manual-payment/pnpm-lock.yaml
+            plugin-shipping-flat-rate/pnpm-lock.yaml
+            plugin-tax-standard/pnpm-lock.yaml
       - name: Prepare .env
         run: |
           cp .env.example .env
@@ -127,12 +139,16 @@ jobs:
         run: |
           pnpm install
           pnpm build
-      - name: Build plugin-sdk + manual-payment
-        working-directory: plugin-manual-payment
+      - name: Build plugin-sdk + ops plugins
         run: |
-          pnpm install --dir ../opoha-plugin-sdk
-          pnpm --dir ../opoha-plugin-sdk build
-          pnpm install
-          pnpm build
-      - name: Walking skeleton (incl. doctor + plugin)
+          pnpm install --dir opoha-plugin-sdk
+          pnpm --dir opoha-plugin-sdk build
+          for plugin in plugin-manual-payment plugin-shipping-flat-rate plugin-tax-standard; do
+            pnpm install --dir "$plugin"
+            pnpm --dir "$plugin" build
+          done
+      - name: Walking skeleton (incl. doctor + commerce ops)
         run: pnpm walking-skeleton
+        env:
+          OPOHA_FLAT_RATE_AMOUNT: '500'
+          OPOHA_TAX_STANDARD_DEFAULT_RATE_BPS: '1000'
