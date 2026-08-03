@@ -6,7 +6,7 @@ import {
   Optional,
 } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { QueryFailedError, Repository } from 'typeorm';
+import { IsNull, QueryFailedError, Repository } from 'typeorm';
 
 import { EventBusService } from '../../event-bus/event-bus.service';
 import { CoreEventName } from '../../event-bus/event-catalog';
@@ -27,6 +27,16 @@ function isUniqueViolation(error: unknown): boolean {
     error.driverError !== null &&
     'code' in error.driverError &&
     (error.driverError as { code: string }).code === '23505'
+  );
+}
+
+function isFkViolation(error: unknown): boolean {
+  return (
+    error instanceof QueryFailedError &&
+    typeof error.driverError === 'object' &&
+    error.driverError !== null &&
+    'code' in error.driverError &&
+    (error.driverError as { code: string }).code === '23503'
   );
 }
 
@@ -51,6 +61,7 @@ function toProductType(row: ProductEntity): ProductType {
     slug: row.slug,
     description: row.description,
     isActive: row.isActive,
+    storeId: row.storeId ?? null,
     createdAt: row.createdAt,
     updatedAt: row.updatedAt,
     variants: (row.variants ?? []).map(toVariantType),
@@ -66,6 +77,19 @@ function assertMinorUnits(value: string): string {
   return value;
 }
 
+function normalizeStoreId(
+  value: string | null | undefined,
+): string | null | undefined {
+  if (value === undefined) {
+    return undefined;
+  }
+  if (value === null) {
+    return null;
+  }
+  const trimmed = value.trim();
+  return trimmed.length === 0 ? null : trimmed;
+}
+
 @Injectable()
 export class ProductsService {
   constructor(
@@ -76,8 +100,17 @@ export class ProductsService {
     @Optional() private readonly eventBus?: EventBusService,
   ) {}
 
-  async findAll(): Promise<ProductType[]> {
+  /**
+   * List products. When `storeId` is provided, returns shared (`storeId` null)
+   * plus store-owned rows for that store. Omit for admin/global listing.
+   */
+  async findAll(storeId?: string | null): Promise<ProductType[]> {
+    const scope = normalizeStoreId(storeId);
     const rows = await this.products.find({
+      where:
+        scope === undefined || scope === null
+          ? undefined
+          : [{ storeId: IsNull() }, { storeId: scope }],
       order: { createdAt: 'ASC' },
       relations: { variants: true },
     });
@@ -96,11 +129,13 @@ export class ProductsService {
   }
 
   async create(input: CreateProductInput): Promise<ProductType> {
+    const storeId = normalizeStoreId(input.storeId) ?? null;
     const product = this.products.create({
       name: input.name.trim(),
       slug: input.slug.trim(),
       description: input.description?.trim() ?? null,
       isActive: input.isActive ?? true,
+      storeId,
     });
 
     try {
@@ -112,6 +147,9 @@ export class ProductsService {
       await this.publishProductEvent(CoreEventName.ProductCreated, created);
       return created;
     } catch (error) {
+      if (isFkViolation(error)) {
+        throw new BadRequestException(`Store ${storeId} not found`);
+      }
       if (isUniqueViolation(error)) {
         throw new ConflictException(
           `Product slug or variant SKU already exists`,
@@ -138,12 +176,18 @@ export class ProductsService {
     if (input.isActive !== undefined) {
       row.isActive = input.isActive;
     }
+    if (input.storeId !== undefined) {
+      row.storeId = normalizeStoreId(input.storeId) ?? null;
+    }
     try {
       await this.products.save(row);
       const updated = await this.findById(id);
       await this.publishProductEvent(CoreEventName.ProductUpdated, updated);
       return updated;
     } catch (error) {
+      if (isFkViolation(error)) {
+        throw new BadRequestException(`Store ${row.storeId} not found`);
+      }
       if (isUniqueViolation(error)) {
         throw new ConflictException(`Product slug "${row.slug}" already exists`);
       }
@@ -187,6 +231,7 @@ export class ProductsService {
         name: product.name,
         description: product.description,
         isActive: product.isActive,
+        storeId: product.storeId,
       },
     });
   }

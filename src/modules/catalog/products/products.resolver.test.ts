@@ -18,6 +18,7 @@ describe('ProductsResolver.reviewAggregate (Phase 4 D-04)', () => {
     slug: 'widget',
     description: null,
     isActive: true,
+    storeId: null,
     createdAt: new Date('2026-08-03T00:00:00Z'),
     updatedAt: new Date('2026-08-03T00:00:00Z'),
   } satisfies ProductType;

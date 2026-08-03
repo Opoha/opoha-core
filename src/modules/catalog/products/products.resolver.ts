@@ -71,11 +71,14 @@ export class ProductsResolver {
 
   @Query(() => [ProductType], {
     name: 'products',
-    description: 'List catalog products',
+    description:
+      'List catalog products. Optional storeId returns shared + store-owned rows for that store.',
   })
   @RequirePermission('product:read')
-  products(): Promise<ProductType[]> {
-    return this.productsService.findAll();
+  products(
+    @Args('storeId', { type: () => ID, nullable: true }) storeId?: string,
+  ): Promise<ProductType[]> {
+    return this.productsService.findAll(storeId);
   }
 
   @Query(() => ProductType, {

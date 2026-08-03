@@ -23,6 +23,13 @@ export class CategoryType {
   @Field(() => Boolean)
   isActive!: boolean;
 
+  /**
+   * Owning store id. Null = shared catalog (visible to all stores).
+   * Set = store-owned / isolated.
+   */
+  @Field(() => ID, { nullable: true })
+  storeId!: string | null;
+
   @Field(() => Date)
   createdAt!: Date;
 
@@ -49,6 +56,12 @@ export class CreateCategoryInput {
 
   @Field(() => Boolean, { nullable: true, defaultValue: true })
   isActive?: boolean;
+
+  /**
+   * Omit / null = shared catalog. Set to a store id for store-owned category.
+   */
+  @Field(() => ID, { nullable: true })
+  storeId?: string | null;
 }
 
 @InputType()
@@ -70,4 +83,10 @@ export class UpdateCategoryInput {
 
   @Field(() => Boolean, { nullable: true })
   isActive?: boolean;
+
+  /**
+   * Set to reassign ownership. Pass null to make shared.
+   */
+  @Field(() => ID, { nullable: true })
+  storeId?: string | null;
 }

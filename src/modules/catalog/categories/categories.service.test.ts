@@ -29,14 +29,39 @@ function createCategoryRepo(store: Map<string, CategoryEntity>) {
 describe('CategoriesService', () => {
   let store: Map<string, CategoryEntity>;
   let service: CategoriesService;
+  let repo: ReturnType<typeof createCategoryRepo>;
 
   beforeEach(() => {
     store = new Map();
-    service = new CategoriesService(createCategoryRepo(store) as never);
+    repo = createCategoryRepo(store);
+    repo.find = vi.fn(async (opts?: { where?: unknown }) => {
+      let rows = [...store.values()];
+      const where = opts?.where;
+      if (Array.isArray(where)) {
+        rows = rows.filter((row) => {
+          const sid = row.storeId ?? null;
+          return where.some((clause: { storeId?: unknown }) => {
+            const op = clause.storeId;
+            if (
+              typeof op === 'object' &&
+              op !== null &&
+              'type' in op &&
+              (op as { type: string }).type === 'isNull'
+            ) {
+              return sid === null;
+            }
+            return sid === op;
+          });
+        });
+      }
+      return rows;
+    });
+    service = new CategoriesService(repo as never);
   });
 
   it('creates nested categories and rejects self-parent', async () => {
     const root = await service.create({ name: 'Apparel', slug: 'apparel' });
+    expect(root.storeId).toBeNull();
     const child = await service.create({
       name: 'Tees',
       slug: 'tees',
@@ -47,6 +72,23 @@ describe('CategoriesService', () => {
     await expect(
       service.update(root.id, { parentId: root.id }),
     ).rejects.toThrow(/own parent/);
+  });
+
+  it('scopes findAll to shared + store-owned for a store', async () => {
+    await service.create({ name: 'Shared', slug: 'shared' });
+    await service.create({
+      name: 'A only',
+      slug: 'a-only',
+      storeId: 'store-a',
+    });
+    await service.create({
+      name: 'B only',
+      slug: 'b-only',
+      storeId: 'store-b',
+    });
+
+    const forA = await service.findAll('store-a');
+    expect(forA.map((c) => c.slug).sort()).toEqual(['a-only', 'shared']);
   });
 
   it('rejects cycles when reparenting', async () => {
@@ -63,8 +105,12 @@ describe('CategoriesService', () => {
 
   it('updates and deletes categories', async () => {
     const created = await service.create({ name: 'Gear', slug: 'gear' });
-    const updated = await service.update(created.id, { name: 'Outdoor' });
+    const updated = await service.update(created.id, {
+      name: 'Outdoor',
+      storeId: 'store-a',
+    });
     expect(updated.name).toBe('Outdoor');
+    expect(updated.storeId).toBe('store-a');
 
     const removed = await service.remove(created.id);
     expect(removed.id).toBe(created.id);

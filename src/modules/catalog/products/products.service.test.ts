@@ -51,11 +51,12 @@ describe('ProductsService', () => {
   let products: Map<string, ProductEntity>;
   let variantsByProduct: Map<string, ProductVariantEntity[]>;
   let service: ProductsService;
+  let productRepo: ReturnType<typeof createProductRepo>;
 
   beforeEach(() => {
     products = new Map();
     variantsByProduct = new Map();
-    const productRepo = createProductRepo(products);
+    productRepo = createProductRepo(products);
     productRepo.findOne = vi.fn(async ({ where }: { where: { id: string } }) => {
       const row = products.get(where.id);
       if (!row) return null;
@@ -64,12 +65,31 @@ describe('ProductsService', () => {
         variants: variantsByProduct.get(where.id) ?? [],
       };
     });
-    productRepo.find = vi.fn(async () =>
-      [...products.values()].map((row) => ({
+    productRepo.find = vi.fn(async (opts?: { where?: unknown }) => {
+      let rows = [...products.values()];
+      const where = opts?.where;
+      if (Array.isArray(where)) {
+        rows = rows.filter((row) => {
+          const sid = row.storeId ?? null;
+          return where.some((clause: { storeId?: unknown }) => {
+            const op = clause.storeId;
+            if (
+              typeof op === 'object' &&
+              op !== null &&
+              'type' in op &&
+              (op as { type: string }).type === 'isNull'
+            ) {
+              return sid === null;
+            }
+            return sid === op;
+          });
+        });
+      }
+      return rows.map((row) => ({
         ...row,
         variants: variantsByProduct.get(row.id) ?? [],
-      })),
-    );
+      }));
+    });
     service = new ProductsService(
       productRepo as never,
       createVariantRepo(variantsByProduct) as never,
@@ -88,9 +108,30 @@ describe('ProductsService', () => {
 
     expect(created.name).toBe('Tee');
     expect(created.slug).toBe('tee');
+    expect(created.storeId).toBeNull();
     expect(created.variants).toHaveLength(1);
     expect(created.variants?.[0]?.sku).toBe('TEE-S');
     expect(created.variants?.[0]?.priceMinor).toBe('1999');
+  });
+
+  it('scopes findAll to shared + store-owned for a store', async () => {
+    await service.create({ name: 'Shared', slug: 'shared' });
+    await service.create({
+      name: 'Store A',
+      slug: 'a-only',
+      storeId: 'store-a',
+    });
+    await service.create({
+      name: 'Store B',
+      slug: 'b-only',
+      storeId: 'store-b',
+    });
+
+    const forA = await service.findAll('store-a');
+    expect(forA.map((p) => p.slug).sort()).toEqual(['a-only', 'shared']);
+
+    const all = await service.findAll();
+    expect(all).toHaveLength(3);
   });
 
   it('rejects non-integer priceMinor', async () => {
@@ -105,8 +146,12 @@ describe('ProductsService', () => {
 
   it('updates and deletes products', async () => {
     const created = await service.create({ name: 'Hat', slug: 'hat' });
-    const updated = await service.update(created.id, { name: 'Cap' });
+    const updated = await service.update(created.id, {
+      name: 'Cap',
+      storeId: 'store-a',
+    });
     expect(updated.name).toBe('Cap');
+    expect(updated.storeId).toBe('store-a');
 
     const removed = await service.remove(created.id);
     expect(removed.id).toBe(created.id);

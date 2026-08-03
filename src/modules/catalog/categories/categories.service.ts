@@ -5,7 +5,7 @@ import {
   NotFoundException,
 } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { QueryFailedError, Repository } from 'typeorm';
+import { IsNull, QueryFailedError, Repository } from 'typeorm';
 
 import { CategoryEntity } from '../entities/category.entity';
 import type {
@@ -24,6 +24,16 @@ function isUniqueViolation(error: unknown): boolean {
   );
 }
 
+function isFkViolation(error: unknown): boolean {
+  return (
+    error instanceof QueryFailedError &&
+    typeof error.driverError === 'object' &&
+    error.driverError !== null &&
+    'code' in error.driverError &&
+    (error.driverError as { code: string }).code === '23503'
+  );
+}
+
 function toCategoryType(row: CategoryEntity): CategoryType {
   return {
     id: row.id,
@@ -33,9 +43,23 @@ function toCategoryType(row: CategoryEntity): CategoryType {
     parentId: row.parentId,
     sortOrder: row.sortOrder,
     isActive: row.isActive,
+    storeId: row.storeId ?? null,
     createdAt: row.createdAt,
     updatedAt: row.updatedAt,
   };
+}
+
+function normalizeStoreId(
+  value: string | null | undefined,
+): string | null | undefined {
+  if (value === undefined) {
+    return undefined;
+  }
+  if (value === null) {
+    return null;
+  }
+  const trimmed = value.trim();
+  return trimmed.length === 0 ? null : trimmed;
 }
 
 @Injectable()
@@ -45,8 +69,17 @@ export class CategoriesService {
     private readonly categories: Repository<CategoryEntity>,
   ) {}
 
-  async findAll(): Promise<CategoryType[]> {
+  /**
+   * List categories. When `storeId` is provided, returns shared (`storeId` null)
+   * plus store-owned rows for that store. Omit for admin/global listing.
+   */
+  async findAll(storeId?: string | null): Promise<CategoryType[]> {
+    const scope = normalizeStoreId(storeId);
     const rows = await this.categories.find({
+      where:
+        scope === undefined || scope === null
+          ? undefined
+          : [{ storeId: IsNull() }, { storeId: scope }],
       order: { sortOrder: 'ASC', createdAt: 'ASC' },
     });
     return rows.map(toCategoryType);
@@ -64,6 +97,7 @@ export class CategoriesService {
     if (input.parentId) {
       await this.assertParentExists(input.parentId);
     }
+    const storeId = normalizeStoreId(input.storeId) ?? null;
     const category = this.categories.create({
       name: input.name.trim(),
       slug: input.slug.trim(),
@@ -71,11 +105,15 @@ export class CategoriesService {
       parentId: input.parentId ?? null,
       sortOrder: input.sortOrder ?? 0,
       isActive: input.isActive ?? true,
+      storeId,
     });
     try {
       const saved = await this.categories.save(category);
       return this.findById(saved.id);
     } catch (error) {
+      if (isFkViolation(error)) {
+        throw new BadRequestException(`Store ${storeId} not found`);
+      }
       if (isUniqueViolation(error)) {
         throw new ConflictException(
           `Category slug "${category.slug}" already exists`,
@@ -115,10 +153,16 @@ export class CategoriesService {
     if (input.isActive !== undefined) {
       row.isActive = input.isActive;
     }
+    if (input.storeId !== undefined) {
+      row.storeId = normalizeStoreId(input.storeId) ?? null;
+    }
     try {
       await this.categories.save(row);
       return this.findById(id);
     } catch (error) {
+      if (isFkViolation(error)) {
+        throw new BadRequestException(`Store ${row.storeId} not found`);
+      }
       if (isUniqueViolation(error)) {
         throw new ConflictException(`Category slug "${row.slug}" already exists`);
       }

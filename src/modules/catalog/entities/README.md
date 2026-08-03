@@ -3,3 +3,14 @@
 **Owner:** `catalog` module (ADR-0005 / ADR-0010).
 
 Plugins must not alter these tables. Cross-module references use IDs resolved via services/DataLoaders.
+
+## Store scope (Phase 5 B-01)
+
+Products and categories carry optional `store_id` (FK to `stores.id`):
+
+| `store_id` | Mode | Visibility |
+|------------|------|------------|
+| `NULL` | Shared (default) | Visible to every store |
+| UUID | Store-owned | Visible only to that store |
+
+Existing single-store rows migrate as **shared** (`store_id` NULL). A default store is seeded only when none exists; catalog rows are not reassigned to it.

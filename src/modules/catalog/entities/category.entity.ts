@@ -2,6 +2,7 @@ import {
   Column,
   CreateDateColumn,
   Entity,
+  Index,
   JoinColumn,
   ManyToOne,
   OneToMany,
@@ -9,8 +10,15 @@ import {
   UpdateDateColumn,
 } from 'typeorm';
 
-/** OWNER: catalog module — plugins must not alter this table. */
+/**
+ * OWNER: catalog module — plugins must not alter this table.
+ *
+ * Store scope (Phase 5 B-01):
+ * - `storeId` null → shared catalog (visible to all stores)
+ * - `storeId` set → store-owned (isolated to that store)
+ */
 @Entity({ name: 'categories' })
+@Index('categories_store_id_idx', ['storeId'])
 export class CategoryEntity {
   @PrimaryGeneratedColumn('uuid')
   id!: string;
@@ -18,11 +26,18 @@ export class CategoryEntity {
   @Column({ type: 'text' })
   name!: string;
 
-  @Column({ type: 'text', unique: true })
+  @Column({ type: 'text' })
   slug!: string;
 
   @Column({ type: 'text', nullable: true })
   description!: string | null;
+
+  /**
+   * Owning store. Null = shared across stores.
+   * FK to `stores.id` (cross-module ID reference only).
+   */
+  @Column({ name: 'store_id', type: 'uuid', nullable: true })
+  storeId!: string | null;
 
   @Column({ name: 'parent_id', type: 'uuid', nullable: true })
   parentId!: string | null;

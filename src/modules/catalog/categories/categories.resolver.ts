@@ -20,11 +20,14 @@ export class CategoriesResolver {
 
   @Query(() => [CategoryType], {
     name: 'categories',
-    description: 'List catalog categories',
+    description:
+      'List catalog categories. Optional storeId returns shared + store-owned rows for that store.',
   })
   @RequirePermission('category:read')
-  categories(): Promise<CategoryType[]> {
-    return this.categoriesService.findAll();
+  categories(
+    @Args('storeId', { type: () => ID, nullable: true }) storeId?: string,
+  ): Promise<CategoryType[]> {
+    return this.categoriesService.findAll(storeId);
   }
 
   @Query(() => CategoryType, {
