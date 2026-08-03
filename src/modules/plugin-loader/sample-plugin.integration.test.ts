@@ -7,6 +7,7 @@ import { describe, expect, it } from 'vitest';
 import { EventBusService } from '../event-bus/event-bus.service';
 import { StorageAdapterRegistry } from '../files/public';
 import { PaymentProviderRegistry } from '../payment-engine/public';
+import { PromotionRuleRegistry } from '../promotions-engine/public';
 import { ShippingMethodRegistry } from '../shipping-engine/public';
 import { TaxProviderRegistry } from '../tax-engine/public';
 import { AdminExtensionRegistry } from './admin-extension-registry';
@@ -33,6 +34,7 @@ function createLoader(pluginPath: string) {
   const payment = new PaymentProviderRegistry();
   const shipping = new ShippingMethodRegistry();
   const tax = new TaxProviderRegistry();
+  const promotions = new PromotionRuleRegistry();
   const storage = new StorageAdapterRegistry();
   const config = {
     get: (key: string) => {
@@ -52,6 +54,7 @@ function createLoader(pluginPath: string) {
     payment,
     shipping,
     tax,
+    promotions,
     storage,
   );
   return { loader, contributions, admin, eventBus };
