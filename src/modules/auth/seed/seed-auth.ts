@@ -44,6 +44,11 @@ export const DEFAULT_PERMISSIONS = [
   { key: 'product-media:read', description: 'Read product media links' },
   { key: 'product-media:update', description: 'Update product media links' },
   { key: 'product-media:delete', description: 'Detach product media links' },
+  { key: 'inventory:create', description: 'Create inventory items for variants' },
+  { key: 'inventory:read', description: 'Read inventory stock levels' },
+  { key: 'inventory:adjust', description: 'Adjust inventory on-hand quantities' },
+  { key: 'inventory:reserve', description: 'Reserve inventory stock' },
+  { key: 'inventory:release', description: 'Release inventory reservations' },
 ] as const;
 
 export type SeedAdminOptions = {
