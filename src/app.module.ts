@@ -15,6 +15,7 @@ import { FilesModule } from './modules/files/public';
 import { ShellResolver } from './modules/graphql/shell.resolver';
 import { HealthModule } from './modules/health/health.module';
 import { InventoryModule } from './modules/inventory/public';
+import { SupplyModule } from './modules/supply/public';
 import { WarehousesModule } from './modules/warehouses/public';
 import { LocalizationModule } from './modules/localization/public';
 import { CorrelationIdMiddleware } from './modules/logging/correlation-id.middleware';
@@ -42,6 +43,7 @@ import { PromotionsEngineModule } from './modules/promotions-engine/public';
     CatalogModule,
     WarehousesModule,
     InventoryModule,
+    SupplyModule,
     CustomerModule,
     OrderModule,
     LocalizationModule,
