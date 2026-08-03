@@ -393,6 +393,128 @@ describe('OrdersService place + status (D-04 / D-05 / D-06 / A-04)', () => {
     });
   });
 
+  it('placeOrder stamps vendorId and publishes VendorOrderRouted (C-02/C-04)', async () => {
+    const vendorId = 'aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa';
+    const products = {
+      find: vi.fn(async () => [{ id: 'prod-1', vendorId }]),
+    };
+    // Rebuild with vendor-scoped catalog; reuse sibling deps from beforeEach via placeOrder path.
+    const promotions = {
+      applyOrZero: vi.fn(async () => ({
+        currencyCode: 'USD',
+        discountMinor: '0',
+        applications: [],
+        freeShipping: false,
+      })),
+    };
+    const giftCards = {
+      quoteRedeem: vi.fn(async () => ({
+        giftCardId: '',
+        code: '',
+        currencyCode: 'USD',
+        availableMinor: '0',
+        appliedMinor: '0',
+      })),
+      redeem: vi.fn(async () => ({
+        id: 'gc-1',
+        code: 'GC-1',
+        currencyCode: 'USD',
+        initialBalanceMinor: '0',
+        balanceMinor: '0',
+        status: 'depleted',
+        customerId: null,
+        purchasedOrderId: null,
+        expiresAt: null,
+        issuedAt: now,
+        metadata: null,
+        createdAt: now,
+        updatedAt: now,
+      })),
+    };
+    const loyalty = {
+      quoteRedeem: vi.fn(async () => ({
+        customerId: '',
+        availablePoints: 0,
+        pointsToRedeem: 0,
+        appliedMinor: '0',
+      })),
+      redeem: vi.fn(async () => ({
+        id: 'la-1',
+        customerId: '',
+        pointsBalance: 0,
+        lifetimePointsEarned: 0,
+        lifetimePointsRedeemed: 0,
+        createdAt: now,
+        updatedAt: now,
+      })),
+    };
+    const quotes = {
+      requireAcceptedForConvert: vi.fn(),
+      markConverted: vi.fn(),
+    };
+
+    linesRepo.save.mockImplementation(
+      async (rows: Array<Record<string, unknown>>) =>
+        rows.map((row, i) => ({
+          id: `ol-${i + 1}`,
+          createdAt: now,
+          ...row,
+        })),
+    );
+
+    service = new OrdersService(
+      ordersRepo as never,
+      linesRepo as never,
+      {
+        find: vi.fn(async () => [{ id: variantId, productId: 'prod-1' }]),
+      } as never,
+      products as never,
+      carts as unknown as CartService,
+      inventory as never,
+      eventBus as never,
+      payments as never,
+      tax as never,
+      promotions as never,
+      giftCards as never,
+      loyalty as never,
+      stores as never,
+      companies as never,
+      quotes as never,
+    );
+
+    const order = await service.placeOrder({
+      cartId,
+      paymentMethod: 'manual',
+      orderSource: 'marketplace',
+    });
+
+    expect(order.orderSource).toBe('marketplace');
+    expect(order.vendorId).toBe(vendorId);
+    expect(ordersRepo.create).toHaveBeenCalledWith(
+      expect.objectContaining({
+        orderSource: 'marketplace',
+        vendorId,
+      }),
+    );
+    expect(linesRepo.create).toHaveBeenCalledWith(
+      expect.objectContaining({
+        vendorId,
+        variantId,
+      }),
+    );
+
+    const routed = eventBus.publish.mock.calls.find(
+      (call) => call[0].eventName === CoreEventName.VendorOrderRouted,
+    );
+    expect(routed?.[0].data).toMatchObject({
+      orderId: order.id,
+      vendorId,
+      orderSource: 'marketplace',
+      lineCount: 1,
+    });
+    expect(routed?.[0].data.lineIds).toEqual(['ol-1']);
+  });
+
   it('rejects invalid orderSource', async () => {
     await expect(
       service.placeOrder({
