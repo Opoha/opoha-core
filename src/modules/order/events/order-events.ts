@@ -2,6 +2,7 @@ import { z } from 'zod';
 
 import { CoreEventName } from '../../event-bus/event-catalog';
 import type { DomainEvent } from '../../event-bus/domain-event';
+import { ORDER_SOURCES } from '../entities/order-source';
 import { ORDER_STATUSES } from '../entities/order-status';
 
 export const cartCreatedDataSchema = z
@@ -69,12 +70,17 @@ export type CheckoutPreparedEvent = DomainEvent<CheckoutPreparedData>;
 
 const orderStatusSchema = z.enum(ORDER_STATUSES);
 
+const orderSourceSchema = z.enum(ORDER_SOURCES);
+
 export const orderCreatedDataSchema = z
   .object({
     orderId: z.string().uuid(),
     cartId: z.string().uuid().nullable(),
     storeId: z.string().uuid().optional(),
     customerId: z.string().uuid().nullable(),
+    /** Phase 7 omnichannel channel — additive field retained in v1.0 freeze. */
+    orderSource: orderSourceSchema.optional().default('web'),
+    orderSource: z.string().min(1).optional(),
     status: orderStatusSchema,
     currencyCode: z.string().min(1),
     totalMinor: z.string().min(1),
