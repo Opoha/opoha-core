@@ -12,6 +12,10 @@ import type { StoreCatalogMode } from '../../config/public';
 import { StoreChannelSettingsService } from '../../config/public';
 import { EventBusService } from '../../event-bus/event-bus.service';
 import { CoreEventName } from '../../event-bus/event-catalog';
+import {
+  assertFulfillmentMode,
+  type FulfillmentMode,
+} from '../entities/fulfillment-mode';
 import { ProductVariantEntity } from '../entities/product-variant.entity';
 import { ProductEntity } from '../entities/product.entity';
 import { catalogStoreWhere } from '../store-catalog-scope';
@@ -52,6 +56,7 @@ function toVariantType(row: ProductVariantEntity): ProductVariantType {
     name: row.name,
     priceMinor: String(row.priceMinor),
     currencyCode: row.currencyCode,
+    fulfillmentMode: row.fulfillmentMode ?? 'physical',
     isActive: row.isActive,
     createdAt: row.createdAt,
     updatedAt: row.updatedAt,
@@ -65,11 +70,28 @@ function toProductType(row: ProductEntity): ProductType {
     slug: row.slug,
     description: row.description,
     isActive: row.isActive,
+    fulfillmentMode: row.fulfillmentMode ?? 'physical',
     storeId: row.storeId ?? null,
     createdAt: row.createdAt,
     updatedAt: row.updatedAt,
     variants: (row.variants ?? []).map(toVariantType),
   };
+}
+
+function parseFulfillmentMode(
+  value: string | undefined,
+  fallback: FulfillmentMode = 'physical',
+): FulfillmentMode {
+  if (value === undefined || value.trim() === '') {
+    return fallback;
+  }
+  try {
+    return assertFulfillmentMode(value.trim());
+  } catch {
+    throw new BadRequestException(
+      `fulfillmentMode must be one of: physical, digital, service (got "${value}")`,
+    );
+  }
 }
 
 function assertMinorUnits(value: string): string {
@@ -170,18 +192,20 @@ export class ProductsService {
 
   async create(input: CreateProductInput): Promise<ProductType> {
     const storeId = normalizeStoreId(input.storeId) ?? null;
+    const fulfillmentMode = parseFulfillmentMode(input.fulfillmentMode);
     const product = this.products.create({
       name: input.name.trim(),
       slug: input.slug.trim(),
       description: input.description?.trim() ?? null,
       isActive: input.isActive ?? true,
+      fulfillmentMode,
       storeId,
     });
 
     try {
       const saved = await this.products.save(product);
       if (input.variants?.length) {
-        await this.createVariants(saved.id, input.variants);
+        await this.createVariants(saved.id, input.variants, fulfillmentMode);
       }
       const created = await this.findById(saved.id);
       await this.publishProductEvent(CoreEventName.ProductCreated, created);
@@ -215,6 +239,9 @@ export class ProductsService {
     }
     if (input.isActive !== undefined) {
       row.isActive = input.isActive;
+    }
+    if (input.fulfillmentMode !== undefined) {
+      row.fulfillmentMode = parseFulfillmentMode(input.fulfillmentMode);
     }
     if (input.storeId !== undefined) {
       row.storeId = normalizeStoreId(input.storeId) ?? null;
@@ -271,6 +298,7 @@ export class ProductsService {
         name: product.name,
         description: product.description,
         isActive: product.isActive,
+        fulfillmentMode: product.fulfillmentMode,
         storeId: product.storeId,
       },
     });
@@ -279,6 +307,7 @@ export class ProductsService {
   private async createVariants(
     productId: string,
     inputs: CreateProductVariantInput[],
+    productFulfillmentMode: FulfillmentMode,
   ): Promise<void> {
     const rows = inputs.map((input) =>
       this.variants.create({
@@ -287,6 +316,10 @@ export class ProductsService {
         name: input.name?.trim() ?? null,
         priceMinor: assertMinorUnits(input.priceMinor),
         currencyCode: (input.currencyCode ?? 'USD').trim().toUpperCase(),
+        fulfillmentMode: parseFulfillmentMode(
+          input.fulfillmentMode,
+          productFulfillmentMode,
+        ),
         isActive: input.isActive ?? true,
       }),
     );

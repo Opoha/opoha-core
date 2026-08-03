@@ -12,11 +12,14 @@ export {
   OrderLineEntity,
   ORDER_STATUSES,
   ORDER_STATUS_TRANSITIONS,
+  ORDER_SOURCES,
+  assertOrderSource,
   canTransitionOrderStatus,
+  isOrderSource,
   isOrderStatus,
   orderEntities,
 } from '../entities';
-export type { CartStatus, OrderStatus } from '../entities';
+export type { CartStatus, OrderSource, OrderStatus } from '../entities';
 export type {
   AddCartLineInput,
   CartLineType,

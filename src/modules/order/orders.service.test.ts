@@ -321,6 +321,7 @@ describe('OrdersService place + status (D-04 / D-05 / D-06 / A-04)', () => {
 
     expect(order.status).toBe('confirmed');
     expect(order.storeId).toBe('store-a');
+    expect(order.orderSource).toBe('web');
     expect(order.totalMinor).toBe('2000');
     expect(payments.authorize).toHaveBeenCalledWith(
       expect.objectContaining({
@@ -347,6 +348,29 @@ describe('OrdersService place + status (D-04 / D-05 / D-06 / A-04)', () => {
     expect(timelineTypes).toEqual(
       expect.arrayContaining(['created', 'payment_recorded', 'status_changed']),
     );
+  });
+
+  it('placeOrder records orderSource=pos (A-03)', async () => {
+    const order = await service.placeOrder({
+      cartId,
+      paymentMethod: 'manual',
+      orderSource: 'pos',
+    });
+    expect(order.orderSource).toBe('pos');
+    const created = eventBus.publish.mock.calls.find(
+      (call) => call[0].eventName === CoreEventName.OrderCreated,
+    );
+    expect(created?.[0].data.orderSource).toBe('pos');
+  });
+
+  it('rejects invalid orderSource', async () => {
+    await expect(
+      service.placeOrder({
+        cartId,
+        paymentMethod: 'manual',
+        orderSource: 'mobile',
+      }),
+    ).rejects.toBeInstanceOf(BadRequestException);
   });
 
   it('zero payment rejects non-zero totals', async () => {

@@ -64,6 +64,11 @@ export const CoreEventName = {
   B2bQuoteCreated: 'B2bQuoteCreated',
   B2bQuoteStatusChanged: 'B2bQuoteStatusChanged',
   B2bQuoteConverted: 'B2bQuoteConverted',
+  /** Phase 7 omnichannel — reserved; published when channel slices land. */
+  PosSaleCompleted: 'PosSaleCompleted',
+  VendorOrderRouted: 'VendorOrderRouted',
+  DigitalFulfillmentIssued: 'DigitalFulfillmentIssued',
+  SubscriptionRenewed: 'SubscriptionRenewed',
 } as const;
 
 export type CoreEventName =

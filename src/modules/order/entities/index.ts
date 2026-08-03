@@ -18,9 +18,15 @@ export {
 };
 export type { CartStatus } from './cart.entity';
 export type { OrderStatus } from './order-status';
+export type { OrderSource } from './order-source';
 export {
   ORDER_STATUSES,
   ORDER_STATUS_TRANSITIONS,
   canTransitionOrderStatus,
   isOrderStatus,
 } from './order-status';
+export {
+  ORDER_SOURCES,
+  assertOrderSource,
+  isOrderSource,
+} from './order-source';

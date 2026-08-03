@@ -2,16 +2,19 @@ import {
   Column,
   CreateDateColumn,
   Entity,
+  Index,
   JoinColumn,
   ManyToOne,
   PrimaryGeneratedColumn,
   UpdateDateColumn,
 } from 'typeorm';
 
+import type { FulfillmentMode } from './fulfillment-mode';
 import { ProductEntity } from './product.entity';
 
 /** OWNER: catalog module — plugins must not alter this table. */
 @Entity({ name: 'product_variants' })
+@Index('product_variants_fulfillment_mode_idx', ['fulfillmentMode'])
 export class ProductVariantEntity {
   @PrimaryGeneratedColumn('uuid')
   id!: string;
@@ -37,6 +40,13 @@ export class ProductVariantEntity {
 
   @Column({ name: 'currency_code', type: 'text', default: 'USD' })
   currencyCode!: string;
+
+  /**
+   * Authoritative fulfillment mode at purchase (Phase 7 A-02).
+   * physical | digital | service
+   */
+  @Column({ name: 'fulfillment_mode', type: 'text', default: 'physical' })
+  fulfillmentMode!: FulfillmentMode;
 
   @Column({ name: 'is_active', type: 'boolean', default: true })
   isActive!: boolean;

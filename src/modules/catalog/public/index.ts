@@ -21,7 +21,11 @@ export {
   ProductTranslationEntity,
   ProductVariantEntity,
   catalogEntities,
+  FULFILLMENT_MODES,
+  assertFulfillmentMode,
+  isFulfillmentMode,
 } from '../entities';
+export type { FulfillmentMode } from '../entities';
 export type {
   CreateProductInput,
   UpdateProductInput,

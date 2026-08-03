@@ -110,9 +110,41 @@ describe('ProductsService', () => {
     expect(created.name).toBe('Tee');
     expect(created.slug).toBe('tee');
     expect(created.storeId).toBeNull();
+    expect(created.fulfillmentMode).toBe('physical');
     expect(created.variants).toHaveLength(1);
     expect(created.variants?.[0]?.sku).toBe('TEE-S');
     expect(created.variants?.[0]?.priceMinor).toBe('1999');
+    expect(created.variants?.[0]?.fulfillmentMode).toBe('physical');
+  });
+
+  it('creates digital product/SKU fulfillment modes (A-02)', async () => {
+    const created = await service.create({
+      name: 'Ebook',
+      slug: 'ebook',
+      fulfillmentMode: 'digital',
+      variants: [
+        { sku: 'EBK-1', priceMinor: '999' },
+        {
+          sku: 'EBK-SVC',
+          priceMinor: '499',
+          fulfillmentMode: 'service',
+        },
+      ],
+    });
+
+    expect(created.fulfillmentMode).toBe('digital');
+    expect(created.variants?.[0]?.fulfillmentMode).toBe('digital');
+    expect(created.variants?.[1]?.fulfillmentMode).toBe('service');
+  });
+
+  it('rejects invalid fulfillmentMode', async () => {
+    await expect(
+      service.create({
+        name: 'Bad',
+        slug: 'bad-mode',
+        fulfillmentMode: 'download',
+      }),
+    ).rejects.toThrow(/fulfillmentMode/);
   });
 
   it('scopes findAll to shared + store-owned for a store', async () => {

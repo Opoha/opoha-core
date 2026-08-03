@@ -355,6 +355,11 @@ export class OrderType {
   @Field(() => ID, { nullable: true })
   cartId!: string | null;
 
+  @Field(() => String, {
+    description: 'Sales channel: web | pos | marketplace (Phase 7 A-03)',
+  })
+  orderSource!: string;
+
   @Field(() => String)
   status!: string;
 
@@ -545,6 +550,13 @@ export class PlaceOrderInput {
     defaultValue: 'manual',
   })
   paymentMethod?: string;
+
+  @Field(() => String, {
+    nullable: true,
+    defaultValue: 'web',
+    description: 'Sales channel: web | pos | marketplace (default web)',
+  })
+  orderSource?: string;
 }
 
 @InputType({ description: 'Transition an order to a new status' })

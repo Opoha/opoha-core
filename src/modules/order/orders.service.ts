@@ -27,6 +27,10 @@ import {
 } from './checkout-tax';
 import { CartService } from './cart.service';
 import {
+  assertOrderSource,
+  type OrderSource,
+} from './entities/order-source';
+import {
   canTransitionOrderStatus,
   isOrderStatus,
   type OrderStatus,
@@ -61,6 +65,19 @@ function toLineType(row: OrderLineEntity): OrderLineType {
   };
 }
 
+function parseOrderSource(value: string | undefined): OrderSource {
+  if (value === undefined || value.trim() === '') {
+    return 'web';
+  }
+  try {
+    return assertOrderSource(value.trim());
+  } catch {
+    throw new BadRequestException(
+      `orderSource must be one of: web, pos, marketplace (got "${value}")`,
+    );
+  }
+}
+
 function toOrderType(row: OrderEntity, lines: OrderLineEntity[]): OrderType {
   return {
     id: row.id,
@@ -68,6 +85,7 @@ function toOrderType(row: OrderEntity, lines: OrderLineEntity[]): OrderType {
     customerId: row.customerId,
     companyId: row.companyId ?? null,
     cartId: row.cartId,
+    orderSource: row.orderSource ?? 'web',
     status: row.status,
     currencyCode: row.currencyCode,
     subtotalMinor: String(row.subtotalMinor),
@@ -159,6 +177,7 @@ export class OrdersService {
     if (!paymentMethod) {
       throw new BadRequestException('paymentMethod is required');
     }
+    const orderSource = parseOrderSource(input.orderSource);
 
     const { providerCode, captureImmediately, methodLabel } =
       resolvePaymentPath(paymentMethod);
@@ -270,6 +289,7 @@ export class OrdersService {
           customerId: cart.customerId,
           companyId: cart.companyId,
           cartId: cart.id,
+          orderSource,
           status: 'draft',
           currencyCode: cart.currencyCode,
           subtotalMinor: subtotal.toString(),
@@ -316,6 +336,7 @@ export class OrdersService {
           cartId: cart.id,
           storeId: cart.storeId,
           customerId: cart.customerId,
+          orderSource,
           status: 'draft',
           currencyCode: cart.currencyCode,
           totalMinor: totalMinor.toString(),
@@ -347,6 +368,7 @@ export class OrdersService {
         customerId: cart.customerId,
         companyId: null,
         cartId: cart.id,
+        orderSource,
         status: 'pending',
         currencyCode: cart.currencyCode,
         subtotalMinor: subtotal.toString(),
@@ -481,6 +503,7 @@ export class OrdersService {
         cartId: cart.id,
         storeId: cart.storeId,
         customerId: cart.customerId,
+        orderSource,
         status: 'pending',
         currencyCode: cart.currencyCode,
         totalMinor: totalMinor.toString(),
@@ -537,6 +560,7 @@ export class OrdersService {
         customerId: quote.customerId,
         companyId: quote.companyId,
         cartId: null,
+        orderSource: 'web',
         status: 'draft',
         currencyCode: quote.currencyCode,
         subtotalMinor,
@@ -581,6 +605,7 @@ export class OrdersService {
         cartId: null,
         storeId: quote.storeId,
         customerId: quote.customerId,
+        orderSource: 'web',
         status: 'draft',
         currencyCode: quote.currencyCode,
         totalMinor: subtotalMinor,

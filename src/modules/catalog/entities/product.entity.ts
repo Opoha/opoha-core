@@ -8,6 +8,7 @@ import {
   UpdateDateColumn,
 } from 'typeorm';
 
+import type { FulfillmentMode } from './fulfillment-mode';
 import { ProductVariantEntity } from './product-variant.entity';
 
 /**
@@ -20,6 +21,7 @@ import { ProductVariantEntity } from './product-variant.entity';
  */
 @Entity({ name: 'products' })
 @Index('products_store_id_idx', ['storeId'])
+@Index('products_fulfillment_mode_idx', ['fulfillmentMode'])
 export class ProductEntity {
   @PrimaryGeneratedColumn('uuid')
   id!: string;
@@ -35,6 +37,13 @@ export class ProductEntity {
 
   @Column({ name: 'is_active', type: 'boolean', default: true })
   isActive!: boolean;
+
+  /**
+   * Default fulfillment mode for new variants (Phase 7 A-02).
+   * Variant `fulfillmentMode` is authoritative at purchase.
+   */
+  @Column({ name: 'fulfillment_mode', type: 'text', default: 'physical' })
+  fulfillmentMode!: FulfillmentMode;
 
   /**
    * Owning store. Null = shared across stores.

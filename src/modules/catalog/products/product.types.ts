@@ -18,6 +18,14 @@ export class ProductType {
   isActive!: boolean;
 
   /**
+   * Default fulfillment mode for new variants (physical | digital | service).
+   */
+  @Field(() => String, {
+    description: 'Default fulfillment mode: physical | digital | service',
+  })
+  fulfillmentMode!: string;
+
+  /**
    * Owning store id. Null = shared catalog (visible to all stores).
    * Set = store-owned / isolated.
    */
@@ -74,6 +82,11 @@ export class ProductVariantType {
   @Field(() => String)
   currencyCode!: string;
 
+  @Field(() => String, {
+    description: 'Authoritative fulfillment mode: physical | digital | service',
+  })
+  fulfillmentMode!: string;
+
   @Field(() => Boolean)
   isActive!: boolean;
 
@@ -100,6 +113,13 @@ export class CreateProductVariantInput {
   @Field(() => String, { nullable: true, defaultValue: 'USD' })
   currencyCode?: string;
 
+  @Field(() => String, {
+    nullable: true,
+    description:
+      'physical | digital | service; defaults to parent product fulfillmentMode',
+  })
+  fulfillmentMode?: string;
+
   @Field(() => Boolean, { nullable: true, defaultValue: true })
   isActive?: boolean;
 }
@@ -117,6 +137,13 @@ export class CreateProductInput {
 
   @Field(() => Boolean, { nullable: true, defaultValue: true })
   isActive?: boolean;
+
+  @Field(() => String, {
+    nullable: true,
+    defaultValue: 'physical',
+    description: 'Default fulfillment mode: physical | digital | service',
+  })
+  fulfillmentMode?: string;
 
   /**
    * Omit / null = shared catalog. Set to a store id for store-owned product.
@@ -141,6 +168,12 @@ export class UpdateProductInput {
 
   @Field(() => Boolean, { nullable: true })
   isActive?: boolean;
+
+  @Field(() => String, {
+    nullable: true,
+    description: 'Default fulfillment mode: physical | digital | service',
+  })
+  fulfillmentMode?: string;
 
   /**
    * Set to reassign ownership. Pass null to make shared.

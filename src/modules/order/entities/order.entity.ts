@@ -8,6 +8,7 @@ import {
   UpdateDateColumn,
 } from 'typeorm';
 
+import type { OrderSource } from './order-source';
 import type { OrderStatus } from './order-status';
 import { OrderLineEntity } from './order-line.entity';
 
@@ -19,6 +20,7 @@ import { OrderLineEntity } from './order-line.entity';
  */
 @Entity({ name: 'orders' })
 @Index('orders_store_id_idx', ['storeId'])
+@Index('orders_order_source_idx', ['orderSource'])
 export class OrderEntity {
   @PrimaryGeneratedColumn('uuid')
   id!: string;
@@ -43,6 +45,13 @@ export class OrderEntity {
   /** Source cart when placed via checkout (D-04). */
   @Column({ name: 'cart_id', type: 'uuid', nullable: true })
   cartId!: string | null;
+
+  /**
+   * Sales channel that created the order (Phase 7 A-03).
+   * web | pos | marketplace — default web for storefront checkout.
+   */
+  @Column({ name: 'order_source', type: 'text', default: 'web' })
+  orderSource!: OrderSource;
 
   @Column({ type: 'text', default: 'pending' })
   status!: OrderStatus;
