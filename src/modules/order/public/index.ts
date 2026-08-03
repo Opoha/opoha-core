@@ -28,6 +28,7 @@ export type {
   OrderType,
   PlaceOrderInput,
   SelectCartShippingInput,
+  SetCartCouponInput,
   SetCartTaxContextInput,
   UpdateCartLineInput,
   UpdateOrderStatusInput,

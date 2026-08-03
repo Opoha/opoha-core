@@ -6,8 +6,10 @@ import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 
 import { InventoryService } from '../inventory/public';
+import { PromotionsEngine } from '../promotions-engine/public';
 import { TaxEngine } from '../tax-engine/public';
 import {
+  buildPromotionApplyInput,
   buildTaxCalculateInput,
   lineSubtotalMinor,
   totalsWithTax,
@@ -18,7 +20,8 @@ import type { CheckoutPreviewType } from './order.types';
 
 /**
  * Checkout prepare — reserve stock for cart lines and compute totals.
- * Shipping from cart selection (B-03); tax via TaxEngine (C-03).
+ * Shipping from cart selection (B-03); tax via TaxEngine (C-03);
+ * promotions via PromotionsEngine (D-01).
  */
 @Injectable()
 export class CheckoutService {
@@ -28,6 +31,7 @@ export class CheckoutService {
     @InjectRepository(CartLineEntity)
     private readonly lines: Repository<CartLineEntity>,
     private readonly tax: TaxEngine,
+    private readonly promotions: PromotionsEngine,
   ) {}
 
   async prepare(cartId: string): Promise<CheckoutPreviewType> {
@@ -85,6 +89,9 @@ export class CheckoutService {
 
     await this.carts.attachReservations(attachments);
 
+    const promoInput = buildPromotionApplyInput(cart, lines);
+    const promoResult = await this.promotions.applyOrZero(promoInput);
+
     const taxInput = buildTaxCalculateInput(cart, lines);
     const taxResult = await this.tax.calculateOrZero(
       taxInput,
@@ -92,6 +99,7 @@ export class CheckoutService {
     );
 
     await this.carts.persistTaxResult(cartId, taxResult.taxMinor);
+    await this.carts.persistDiscountResult(cartId, promoResult.discountMinor);
     await this.carts.setStatus(cartId, 'locked');
 
     const refreshed = await this.carts.findById(cartId);
@@ -100,6 +108,8 @@ export class CheckoutService {
       subtotalMinor: lineSubtotalMinor(lines),
       shippingMinor: BigInt(String(cart.shippingMinor ?? '0')),
       tax: taxResult,
+      discountMinor: BigInt(String(promoResult.discountMinor || '0')),
+      freeShipping: promoResult.freeShipping === true,
     });
 
     return {

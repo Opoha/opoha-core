@@ -11,7 +11,9 @@ import { CoreEventName } from '../event-bus/event-catalog';
 import { EventBusService } from '../event-bus/event-bus.service';
 import { PaymentEngine } from '../payment-engine/public';
 import { TaxEngine } from '../tax-engine/public';
+import { PromotionsEngine } from '../promotions-engine/public';
 import {
+  buildPromotionApplyInput,
   buildTaxCalculateInput,
   lineSubtotalMinor,
   totalsWithTax,
@@ -57,6 +59,8 @@ function toOrderType(row: OrderEntity, lines: OrderLineEntity[]): OrderType {
     subtotalMinor: String(row.subtotalMinor),
     taxMinor: String(row.taxMinor),
     shippingMinor: String(row.shippingMinor),
+    discountMinor: String(row.discountMinor ?? '0'),
+    couponCode: row.couponCode ?? null,
     shippingMethodCode: row.shippingMethodCode ?? null,
     shippingRateCode: row.shippingRateCode ?? null,
     totalMinor: String(row.totalMinor),
@@ -98,6 +102,7 @@ export class OrdersService {
     private readonly eventBus: EventBusService,
     private readonly payments: PaymentEngine,
     private readonly tax: TaxEngine,
+    private readonly promotions: PromotionsEngine,
   ) {}
 
   async findAll(): Promise<OrderType[]> {
@@ -148,6 +153,9 @@ export class OrdersService {
     const subtotal = lineSubtotalMinor(lines);
     const shippingMinor = BigInt(String(cart.shippingMinor ?? '0'));
 
+    const promoInput = buildPromotionApplyInput(cart, lines);
+    const promoResult = await this.promotions.applyOrZero(promoInput);
+
     const taxInput = buildTaxCalculateInput(cart, lines);
     const taxResult = await this.tax.calculateOrZero(
       taxInput,
@@ -158,8 +166,12 @@ export class OrdersService {
       subtotalMinor: subtotal,
       shippingMinor,
       tax: taxResult,
+      discountMinor: BigInt(String(promoResult.discountMinor || '0')),
+      freeShipping: promoResult.freeShipping === true,
     });
     const taxMinor = BigInt(totals.taxMinor);
+    const discountMinor = BigInt(totals.discountMinor);
+    const effectiveShipping = BigInt(totals.shippingMinor);
     const totalMinor = BigInt(totals.totalMinor);
 
     if (methodLabel === 'zero' && totalMinor !== 0n) {
@@ -182,7 +194,9 @@ export class OrdersService {
         currencyCode: cart.currencyCode,
         subtotalMinor: subtotal.toString(),
         taxMinor: taxMinor.toString(),
-        shippingMinor: shippingMinor.toString(),
+        shippingMinor: effectiveShipping.toString(),
+        discountMinor: discountMinor.toString(),
+        couponCode: cart.couponCode ?? null,
         shippingMethodCode: cart.shippingMethodCode ?? null,
         shippingRateCode: cart.shippingRateCode ?? null,
         totalMinor: totalMinor.toString(),

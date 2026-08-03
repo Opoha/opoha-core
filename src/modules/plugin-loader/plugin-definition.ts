@@ -4,6 +4,10 @@ import type {
   PaymentProviderRegistry,
 } from '../payment-engine/public';
 import type {
+  PromotionRuleProvider,
+  PromotionRuleRegistry,
+} from '../promotions-engine/public';
+import type {
   ShippingMethodProvider,
   ShippingMethodRegistry,
 } from '../shipping-engine/public';
@@ -48,6 +52,7 @@ export type PluginRegistrationContext = {
   registerPaymentProvider(provider: PaymentProvider): void;
   registerShippingMethod(method: ShippingMethodProvider): void;
   registerTaxProvider(provider: TaxProvider): void;
+  registerPromotionRuleProvider(provider: PromotionRuleProvider): void;
   registerStorageAdapter(adapter: StorageAdapter): void;
 };
 
@@ -68,6 +73,7 @@ export type PluginEngineRegistries = {
   payment?: PaymentProviderRegistry;
   shipping?: ShippingMethodRegistry;
   tax?: TaxProviderRegistry;
+  promotions?: PromotionRuleRegistry;
   storage?: StorageAdapterRegistry;
 };
 
@@ -137,6 +143,12 @@ export function createPluginRegistrationContext(
         throw new Error('Tax engine registry is not available');
       }
       engines.tax.register(pluginId, provider, active);
+    },
+    registerPromotionRuleProvider(provider) {
+      if (!engines.promotions) {
+        throw new Error('Promotions engine registry is not available');
+      }
+      engines.promotions.register(pluginId, provider, active);
     },
     registerStorageAdapter(adapter) {
       if (!engines.storage) {

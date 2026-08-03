@@ -19,6 +19,7 @@ import type {
   CartType,
   CreateCartInput,
   SelectCartShippingInput,
+  SetCartCouponInput,
   SetCartTaxContextInput,
   UpdateCartLineInput,
 } from './order.types';
@@ -61,6 +62,8 @@ function toCartType(row: CartEntity, lines: CartLineEntity[]): CartType {
     taxProvince: row.taxProvince ?? null,
     taxProviderCode: row.taxProviderCode ?? null,
     taxMinor: String(row.taxMinor ?? '0'),
+    couponCode: row.couponCode ?? null,
+    discountMinor: String(row.discountMinor ?? '0'),
     lines: lines.map(toLineType),
     createdAt: row.createdAt,
     updatedAt: row.updatedAt,
@@ -131,6 +134,8 @@ export class CartService {
       taxProvince: null,
       taxProviderCode: null,
       taxMinor: '0',
+      couponCode: null,
+      discountMinor: '0',
     });
 
     try {
@@ -322,6 +327,30 @@ export class CartService {
   /** Persist taxMinor after prepareCheckout calculation. */
   async persistTaxResult(cartId: string, taxMinor: string): Promise<void> {
     await this.carts.update({ id: cartId }, { taxMinor: String(taxMinor) });
+  }
+
+  /**
+   * Set or clear coupon code on the cart (D-01).
+   * Invalidates prior discount snapshot until prepareCheckout recalculates.
+   */
+  async setCoupon(input: SetCartCouponInput): Promise<CartType> {
+    const cart = await this.requireSelectableCart(input.cartId);
+    const code = input.couponCode?.trim() || null;
+    cart.couponCode = code;
+    cart.discountMinor = '0';
+    await this.carts.save(cart);
+    return this.hydrate(cart);
+  }
+
+  /** Persist discountMinor after prepareCheckout PromotionsEngine apply. */
+  async persistDiscountResult(
+    cartId: string,
+    discountMinor: string,
+  ): Promise<void> {
+    await this.carts.update(
+      { id: cartId },
+      { discountMinor: String(discountMinor) },
+    );
   }
 
   /** Persist reservation ids on lines after checkout prepare. */

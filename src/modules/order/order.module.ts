@@ -7,6 +7,7 @@ import { InventoryModule } from '../inventory/public';
 import { PaymentEngineModule } from '../payment-engine/public';
 import { ShippingEngineModule } from '../shipping-engine/public';
 import { TaxEngineModule } from '../tax-engine/public';
+import { PromotionsEngineModule } from '../promotions-engine/public';
 import { CartResolver } from './cart.resolver';
 import { CartService } from './cart.service';
 import { CheckoutResolver } from './checkout.resolver';
@@ -23,6 +24,7 @@ import { OrdersService } from './orders.service';
     PaymentEngineModule,
     ShippingEngineModule,
     TaxEngineModule,
+    PromotionsEngineModule,
     TypeOrmModule.forFeature([...orderEntities, ProductVariantEntity]),
   ],
   providers: [

@@ -104,6 +104,20 @@ export type {
   RegisteredTaxProvider,
 } from './modules/tax-engine/public';
 export {
+  PromotionsEngineModule,
+  PromotionsEngine,
+  PromotionRuleRegistry,
+} from './modules/promotions-engine/public';
+export type {
+  PromotionApplyLineItem,
+  PromotionApplyInput,
+  PromotionApplicationKind,
+  PromotionApplication,
+  PromotionApplyResult,
+  PromotionRuleProvider,
+  RegisteredPromotionRuleProvider,
+} from './modules/promotions-engine/public';
+export {
   FilesModule,
   FilesService,
   StorageAdapterRegistry,

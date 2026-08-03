@@ -64,6 +64,14 @@ export class CartEntity {
   @Column({ name: 'tax_minor', type: 'bigint', default: '0' })
   taxMinor!: string;
 
+  /** Optional coupon code for PromotionsEngine (Phase 2 D-01). */
+  @Column({ name: 'coupon_code', type: 'text', nullable: true })
+  couponCode!: string | null;
+
+  /** Last calculated discount amount in minor units (updated at prepareCheckout). */
+  @Column({ name: 'discount_minor', type: 'bigint', default: '0' })
+  discountMinor!: string;
+
   @CreateDateColumn({ name: 'created_at', type: 'timestamptz' })
   createdAt!: Date;
 

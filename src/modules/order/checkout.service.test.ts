@@ -11,6 +11,7 @@ describe('CheckoutService (unit)', () => {
     getEntityWithLines: ReturnType<typeof vi.fn>;
     attachReservations: ReturnType<typeof vi.fn>;
     persistTaxResult: ReturnType<typeof vi.fn>;
+    persistDiscountResult: ReturnType<typeof vi.fn>;
     setStatus: ReturnType<typeof vi.fn>;
     findById: ReturnType<typeof vi.fn>;
   };
@@ -23,6 +24,9 @@ describe('CheckoutService (unit)', () => {
   };
   let tax: {
     calculateOrZero: ReturnType<typeof vi.fn>;
+  };
+  let promotions: {
+    applyOrZero: ReturnType<typeof vi.fn>;
   };
   let service: CheckoutService;
 
@@ -40,6 +44,8 @@ describe('CheckoutService (unit)', () => {
     taxProvince: null,
     taxProviderCode: null,
     taxMinor: '0',
+    couponCode: null,
+    discountMinor: '0',
     createdAt: now,
     updatedAt: now,
   };
@@ -73,11 +79,13 @@ describe('CheckoutService (unit)', () => {
       })),
       attachReservations: vi.fn(async () => undefined),
       persistTaxResult: vi.fn(async () => undefined),
+      persistDiscountResult: vi.fn(async () => undefined),
       setStatus: vi.fn(async () => undefined),
       findById: vi.fn(async () => ({
         ...baseCart,
         status: 'locked',
         taxMinor: '0',
+        discountMinor: '0',
         lines: [],
       })),
     };
@@ -103,18 +111,29 @@ describe('CheckoutService (unit)', () => {
       })),
     };
 
+    promotions = {
+      applyOrZero: vi.fn(async () => ({
+        currencyCode: 'USD',
+        discountMinor: '0',
+        applications: [],
+        freeShipping: false,
+      })),
+    };
+
     service = new CheckoutService(
       cartService as unknown as CartService,
       inventory as never,
       linesRepo as never,
       tax as unknown as TaxEngine,
+      promotions as never,
     );
   });
 
-  it('reserves stock, calculates tax (zero without provider), and locks cart', async () => {
+  it('reserves stock, calculates tax/promo (zero without provider), and locks cart', async () => {
     const preview = await service.prepare('cart-1');
 
     expect(preview.totals.subtotalMinor).toBe('2500');
+    expect(preview.totals.discountMinor).toBe('0');
     expect(preview.totals.taxMinor).toBe('0');
     expect(preview.totals.shippingMinor).toBe('0');
     expect(preview.totals.totalMinor).toBe('2500');
@@ -124,9 +143,14 @@ describe('CheckoutService (unit)', () => {
       { lineId: 'line-2', reservationId: 'res-2' },
     ]);
     expect(cartService.persistTaxResult).toHaveBeenCalledWith('cart-1', '0');
+    expect(cartService.persistDiscountResult).toHaveBeenCalledWith(
+      'cart-1',
+      '0',
+    );
     expect(cartService.setStatus).toHaveBeenCalledWith('cart-1', 'locked');
     expect(inventory.reserve).toHaveBeenCalledTimes(2);
     expect(tax.calculateOrZero).toHaveBeenCalled();
+    expect(promotions.applyOrZero).toHaveBeenCalled();
   });
 
   it('includes selected shippingMinor in prepareCheckout totals (B-03)', async () => {
@@ -195,6 +219,48 @@ describe('CheckoutService (unit)', () => {
     expect(preview.totals.shippingMinor).toBe('500');
     expect(preview.totals.totalMinor).toBe('2750');
     expect(cartService.persistTaxResult).toHaveBeenCalledWith('cart-1', '250');
+  });
+
+  it('subtracts promotion discount from prepareCheckout totals (D-01)', async () => {
+    promotions.applyOrZero.mockResolvedValueOnce({
+      currencyCode: 'USD',
+      discountMinor: '300',
+      applications: [
+        { code: 'SAVE', kind: 'coupon', discountMinor: '300' },
+      ],
+      freeShipping: false,
+    });
+    cartService.getEntityWithLines.mockResolvedValueOnce({
+      cart: {
+        ...baseCart,
+        couponCode: 'SAVE',
+        shippingMinor: '500',
+      },
+      lines: [
+        {
+          id: 'line-1',
+          cartId: 'cart-1',
+          variantId: 'var-1',
+          quantity: 2,
+          unitPriceMinor: '1000',
+          reservationId: null,
+          createdAt: now,
+          updatedAt: now,
+        },
+      ],
+    });
+    inventory.reserve = vi.fn().mockResolvedValueOnce({ id: 'res-1' });
+
+    const preview = await service.prepare('cart-1');
+
+    expect(preview.totals.subtotalMinor).toBe('2000');
+    expect(preview.totals.discountMinor).toBe('300');
+    expect(preview.totals.shippingMinor).toBe('500');
+    expect(preview.totals.totalMinor).toBe('2200');
+    expect(cartService.persistDiscountResult).toHaveBeenCalledWith(
+      'cart-1',
+      '300',
+    );
   });
 
   it('does not double-count inclusive tax in total (C-03)', async () => {

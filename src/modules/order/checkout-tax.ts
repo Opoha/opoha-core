@@ -1,5 +1,9 @@
 import { DEFAULT_LOCALIZATION_SETTINGS } from '../localization/public';
 import type {
+  PromotionApplyInput,
+  PromotionApplyResult,
+} from '../promotions-engine/public';
+import type {
   TaxCalculateInput,
   TaxCalculateResult,
   TaxPricingMode,
@@ -59,28 +63,69 @@ export function buildTaxCalculateInput(
 }
 
 /**
- * Merge merchandise + shipping + tax into checkout totals.
+ * Build PromotionsEngine input from a cart + lines (D-01).
+ */
+export function buildPromotionApplyInput(
+  cart: CartEntity,
+  lines: CartLineEntity[],
+): PromotionApplyInput {
+  let subtotal = 0n;
+  const items = lines.map((line) => {
+    const unit = String(line.unitPriceMinor);
+    subtotal += BigInt(unit) * BigInt(line.quantity);
+    return {
+      variantId: line.variantId,
+      quantity: line.quantity,
+      unitAmountMinor: unit,
+    };
+  });
+
+  return {
+    currencyCode: cart.currencyCode,
+    items,
+    subtotalMinor: subtotal.toString(),
+    shippingMinor: String(cart.shippingMinor ?? '0'),
+    couponCode: cart.couponCode?.trim() || undefined,
+    customerId: cart.customerId ?? undefined,
+  };
+}
+
+/**
+ * Merge merchandise + shipping + tax + discount into checkout totals.
  * - exclusive: tax is added on top of net subtotal
  * - inclusive: tax is embedded in subtotal; do not add again to total
+ * - discount is subtracted from merchandise (capped by caller / engine)
+ * - freeShipping zeros shipping in the total
  */
 export function totalsWithTax(args: {
   currencyCode: string;
   subtotalMinor: bigint;
   shippingMinor: bigint;
   tax: Pick<TaxCalculateResult, 'taxMinor' | 'pricingMode'>;
+  discountMinor?: bigint;
+  freeShipping?: boolean;
 }): CheckoutTotalsType {
   const taxMinor = BigInt(String(args.tax.taxMinor || '0'));
+  let discount = args.discountMinor ?? 0n;
+  if (discount < 0n) {
+    discount = 0n;
+  }
+  if (discount > args.subtotalMinor) {
+    discount = args.subtotalMinor;
+  }
+  const shipping = args.freeShipping ? 0n : args.shippingMinor;
   const total =
     args.tax.pricingMode === 'inclusive'
-      ? args.subtotalMinor + args.shippingMinor
-      : args.subtotalMinor + taxMinor + args.shippingMinor;
+      ? args.subtotalMinor - discount + shipping
+      : args.subtotalMinor - discount + taxMinor + shipping;
 
   return {
     currencyCode: args.currencyCode,
     subtotalMinor: args.subtotalMinor.toString(),
+    discountMinor: discount.toString(),
     taxMinor: taxMinor.toString(),
-    shippingMinor: args.shippingMinor.toString(),
-    totalMinor: total.toString(),
+    shippingMinor: shipping.toString(),
+    totalMinor: (total < 0n ? 0n : total).toString(),
   };
 }
 
@@ -91,3 +136,9 @@ export function lineSubtotalMinor(lines: CartLineEntity[]): bigint {
   }
   return subtotal;
 }
+
+/** Persist helper shape for promotion apply results. */
+export type CartPromotionSnapshot = Pick<
+  PromotionApplyResult,
+  'discountMinor' | 'freeShipping'
+>;

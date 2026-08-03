@@ -6,6 +6,7 @@ import { ConfigModule } from '../config/config.module';
 import { EventBusModule } from '../event-bus/event-bus.module';
 import { FilesModule } from '../files/public';
 import { PaymentEngineModule } from '../payment-engine/public';
+import { PromotionsEngineModule } from '../promotions-engine/public';
 import { ShippingEngineModule } from '../shipping-engine/public';
 import { TaxEngineModule } from '../tax-engine/public';
 import { AdminExtensionRegistry } from './admin-extension-registry';
@@ -24,6 +25,7 @@ import { PluginsResolver } from './plugins.resolver';
     PaymentEngineModule,
     ShippingEngineModule,
     TaxEngineModule,
+    PromotionsEngineModule,
     FilesModule,
     TypeOrmModule.forFeature([PluginStateEntity]),
   ],

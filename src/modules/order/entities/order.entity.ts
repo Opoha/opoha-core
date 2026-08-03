@@ -40,6 +40,14 @@ export class OrderEntity {
   @Column({ name: 'shipping_minor', type: 'bigint', default: '0' })
   shippingMinor!: string;
 
+  /** Promotion discount from PromotionsEngine (Phase 2 D-01). */
+  @Column({ name: 'discount_minor', type: 'bigint', default: '0' })
+  discountMinor!: string;
+
+  /** Coupon code applied at checkout (copied from cart). */
+  @Column({ name: 'coupon_code', type: 'text', nullable: true })
+  couponCode!: string | null;
+
   /** Selected ShippingMethodProvider.code copied from cart at placeOrder. */
   @Column({ name: 'shipping_method_code', type: 'text', nullable: true })
   shippingMethodCode!: string | null;

@@ -12,6 +12,7 @@ import {
   CartType,
   CreateCartInput,
   SelectCartShippingInput,
+  SetCartCouponInput,
   SetCartTaxContextInput,
   UpdateCartLineInput,
 } from './order.types';
@@ -109,5 +110,18 @@ export class CartResolver {
     input: SetCartTaxContextInput,
   ): Promise<CartType> {
     return this.cartService.setTaxContext(input);
+  }
+
+  @Mutation(() => CartType, {
+    name: 'setCartCoupon',
+    description:
+      'Set or clear a coupon code on a cart for PromotionsEngine (D-01)',
+  })
+  @RequirePermission('cart:update')
+  setCartCoupon(
+    @Args('input', { type: () => SetCartCouponInput })
+    input: SetCartCouponInput,
+  ): Promise<CartType> {
+    return this.cartService.setCoupon(input);
   }
 }

@@ -89,6 +89,17 @@ export class CartType {
   })
   taxMinor!: string;
 
+  @Field(() => String, {
+    nullable: true,
+    description: 'Coupon code for PromotionsEngine (D-01)',
+  })
+  couponCode!: string | null;
+
+  @Field(() => String, {
+    description: 'Last calculated discount amount in minor units',
+  })
+  discountMinor!: string;
+
   @Field(() => [CartLineType])
   lines!: CartLineType[];
 
@@ -131,7 +142,7 @@ export class UpdateCartLineInput {
 
 @ObjectType({
   description:
-    'Checkout totals — shipping from cart selection; tax via TaxEngine (C-03)',
+    'Checkout totals — shipping + TaxEngine tax + PromotionsEngine discount',
 })
 export class CheckoutTotalsType {
   @Field(() => String)
@@ -139,6 +150,11 @@ export class CheckoutTotalsType {
 
   @Field(() => String)
   subtotalMinor!: string;
+
+  @Field(() => String, {
+    description: 'Promotion discount in minor units (D-01)',
+  })
+  discountMinor!: string;
 
   @Field(() => String)
   taxMinor!: string;
@@ -219,6 +235,17 @@ export class OrderType {
 
   @Field(() => String)
   shippingMinor!: string;
+
+  @Field(() => String, {
+    description: 'Promotion discount in minor units (D-01)',
+  })
+  discountMinor!: string;
+
+  @Field(() => String, {
+    nullable: true,
+    description: 'Coupon code applied at checkout',
+  })
+  couponCode!: string | null;
 
   @Field(() => String, {
     nullable: true,
@@ -302,6 +329,21 @@ export class SetCartTaxContextInput {
     description: 'TaxProvider.code when multiple providers are active',
   })
   providerCode?: string;
+}
+
+@InputType({
+  description:
+    'Set or clear a coupon code on a cart for PromotionsEngine (D-01)',
+})
+export class SetCartCouponInput {
+  @Field(() => ID)
+  cartId!: string;
+
+  @Field(() => String, {
+    nullable: true,
+    description: 'Coupon code; omit or null to clear',
+  })
+  couponCode?: string | null;
 }
 
 @InputType({

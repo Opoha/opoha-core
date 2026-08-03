@@ -7,6 +7,7 @@ import { describe, expect, it } from 'vitest';
 import { EventBusService } from '../event-bus/event-bus.service';
 import { StorageAdapterRegistry } from '../files/public';
 import { PaymentProviderRegistry } from '../payment-engine/public';
+import { PromotionRuleRegistry } from '../promotions-engine/public';
 import { ShippingMethodRegistry } from '../shipping-engine/public';
 import { TaxProviderRegistry } from '../tax-engine/public';
 import { AdminExtensionRegistry } from './admin-extension-registry';
@@ -57,6 +58,7 @@ function createLoader(configGet?: (key: string) => string | undefined) {
   const payment = new PaymentProviderRegistry();
   const shipping = new ShippingMethodRegistry();
   const tax = new TaxProviderRegistry();
+  const promotions = new PromotionRuleRegistry();
   const storage = new StorageAdapterRegistry();
   const config = {
     get: (key: string) => {
@@ -76,9 +78,20 @@ function createLoader(configGet?: (key: string) => string | undefined) {
     payment,
     shipping,
     tax,
+    promotions,
     storage,
   );
-  return { loader, contributions, admin, eventBus, payment, shipping, tax, storage };
+  return {
+    loader,
+    contributions,
+    admin,
+    eventBus,
+    payment,
+    shipping,
+    tax,
+    promotions,
+    storage,
+  };
 }
 
 describe('parsePluginManifest', () => {
@@ -327,8 +340,9 @@ describe('PluginLoaderService lifecycle + registrations', () => {
     expect(admin.getContribution('sample')).toBeUndefined();
   });
 
-  it('registers payment, shipping, tax, and storage engines via context', async () => {
-    const { loader, payment, shipping, tax, storage } = createLoader();
+  it('registers payment, shipping, tax, promotions, and storage engines via context', async () => {
+    const { loader, payment, shipping, tax, promotions, storage } =
+      createLoader();
     loader.registerDefinition({
       id: 'engines-demo',
       boot(ctx) {
@@ -364,6 +378,17 @@ describe('PluginLoaderService lifecycle + registrations', () => {
             };
           },
         });
+        ctx.registerPromotionRuleProvider({
+          code: 'coupon',
+          displayName: 'Coupon',
+          async apply(input) {
+            return {
+              currencyCode: input.currencyCode,
+              discountMinor: '0',
+              applications: [],
+            };
+          },
+        });
         ctx.registerStorageAdapter({
           code: 'localfs',
           async put({ key, body }) {
@@ -382,18 +407,21 @@ describe('PluginLoaderService lifecycle + registrations', () => {
     expect(payment.get('manual')).toBeUndefined();
     expect(shipping.get('flat-rate')).toBeUndefined();
     expect(tax.get('standard')).toBeUndefined();
+    expect(promotions.get('coupon')).toBeUndefined();
     expect(storage.get('localfs')).toBeUndefined();
 
     await loader.enable('engines-demo');
     expect(payment.get('manual')?.displayName).toBe('Manual');
     expect(shipping.get('flat-rate')?.displayName).toBe('Flat rate');
     expect(tax.get('standard')?.displayName).toBe('Standard tax');
+    expect(promotions.get('coupon')?.displayName).toBe('Coupon');
     expect(storage.get('localfs')?.code).toBe('localfs');
 
     await loader.disable('engines-demo');
     expect(payment.get('manual')).toBeUndefined();
     expect(shipping.get('flat-rate')).toBeUndefined();
     expect(tax.get('standard')).toBeUndefined();
+    expect(promotions.get('coupon')).toBeUndefined();
     expect(storage.get('localfs')).toBeUndefined();
   });
 

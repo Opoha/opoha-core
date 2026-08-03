@@ -21,6 +21,8 @@ type CartRow = {
   taxProvince: string | null;
   taxProviderCode: string | null;
   taxMinor: string;
+  couponCode: string | null;
+  discountMinor: string;
   createdAt: Date;
   updatedAt: Date;
 };
@@ -102,6 +104,8 @@ describe('CartService (unit)', () => {
         taxProvince: null,
         taxProviderCode: null,
         taxMinor: '0',
+        couponCode: null,
+        discountMinor: '0',
         createdAt: now,
         updatedAt: now,
         ...data,

@@ -49,6 +49,8 @@ describe('OrdersService place + status (D-04 / D-05 / D-06 / A-04)', () => {
     subtotalMinor: string;
     taxMinor: string;
     shippingMinor: string;
+    discountMinor: string;
+    couponCode: string | null;
     shippingMethodCode: string | null;
     shippingRateCode: string | null;
     totalMinor: string;
@@ -66,6 +68,8 @@ describe('OrdersService place + status (D-04 / D-05 / D-06 / A-04)', () => {
       subtotalMinor: '2000',
       taxMinor: '0',
       shippingMinor: '0',
+      discountMinor: '0',
+      couponCode: null,
       shippingMethodCode: null,
       shippingRateCode: null,
       totalMinor: '2000',
@@ -89,6 +93,8 @@ describe('OrdersService place + status (D-04 / D-05 / D-06 / A-04)', () => {
           taxProvince: null,
           taxProviderCode: null,
           taxMinor: '0',
+          couponCode: null,
+          discountMinor: '0',
         },
         lines: [
           {
@@ -143,6 +149,15 @@ describe('OrdersService place + status (D-04 / D-05 / D-06 / A-04)', () => {
       })),
     };
 
+    const promotions = {
+      applyOrZero: vi.fn(async () => ({
+        currencyCode: 'USD',
+        discountMinor: '0',
+        applications: [],
+        freeShipping: false,
+      })),
+    };
+
     ordersRepo = {
       find: vi.fn(async () => [orderRow]),
       findOne: vi.fn(async () => ({ ...orderRow })),
@@ -177,6 +192,7 @@ describe('OrdersService place + status (D-04 / D-05 / D-06 / A-04)', () => {
       eventBus as never,
       payments as never,
       tax as never,
+      promotions as never,
     );
   });
 
