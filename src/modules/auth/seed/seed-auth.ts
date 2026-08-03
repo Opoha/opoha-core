@@ -49,6 +49,10 @@ export const DEFAULT_PERMISSIONS = [
   { key: 'inventory:adjust', description: 'Adjust inventory on-hand quantities' },
   { key: 'inventory:reserve', description: 'Reserve inventory stock' },
   { key: 'inventory:release', description: 'Release inventory reservations' },
+  {
+    key: 'inventory:transfer',
+    description: 'Create, ship, receive, or cancel stock transfers between warehouses',
+  },
   { key: 'warehouse:create', description: 'Create warehouses / inventory locations' },
   { key: 'warehouse:read', description: 'Read warehouses / inventory locations' },
   { key: 'warehouse:update', description: 'Update warehouses / inventory locations' },

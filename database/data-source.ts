@@ -34,6 +34,7 @@ import { CartPromotionsOnCheckout1722699400000 } from './migrations/172269940000
 import { CouponsDiscountRulesInit1722700500000 } from './migrations/1722700500000-CouponsDiscountRulesInit';
 import { WarehousesInit1722701600000 } from './migrations/1722701600000-WarehousesInit';
 import { InventoryPerLocation1722702700000 } from './migrations/1722702700000-InventoryPerLocation';
+import { StockTransfersInit1722703800000 } from './migrations/1722703800000-StockTransfersInit';
 
 loadDotenv();
 
@@ -80,6 +81,7 @@ export default new DataSource({
     CouponsDiscountRulesInit1722700500000,
     WarehousesInit1722701600000,
     InventoryPerLocation1722702700000,
+    StockTransfersInit1722703800000,
   ],
   synchronize: false,
 });
