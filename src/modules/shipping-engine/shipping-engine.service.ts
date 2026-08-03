@@ -4,8 +4,8 @@ import { ShippingMethodRegistry } from './shipping-method.registry';
 import type { ShippingMethodProvider } from './shipping-method';
 
 /**
- * Shipping engine stub — register / get / list methods by code.
- * No rate quotes until Phase 1–2.
+ * Shipping engine — register / get / list methods by code.
+ * Rate orchestration (quote across methods) lands in B-02.
  */
 @Injectable()
 export class ShippingEngine {

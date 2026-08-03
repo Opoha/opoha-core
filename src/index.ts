@@ -73,7 +73,18 @@ export {
   ShippingEngine,
   ShippingMethodRegistry,
 } from './modules/shipping-engine/public';
-export type { ShippingMethodProvider } from './modules/shipping-engine/public';
+export type {
+  MoneyAmount as ShippingMoneyAmount,
+  ShippingAddress,
+  ShippingQuoteLineItem,
+  ShippingQuoteInput,
+  ShippingRateQuote,
+  ShippingLabelInput,
+  ShippingLabelResult,
+  ShippingVoidLabelInput,
+  ShippingVoidLabelResult,
+  ShippingMethodProvider,
+} from './modules/shipping-engine/public';
 export {
   FilesModule,
   FilesService,

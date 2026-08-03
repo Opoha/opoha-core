@@ -345,6 +345,9 @@ describe('PluginLoaderService lifecycle + registrations', () => {
         ctx.registerShippingMethod({
           code: 'flat-rate',
           displayName: 'Flat rate',
+          async quoteRates() {
+            return [];
+          },
         });
         ctx.registerStorageAdapter({
           code: 'localfs',

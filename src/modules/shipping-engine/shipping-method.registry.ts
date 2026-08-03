@@ -6,8 +6,8 @@ import type {
 } from './shipping-method';
 
 /**
- * MVP stub registry for shipping methods (D-08 / AC-MVP-027).
- * Rate calculation at checkout arrives in Phase 1–2.
+ * Registry for shipping methods (D-08 / AC-MVP-027 / Phase 2 B-01).
+ * Providers expose quoteRates; ShippingEngine.quote orchestration is B-02.
  */
 @Injectable()
 export class ShippingMethodRegistry {
