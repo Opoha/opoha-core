@@ -46,6 +46,8 @@ describe('OrdersService place + status (D-04 / D-05 / D-06 / A-04)', () => {
     subtotalMinor: string;
     taxMinor: string;
     shippingMinor: string;
+    shippingMethodCode: string | null;
+    shippingRateCode: string | null;
     totalMinor: string;
     createdAt: Date;
     updatedAt: Date;
@@ -61,6 +63,8 @@ describe('OrdersService place + status (D-04 / D-05 / D-06 / A-04)', () => {
       subtotalMinor: '2000',
       taxMinor: '0',
       shippingMinor: '0',
+      shippingMethodCode: null,
+      shippingRateCode: null,
       totalMinor: '2000',
       createdAt: now,
       updatedAt: now,
@@ -73,6 +77,9 @@ describe('OrdersService place + status (D-04 / D-05 / D-06 / A-04)', () => {
           customerId: null,
           status: 'locked',
           currencyCode: 'USD',
+          shippingMethodCode: null,
+          shippingRateCode: null,
+          shippingMinor: '0',
         },
         lines: [
           {
@@ -204,6 +211,9 @@ describe('OrdersService place + status (D-04 / D-05 / D-06 / A-04)', () => {
         customerId: null,
         status: 'locked',
         currencyCode: 'USD',
+        shippingMethodCode: null,
+        shippingRateCode: null,
+        shippingMinor: '0',
       },
       lines: [
         {
@@ -248,6 +258,61 @@ describe('OrdersService place + status (D-04 / D-05 / D-06 / A-04)', () => {
     );
   });
 
+  it('copies selected shipping method from cart onto order (B-02)', async () => {
+    carts.getEntityWithLines.mockResolvedValueOnce({
+      cart: {
+        id: cartId,
+        customerId: null,
+        status: 'locked',
+        currencyCode: 'USD',
+        shippingMethodCode: 'flat-rate',
+        shippingRateCode: 'flat-rate',
+        shippingMinor: '500',
+      },
+      lines: [
+        {
+          id: lineId,
+          cartId,
+          variantId,
+          quantity: 2,
+          unitPriceMinor: '1000',
+          reservationId,
+        },
+      ],
+    });
+    payments.authorize.mockResolvedValueOnce({
+      id: paymentId,
+      orderId,
+      providerCode: 'manual',
+      status: 'authorized',
+      amountMinor: '2500',
+      currencyCode: 'USD',
+      errorMessage: null,
+    });
+
+    const order = await service.placeOrder({
+      cartId,
+      paymentMethod: 'manual',
+    });
+
+    expect(ordersRepo.create).toHaveBeenCalledWith(
+      expect.objectContaining({
+        shippingMinor: '500',
+        shippingMethodCode: 'flat-rate',
+        shippingRateCode: 'flat-rate',
+        totalMinor: '2500',
+      }),
+    );
+    expect(payments.authorize).toHaveBeenCalledWith(
+      expect.objectContaining({
+        amount: { amountMinor: '2500', currencyCode: 'USD' },
+      }),
+    );
+    expect(order.shippingMinor).toBe('500');
+    expect(order.shippingMethodCode).toBe('flat-rate');
+    expect(order.shippingRateCode).toBe('flat-rate');
+  });
+
   it('rejects when payment provider is not registered', async () => {
     payments.get.mockReturnValueOnce(undefined);
     await expect(
@@ -277,7 +342,14 @@ describe('OrdersService place + status (D-04 / D-05 / D-06 / A-04)', () => {
 
   it('rejects placeOrder when cart is not locked', async () => {
     carts.getEntityWithLines.mockResolvedValueOnce({
-      cart: { id: cartId, status: 'open', currencyCode: 'USD' },
+      cart: {
+        id: cartId,
+        status: 'open',
+        currencyCode: 'USD',
+        shippingMethodCode: null,
+        shippingRateCode: null,
+        shippingMinor: '0',
+      },
       lines: [
         {
           id: lineId,

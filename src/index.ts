@@ -79,6 +79,8 @@ export type {
   ShippingQuoteLineItem,
   ShippingQuoteInput,
   ShippingRateQuote,
+  QuotedShippingRate,
+  ShippingQuoteResult,
   ShippingLabelInput,
   ShippingLabelResult,
   ShippingVoidLabelInput,

@@ -50,6 +50,21 @@ export type ShippingRateQuote = {
   metadata?: Record<string, unknown>;
 };
 
+/**
+ * Rate quote tagged with the registered shipping method (engine orchestration).
+ * `methodCode` is the ShippingMethodProvider.code; `code` is the rate/service code.
+ */
+export type QuotedShippingRate = ShippingRateQuote & {
+  methodCode: string;
+  methodDisplayName: string;
+};
+
+/** Aggregated result of ShippingEngine.quote across active methods. */
+export type ShippingQuoteResult = {
+  currencyCode: string;
+  rates: QuotedShippingRate[];
+};
+
 export type ShippingLabelInput = {
   orderId: string;
   shipmentId?: string;

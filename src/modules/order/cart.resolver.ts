@@ -11,6 +11,7 @@ import {
   AddCartLineInput,
   CartType,
   CreateCartInput,
+  SelectCartShippingInput,
   UpdateCartLineInput,
 } from './order.types';
 
@@ -81,5 +82,18 @@ export class CartResolver {
     @Args('id', { type: () => ID }) id: string,
   ): Promise<CartType> {
     return this.cartService.removeLine(id);
+  }
+
+  @Mutation(() => CartType, {
+    name: 'selectCartShipping',
+    description:
+      'Validate a shipping rate via ShippingEngine and persist selection on the cart',
+  })
+  @RequirePermission('cart:update')
+  selectCartShipping(
+    @Args('input', { type: () => SelectCartShippingInput })
+    input: SelectCartShippingInput,
+  ): Promise<CartType> {
+    return this.cartService.selectShipping(input);
   }
 }

@@ -9,6 +9,8 @@ import { QueryFailedError, Repository } from 'typeorm';
 import { ProductVariantEntity } from '../catalog/public';
 import { CoreEventName } from '../event-bus/event-catalog';
 import { EventBusService } from '../event-bus/event-bus.service';
+import { ShippingEngine } from '../shipping-engine/public';
+import type { ShippingQuoteInput } from '../shipping-engine/public';
 import { CartLineEntity } from './entities/cart-line.entity';
 import { CartEntity } from './entities/cart.entity';
 import type {
@@ -16,6 +18,7 @@ import type {
   CartLineType,
   CartType,
   CreateCartInput,
+  SelectCartShippingInput,
   UpdateCartLineInput,
 } from './order.types';
 
@@ -48,6 +51,9 @@ function toCartType(row: CartEntity, lines: CartLineEntity[]): CartType {
     customerId: row.customerId,
     status: row.status,
     currencyCode: row.currencyCode,
+    shippingMethodCode: row.shippingMethodCode ?? null,
+    shippingRateCode: row.shippingRateCode ?? null,
+    shippingMinor: String(row.shippingMinor ?? '0'),
     lines: lines.map(toLineType),
     createdAt: row.createdAt,
     updatedAt: row.updatedAt,
@@ -64,6 +70,7 @@ export class CartService {
     @InjectRepository(ProductVariantEntity)
     private readonly variants: Repository<ProductVariantEntity>,
     private readonly eventBus: EventBusService,
+    private readonly shipping: ShippingEngine,
   ) {}
 
   async findAll(): Promise<CartType[]> {
@@ -108,6 +115,9 @@ export class CartService {
       customerId: input.customerId ?? null,
       status: 'open',
       currencyCode: currency,
+      shippingMethodCode: null,
+      shippingRateCode: null,
+      shippingMinor: '0',
     });
 
     try {
@@ -205,6 +215,67 @@ export class CartService {
     return this.findById(cartId);
   }
 
+  /**
+   * Validate a rate via ShippingEngine and persist selection on the cart (B-02).
+   * Allowed on open or locked carts (checkout may select after prepare).
+   */
+  async selectShipping(input: SelectCartShippingInput): Promise<CartType> {
+    const cart = await this.requireSelectableCart(input.cartId);
+    const lines = await this.lines.find({
+      where: { cartId: cart.id },
+      order: { createdAt: 'ASC' },
+    });
+    if (lines.length === 0) {
+      throw new BadRequestException(
+        `Cart ${cart.id} has no lines; add items before selecting shipping`,
+      );
+    }
+
+    let subtotal = 0n;
+    const quoteItems = lines.map((line) => {
+      const unit = String(line.unitPriceMinor);
+      subtotal += BigInt(unit) * BigInt(line.quantity);
+      return {
+        variantId: line.variantId,
+        quantity: line.quantity,
+        unitAmountMinor: unit,
+      };
+    });
+
+    const quoteInput: ShippingQuoteInput = {
+      currencyCode: cart.currencyCode,
+      destination: {
+        countryCode: input.destinationCountryCode.trim().toUpperCase(),
+        postalCode: input.destinationPostalCode?.trim(),
+      },
+      items: quoteItems,
+      subtotalMinor: subtotal.toString(),
+    };
+
+    const rate = await this.shipping.findQuotedRate(
+      quoteInput,
+      input.methodCode,
+      input.rateCode,
+    );
+
+    cart.shippingMethodCode = rate.methodCode;
+    cart.shippingRateCode = rate.code;
+    cart.shippingMinor = rate.amount.amountMinor;
+    await this.carts.save(cart);
+
+    return this.hydrate(cart);
+  }
+
+  /** Clear shipping selection (e.g. after cart line changes). */
+  async clearShipping(cartId: string): Promise<CartType> {
+    const cart = await this.requireSelectableCart(cartId);
+    cart.shippingMethodCode = null;
+    cart.shippingRateCode = null;
+    cart.shippingMinor = '0';
+    await this.carts.save(cart);
+    return this.hydrate(cart);
+  }
+
   /** Persist reservation ids on lines after checkout prepare. */
   async attachReservations(
     updates: Array<{ lineId: string; reservationId: string }>,
@@ -230,6 +301,19 @@ export class CartService {
       order: { createdAt: 'ASC' },
     });
     return toCartType(row, lines);
+  }
+
+  private async requireSelectableCart(cartId: string): Promise<CartEntity> {
+    const cart = await this.carts.findOne({ where: { id: cartId } });
+    if (!cart) {
+      throw new NotFoundException(`Cart ${cartId} not found`);
+    }
+    if (cart.status !== 'open' && cart.status !== 'locked') {
+      throw new BadRequestException(
+        `Cart ${cartId} is ${cart.status} and cannot select shipping`,
+      );
+    }
+    return cart;
   }
 
   private async requireOpenCart(cartId: string): Promise<CartEntity> {

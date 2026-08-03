@@ -51,6 +51,8 @@ function toOrderType(row: OrderEntity, lines: OrderLineEntity[]): OrderType {
     subtotalMinor: String(row.subtotalMinor),
     taxMinor: String(row.taxMinor),
     shippingMinor: String(row.shippingMinor),
+    shippingMethodCode: row.shippingMethodCode ?? null,
+    shippingRateCode: row.shippingRateCode ?? null,
     totalMinor: String(row.totalMinor),
     lines: lines.map(toLineType),
     createdAt: row.createdAt,
@@ -141,7 +143,7 @@ export class OrdersService {
       subtotal += BigInt(lineTotalMinor(String(line.unitPriceMinor), line.quantity));
     }
     const taxMinor = 0n;
-    const shippingMinor = 0n;
+    const shippingMinor = BigInt(String(cart.shippingMinor ?? '0'));
     const totalMinor = subtotal + taxMinor + shippingMinor;
 
     if (methodLabel === 'zero' && totalMinor !== 0n) {
@@ -165,6 +167,8 @@ export class OrdersService {
         subtotalMinor: subtotal.toString(),
         taxMinor: taxMinor.toString(),
         shippingMinor: shippingMinor.toString(),
+        shippingMethodCode: cart.shippingMethodCode ?? null,
+        shippingRateCode: cart.shippingRateCode ?? null,
         totalMinor: totalMinor.toString(),
       }),
     );

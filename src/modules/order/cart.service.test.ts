@@ -12,6 +12,9 @@ type CartRow = {
   customerId: string | null;
   status: 'open' | 'locked' | 'converted' | 'abandoned';
   currencyCode: string;
+  shippingMethodCode: string | null;
+  shippingRateCode: string | null;
+  shippingMinor: string;
   createdAt: Date;
   updatedAt: Date;
 };
@@ -60,6 +63,9 @@ describe('CartService (unit)', () => {
     findOne: ReturnType<typeof vi.fn>;
   };
   let eventBus: { publish: ReturnType<typeof vi.fn> };
+  let shipping: {
+    findQuotedRate: ReturnType<typeof vi.fn>;
+  };
 
   beforeEach(() => {
     cartStore = [];
@@ -81,6 +87,9 @@ describe('CartService (unit)', () => {
         customerId: null,
         status: 'open' as const,
         currencyCode: 'USD',
+        shippingMethodCode: null,
+        shippingRateCode: null,
+        shippingMinor: '0',
         createdAt: now,
         updatedAt: now,
         ...data,
@@ -162,12 +171,22 @@ describe('CartService (unit)', () => {
     };
 
     eventBus = { publish: vi.fn(async () => undefined) };
+    shipping = {
+      findQuotedRate: vi.fn(async () => ({
+        methodCode: 'flat-rate',
+        methodDisplayName: 'Flat rate',
+        code: 'flat-rate',
+        displayName: 'Flat rate',
+        amount: { amountMinor: '500', currencyCode: 'USD' },
+      })),
+    };
 
     service = new CartService(
       cartsRepo as never,
       linesRepo as never,
       variantsRepo as never,
       eventBus as never,
+      shipping as never,
     );
   });
 
@@ -175,6 +194,7 @@ describe('CartService (unit)', () => {
     const cart = await service.create({});
     expect(cart.id).toBe('cart-1');
     expect(cart.status).toBe('open');
+    expect(cart.shippingMinor).toBe('0');
     expect(cart.lines).toEqual([]);
     expect(eventBus.publish).toHaveBeenCalledWith(
       expect.objectContaining({
@@ -182,6 +202,28 @@ describe('CartService (unit)', () => {
         aggregateId: 'cart-1',
       }),
     );
+  });
+
+  it('selectShipping persists method/rate from ShippingEngine (B-02)', async () => {
+    await service.create({});
+    await service.addLine({
+      cartId: 'cart-1',
+      variantId: 'var-1',
+      quantity: 1,
+    });
+
+    const cart = await service.selectShipping({
+      cartId: 'cart-1',
+      methodCode: 'flat-rate',
+      rateCode: 'flat-rate',
+      destinationCountryCode: 'US',
+      destinationPostalCode: '10001',
+    });
+
+    expect(shipping.findQuotedRate).toHaveBeenCalled();
+    expect(cart.shippingMethodCode).toBe('flat-rate');
+    expect(cart.shippingRateCode).toBe('flat-rate');
+    expect(cart.shippingMinor).toBe('500');
   });
 
   it('adds and merges cart lines with price snapshot', async () => {

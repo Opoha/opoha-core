@@ -43,6 +43,23 @@ export class CartType {
   @Field(() => String)
   currencyCode!: string;
 
+  @Field(() => String, {
+    nullable: true,
+    description: 'Selected shipping method provider code',
+  })
+  shippingMethodCode!: string | null;
+
+  @Field(() => String, {
+    nullable: true,
+    description: 'Selected shipping rate / service code',
+  })
+  shippingRateCode!: string | null;
+
+  @Field(() => String, {
+    description: 'Selected shipping amount in minor units',
+  })
+  shippingMinor!: string;
+
   @Field(() => [CartLineType])
   lines!: CartLineType[];
 
@@ -172,6 +189,18 @@ export class OrderType {
   @Field(() => String)
   shippingMinor!: string;
 
+  @Field(() => String, {
+    nullable: true,
+    description: 'Selected shipping method provider code',
+  })
+  shippingMethodCode!: string | null;
+
+  @Field(() => String, {
+    nullable: true,
+    description: 'Selected shipping rate / service code',
+  })
+  shippingRateCode!: string | null;
+
   @Field(() => String)
   totalMinor!: string;
 
@@ -183,6 +212,33 @@ export class OrderType {
 
   @Field(() => Date)
   updatedAt!: Date;
+}
+
+@InputType({
+  description:
+    'Select a shipping method/rate on a cart after ShippingEngine.quote',
+})
+export class SelectCartShippingInput {
+  @Field(() => ID)
+  cartId!: string;
+
+  @Field(() => String, {
+    description: 'Registered ShippingMethodProvider.code',
+  })
+  methodCode!: string;
+
+  @Field(() => String, {
+    description: 'Rate/service code from quoteRates',
+  })
+  rateCode!: string;
+
+  @Field(() => String, {
+    description: 'Destination country (ISO 3166-1 alpha-2)',
+  })
+  destinationCountryCode!: string;
+
+  @Field(() => String, { nullable: true })
+  destinationPostalCode?: string;
 }
 
 @InputType({

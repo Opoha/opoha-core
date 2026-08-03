@@ -27,6 +27,18 @@ export class CartEntity {
   @Column({ name: 'currency_code', type: 'text', default: 'USD' })
   currencyCode!: string;
 
+  /** Selected ShippingMethodProvider.code (Phase 2 B-02). */
+  @Column({ name: 'shipping_method_code', type: 'text', nullable: true })
+  shippingMethodCode!: string | null;
+
+  /** Selected rate/service code from quoteRates (Phase 2 B-02). */
+  @Column({ name: 'shipping_rate_code', type: 'text', nullable: true })
+  shippingRateCode!: string | null;
+
+  /** Quoted shipping amount in minor units for the selected rate. */
+  @Column({ name: 'shipping_minor', type: 'bigint', default: '0' })
+  shippingMinor!: string;
+
   @CreateDateColumn({ name: 'created_at', type: 'timestamptz' })
   createdAt!: Date;
 

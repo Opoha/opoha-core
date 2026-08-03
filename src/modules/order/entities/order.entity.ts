@@ -36,9 +36,17 @@ export class OrderEntity {
   @Column({ name: 'tax_minor', type: 'bigint', default: '0' })
   taxMinor!: string;
 
-  /** Shipping stub — set by shipping engine later. */
+  /** Shipping amount from selected rate (Phase 2 B-02). */
   @Column({ name: 'shipping_minor', type: 'bigint', default: '0' })
   shippingMinor!: string;
+
+  /** Selected ShippingMethodProvider.code copied from cart at placeOrder. */
+  @Column({ name: 'shipping_method_code', type: 'text', nullable: true })
+  shippingMethodCode!: string | null;
+
+  /** Selected rate/service code copied from cart at placeOrder. */
+  @Column({ name: 'shipping_rate_code', type: 'text', nullable: true })
+  shippingRateCode!: string | null;
 
   @Column({ name: 'total_minor', type: 'bigint', default: '0' })
   totalMinor!: string;
