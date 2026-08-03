@@ -11,6 +11,7 @@ import { localizationEntities } from '../src/modules/localization/entities';
 import { orderEntities } from '../src/modules/order/entities';
 import { paymentEntities } from '../src/modules/payment-engine/entities';
 import { pluginLoaderEntities } from '../src/modules/plugin-loader/entities';
+import { taxEntities } from '../src/modules/tax-engine/entities';
 import { AuthSpikeInit1722681855000 } from './migrations/1722681855000-AuthSpikeInit';
 import { AuditLogsInit1722682800000 } from './migrations/1722682800000-AuditLogsInit';
 import { FilesInit1722684000000 } from './migrations/1722684000000-FilesInit';
@@ -25,6 +26,7 @@ import { LocalizationInit1722692800000 } from './migrations/1722692800000-Locali
 import { PaymentsInit1722693900000 } from './migrations/1722693900000-PaymentsInit';
 import { PaymentWebhooksInit1722695000000 } from './migrations/1722695000000-PaymentWebhooksInit';
 import { ShippingSelectionOnCheckout1722696100000 } from './migrations/1722696100000-ShippingSelectionOnCheckout';
+import { TaxClassesRulesInit1722697200000 } from './migrations/1722697200000-TaxClassesRulesInit';
 
 loadDotenv();
 
@@ -46,6 +48,7 @@ export default new DataSource({
     ...orderEntities,
     ...paymentEntities,
     ...pluginLoaderEntities,
+    ...taxEntities,
   ],
   migrations: [
     AuthSpikeInit1722681855000,
@@ -62,6 +65,7 @@ export default new DataSource({
     PaymentsInit1722693900000,
     PaymentWebhooksInit1722695000000,
     ShippingSelectionOnCheckout1722696100000,
+    TaxClassesRulesInit1722697200000,
   ],
   synchronize: false,
 });

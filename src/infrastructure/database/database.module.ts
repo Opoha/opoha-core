@@ -10,6 +10,7 @@ import { localizationEntities } from '../../modules/localization/entities';
 import { orderEntities } from '../../modules/order/entities';
 import { paymentEntities } from '../../modules/payment-engine/entities';
 import { pluginLoaderEntities } from '../../modules/plugin-loader/entities';
+import { taxEntities } from '../../modules/tax-engine/entities';
 import { ConfigModule } from '../../modules/config/config.module';
 import { ConfigService } from '../../modules/config/config.service';
 import { DatabaseHealthService } from './database-health.service';
@@ -33,6 +34,7 @@ import { DatabaseHealthService } from './database-health.service';
           ...orderEntities,
           ...paymentEntities,
           ...pluginLoaderEntities,
+          ...taxEntities,
         ],
         synchronize: false,
         autoLoadEntities: false,

@@ -4,6 +4,9 @@
 export { TaxEngineModule } from '../tax-engine.module';
 export { TaxEngine } from '../tax-engine.service';
 export { TaxProviderRegistry } from '../tax-provider.registry';
+export { TaxClassEntity } from '../entities/tax-class.entity';
+export { TaxRuleEntity } from '../entities/tax-rule.entity';
+export { taxEntities } from '../entities';
 export type {
   MoneyAmount,
   TaxPricingMode,

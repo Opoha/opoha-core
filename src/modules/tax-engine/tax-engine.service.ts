@@ -9,7 +9,7 @@ import type {
 
 /**
  * Tax engine — register / get / list providers + calculate orchestration (C-01).
- * Checkout wiring (prepareCheckout / placeOrder) lands in C-03.
+ * TaxClass / TaxRule persistence lands in C-02; checkout wiring in C-03.
  */
 @Injectable()
 export class TaxEngine {
