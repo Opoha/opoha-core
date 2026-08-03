@@ -80,6 +80,14 @@ export class CartEntity {
   @Column({ name: 'gift_card_minor', type: 'bigint', default: '0' })
   giftCardMinor!: string;
 
+  /** Loyalty points the buyer intends to redeem at checkout (C-03). */
+  @Column({ name: 'loyalty_points_to_redeem', type: 'integer', default: 0 })
+  loyaltyPointsToRedeem!: number;
+
+  /** Last calculated loyalty redeem amount in minor units. */
+  @Column({ name: 'loyalty_minor', type: 'bigint', default: '0' })
+  loyaltyMinor!: string;
+
   @CreateDateColumn({ name: 'created_at', type: 'timestamptz' })
   createdAt!: Date;
 

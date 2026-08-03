@@ -6,6 +6,7 @@ import { ProductVariantEntity } from '../catalog/public';
 import { CustomerModule } from '../customer/public';
 import { InventoryModule } from '../inventory/public';
 import { GiftCardsModule } from '../gift-cards/public';
+import { LoyaltyModule } from '../loyalty/public';
 import { PaymentEngineModule } from '../payment-engine/public';
 import { ShippingEngineModule } from '../shipping-engine/public';
 import { TaxEngineModule } from '../tax-engine/public';
@@ -15,6 +16,7 @@ import { CartService } from './cart.service';
 import { CheckoutResolver } from './checkout.resolver';
 import { CheckoutService } from './checkout.service';
 import { orderEntities } from './entities';
+import { LoyaltyAccrualListener } from './events/loyalty-accrual.listener';
 import { OrderEventsRegistrar } from './events/order-events.registrar';
 import { OrderNotificationsListener } from './events/order-notifications.listener';
 import { OrdersResolver } from './orders.resolver';
@@ -30,6 +32,7 @@ import { OrdersService } from './orders.service';
     TaxEngineModule,
     PromotionsEngineModule,
     GiftCardsModule,
+    LoyaltyModule,
     TypeOrmModule.forFeature([...orderEntities, ProductVariantEntity]),
   ],
   providers: [
@@ -41,6 +44,7 @@ import { OrdersService } from './orders.service';
     OrdersResolver,
     OrderEventsRegistrar,
     OrderNotificationsListener,
+    LoyaltyAccrualListener,
   ],
   exports: [CartService, CheckoutService, OrdersService, TypeOrmModule],
 })

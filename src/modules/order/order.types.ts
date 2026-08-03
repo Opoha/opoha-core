@@ -111,6 +111,16 @@ export class CartType {
   })
   giftCardMinor!: string;
 
+  @Field(() => Int, {
+    description: 'Loyalty points requested for redeem at checkout (C-03)',
+  })
+  loyaltyPointsToRedeem!: number;
+
+  @Field(() => String, {
+    description: 'Last calculated loyalty redeem amount in minor units',
+  })
+  loyaltyMinor!: string;
+
   @Field(() => [CartLineType])
   lines!: CartLineType[];
 
@@ -153,7 +163,7 @@ export class UpdateCartLineInput {
 
 @ObjectType({
   description:
-    'Checkout totals — shipping + TaxEngine tax + PromotionsEngine discount + gift card',
+    'Checkout totals — shipping + TaxEngine tax + PromotionsEngine discount + gift card + loyalty',
 })
 export class CheckoutTotalsType {
   @Field(() => String)
@@ -171,6 +181,11 @@ export class CheckoutTotalsType {
     description: 'Gift card amount applied in minor units (C-02)',
   })
   giftCardMinor!: string;
+
+  @Field(() => String, {
+    description: 'Loyalty redeem amount applied in minor units (C-03)',
+  })
+  loyaltyMinor!: string;
 
   @Field(() => String)
   taxMinor!: string;
@@ -273,6 +288,16 @@ export class OrderType {
     description: 'Gift card amount applied in minor units',
   })
   giftCardMinor!: string;
+
+  @Field(() => Int, {
+    description: 'Loyalty points redeemed at checkout',
+  })
+  loyaltyPointsRedeemed!: number;
+
+  @Field(() => String, {
+    description: 'Loyalty redeem amount applied in minor units',
+  })
+  loyaltyMinor!: string;
 
   @Field(() => String, {
     nullable: true,
@@ -386,6 +411,21 @@ export class SetCartGiftCardInput {
     description: 'Gift card code; omit or null to clear',
   })
   giftCardCode?: string | null;
+}
+
+@InputType({
+  description:
+    'Set loyalty points to redeem on a cart for LoyaltyService (C-03)',
+})
+export class SetCartLoyaltyPointsInput {
+  @Field(() => ID)
+  cartId!: string;
+
+  @Field(() => Int, {
+    description: 'Points to redeem; 0 clears',
+    defaultValue: 0,
+  })
+  points!: number;
 }
 
 @InputType({

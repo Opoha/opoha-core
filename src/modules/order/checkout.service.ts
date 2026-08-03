@@ -7,10 +7,12 @@ import { Repository } from 'typeorm';
 
 import { GiftCardService } from '../gift-cards/public';
 import { InventoryService } from '../inventory/public';
+import { LoyaltyService } from '../loyalty/public';
 import { PromotionsEngine } from '../promotions-engine/public';
 import { TaxEngine } from '../tax-engine/public';
 import {
   applyGiftCardToTotals,
+  applyLoyaltyToTotals,
   buildPromotionApplyInput,
   buildTaxCalculateInput,
   lineSubtotalMinor,
@@ -24,7 +26,8 @@ import type { CheckoutPreviewType } from './order.types';
  * Checkout prepare — reserve stock for cart lines and compute totals.
  * Shipping from cart selection (B-03); tax via TaxEngine (C-03);
  * promotions via PromotionsEngine TypeORM provider (D-01 / D-03);
- * gift cards via GiftCardService quote (Phase 4 C-02).
+ * gift cards via GiftCardService quote (Phase 4 C-02);
+ * loyalty via LoyaltyService quote (Phase 4 C-03).
  */
 @Injectable()
 export class CheckoutService {
@@ -36,6 +39,7 @@ export class CheckoutService {
     private readonly tax: TaxEngine,
     private readonly promotions: PromotionsEngine,
     private readonly giftCards: GiftCardService,
+    private readonly loyalty: LoyaltyService,
   ) {}
 
   async prepare(cartId: string): Promise<CheckoutPreviewType> {
@@ -127,6 +131,20 @@ export class CheckoutService {
     }
 
     await this.carts.persistGiftCardResult(cartId, giftCardMinor.toString());
+
+    let loyaltyMinor = 0n;
+    const loyaltyPoints = cart.loyaltyPointsToRedeem ?? 0;
+    if (loyaltyPoints > 0 && cart.customerId) {
+      const quote = await this.loyalty.quoteRedeem({
+        customerId: cart.customerId,
+        points: loyaltyPoints,
+        maxAmountMinor: totals.totalMinor,
+      });
+      loyaltyMinor = BigInt(String(quote.appliedMinor || '0'));
+      totals = applyLoyaltyToTotals(totals, loyaltyMinor);
+    }
+
+    await this.carts.persistLoyaltyResult(cartId, loyaltyMinor.toString());
     await this.carts.setStatus(cartId, 'locked');
 
     const refreshed = await this.carts.findById(cartId);

@@ -2,6 +2,7 @@ import {
   BadRequestException,
   Injectable,
   NotFoundException,
+  Optional,
 } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import {
@@ -10,6 +11,8 @@ import {
   Repository,
 } from 'typeorm';
 
+import { CoreEventName } from '../event-bus/event-catalog';
+import { EventBusService } from '../event-bus/event-bus.service';
 import { GiftCardTransactionEntity } from './entities/gift-card-transaction.entity';
 import { GiftCardEntity } from './entities/gift-card.entity';
 import {
@@ -108,6 +111,7 @@ export class GiftCardService {
     @InjectRepository(GiftCardTransactionEntity)
     private readonly transactions: Repository<GiftCardTransactionEntity>,
     private readonly dataSource: DataSource,
+    @Optional() private readonly eventBus?: EventBusService,
   ) {}
 
   async findById(id: string): Promise<GiftCardType> {
@@ -259,7 +263,7 @@ export class GiftCardService {
     const code = normalizeCode(input.code);
     const amount = parsePositiveMinor(input.amountMinor, 'amountMinor');
 
-    return this.dataSource.transaction(async (manager) => {
+    const saved = await this.dataSource.transaction(async (manager) => {
       const card = await this.lockByCode(manager, code);
       if (!card) {
         throw new BadRequestException(`Gift card code ${code} is invalid`);
@@ -276,11 +280,11 @@ export class GiftCardService {
       const next = balance - amount;
       card.balanceMinor = next.toString();
       card.status = statusForBalance(next, card.status);
-      const saved = await manager.save(card);
+      const updated = await manager.save(card);
 
       await manager.save(
         manager.create(GiftCardTransactionEntity, {
-          giftCardId: saved.id,
+          giftCardId: updated.id,
           type: 'redeem',
           amountMinor: (-amount).toString(),
           balanceAfterMinor: next.toString(),
@@ -289,8 +293,26 @@ export class GiftCardService {
         }),
       );
 
-      return toCardType(saved);
+      return updated;
     });
+
+    if (this.eventBus) {
+      await this.eventBus.publish({
+        eventName: CoreEventName.GiftCardRedeemed,
+        aggregateType: 'gift_card',
+        aggregateId: saved.id,
+        data: {
+          giftCardId: saved.id,
+          code: saved.code,
+          amountMinor: amount.toString(),
+          balanceAfterMinor: String(saved.balanceMinor),
+          orderId: input.orderId ?? null,
+          redeemedAt: new Date().toISOString(),
+        },
+      });
+    }
+
+    return toCardType(saved);
   }
 
   private async lockByCode(

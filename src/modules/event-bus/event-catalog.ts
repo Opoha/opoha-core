@@ -45,6 +45,9 @@ export const CoreEventName = {
   NotificationQueued: 'NotificationQueued',
   ReturnRequested: 'ReturnRequested',
   RefundCompleted: 'RefundCompleted',
+  GiftCardRedeemed: 'GiftCardRedeemed',
+  LoyaltyPointsAccrued: 'LoyaltyPointsAccrued',
+  LoyaltyPointsRedeemed: 'LoyaltyPointsRedeemed',
 } as const;
 
 export type CoreEventName =

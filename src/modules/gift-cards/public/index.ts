@@ -29,3 +29,11 @@ export type {
   QuoteGiftCardRedeemInput,
   QuoteGiftCardRedeemResult,
 } from '../gift-cards.types';
+export {
+  giftCardEventSchemas,
+  giftCardRedeemedDataSchema,
+} from '../events/gift-card-events';
+export type {
+  GiftCardRedeemedData,
+  GiftCardRedeemedEvent,
+} from '../events/gift-card-events';

@@ -171,6 +171,28 @@ export type {
   QuoteGiftCardRedeemResult,
 } from './modules/gift-cards/public';
 export {
+  LoyaltyModule,
+  LoyaltyService,
+  LoyaltyAccountEntity,
+  LoyaltyTransactionEntity,
+  loyaltyEntities,
+  LOYALTY_TRANSACTION_TYPES,
+  LOYALTY_ACCRUAL_MINOR_UNITS_PER_POINT,
+  LOYALTY_REDEMPTION_MINOR_UNITS_PER_POINT,
+  isLoyaltyTransactionType,
+  computeAccrualPoints,
+  computeRedemptionValueMinor,
+} from './modules/loyalty/public';
+export type {
+  LoyaltyTransactionType,
+  LoyaltyAccountType,
+  LoyaltyLedgerEntryType,
+  AccrueLoyaltyInput,
+  RedeemLoyaltyInput,
+  QuoteLoyaltyRedeemInput,
+  QuoteLoyaltyRedeemResult,
+} from './modules/loyalty/public';
+export {
   AdminOpsModule,
   ReportsService,
   BulkOpsService,

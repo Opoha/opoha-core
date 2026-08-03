@@ -124,6 +124,7 @@ export function totalsWithTax(args: {
     subtotalMinor: args.subtotalMinor.toString(),
     discountMinor: discount.toString(),
     giftCardMinor: '0',
+    loyaltyMinor: '0',
     taxMinor: taxMinor.toString(),
     shippingMinor: shipping.toString(),
     totalMinor: (total < 0n ? 0n : total).toString(),
@@ -150,6 +151,30 @@ export function applyGiftCardToTotals(
   return {
     ...totals,
     giftCardMinor: gift.toString(),
+    totalMinor: nextTotal.toString(),
+  };
+}
+
+/**
+ * Apply loyalty redeem amount to post-gift-card totals (C-03).
+ * Caps by remaining total; never increases total.
+ */
+export function applyLoyaltyToTotals(
+  totals: CheckoutTotalsType,
+  loyaltyMinor: bigint,
+): CheckoutTotalsType {
+  let loyalty = loyaltyMinor;
+  if (loyalty < 0n) {
+    loyalty = 0n;
+  }
+  const priorTotal = BigInt(String(totals.totalMinor || '0'));
+  if (loyalty > priorTotal) {
+    loyalty = priorTotal;
+  }
+  const nextTotal = priorTotal - loyalty;
+  return {
+    ...totals,
+    loyaltyMinor: loyalty.toString(),
     totalMinor: nextTotal.toString(),
   };
 }

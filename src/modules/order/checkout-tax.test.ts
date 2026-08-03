@@ -2,6 +2,7 @@ import { describe, expect, it } from 'vitest';
 
 import {
   applyGiftCardToTotals,
+  applyLoyaltyToTotals,
   buildPromotionApplyInput,
   buildTaxCalculateInput,
   resolveCartPricingMode,
@@ -127,5 +128,19 @@ describe('checkout-tax helpers (C-03 / D-01)', () => {
     const capped = applyGiftCardToTotals(base, 99999n);
     expect(capped.giftCardMinor).toBe('2000');
     expect(capped.totalMinor).toBe('0');
+  });
+
+  it('applyLoyaltyToTotals reduces payable total after gift card (C-03)', () => {
+    const base = totalsWithTax({
+      currencyCode: 'USD',
+      subtotalMinor: 2000n,
+      shippingMinor: 0n,
+      tax: { taxMinor: '0', pricingMode: 'exclusive' },
+    });
+    const withGift = applyGiftCardToTotals(base, 500n);
+    const withLoyalty = applyLoyaltyToTotals(withGift, 200n);
+    expect(withLoyalty.loyaltyMinor).toBe('200');
+    expect(withLoyalty.giftCardMinor).toBe('500');
+    expect(withLoyalty.totalMinor).toBe('1300');
   });
 });

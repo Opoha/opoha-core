@@ -10,11 +10,13 @@ import { GiftCardService } from '../gift-cards/public';
 import { InventoryService } from '../inventory/public';
 import { CoreEventName } from '../event-bus/event-catalog';
 import { EventBusService } from '../event-bus/event-bus.service';
+import { LoyaltyService } from '../loyalty/public';
 import { PaymentEngine } from '../payment-engine/public';
 import { TaxEngine } from '../tax-engine/public';
 import { PromotionsEngine } from '../promotions-engine/public';
 import {
   applyGiftCardToTotals,
+  applyLoyaltyToTotals,
   buildPromotionApplyInput,
   buildTaxCalculateInput,
   lineSubtotalMinor,
@@ -65,6 +67,8 @@ function toOrderType(row: OrderEntity, lines: OrderLineEntity[]): OrderType {
     couponCode: row.couponCode ?? null,
     giftCardCode: row.giftCardCode ?? null,
     giftCardMinor: String(row.giftCardMinor ?? '0'),
+    loyaltyPointsRedeemed: row.loyaltyPointsRedeemed ?? 0,
+    loyaltyMinor: String(row.loyaltyMinor ?? '0'),
     shippingMethodCode: row.shippingMethodCode ?? null,
     shippingRateCode: row.shippingRateCode ?? null,
     totalMinor: String(row.totalMinor),
@@ -108,6 +112,7 @@ export class OrdersService {
     private readonly tax: TaxEngine,
     private readonly promotions: PromotionsEngine,
     private readonly giftCards: GiftCardService,
+    private readonly loyalty: LoyaltyService,
   ) {}
 
   async findAll(): Promise<OrderType[]> {
@@ -185,7 +190,21 @@ export class OrdersService {
       });
       giftCardMinor = BigInt(String(quote.appliedMinor || '0'));
     }
-    const totals = applyGiftCardToTotals(totalsBase, giftCardMinor);
+    let totals = applyGiftCardToTotals(totalsBase, giftCardMinor);
+
+    let loyaltyPointsRedeemed = 0;
+    let loyaltyMinor = 0n;
+    const requestedLoyalty = cart.loyaltyPointsToRedeem ?? 0;
+    if (requestedLoyalty > 0 && cart.customerId) {
+      const quote = await this.loyalty.quoteRedeem({
+        customerId: cart.customerId,
+        points: requestedLoyalty,
+        maxAmountMinor: totals.totalMinor,
+      });
+      loyaltyPointsRedeemed = quote.pointsToRedeem;
+      loyaltyMinor = BigInt(String(quote.appliedMinor || '0'));
+      totals = applyLoyaltyToTotals(totals, loyaltyMinor);
+    }
 
     const taxMinor = BigInt(totals.taxMinor);
     const discountMinor = BigInt(totals.discountMinor);
@@ -217,6 +236,8 @@ export class OrdersService {
         couponCode: cart.couponCode ?? null,
         giftCardCode: giftCode ? giftCode.toUpperCase() : null,
         giftCardMinor: giftCardMinor.toString(),
+        loyaltyPointsRedeemed,
+        loyaltyMinor: loyaltyMinor.toString(),
         shippingMethodCode: cart.shippingMethodCode ?? null,
         shippingRateCode: cart.shippingRateCode ?? null,
         totalMinor: totalMinor.toString(),
@@ -255,6 +276,27 @@ export class OrdersService {
         }
         throw new BadRequestException(
           err instanceof Error ? err.message : 'Gift card redeem failed',
+        );
+      }
+    }
+
+    if (loyaltyPointsRedeemed > 0 && cart.customerId) {
+      try {
+        await this.loyalty.redeem({
+          customerId: cart.customerId,
+          points: loyaltyPointsRedeemed,
+          orderId: order.id,
+          note: `Redeemed on order ${order.id}`,
+        });
+      } catch (err) {
+        await this.transitionStatus(order.id, 'cancelled', {
+          note: 'Loyalty redeem failed during placeOrder',
+        });
+        if (err instanceof BadRequestException) {
+          throw err;
+        }
+        throw new BadRequestException(
+          err instanceof Error ? err.message : 'Loyalty redeem failed',
         );
       }
     }

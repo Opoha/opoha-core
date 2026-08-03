@@ -18,6 +18,7 @@ import { HealthModule } from './modules/health/health.module';
 import { InventoryModule } from './modules/inventory/public';
 import { FulfillmentModule } from './modules/fulfillment/public';
 import { GiftCardsModule } from './modules/gift-cards/public';
+import { LoyaltyModule } from './modules/loyalty/public';
 import { ReturnsModule } from './modules/returns/public';
 import { SupplyModule } from './modules/supply/public';
 import { WarehousesModule } from './modules/warehouses/public';
@@ -51,6 +52,7 @@ import { SearchEngineModule } from './modules/search-engine/public';
     SupplyModule,
     FulfillmentModule,
     GiftCardsModule,
+    LoyaltyModule,
     ReturnsModule,
     AdminOpsModule,
     CustomerModule,

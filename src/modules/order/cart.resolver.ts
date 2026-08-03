@@ -14,6 +14,7 @@ import {
   SelectCartShippingInput,
   SetCartCouponInput,
   SetCartGiftCardInput,
+  SetCartLoyaltyPointsInput,
   SetCartTaxContextInput,
   UpdateCartLineInput,
 } from './order.types';
@@ -137,5 +138,18 @@ export class CartResolver {
     input: SetCartGiftCardInput,
   ): Promise<CartType> {
     return this.cartService.setGiftCard(input);
+  }
+
+  @Mutation(() => CartType, {
+    name: 'setCartLoyaltyPoints',
+    description:
+      'Set loyalty points to redeem on a cart for LoyaltyService (C-03)',
+  })
+  @RequirePermission('cart:update')
+  setCartLoyaltyPoints(
+    @Args('input', { type: () => SetCartLoyaltyPointsInput })
+    input: SetCartLoyaltyPointsInput,
+  ): Promise<CartType> {
+    return this.cartService.setLoyaltyPoints(input);
   }
 }

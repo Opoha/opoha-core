@@ -13,6 +13,7 @@ describe('CheckoutService (unit)', () => {
     persistTaxResult: ReturnType<typeof vi.fn>;
     persistDiscountResult: ReturnType<typeof vi.fn>;
     persistGiftCardResult: ReturnType<typeof vi.fn>;
+    persistLoyaltyResult: ReturnType<typeof vi.fn>;
     setStatus: ReturnType<typeof vi.fn>;
     findById: ReturnType<typeof vi.fn>;
   };
@@ -30,6 +31,9 @@ describe('CheckoutService (unit)', () => {
     applyOrZero: ReturnType<typeof vi.fn>;
   };
   let giftCards: {
+    quoteRedeem: ReturnType<typeof vi.fn>;
+  };
+  let loyalty: {
     quoteRedeem: ReturnType<typeof vi.fn>;
   };
   let service: CheckoutService;
@@ -52,6 +56,8 @@ describe('CheckoutService (unit)', () => {
     discountMinor: '0',
     giftCardCode: null,
     giftCardMinor: '0',
+    loyaltyPointsToRedeem: 0,
+    loyaltyMinor: '0',
     createdAt: now,
     updatedAt: now,
   };
@@ -87,6 +93,7 @@ describe('CheckoutService (unit)', () => {
       persistTaxResult: vi.fn(async () => undefined),
       persistDiscountResult: vi.fn(async () => undefined),
       persistGiftCardResult: vi.fn(async () => undefined),
+      persistLoyaltyResult: vi.fn(async () => undefined),
       setStatus: vi.fn(async () => undefined),
       findById: vi.fn(async () => ({
         ...baseCart,
@@ -94,6 +101,7 @@ describe('CheckoutService (unit)', () => {
         taxMinor: '0',
         discountMinor: '0',
         giftCardMinor: '0',
+        loyaltyMinor: '0',
         lines: [],
       })),
     };
@@ -138,6 +146,15 @@ describe('CheckoutService (unit)', () => {
       })),
     };
 
+    loyalty = {
+      quoteRedeem: vi.fn(async () => ({
+        customerId: '',
+        availablePoints: 0,
+        pointsToRedeem: 0,
+        appliedMinor: '0',
+      })),
+    };
+
     service = new CheckoutService(
       cartService as unknown as CartService,
       inventory as never,
@@ -145,6 +162,7 @@ describe('CheckoutService (unit)', () => {
       tax as unknown as TaxEngine,
       promotions as never,
       giftCards as never,
+      loyalty as never,
     );
   });
 
@@ -167,6 +185,10 @@ describe('CheckoutService (unit)', () => {
       '0',
     );
     expect(cartService.persistGiftCardResult).toHaveBeenCalledWith(
+      'cart-1',
+      '0',
+    );
+    expect(cartService.persistLoyaltyResult).toHaveBeenCalledWith(
       'cart-1',
       '0',
     );

@@ -21,6 +21,7 @@ import type {
   SelectCartShippingInput,
   SetCartCouponInput,
   SetCartGiftCardInput,
+  SetCartLoyaltyPointsInput,
   SetCartTaxContextInput,
   UpdateCartLineInput,
 } from './order.types';
@@ -67,6 +68,8 @@ function toCartType(row: CartEntity, lines: CartLineEntity[]): CartType {
     discountMinor: String(row.discountMinor ?? '0'),
     giftCardCode: row.giftCardCode ?? null,
     giftCardMinor: String(row.giftCardMinor ?? '0'),
+    loyaltyPointsToRedeem: row.loyaltyPointsToRedeem ?? 0,
+    loyaltyMinor: String(row.loyaltyMinor ?? '0'),
     lines: lines.map(toLineType),
     createdAt: row.createdAt,
     updatedAt: row.updatedAt,
@@ -141,6 +144,8 @@ export class CartService {
       discountMinor: '0',
       giftCardCode: null,
       giftCardMinor: '0',
+      loyaltyPointsToRedeem: 0,
+      loyaltyMinor: '0',
     });
 
     try {
@@ -360,6 +365,19 @@ export class CartService {
     return this.hydrate(cart);
   }
 
+  /**
+   * Set loyalty points to redeem on the cart (C-03).
+   * Invalidates prior loyalty snapshot until prepareCheckout recalculates.
+   */
+  async setLoyaltyPoints(input: SetCartLoyaltyPointsInput): Promise<CartType> {
+    const cart = await this.requireSelectableCart(input.cartId);
+    const points = Math.max(0, Math.floor(Number(input.points) || 0));
+    cart.loyaltyPointsToRedeem = points;
+    cart.loyaltyMinor = '0';
+    await this.carts.save(cart);
+    return this.hydrate(cart);
+  }
+
   /** Persist discountMinor after prepareCheckout PromotionsEngine apply. */
   async persistDiscountResult(
     cartId: string,
@@ -379,6 +397,17 @@ export class CartService {
     await this.carts.update(
       { id: cartId },
       { giftCardMinor: String(giftCardMinor) },
+    );
+  }
+
+  /** Persist loyaltyMinor after prepareCheckout LoyaltyService quote. */
+  async persistLoyaltyResult(
+    cartId: string,
+    loyaltyMinor: string,
+  ): Promise<void> {
+    await this.carts.update(
+      { id: cartId },
+      { loyaltyMinor: String(loyaltyMinor) },
     );
   }
 

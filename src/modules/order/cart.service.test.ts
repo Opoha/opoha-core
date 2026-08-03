@@ -25,6 +25,8 @@ type CartRow = {
   discountMinor: string;
   giftCardCode: string | null;
   giftCardMinor: string;
+  loyaltyPointsToRedeem: number;
+  loyaltyMinor: string;
   createdAt: Date;
   updatedAt: Date;
 };
@@ -110,6 +112,8 @@ describe('CartService (unit)', () => {
         discountMinor: '0',
         giftCardCode: null,
         giftCardMinor: '0',
+        loyaltyPointsToRedeem: 0,
+        loyaltyMinor: '0',
         createdAt: now,
         updatedAt: now,
         ...data,

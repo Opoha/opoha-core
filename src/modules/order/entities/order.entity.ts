@@ -56,6 +56,14 @@ export class OrderEntity {
   @Column({ name: 'gift_card_minor', type: 'bigint', default: '0' })
   giftCardMinor!: string;
 
+  /** Loyalty points redeemed at checkout (Phase 4 C-03). */
+  @Column({ name: 'loyalty_points_redeemed', type: 'integer', default: 0 })
+  loyaltyPointsRedeemed!: number;
+
+  /** Loyalty redeem amount applied in minor units. */
+  @Column({ name: 'loyalty_minor', type: 'bigint', default: '0' })
+  loyaltyMinor!: string;
+
   /** Selected ShippingMethodProvider.code copied from cart at placeOrder. */
   @Column({ name: 'shipping_method_code', type: 'text', nullable: true })
   shippingMethodCode!: string | null;

@@ -53,6 +53,8 @@ describe('OrdersService place + status (D-04 / D-05 / D-06 / A-04)', () => {
     couponCode: string | null;
     giftCardCode: string | null;
     giftCardMinor: string;
+    loyaltyPointsRedeemed: number;
+    loyaltyMinor: string;
     shippingMethodCode: string | null;
     shippingRateCode: string | null;
     totalMinor: string;
@@ -74,6 +76,8 @@ describe('OrdersService place + status (D-04 / D-05 / D-06 / A-04)', () => {
       couponCode: null,
       giftCardCode: null,
       giftCardMinor: '0',
+      loyaltyPointsRedeemed: 0,
+      loyaltyMinor: '0',
       shippingMethodCode: null,
       shippingRateCode: null,
       totalMinor: '2000',
@@ -101,6 +105,8 @@ describe('OrdersService place + status (D-04 / D-05 / D-06 / A-04)', () => {
           discountMinor: '0',
           giftCardCode: null,
           giftCardMinor: '0',
+          loyaltyPointsToRedeem: 0,
+          loyaltyMinor: '0',
         },
         lines: [
           {
@@ -189,6 +195,24 @@ describe('OrdersService place + status (D-04 / D-05 / D-06 / A-04)', () => {
       })),
     };
 
+    const loyalty = {
+      quoteRedeem: vi.fn(async () => ({
+        customerId: '',
+        availablePoints: 0,
+        pointsToRedeem: 0,
+        appliedMinor: '0',
+      })),
+      redeem: vi.fn(async () => ({
+        id: 'la-1',
+        customerId: '',
+        pointsBalance: 0,
+        lifetimePointsEarned: 0,
+        lifetimePointsRedeemed: 0,
+        createdAt: now,
+        updatedAt: now,
+      })),
+    };
+
     ordersRepo = {
       find: vi.fn(async () => [orderRow]),
       findOne: vi.fn(async () => ({ ...orderRow })),
@@ -225,6 +249,7 @@ describe('OrdersService place + status (D-04 / D-05 / D-06 / A-04)', () => {
       tax as never,
       promotions as never,
       giftCards as never,
+      loyalty as never,
     );
   });
 
