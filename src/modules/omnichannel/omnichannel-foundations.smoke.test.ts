@@ -300,6 +300,15 @@ describe('Omnichannel foundations smoke (A-04)', () => {
       );
       expect(created?.[0].data.orderSource).toBe('pos');
 
+      const posSale = eventBus.publish.mock.calls.find(
+        (call) => call[0].eventName === CoreEventName.PosSaleCompleted,
+      );
+      expect(posSale?.[0].data).toMatchObject({
+        orderId: pos.id,
+        cartId,
+        orderSource: 'pos',
+      });
+
       eventBus.publish.mockClear();
 
       const marketplace = await service.placeOrder({
@@ -308,6 +317,11 @@ describe('Omnichannel foundations smoke (A-04)', () => {
         orderSource: 'marketplace',
       });
       expect(marketplace.orderSource).toBe('marketplace');
+      expect(
+        eventBus.publish.mock.calls.some(
+          (call) => call[0].eventName === CoreEventName.PosSaleCompleted,
+        ),
+      ).toBe(false);
     });
   });
 });

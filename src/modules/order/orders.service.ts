@@ -534,9 +534,30 @@ export class OrdersService {
       note: paymentNote,
     });
 
-    return this.transitionStatus(order.id, 'confirmed', {
+    const confirmed = await this.transitionStatus(order.id, 'confirmed', {
       note: `Auto-confirmed after ${methodLabel} payment path (${payment.status})`,
     });
+
+    // Phase 7 B-02/B-03 — POS channel sale completed against shared inventory.
+    if (orderSource === 'pos') {
+      await this.eventBus.publish({
+        eventName: CoreEventName.PosSaleCompleted,
+        aggregateType: 'order',
+        aggregateId: order.id,
+        data: {
+          orderId: order.id,
+          cartId: cart.id,
+          storeId: cart.storeId,
+          orderSource,
+          status: confirmed.status,
+          currencyCode: cart.currencyCode,
+          totalMinor: totalMinor.toString(),
+          paymentMethod: methodLabel,
+        },
+      });
+    }
+
+    return confirmed;
   }
 
   /**

@@ -350,17 +350,27 @@ describe('OrdersService place + status (D-04 / D-05 / D-06 / A-04)', () => {
     );
   });
 
-  it('placeOrder records orderSource=pos (A-03)', async () => {
+  it('placeOrder records orderSource=pos and publishes PosSaleCompleted (A-03/B-02)', async () => {
     const order = await service.placeOrder({
       cartId,
       paymentMethod: 'manual',
       orderSource: 'pos',
     });
     expect(order.orderSource).toBe('pos');
+    expect(inventory.commit).toHaveBeenCalledWith(reservationId);
     const created = eventBus.publish.mock.calls.find(
       (call) => call[0].eventName === CoreEventName.OrderCreated,
     );
     expect(created?.[0].data.orderSource).toBe('pos');
+    const posSale = eventBus.publish.mock.calls.find(
+      (call) => call[0].eventName === CoreEventName.PosSaleCompleted,
+    );
+    expect(posSale?.[0].data).toMatchObject({
+      orderId: order.id,
+      cartId,
+      orderSource: 'pos',
+      storeId: 'store-a',
+    });
   });
 
   it('rejects invalid orderSource', async () => {

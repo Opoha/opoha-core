@@ -64,7 +64,7 @@ export const CoreEventName = {
   B2bQuoteCreated: 'B2bQuoteCreated',
   B2bQuoteStatusChanged: 'B2bQuoteStatusChanged',
   B2bQuoteConverted: 'B2bQuoteConverted',
-  /** Phase 7 omnichannel — reserved; published when channel slices land. */
+  /** Phase 7 omnichannel — PosSaleCompleted published on placeOrder(orderSource=pos). */
   PosSaleCompleted: 'PosSaleCompleted',
   VendorOrderRouted: 'VendorOrderRouted',
   DigitalFulfillmentIssued: 'DigitalFulfillmentIssued',
