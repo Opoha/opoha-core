@@ -1,8 +1,11 @@
 /**
- * @opoha/core public entry — NestJS app shell arrives in Phase A (A-04+).
+ * @opoha/core public surface — prefer NestJS modules over deep imports.
  */
-export const CORE_PACKAGE_NAME = '@opoha/core' as const;
-
-export function getCorePackageName(): typeof CORE_PACKAGE_NAME {
-  return CORE_PACKAGE_NAME;
-}
+export { AppModule } from './app.module';
+export { HealthService } from './modules/health/health.service';
+export type {
+  LivenessResult,
+  ReadinessCheckStatus,
+  ReadinessResult,
+} from './modules/health/health.service';
+export { CORE_PACKAGE_NAME, getCorePackageName } from './package-meta';

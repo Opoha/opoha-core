@@ -1,0 +1,36 @@
+services:
+  postgres:
+    image: postgres:16-alpine
+    container_name: opoha-postgres
+    restart: unless-stopped
+    ports:
+      - "5433:5432"
+    environment:
+      POSTGRES_USER: opoha
+      POSTGRES_PASSWORD: opoha
+      POSTGRES_DB: opoha
+    volumes:
+      - opoha_postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U opoha -d opoha"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+
+  redis:
+    image: redis:7-alpine
+    container_name: opoha-redis
+    restart: unless-stopped
+    ports:
+      - "6380:6379"
+    volumes:
+      - opoha_redis_data:/data
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 5s
+      timeout: 3s
+      retries: 10
+
+volumes:
+  opoha_postgres_data:
+  opoha_redis_data:

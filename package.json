@@ -4,30 +4,48 @@
   "description": "Opoha commerce engine — NestJS modular monolith runtime",
   "license": "MIT",
   "type": "commonjs",
-  "main": "./dist/index.js",
-  "types": "./dist/index.d.ts",
+  "main": "./dist/main.js",
+  "types": "./dist/main.d.ts",
   "files": [
     "dist"
   ],
   "scripts": {
     "build": "tsc -p tsconfig.build.json",
-    "dev": "tsc -p tsconfig.build.json --watch",
+    "dev": "tsx watch src/main.ts",
+    "start": "node dist/main.js",
+    "start:prod": "node dist/main.js",
     "test": "vitest run",
     "test:watch": "vitest",
     "lint": "eslint .",
-    "format": "prettier --write ."
+    "format": "prettier --write .",
+    "docker:up": "docker compose up -d",
+    "docker:down": "docker compose down"
   },
   "engines": {
     "node": ">=20"
+  },
+  "dependencies": {
+    "@apollo/server": "^4.11.3",
+    "@as-integrations/express5": "^1.1.2",
+    "@nestjs/apollo": "^13.0.3",
+    "@nestjs/common": "^11.0.11",
+    "@nestjs/core": "^11.0.11",
+    "@nestjs/graphql": "^13.0.3",
+    "@nestjs/platform-express": "^11.0.11",
+    "graphql": "^16.10.0",
+    "reflect-metadata": "^0.2.2",
+    "rxjs": "^7.8.2"
   },
   "devDependencies": {
     "@opoha/eslint-config": "file:../opoha-devkit/packages/eslint-config",
     "@opoha/prettier-config": "file:../opoha-devkit/packages/prettier-config",
     "@opoha/typescript-config": "file:../opoha-devkit/packages/typescript-config",
     "@opoha/vitest-config": "file:../opoha-devkit/packages/vitest-config",
+    "@types/express": "^5.0.0",
     "@types/node": "^22.13.10",
     "eslint": "^9.22.0",
     "prettier": "^3.5.3",
+    "tsx": "^4.19.3",
     "typescript": "^5.8.2",
     "vitest": "^3.0.8"
   },
