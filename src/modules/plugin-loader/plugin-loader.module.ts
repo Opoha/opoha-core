@@ -6,6 +6,7 @@ import { ConfigModule } from '../config/config.module';
 import { CurrencyModule } from '../currency/public';
 import { EventBusModule } from '../event-bus/event-bus.module';
 import { FilesModule } from '../files/public';
+import { JobsModule } from '../jobs/public';
 import { NotificationsModule } from '../notifications/public';
 import { PaymentEngineModule } from '../payment-engine/public';
 import { PromotionsEngineModule } from '../promotions-engine/public';
@@ -35,6 +36,7 @@ import { PluginsResolver } from './plugins.resolver';
     FilesModule,
     SearchEngineModule,
     CurrencyModule,
+    JobsModule,
     TypeOrmModule.forFeature([PluginStateEntity]),
   ],
   providers: [

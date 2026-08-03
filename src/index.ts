@@ -436,3 +436,29 @@ export type {
   SearchProvider,
   RegisteredSearchProvider,
 } from './modules/search-engine/public';
+export {
+  JobsModule,
+  JobsService,
+  ScheduledJobRegistry,
+  JOB_QUEUE_ADAPTER,
+  InMemoryJobQueueAdapter,
+  BullMqJobQueueAdapter,
+  JobDefinitionEntity,
+  JobRunEntity,
+  jobEntities,
+  JOB_RUN_STATUSES,
+  isJobRunStatus,
+  assertCronExpression,
+  isValidCronExpression,
+} from './modules/jobs/public';
+export type {
+  JobDefinitionRecord,
+  JobRunRecord,
+  JobQueueAdapter,
+  UpsertCronJobInput,
+  JobRunStatus,
+  ScheduledJobHandler,
+  ScheduledJobHandlerContext,
+  RegisterScheduledJobInput,
+  RegisteredScheduledJob,
+} from './modules/jobs/public';

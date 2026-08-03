@@ -22,6 +22,7 @@ import { HealthModule } from './modules/health/health.module';
 import { InventoryModule } from './modules/inventory/public';
 import { FulfillmentModule } from './modules/fulfillment/public';
 import { GiftCardsModule } from './modules/gift-cards/public';
+import { JobsModule } from './modules/jobs/public';
 import { LoyaltyModule } from './modules/loyalty/public';
 import { ReturnsModule } from './modules/returns/public';
 import { SegmentsModule } from './modules/segments/public';
@@ -56,6 +57,7 @@ type GqlHttpRequest = {
     EventBusModule,
     DatabaseModule,
     RedisModule,
+    JobsModule,
     ApiVersioningModule,
     AuthModule,
     FilesModule,

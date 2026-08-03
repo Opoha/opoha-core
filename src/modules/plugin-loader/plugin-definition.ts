@@ -4,6 +4,11 @@ import type {
   FXRateProviderRegistry,
 } from '../currency/public';
 import type {
+  JobsService,
+  RegisterScheduledJobInput,
+  ScheduledJobRegistry,
+} from '../jobs/public';
+import type {
   PaymentProvider,
   PaymentProviderRegistry,
 } from '../payment-engine/public';
@@ -70,6 +75,8 @@ export type PluginRegistrationContext = {
   registerSearchProvider(provider: SearchProvider): void;
   /** Register a live FX rate provider (Phase 5 D-04, optional). */
   registerFXProvider(provider: FXRateProvider): void;
+  /** Register a cron-style scheduled job (Phase 8 A-01/A-03). */
+  registerScheduledJob(input: RegisterScheduledJobInput): void;
 };
 
 /**
@@ -94,6 +101,8 @@ export type PluginEngineRegistries = {
   storage?: StorageAdapterRegistry;
   search?: SearchProviderRegistry;
   fx?: FXRateProviderRegistry;
+  jobs?: JobsService;
+  scheduledJobs?: ScheduledJobRegistry;
 };
 
 export function createPluginRegistrationContext(
@@ -192,6 +201,13 @@ export function createPluginRegistrationContext(
         throw new Error('FX rate provider registry is not available');
       }
       engines.fx.register(pluginId, provider, active);
+    },
+    registerScheduledJob(input) {
+      if (!engines.jobs) {
+        throw new Error('Jobs service is not available');
+      }
+      // Persist + queue upsert are async; boot hooks may not await.
+      void engines.jobs.registerScheduledJob(pluginId, input, active);
     },
   };
 }

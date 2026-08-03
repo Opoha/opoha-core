@@ -36,6 +36,11 @@ export const envSchema = z
      * (`opoha.plugin.json` or `package.json#opoha`). Combined with OPOHA_PLUGINS.
      */
     OPOHA_PLUGINS_PATH: z.string().optional().default(''),
+    /**
+     * Job queue backend: `memory` (unit / default) or `bullmq` (Redis; A-04 wiring).
+     * See docs/readiness/jobs-cron-contracts.md
+     */
+    OPOHA_JOB_QUEUE: z.enum(['memory', 'bullmq']).optional().default('memory'),
   })
   .superRefine((data, ctx) => {
     if (data.NODE_ENV === 'production' && !data.JWT_SECRET) {
