@@ -25,6 +25,7 @@
     "webhooks-smoke": "vitest run src/modules/webhooks/webhooks-gate.smoke.test.ts src/modules/webhooks/webhook-delivery.worker.test.ts src/modules/webhooks/webhook-dispatcher.service.test.ts src/modules/webhooks/webhook-signing.test.ts src/modules/webhooks/webhook-status.test.ts src/boundary.test.ts",
     "omnichannel-smoke": "node ./scripts/omnichannel-smoke.mjs",
     "automation-smoke": "node ./scripts/automation-smoke.mjs",
+    "perf-bench": "vitest run src/modules/perf/perf-benchmark.smoke.test.ts src/modules/perf/perf-timing.test.ts src/boundary.test.ts",
     "walking-skeleton": "node ./scripts/walking-skeleton.mjs",
     "lint": "eslint .",
     "format": "prettier --write .",
