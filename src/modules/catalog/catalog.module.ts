@@ -19,6 +19,7 @@ import { ProductMediaResolver } from './media/product-media.resolver';
 import { ProductMediaService } from './media/product-media.service';
 import { ProductsResolver } from './products/products.resolver';
 import { ProductsService } from './products/products.service';
+import { CatalogTranslationsResolver } from './translations/catalog-translations.resolver';
 import { CatalogTranslationsService } from './translations/catalog-translations.service';
 
 @Module({
@@ -32,6 +33,7 @@ import { CatalogTranslationsService } from './translations/catalog-translations.
   ],
   providers: [
     CatalogTranslationsService,
+    CatalogTranslationsResolver,
     ProductsService,
     ProductsResolver,
     CategoriesService,

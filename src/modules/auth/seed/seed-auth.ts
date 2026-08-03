@@ -201,6 +201,14 @@ export const DEFAULT_PERMISSIONS = [
     key: 'localization:update',
     description: 'Update deployment localization settings',
   },
+  {
+    key: 'translation:read',
+    description: 'Read catalog product/category locale translations',
+  },
+  {
+    key: 'translation:update',
+    description: 'Create, update, or delete catalog locale translations',
+  },
 ] as const;
 
 export type SeedAdminOptions = {

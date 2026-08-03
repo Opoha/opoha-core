@@ -61,12 +61,17 @@ export type {
   UpdateProductMediaInput,
   ProductMediaType,
 } from '../media/product-media.types';
-export type {
-  CategoryTranslationRecord,
-  ProductTranslationRecord,
+export {
+  CategoryTranslationType,
+  ProductTranslationType,
   UpsertCategoryTranslationInput,
   UpsertProductTranslationInput,
 } from '../translations/catalog-translation.types';
+export type {
+  CategoryTranslationRecord,
+  ProductTranslationRecord,
+} from '../translations/catalog-translation.types';
+export { CatalogTranslationsResolver } from '../translations/catalog-translations.resolver';
 export {
   assertLocale,
   parseAcceptLanguageHeader,
