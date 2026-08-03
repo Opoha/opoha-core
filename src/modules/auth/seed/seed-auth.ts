@@ -164,6 +164,10 @@ export const DEFAULT_PERMISSIONS = [
     description: 'Read search providers and run product search queries',
   },
   {
+    key: 'search:configure',
+    description: 'Configure search providers and index settings',
+  },
+  {
     key: 'localization:read',
     description: 'Read deployment localization settings',
   },
