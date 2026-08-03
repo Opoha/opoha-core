@@ -19,6 +19,10 @@ import type {
   StorageAdapter,
   StorageAdapterRegistry,
 } from '../files/public';
+import type {
+  NotificationProvider,
+  NotificationProviderRegistry,
+} from '../notifications/public';
 
 import type { AdminContribution } from './admin-extension-registry';
 import type { AdminExtensionRegistry } from './admin-extension-registry';
@@ -53,6 +57,7 @@ export type PluginRegistrationContext = {
   registerShippingMethod(method: ShippingMethodProvider): void;
   registerTaxProvider(provider: TaxProvider): void;
   registerPromotionRuleProvider(provider: PromotionRuleProvider): void;
+  registerNotificationProvider(provider: NotificationProvider): void;
   registerStorageAdapter(adapter: StorageAdapter): void;
 };
 
@@ -74,6 +79,7 @@ export type PluginEngineRegistries = {
   shipping?: ShippingMethodRegistry;
   tax?: TaxProviderRegistry;
   promotions?: PromotionRuleRegistry;
+  notifications?: NotificationProviderRegistry;
   storage?: StorageAdapterRegistry;
 };
 
@@ -149,6 +155,12 @@ export function createPluginRegistrationContext(
         throw new Error('Promotions engine registry is not available');
       }
       engines.promotions.register(pluginId, provider, active);
+    },
+    registerNotificationProvider(provider) {
+      if (!engines.notifications) {
+        throw new Error('Notifications registry is not available');
+      }
+      engines.notifications.register(pluginId, provider, active);
     },
     registerStorageAdapter(adapter) {
       if (!engines.storage) {

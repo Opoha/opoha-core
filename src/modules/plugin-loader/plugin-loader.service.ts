@@ -7,6 +7,7 @@ import { Injectable, OnModuleInit, Optional } from '@nestjs/common';
 import { ConfigService } from '../config/config.service';
 import { StorageAdapterRegistry } from '../files/public';
 import { AppLogger } from '../logging/app-logger';
+import { NotificationProviderRegistry } from '../notifications/public';
 import { PaymentProviderRegistry } from '../payment-engine/public';
 import { PromotionRuleRegistry } from '../promotions-engine/public';
 import { ShippingMethodRegistry } from '../shipping-engine/public';
@@ -60,6 +61,7 @@ export class PluginLoaderService implements OnModuleInit {
     private readonly shippingMethods: ShippingMethodRegistry,
     private readonly taxProviders: TaxProviderRegistry,
     private readonly promotionRules: PromotionRuleRegistry,
+    private readonly notificationProviders: NotificationProviderRegistry,
     private readonly storageAdapters: StorageAdapterRegistry,
     @Optional() private readonly logger?: AppLogger,
   ) {}
@@ -234,6 +236,7 @@ export class PluginLoaderService implements OnModuleInit {
     this.shippingMethods.activatePlugin(pluginId);
     this.taxProviders.activatePlugin(pluginId);
     this.promotionRules.activatePlugin(pluginId);
+    this.notificationProviders.activatePlugin(pluginId);
     this.storageAdapters.activatePlugin(pluginId);
     const ctx = this.contextFor(record, true);
     await record.definition?.enable?.(ctx);
@@ -250,6 +253,7 @@ export class PluginLoaderService implements OnModuleInit {
     this.shippingMethods.deactivatePlugin(pluginId);
     this.taxProviders.deactivatePlugin(pluginId);
     this.promotionRules.deactivatePlugin(pluginId);
+    this.notificationProviders.deactivatePlugin(pluginId);
     this.storageAdapters.deactivatePlugin(pluginId);
     const ctx = this.contextFor(record, false);
     await record.definition?.disable?.(ctx);
@@ -268,6 +272,7 @@ export class PluginLoaderService implements OnModuleInit {
     this.shippingMethods.removePlugin(pluginId);
     this.taxProviders.removePlugin(pluginId);
     this.promotionRules.removePlugin(pluginId);
+    this.notificationProviders.removePlugin(pluginId);
     this.storageAdapters.removePlugin(pluginId);
     record.booted = false;
     this.logger?.log(`Plugin uninstalled: ${pluginId}`, 'PluginLoaderService');
@@ -293,6 +298,7 @@ export class PluginLoaderService implements OnModuleInit {
         shipping: this.shippingMethods,
         tax: this.taxProviders,
         promotions: this.promotionRules,
+        notifications: this.notificationProviders,
         storage: this.storageAdapters,
       },
     );

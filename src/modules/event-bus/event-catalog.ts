@@ -30,6 +30,7 @@ export const CoreEventName = {
   ShipmentCreated: 'ShipmentCreated',
   ShipmentDelivered: 'ShipmentDelivered',
   FileCreated: 'FileCreated',
+  NotificationQueued: 'NotificationQueued',
   ReturnRequested: 'ReturnRequested',
   RefundCompleted: 'RefundCompleted',
 } as const;

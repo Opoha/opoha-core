@@ -24,6 +24,7 @@ import { PaymentEngineModule } from './modules/payment-engine/public';
 import { PluginLoaderModule } from './modules/plugin-loader/plugin-loader.module';
 import { ShippingEngineModule } from './modules/shipping-engine/public';
 import { TaxEngineModule } from './modules/tax-engine/public';
+import { NotificationsModule } from './modules/notifications/public';
 import { PromotionsEngineModule } from './modules/promotions-engine/public';
 
 @Module({
@@ -46,6 +47,7 @@ import { PromotionsEngineModule } from './modules/promotions-engine/public';
     ShippingEngineModule,
     TaxEngineModule,
     PromotionsEngineModule,
+    NotificationsModule,
     PluginLoaderModule,
     GraphQLModule.forRoot<ApolloDriverConfig>({
       driver: ApolloDriver,

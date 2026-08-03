@@ -5,6 +5,7 @@ import { AuthModule } from '../auth/auth.module';
 import { ConfigModule } from '../config/config.module';
 import { EventBusModule } from '../event-bus/event-bus.module';
 import { FilesModule } from '../files/public';
+import { NotificationsModule } from '../notifications/public';
 import { PaymentEngineModule } from '../payment-engine/public';
 import { PromotionsEngineModule } from '../promotions-engine/public';
 import { ShippingEngineModule } from '../shipping-engine/public';
@@ -26,6 +27,7 @@ import { PluginsResolver } from './plugins.resolver';
     ShippingEngineModule,
     TaxEngineModule,
     PromotionsEngineModule,
+    NotificationsModule,
     FilesModule,
     TypeOrmModule.forFeature([PluginStateEntity]),
   ],

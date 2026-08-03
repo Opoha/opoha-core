@@ -127,3 +127,17 @@ export type {
   CreateFileMetadataInput,
   StorageAdapter,
 } from './modules/files/public';
+export {
+  NotificationsModule,
+  NotificationsService,
+  NotificationProviderRegistry,
+} from './modules/notifications/public';
+export type {
+  NotificationChannel,
+  NotificationRecipient,
+  NotificationSendInput,
+  NotificationSendStatus,
+  NotificationSendResult,
+  NotificationProvider,
+  RegisteredNotificationProvider,
+} from './modules/notifications/public';
