@@ -25,6 +25,7 @@ import { GiftCardsModule } from './modules/gift-cards/public';
 import { JobsModule } from './modules/jobs/public';
 import { LoyaltyModule } from './modules/loyalty/public';
 import { RulesModule } from './modules/rules/public';
+import { WebhooksModule } from './modules/webhooks/public';
 import { ReturnsModule } from './modules/returns/public';
 import { SegmentsModule } from './modules/segments/public';
 import { StoresModule } from './modules/stores/public';
@@ -60,6 +61,7 @@ type GqlHttpRequest = {
     RedisModule,
     JobsModule,
     RulesModule,
+    WebhooksModule,
     ApiVersioningModule,
     AuthModule,
     FilesModule,

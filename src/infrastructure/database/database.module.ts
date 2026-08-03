@@ -11,6 +11,7 @@ import { digitalEntities } from '../../modules/digital/entities';
 import { giftCardEntities } from '../../modules/gift-cards/entities';
 import { jobEntities } from '../../modules/jobs/entities';
 import { ruleEntities } from '../../modules/rules/entities';
+import { webhookEntities } from '../../modules/webhooks/entities';
 import { subscriptionEntities } from '../../modules/subscriptions/entities';
 import { inventoryEntities } from '../../modules/inventory/entities';
 import { loyaltyEntities } from '../../modules/loyalty/entities';
@@ -54,6 +55,7 @@ import { DatabaseHealthService } from './database-health.service';
           ...subscriptionEntities,
           ...jobEntities,
           ...ruleEntities,
+          ...webhookEntities,
           ...loyaltyEntities,
           ...segmentEntities,
           ...storeEntities,

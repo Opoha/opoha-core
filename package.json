@@ -21,6 +21,7 @@
     "digital-smoke": "vitest run src/modules/digital/digital-gate.smoke.test.ts src/modules/digital/digital-fulfillment.service.test.ts src/boundary.test.ts",
     "jobs-smoke": "vitest run src/modules/jobs/jobs-gate.smoke.test.ts src/modules/jobs/jobs.service.test.ts src/modules/jobs/cron-expression.test.ts src/modules/jobs/job-status.test.ts src/boundary.test.ts",
     "rules-smoke": "vitest run src/modules/rules/rules-gate.smoke.test.ts src/modules/rules/rules-evaluator.service.test.ts src/modules/rules/rules.service.test.ts src/modules/rules/rule-conditions.test.ts src/boundary.test.ts",
+    "webhooks-unit": "vitest run src/modules/webhooks src/boundary.test.ts",
     "omnichannel-smoke": "node ./scripts/omnichannel-smoke.mjs",
     "walking-skeleton": "node ./scripts/walking-skeleton.mjs",
     "lint": "eslint .",
