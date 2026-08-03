@@ -65,6 +65,7 @@ import { B2bCompaniesInit1722721400000 } from './migrations/1722721400000-B2bCom
 import { B2bOrderApproval1722722500000 } from './migrations/1722722500000-B2bOrderApproval';
 import { B2bPriceLists1722723600000 } from './migrations/1722723600000-B2bPriceLists';
 import { B2bQuotesInit1722724700000 } from './migrations/1722724700000-B2bQuotesInit';
+import { OrdersStatusB2bStatuses1722725800000 } from './migrations/1722725800000-OrdersStatusB2bStatuses';
 
 loadDotenv();
 
@@ -142,6 +143,7 @@ export default new DataSource({
     B2bOrderApproval1722722500000,
     B2bPriceLists1722723600000,
     B2bQuotesInit1722724700000,
+    OrdersStatusB2bStatuses1722725800000,
   ],
   synchronize: false,
 });

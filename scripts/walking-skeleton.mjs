@@ -1,12 +1,13 @@
 #!/usr/bin/env node
 /**
- * MVP + Phase 1–4 walking skeleton.
+ * MVP + Phase 1–5 walking skeleton.
  *
  * Proves: docker deps → migrate → seed → boot → health → staff login → me
  *   → catalog product+variant → multi-location inventory/transfer
  *   → cart → (ops) select shipping + tax → prepareCheckout → placeOrder
  *   → (store-mgmt) fulfillment pick/pack/ship → RMA refund path (Phase 3 H-02)
- *   → (content-marketing) searchProducts + CMS page read + gift-card redeem (Phase 4 H-02).
+ *   → (content-marketing) searchProducts + CMS page read + gift-card redeem (Phase 4 H-02)
+ *   → (enterprise) two stores + locale product + multi-currency cart + B2B approve (Phase 5 H-02).
  * When sibling CLI + plugin paths exist (local multi-repo), also:
  *   opoha plugin install, plugin GraphQL probe, opoha doctor.
  *
@@ -23,6 +24,7 @@
  *   SKIP_COMMERCE_OPS=1  skip payment+shipping+tax assertions (Phase 2 G-02)
  *   SKIP_STORE_MGMT=1    skip multi-location + fulfillment + RMA (Phase 3 H-02)
  *   SKIP_CONTENT_MARKETING=1  skip search + CMS + gift-card redeem (Phase 4 H-02)
+ *   SKIP_ENTERPRISE=1  skip multi-store / i18n / FX cart / B2B approve (Phase 5 H-02)
  *   OPOHA_FLAT_RATE_AMOUNT / OPOHA_TAX_STANDARD_DEFAULT_RATE_BPS  ops smoke defaults
  *   WALKING_SKELETON_PORT  override listen port for spawned core (default 4000)
  */
@@ -48,6 +50,7 @@ const SKIP_COMMERCE = process.env.SKIP_COMMERCE === '1';
 const SKIP_COMMERCE_OPS = process.env.SKIP_COMMERCE_OPS === '1';
 const SKIP_STORE_MGMT = process.env.SKIP_STORE_MGMT === '1';
 const SKIP_CONTENT_MARKETING = process.env.SKIP_CONTENT_MARKETING === '1';
+const SKIP_ENTERPRISE = process.env.SKIP_ENTERPRISE === '1';
 
 /** Phase 2 G-02 ops plugins (payment + shipping + tax). */
 const OPS_PLUGIN_DIRS = [
@@ -149,8 +152,11 @@ async function waitFor(url, { attempts = 60, delayMs = 1000 } = {}) {
   fail('boot', `timed out waiting for ${url}`);
 }
 
-async function gql(query, variables, token) {
-  const headers = { 'content-type': 'application/json' };
+async function gql(query, variables, token, extraHeaders = {}) {
+  const headers = {
+    'content-type': 'application/json',
+    ...extraHeaders,
+  };
   if (token) headers.authorization = `Bearer ${token}`;
   const res = await fetch(`${BASE_URL}/graphql`, {
     method: 'POST',
@@ -1129,6 +1135,463 @@ async function main() {
       );
     } else {
       log('content-marketing', 'skipped (SKIP_CONTENT_MARKETING=1)');
+    }
+
+    if (!SKIP_ENTERPRISE) {
+      log(
+        'enterprise',
+        'Phase 5 H-02 two stores + locale product + multi-currency cart + B2B approve',
+      );
+      const estamp = Date.now().toString(36);
+      const thaiName = `สินค้าองค์กร ${estamp}`;
+
+      const defaultStoreData = await gql(
+        `query { defaultStore { id code name isDefault } }`,
+        undefined,
+        token,
+      );
+      const defaultStoreId = defaultStoreData.defaultStore?.id;
+      if (!defaultStoreId) {
+        fail('enterprise', 'defaultStore missing after migrate');
+      }
+
+      const euStore = await gql(
+        `mutation($input: CreateStoreInput!) {
+          createStore(input: $input) {
+            id
+            code
+            name
+            defaultCurrencyCode
+            defaultLocale
+            isDefault
+          }
+        }`,
+        {
+          input: {
+            code: `EU-${estamp}`.toUpperCase().slice(0, 32),
+            name: `EU Store ${estamp}`,
+            defaultCurrencyCode: 'USD',
+            defaultLocale: 'en-GB',
+          },
+        },
+        token,
+      );
+      const euStoreId = euStore.createStore?.id;
+      if (!euStoreId) {
+        fail('enterprise', 'createStore returned no id');
+      }
+      if (euStore.createStore.isDefault) {
+        fail('enterprise', 'second store must not be default');
+      }
+
+      const storesList = await gql(
+        `query { stores { id code } }`,
+        undefined,
+        token,
+      );
+      if ((storesList.stores ?? []).length < 2) {
+        fail(
+          'enterprise',
+          `expected ≥2 stores, got ${JSON.stringify(storesList.stores)}`,
+        );
+      }
+      log(
+        'enterprise',
+        `stores default=${defaultStoreId} eu=${euStoreId} count=${storesList.stores.length}`,
+      );
+
+      const entProduct = await gql(
+        `mutation($input: CreateProductInput!) {
+          createProduct(input: $input) {
+            id
+            name
+            variants { id sku priceMinor }
+          }
+        }`,
+        {
+          input: {
+            name: `Enterprise Widget ${estamp}`,
+            slug: `ent-widget-${estamp}`,
+            description: 'Phase 5 H-02 enterprise smoke product',
+            variants: [
+              {
+                sku: `ENT-SKU-${estamp}`,
+                name: 'Default',
+                priceMinor: '2000',
+                currencyCode: 'USD',
+              },
+            ],
+          },
+        },
+        token,
+      );
+      const entProductId = entProduct.createProduct?.id;
+      const entVariantId = entProduct.createProduct?.variants?.[0]?.id;
+      if (!entProductId || !entVariantId) {
+        fail('enterprise', 'createProduct returned no product/variant id');
+      }
+
+      await gql(
+        `mutation($input: UpsertProductTranslationInput!) {
+          upsertProductTranslation(input: $input) {
+            id
+            locale
+            name
+          }
+        }`,
+        {
+          input: {
+            productId: entProductId,
+            locale: 'th-TH',
+            name: thaiName,
+          },
+        },
+        token,
+      );
+
+      const localized = await gql(
+        `query($id: ID!, $locale: String) {
+          product(id: $id, locale: $locale) { id name }
+        }`,
+        { id: entProductId, locale: 'th-TH' },
+        token,
+      );
+      if (localized.product?.name !== thaiName) {
+        fail(
+          'enterprise',
+          `locale product read expected "${thaiName}", got ${JSON.stringify(localized.product)}`,
+        );
+      }
+      log('enterprise', `locale product th-TH → "${localized.product.name}" OK`);
+
+      await gql(
+        `mutation($storeId: ID!, $input: UpdateStoreCurrencyConfigInput!) {
+          updateStoreCurrencyConfig(storeId: $storeId, input: $input) {
+            storeId
+            settlementCurrencyCode
+            displayCurrencyCode
+            enabledDisplayCurrencies
+          }
+        }`,
+        {
+          storeId: euStoreId,
+          input: {
+            settlementCurrencyCode: 'USD',
+            displayCurrencyCode: 'EUR',
+            enabledDisplayCurrencies: ['EUR', 'USD'],
+          },
+        },
+        token,
+      );
+
+      await gql(
+        `mutation($input: CreateExchangeRateInput!) {
+          upsertExchangeRate(input: $input) {
+            id
+            fromCurrencyCode
+            toCurrencyCode
+            rate
+          }
+        }`,
+        {
+          input: {
+            fromCurrencyCode: 'USD',
+            toCurrencyCode: 'EUR',
+            rate: 0.9,
+            source: 'manual',
+          },
+        },
+        token,
+      );
+
+      const entWh = await gql(
+        `query { defaultWarehouse { id code } }`,
+        undefined,
+        token,
+      );
+      const entWarehouseId = entWh.defaultWarehouse?.id;
+      if (!entWarehouseId) {
+        fail('enterprise', 'defaultWarehouse missing for inventory');
+      }
+
+      await gql(
+        `mutation($input: CreateInventoryItemInput!) {
+          createInventoryItem(input: $input) {
+            id
+            quantityOnHand
+          }
+        }`,
+        {
+          input: {
+            variantId: entVariantId,
+            quantityOnHand: 5,
+            warehouseId: entWarehouseId,
+          },
+        },
+        token,
+      );
+
+      const fxCart = await gql(
+        `mutation($input: CreateCartInput) {
+          createCart(input: $input) {
+            id
+            storeId
+            currencyCode
+          }
+        }`,
+        {
+          input: {
+            storeId: euStoreId,
+            currencyCode: 'USD',
+          },
+        },
+        token,
+        { 'x-opoha-store-id': euStoreId },
+      );
+      const fxCartId = fxCart.createCart?.id;
+      if (!fxCartId) fail('enterprise', 'createCart (FX) returned no id');
+      if (fxCart.createCart.storeId !== euStoreId) {
+        fail(
+          'enterprise',
+          `FX cart storeId expected ${euStoreId}, got ${fxCart.createCart.storeId}`,
+        );
+      }
+
+      await gql(
+        `mutation($input: AddCartLineInput!) {
+          addCartLine(input: $input) { id lines { variantId quantity } }
+        }`,
+        { input: { cartId: fxCartId, variantId: entVariantId, quantity: 1 } },
+        token,
+      );
+
+      const displayTotals = await gql(
+        `query($cartId: ID!, $display: String) {
+          cartDisplayTotals(cartId: $cartId, displayCurrencyCode: $display) {
+            settlementCurrencyCode
+            displayCurrencyCode
+            subtotalMinor
+            totalMinor
+            rate
+            roundingMode
+          }
+        }`,
+        { cartId: fxCartId, display: 'EUR' },
+        token,
+      );
+      const dt = displayTotals.cartDisplayTotals;
+      if (dt?.displayCurrencyCode !== 'EUR') {
+        fail(
+          'enterprise',
+          `cartDisplayTotals display expected EUR, got ${JSON.stringify(dt)}`,
+        );
+      }
+      if (dt.settlementCurrencyCode !== 'USD') {
+        fail(
+          'enterprise',
+          `cartDisplayTotals settlement expected USD, got ${dt.settlementCurrencyCode}`,
+        );
+      }
+      if (dt.subtotalMinor !== '1800') {
+        fail(
+          'enterprise',
+          `cartDisplayTotals subtotal expected 1800 (2000×0.9), got ${dt.subtotalMinor}`,
+        );
+      }
+      if (dt.roundingMode !== 'half_up') {
+        fail(
+          'enterprise',
+          `cartDisplayTotals roundingMode expected half_up, got ${dt.roundingMode}`,
+        );
+      }
+      log(
+        'enterprise',
+        `multi-currency cart display EUR subtotal=${dt.subtotalMinor} rate=${dt.rate} OK`,
+      );
+
+      const buyer = await gql(
+        `mutation($input: CreateCustomerInput!) {
+          createCustomer(input: $input) { id email }
+        }`,
+        {
+          input: {
+            email: `buyer-${estamp}@example.com`,
+            password: 'walk-skel-buyer-1',
+            firstName: 'Buyer',
+            lastName: 'Ent',
+          },
+        },
+        token,
+      );
+      const buyerId = buyer.createCustomer?.id;
+      if (!buyerId) fail('enterprise', 'createCustomer (buyer) returned no id');
+
+      const approver = await gql(
+        `mutation($input: CreateCustomerInput!) {
+          createCustomer(input: $input) { id email }
+        }`,
+        {
+          input: {
+            email: `approver-${estamp}@example.com`,
+            password: 'walk-skel-approver-1',
+            firstName: 'Approver',
+            lastName: 'Ent',
+          },
+        },
+        token,
+      );
+      const approverId = approver.createCustomer?.id;
+      if (!approverId) {
+        fail('enterprise', 'createCustomer (approver) returned no id');
+      }
+
+      const company = await gql(
+        `mutation($input: CreateCompanyInput!) {
+          createCompany(input: $input) { id storeId name }
+        }`,
+        {
+          input: {
+            storeId: euStoreId,
+            name: `Acme ${estamp}`,
+            creditLimitMinor: '100000',
+          },
+        },
+        token,
+      );
+      const companyId = company.createCompany?.id;
+      if (!companyId) fail('enterprise', 'createCompany returned no id');
+
+      await gql(
+        `mutation($input: AddCompanyMemberInput!) {
+          addCompanyMember(input: $input) { id role }
+        }`,
+        {
+          input: {
+            companyId,
+            customerId: buyerId,
+            role: 'buyer',
+          },
+        },
+        token,
+      );
+      await gql(
+        `mutation($input: AddCompanyMemberInput!) {
+          addCompanyMember(input: $input) { id role }
+        }`,
+        {
+          input: {
+            companyId,
+            customerId: approverId,
+            role: 'approver',
+          },
+        },
+        token,
+      );
+
+      const b2bCart = await gql(
+        `mutation($input: CreateCartInput) {
+          createCart(input: $input) {
+            id
+            storeId
+            companyId
+            customerId
+          }
+        }`,
+        {
+          input: {
+            storeId: euStoreId,
+            companyId,
+            customerId: buyerId,
+            currencyCode: 'USD',
+          },
+        },
+        token,
+        { 'x-opoha-store-id': euStoreId },
+      );
+      const b2bCartId = b2bCart.createCart?.id;
+      if (!b2bCartId) fail('enterprise', 'createCart (B2B) returned no id');
+      if (b2bCart.createCart.companyId !== companyId) {
+        fail(
+          'enterprise',
+          `B2B cart companyId mismatch: ${b2bCart.createCart.companyId}`,
+        );
+      }
+
+      await gql(
+        `mutation($input: AddCartLineInput!) {
+          addCartLine(input: $input) { id }
+        }`,
+        {
+          input: { cartId: b2bCartId, variantId: entVariantId, quantity: 1 },
+        },
+        token,
+      );
+
+      const b2bCheckout = await gql(
+        `mutation($cartId: ID!) {
+          prepareCheckout(cartId: $cartId) {
+            cartId
+            reservationIds
+            cart { status }
+          }
+        }`,
+        { cartId: b2bCartId },
+        token,
+        { 'x-opoha-store-id': euStoreId },
+      );
+      if (!b2bCheckout.prepareCheckout.reservationIds?.length) {
+        fail('enterprise', 'B2B prepareCheckout produced no reservations');
+      }
+
+      const draftOrder = await gql(
+        `mutation($input: PlaceOrderInput!) {
+          placeOrder(input: $input) {
+            id
+            status
+            companyId
+            totalMinor
+          }
+        }`,
+        { input: { cartId: b2bCartId, paymentMethod: 'manual' } },
+        token,
+        { 'x-opoha-store-id': euStoreId },
+      );
+      if (draftOrder.placeOrder?.status !== 'draft') {
+        fail(
+          'enterprise',
+          `B2B placeOrder expected draft, got ${JSON.stringify(draftOrder.placeOrder)}`,
+        );
+      }
+      const draftOrderId = draftOrder.placeOrder.id;
+      log('enterprise', `B2B draft order ${draftOrderId} OK`);
+
+      const approved = await gql(
+        `mutation($input: ApproveB2bOrderInput!) {
+          approveB2bOrder(input: $input) {
+            id
+            status
+          }
+        }`,
+        {
+          input: {
+            orderId: draftOrderId,
+            approverCustomerId: approverId,
+          },
+        },
+        token,
+      );
+      if (approved.approveB2bOrder?.status !== 'approved') {
+        fail(
+          'enterprise',
+          `approveB2bOrder expected approved, got ${JSON.stringify(approved.approveB2bOrder)}`,
+        );
+      }
+      log(
+        'enterprise',
+        `B2B approve path order ${draftOrderId} → approved OK`,
+      );
+    } else {
+      log('enterprise', 'skipped (SKIP_ENTERPRISE=1)');
     }
 
     if (!SKIP_PLUGIN && existsSync(CLI_BIN) && existsSync(PLUGIN_PATH)) {
