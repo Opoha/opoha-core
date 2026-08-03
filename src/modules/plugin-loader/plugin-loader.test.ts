@@ -5,9 +5,9 @@ import { join } from 'node:path';
 import { describe, expect, it } from 'vitest';
 
 import { EventBusService } from '../event-bus/event-bus.service';
-import { StorageAdapterRegistry } from '../files/storage-adapter.registry';
-import { PaymentProviderRegistry } from '../payment-engine/payment-provider.registry';
-import { ShippingMethodRegistry } from '../shipping-engine/shipping-method.registry';
+import { StorageAdapterRegistry } from '../files/public';
+import { PaymentProviderRegistry } from '../payment-engine/public';
+import { ShippingMethodRegistry } from '../shipping-engine/public';
 import { AdminExtensionRegistry } from './admin-extension-registry';
 import { ContributionRegistry } from './contribution-registry';
 import { orderPluginsByDependency } from './dependency-order';

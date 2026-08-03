@@ -4,10 +4,10 @@ import { join } from 'node:path';
 import { Injectable, OnModuleInit, Optional } from '@nestjs/common';
 
 import { ConfigService } from '../config/config.service';
-import { StorageAdapterRegistry } from '../files/storage-adapter.registry';
+import { StorageAdapterRegistry } from '../files/public';
 import { AppLogger } from '../logging/app-logger';
-import { PaymentProviderRegistry } from '../payment-engine/payment-provider.registry';
-import { ShippingMethodRegistry } from '../shipping-engine/shipping-method.registry';
+import { PaymentProviderRegistry } from '../payment-engine/public';
+import { ShippingMethodRegistry } from '../shipping-engine/public';
 import { AdminExtensionRegistry } from './admin-extension-registry';
 import { ContributionRegistry } from './contribution-registry';
 import { orderPluginsByDependency } from './dependency-order';

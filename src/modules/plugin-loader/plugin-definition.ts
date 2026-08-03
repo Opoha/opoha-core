@@ -1,14 +1,20 @@
 import type { EventListener, SubscribeOptions } from '../event-bus/domain-event';
+import type {
+  PaymentProvider,
+  PaymentProviderRegistry,
+} from '../payment-engine/public';
+import type {
+  ShippingMethodProvider,
+  ShippingMethodRegistry,
+} from '../shipping-engine/public';
+import type {
+  StorageAdapter,
+  StorageAdapterRegistry,
+} from '../files/public';
 
 import type { AdminContribution } from './admin-extension-registry';
 import type { AdminExtensionRegistry } from './admin-extension-registry';
 import type { ContributionRegistry } from './contribution-registry';
-import type { PaymentProvider } from '../payment-engine/payment-provider';
-import type { PaymentProviderRegistry } from '../payment-engine/payment-provider.registry';
-import type { ShippingMethodProvider } from '../shipping-engine/shipping-method';
-import type { ShippingMethodRegistry } from '../shipping-engine/shipping-method.registry';
-import type { StorageAdapter } from '../files/storage-adapter';
-import type { StorageAdapterRegistry } from '../files/storage-adapter.registry';
 
 /**
  * Registration API handed to plugins during install/boot/enable/disable/uninstall.
