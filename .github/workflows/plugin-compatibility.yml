@@ -1,0 +1,208 @@
+name: Official plugin compatibility
+
+# Phase 9 E-03 — certified official plugin matrix against core 1.x candidates.
+# Sibling-path aware (file: deps); no registry publish.
+
+on:
+  push:
+    branches: [main, master]
+  pull_request:
+  workflow_dispatch:
+
+env:
+  PNPM_VERSION: '11.7.0'
+  NODE_VERSION: '22'
+
+jobs:
+  boundary:
+    name: Core dependency boundary
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: opoha-core
+    steps:
+      - name: Checkout core
+        uses: actions/checkout@v4
+        with:
+          path: opoha-core
+      - name: Checkout toolkit (file: deps)
+        uses: actions/checkout@v4
+        with:
+          repository: ${{ github.repository_owner }}/opoha-devkit
+          path: opoha-devkit
+      - uses: pnpm/action-setup@v4
+        with:
+          version: ${{ env.PNPM_VERSION }}
+      - uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: pnpm
+          cache-dependency-path: opoha-core/pnpm-lock.yaml
+      - name: Install
+        run: pnpm install
+      - name: Boundary audit
+        run: pnpm test:boundary
+
+  plugin-compat:
+    name: Official plugin matrix compatibility
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: opoha-core
+    steps:
+      - name: Checkout core
+        uses: actions/checkout@v4
+        with:
+          path: opoha-core
+      - name: Checkout toolkit (file: deps)
+        uses: actions/checkout@v4
+        with:
+          repository: ${{ github.repository_owner }}/opoha-devkit
+          path: opoha-devkit
+      - name: Checkout plugin-sdk
+        uses: actions/checkout@v4
+        with:
+          repository: ${{ github.repository_owner }}/opoha-plugin-sdk
+          path: opoha-plugin-sdk
+      - name: Checkout plugin-manual-payment
+        uses: actions/checkout@v4
+        with:
+          repository: ${{ github.repository_owner }}/plugin-manual-payment
+          path: plugin-manual-payment
+      - name: Checkout plugin-stripe
+        uses: actions/checkout@v4
+        with:
+          repository: ${{ github.repository_owner }}/plugin-stripe
+          path: plugin-stripe
+      - name: Checkout plugin-omise
+        uses: actions/checkout@v4
+        with:
+          repository: ${{ github.repository_owner }}/plugin-omise
+          path: plugin-omise
+      - name: Checkout plugin-paypal
+        uses: actions/checkout@v4
+        with:
+          repository: ${{ github.repository_owner }}/plugin-paypal
+          path: plugin-paypal
+      - name: Checkout plugin-shipping-flat-rate
+        uses: actions/checkout@v4
+        with:
+          repository: ${{ github.repository_owner }}/plugin-shipping-flat-rate
+          path: plugin-shipping-flat-rate
+      - name: Checkout plugin-dhl
+        uses: actions/checkout@v4
+        with:
+          repository: ${{ github.repository_owner }}/plugin-dhl
+          path: plugin-dhl
+      - name: Checkout plugin-storage-localfs
+        uses: actions/checkout@v4
+        with:
+          repository: ${{ github.repository_owner }}/plugin-storage-localfs
+          path: plugin-storage-localfs
+      - name: Checkout plugin-storage-s3
+        uses: actions/checkout@v4
+        with:
+          repository: ${{ github.repository_owner }}/plugin-storage-s3
+          path: plugin-storage-s3
+      - name: Checkout plugin-mail-smtp
+        uses: actions/checkout@v4
+        with:
+          repository: ${{ github.repository_owner }}/plugin-mail-smtp
+          path: plugin-mail-smtp
+      - name: Checkout plugin-tax-standard
+        uses: actions/checkout@v4
+        with:
+          repository: ${{ github.repository_owner }}/plugin-tax-standard
+          path: plugin-tax-standard
+      - name: Checkout plugin-coupon
+        uses: actions/checkout@v4
+        with:
+          repository: ${{ github.repository_owner }}/plugin-coupon
+          path: plugin-coupon
+      - name: Checkout plugin-discount
+        uses: actions/checkout@v4
+        with:
+          repository: ${{ github.repository_owner }}/plugin-discount
+          path: plugin-discount
+      - name: Checkout plugin-rma
+        uses: actions/checkout@v4
+        with:
+          repository: ${{ github.repository_owner }}/plugin-rma
+          path: plugin-rma
+      - name: Checkout plugin-search-meilisearch
+        uses: actions/checkout@v4
+        with:
+          repository: ${{ github.repository_owner }}/plugin-search-meilisearch
+          path: plugin-search-meilisearch
+      - name: Checkout plugin-cms
+        uses: actions/checkout@v4
+        with:
+          repository: ${{ github.repository_owner }}/plugin-cms
+          path: plugin-cms
+      - name: Checkout plugin-product-review
+        uses: actions/checkout@v4
+        with:
+          repository: ${{ github.repository_owner }}/plugin-product-review
+          path: plugin-product-review
+      - name: Checkout plugin-wishlist
+        uses: actions/checkout@v4
+        with:
+          repository: ${{ github.repository_owner }}/plugin-wishlist
+          path: plugin-wishlist
+      - name: Checkout plugin-marketplace
+        uses: actions/checkout@v4
+        with:
+          repository: ${{ github.repository_owner }}/plugin-marketplace
+          path: plugin-marketplace
+      - name: Checkout plugin-pos
+        uses: actions/checkout@v4
+        with:
+          repository: ${{ github.repository_owner }}/plugin-pos
+          path: plugin-pos
+      - name: Checkout plugin-subscription
+        uses: actions/checkout@v4
+        with:
+          repository: ${{ github.repository_owner }}/plugin-subscription
+          path: plugin-subscription
+      - name: Checkout plugin-workflow
+        uses: actions/checkout@v4
+        with:
+          repository: ${{ github.repository_owner }}/plugin-workflow
+          path: plugin-workflow
+      - uses: pnpm/action-setup@v4
+        with:
+          version: ${{ env.PNPM_VERSION }}
+      - uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: pnpm
+          cache-dependency-path: |
+            opoha-core/pnpm-lock.yaml
+            opoha-plugin-sdk/pnpm-lock.yaml
+      - name: Build plugin-sdk
+        working-directory: opoha-plugin-sdk
+        run: |
+          pnpm install
+          pnpm build
+      - name: Install + build official plugins
+        working-directory: .
+        run: |
+          plugins=(
+            plugin-manual-payment plugin-stripe plugin-omise plugin-paypal
+            plugin-shipping-flat-rate plugin-dhl
+            plugin-storage-localfs plugin-storage-s3
+            plugin-mail-smtp plugin-tax-standard
+            plugin-coupon plugin-discount plugin-rma
+            plugin-search-meilisearch plugin-cms
+            plugin-product-review plugin-wishlist plugin-marketplace
+            plugin-pos plugin-subscription plugin-workflow
+          )
+          for plugin in "${plugins[@]}"; do
+            echo "→ build $plugin"
+            pnpm install --dir "$plugin"
+            pnpm --dir "$plugin" build
+          done
+      - name: Install core
+        run: pnpm install
+      - name: Plugin compatibility smoke
+        run: pnpm plugin-compat-smoke

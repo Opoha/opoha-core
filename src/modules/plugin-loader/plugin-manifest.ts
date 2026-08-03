@@ -21,6 +21,11 @@ export const pluginManifestSchema = z
         payment: z.array(z.string()).optional(),
         shipping: z.array(z.string()).optional(),
         tax: z.array(z.string()).optional(),
+        notifications: z.array(z.string()).optional(),
+        promotions: z.array(z.string()).optional(),
+        storage: z.array(z.string()).optional(),
+        search: z.array(z.string()).optional(),
+        fx: z.array(z.string()).optional(),
       })
       .strict()
       .optional(),
