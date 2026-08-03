@@ -21,6 +21,10 @@ export const CoreEventName = {
   OrderTimeline: 'OrderTimeline',
   OrderPaid: 'OrderPaid',
   OrderCancelled: 'OrderCancelled',
+  PaymentAuthorized: 'PaymentAuthorized',
+  PaymentCaptured: 'PaymentCaptured',
+  PaymentRefunded: 'PaymentRefunded',
+  /** Prefer PaymentCaptured for capture facts; kept for catalog compatibility. */
   PaymentSucceeded: 'PaymentSucceeded',
   PaymentFailed: 'PaymentFailed',
   ShipmentCreated: 'ShipmentCreated',

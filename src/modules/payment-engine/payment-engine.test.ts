@@ -1,6 +1,7 @@
 import { BadRequestException } from '@nestjs/common';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 
+import { CoreEventName } from '../event-bus/event-catalog';
 import type { PaymentStatus } from './entities/payment.entity';
 import { PaymentEngine } from './payment-engine.service';
 import type { PaymentProvider } from './payment-provider';
@@ -74,10 +75,12 @@ describe('PaymentEngine', () => {
   };
   let engine: PaymentEngine;
   let registry: PaymentProviderRegistry;
+  let eventBus: { publish: ReturnType<typeof vi.fn> };
 
   beforeEach(() => {
     store = [];
     webhookStore = [];
+    eventBus = { publish: vi.fn(async () => ({ listenerCount: 0, failures: [] })) };
     let seq = 0;
     let whSeq = 0;
     paymentsRepo = {
@@ -166,6 +169,7 @@ describe('PaymentEngine', () => {
       registry,
       paymentsRepo as never,
       webhookEventsRepo as never,
+      eventBus as never,
     );
   });
 
@@ -202,6 +206,19 @@ describe('PaymentEngine', () => {
     expect(payment.externalId).toBe('manual-auth-1');
     expect(payment.amountMinor).toBe('1500');
     expect(store).toHaveLength(1);
+    expect(eventBus.publish).toHaveBeenCalledWith(
+      expect.objectContaining({
+        eventName: CoreEventName.PaymentAuthorized,
+        aggregateType: 'payment',
+        aggregateId: payment.id,
+        data: expect.objectContaining({
+          paymentId: payment.id,
+          orderId: 'order-1',
+          providerCode: 'manual',
+          amountMinor: '1500',
+        }),
+      }),
+    );
   });
 
   it('authorize is idempotent on idempotencyKey', async () => {
@@ -211,6 +228,7 @@ describe('PaymentEngine', () => {
       amount: { amountMinor: '100', currencyCode: 'USD' },
       idempotencyKey: 'same-key',
     });
+    eventBus.publish.mockClear();
     const second = await engine.authorize({
       providerCode: 'manual',
       orderId: 'order-1',
@@ -219,6 +237,7 @@ describe('PaymentEngine', () => {
     });
     expect(second.id).toBe(first.id);
     expect(store).toHaveLength(1);
+    expect(eventBus.publish).not.toHaveBeenCalled();
   });
 
   it('authorize → capture → refund happy path', async () => {
@@ -228,14 +247,23 @@ describe('PaymentEngine', () => {
       amount: { amountMinor: '2000', currencyCode: 'USD' },
     });
     expect(authorized.status).toBe('authorized');
+    expect(eventBus.publish).toHaveBeenCalledWith(
+      expect.objectContaining({ eventName: CoreEventName.PaymentAuthorized }),
+    );
 
     const captured = await engine.capture({ paymentId: authorized.id });
     expect(captured.status).toBe('captured');
     expect(captured.capturedAt).toBeTruthy();
+    expect(eventBus.publish).toHaveBeenCalledWith(
+      expect.objectContaining({ eventName: CoreEventName.PaymentCaptured }),
+    );
 
     const refunded = await engine.refund({ paymentId: authorized.id });
     expect(refunded.status).toBe('refunded');
     expect(refunded.refundedAt).toBeTruthy();
+    expect(eventBus.publish).toHaveBeenCalledWith(
+      expect.objectContaining({ eventName: CoreEventName.PaymentRefunded }),
+    );
   });
 
   it('authorize can go straight to captured (manual auto-capture style)', async () => {
@@ -256,6 +284,37 @@ describe('PaymentEngine', () => {
     });
     expect(payment.status).toBe('captured');
     expect(payment.externalId).toBe('auto-cap');
+    expect(eventBus.publish).toHaveBeenCalledWith(
+      expect.objectContaining({ eventName: CoreEventName.PaymentAuthorized }),
+    );
+    expect(eventBus.publish).toHaveBeenCalledWith(
+      expect.objectContaining({ eventName: CoreEventName.PaymentCaptured }),
+    );
+  });
+
+  it('authorize failure emits PaymentFailed', async () => {
+    registry.removePlugin('manual-payment');
+    registry.register(
+      'manual-payment',
+      stubManualProvider({
+        async authorize() {
+          return { status: 'failed', errorMessage: 'declined' };
+        },
+      }),
+    );
+
+    const payment = await engine.authorize({
+      providerCode: 'manual',
+      orderId: 'order-fail',
+      amount: { amountMinor: '100', currencyCode: 'USD' },
+    });
+    expect(payment.status).toBe('failed');
+    expect(eventBus.publish).toHaveBeenCalledWith(
+      expect.objectContaining({
+        eventName: CoreEventName.PaymentFailed,
+        data: expect.objectContaining({ errorMessage: 'declined' }),
+      }),
+    );
   });
 
   it('rejects unknown provider', async () => {

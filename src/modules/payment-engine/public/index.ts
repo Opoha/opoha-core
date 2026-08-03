@@ -36,3 +36,20 @@ export {
   PaymentType,
   RefundPaymentInput as RefundPaymentGqlInput,
 } from '../payment.types';
+export {
+  paymentAuthorizedDataSchema,
+  paymentCapturedDataSchema,
+  paymentFailedDataSchema,
+  paymentRefundedDataSchema,
+  paymentEventSchemas,
+} from '../events/payment-events';
+export type {
+  PaymentAuthorizedData,
+  PaymentAuthorizedEvent,
+  PaymentCapturedData,
+  PaymentCapturedEvent,
+  PaymentFailedData,
+  PaymentFailedEvent,
+  PaymentRefundedData,
+  PaymentRefundedEvent,
+} from '../events/payment-events';

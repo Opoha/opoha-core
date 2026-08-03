@@ -6,6 +6,8 @@ import {
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 
+import { CoreEventName } from '../event-bus/event-catalog';
+import { EventBusService } from '../event-bus/event-bus.service';
 import {
   PaymentEntity,
   type PaymentStatus,
@@ -59,6 +61,7 @@ export class PaymentEngine {
     private readonly payments: Repository<PaymentEntity>,
     @InjectRepository(PaymentWebhookEventEntity)
     private readonly webhookEvents: Repository<PaymentWebhookEventEntity>,
+    private readonly eventBus: EventBusService,
   ) {}
 
   /** Register a provider (pluginId defaults to `core` for in-process stubs). */
@@ -172,7 +175,9 @@ export class PaymentEngine {
       if (result.externalId) {
         row.externalId = result.externalId;
       }
-      return this.payments.save(row);
+      const saved = await this.payments.save(row);
+      await this.publishFailed(saved);
+      return saved;
     }
 
     if (result.status === 'pending') {
@@ -191,7 +196,9 @@ export class PaymentEngine {
       row.externalId = result.externalId;
     }
     row.errorMessage = null;
-    return this.payments.save(row);
+    const saved = await this.payments.save(row);
+    await this.publishCaptured(saved);
+    return saved;
   }
 
   /** Refund a captured payment (full or partial amount). */
@@ -240,7 +247,9 @@ export class PaymentEngine {
       row.externalId = result.externalId;
     }
     row.errorMessage = null;
-    return this.payments.save(row);
+    const saved = await this.payments.save(row);
+    await this.publishRefunded(saved);
+    return saved;
   }
 
   /** Delegate webhook payload to the named provider (no persistence). */
@@ -381,14 +390,16 @@ export class PaymentEngine {
       payment.status = 'failed';
       payment.failedAt = new Date();
       payment.errorMessage = 'Failed via provider webhook';
-      await this.payments.save(payment);
+      const saved = await this.payments.save(payment);
+      await this.publishFailed(saved);
     } else if (
       result.action === 'authorize' &&
       payment.status === 'pending'
     ) {
       payment.status = 'authorized';
       payment.authorizedAt = new Date();
-      await this.payments.save(payment);
+      const saved = await this.payments.save(payment);
+      await this.publishAuthorized(saved);
     }
 
     return payment.id;
@@ -434,7 +445,9 @@ export class PaymentEngine {
       row.status = 'failed';
       row.errorMessage = result.errorMessage ?? 'Authorization failed';
       row.failedAt = now;
-      return this.payments.save(row);
+      const saved = await this.payments.save(row);
+      await this.publishFailed(saved);
+      return saved;
     }
 
     if (status === 'pending') {
@@ -447,13 +460,68 @@ export class PaymentEngine {
       row.authorizedAt = now;
       row.capturedAt = now;
       row.errorMessage = null;
-      return this.payments.save(row);
+      const saved = await this.payments.save(row);
+      await this.publishAuthorized(saved);
+      await this.publishCaptured(saved);
+      return saved;
     }
 
     row.status = 'authorized';
     row.authorizedAt = now;
     row.errorMessage = null;
-    return this.payments.save(row);
+    const saved = await this.payments.save(row);
+    await this.publishAuthorized(saved);
+    return saved;
+  }
+
+  private paymentEventData(payment: PaymentEntity) {
+    return {
+      paymentId: payment.id,
+      orderId: payment.orderId,
+      providerCode: payment.providerCode,
+      amountMinor: String(payment.amountMinor),
+      currencyCode: payment.currencyCode,
+      externalId: payment.externalId,
+    };
+  }
+
+  private async publishAuthorized(payment: PaymentEntity): Promise<void> {
+    await this.eventBus.publish({
+      eventName: CoreEventName.PaymentAuthorized,
+      aggregateType: 'payment',
+      aggregateId: payment.id,
+      data: this.paymentEventData(payment),
+    });
+  }
+
+  private async publishCaptured(payment: PaymentEntity): Promise<void> {
+    await this.eventBus.publish({
+      eventName: CoreEventName.PaymentCaptured,
+      aggregateType: 'payment',
+      aggregateId: payment.id,
+      data: this.paymentEventData(payment),
+    });
+  }
+
+  private async publishRefunded(payment: PaymentEntity): Promise<void> {
+    await this.eventBus.publish({
+      eventName: CoreEventName.PaymentRefunded,
+      aggregateType: 'payment',
+      aggregateId: payment.id,
+      data: this.paymentEventData(payment),
+    });
+  }
+
+  private async publishFailed(payment: PaymentEntity): Promise<void> {
+    await this.eventBus.publish({
+      eventName: CoreEventName.PaymentFailed,
+      aggregateType: 'payment',
+      aggregateId: payment.id,
+      data: {
+        ...this.paymentEventData(payment),
+        errorMessage: payment.errorMessage,
+      },
+    });
   }
 }
 
