@@ -449,11 +449,14 @@ export {
   JOB_RUN_STATUSES,
   isJobRunStatus,
   assertCronExpression,
+  cronMatchesAt,
   isValidCronExpression,
 } from './modules/jobs/public';
 export type {
   JobDefinitionRecord,
   JobRunRecord,
+  JobDefinitionType,
+  JobRunType,
   JobQueueAdapter,
   UpsertCronJobInput,
   JobRunStatus,

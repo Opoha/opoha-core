@@ -19,6 +19,7 @@
     "test:boundary": "vitest run src/boundary.test.ts",
     "foundations-smoke": "vitest run src/modules/omnichannel/omnichannel-foundations.smoke.test.ts src/modules/catalog/entities/fulfillment-mode.test.ts src/modules/order/entities/order-source.test.ts src/boundary.test.ts",
     "digital-smoke": "vitest run src/modules/digital/digital-gate.smoke.test.ts src/modules/digital/digital-fulfillment.service.test.ts src/boundary.test.ts",
+    "jobs-smoke": "vitest run src/modules/jobs/jobs-gate.smoke.test.ts src/modules/jobs/jobs.service.test.ts src/modules/jobs/cron-expression.test.ts src/modules/jobs/job-status.test.ts src/boundary.test.ts",
     "omnichannel-smoke": "node ./scripts/omnichannel-smoke.mjs",
     "walking-skeleton": "node ./scripts/walking-skeleton.mjs",
     "lint": "eslint .",

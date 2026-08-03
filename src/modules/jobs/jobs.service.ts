@@ -1,9 +1,14 @@
-import { Inject, Injectable, OnModuleInit } from '@nestjs/common';
+import {
+  BadRequestException,
+  Inject,
+  Injectable,
+  NotFoundException,
+  type OnModuleInit,
+} from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import type { Repository } from 'typeorm';
+import { Repository } from 'typeorm';
 
 import { assertCronExpression } from './cron-expression';
-import { BullMqJobQueueAdapter } from './bullmq-job-queue.adapter';
 import { JobDefinitionEntity } from './entities/job-definition.entity';
 import { JobRunEntity } from './entities/job-run.entity';
 import { InMemoryJobQueueAdapter } from './in-memory-job-queue.adapter';
@@ -11,38 +16,47 @@ import {
   JOB_QUEUE_ADAPTER,
   type JobQueueAdapter,
 } from './job-queue.adapter';
-import type { JobRunStatus } from './job-status';
-import type {
-  RegisterScheduledJobInput,
-  ScheduledJobHandler,
-} from './scheduled-job';
+import type { RegisterScheduledJobInput, ScheduledJobHandler } from './scheduled-job';
 import { ScheduledJobRegistry } from './scheduled-job.registry';
+import type { JobDefinitionType, JobRunType } from './jobs.types';
 
-export type JobDefinitionRecord = {
-  id: string;
-  code: string;
-  name: string;
-  cronExpression: string;
-  timezone: string;
-  handlerKey: string;
-  ownerPluginId: string | null;
-  enabled: boolean;
-};
+function toJobDefinitionType(row: JobDefinitionEntity): JobDefinitionType {
+  return {
+    id: row.id,
+    code: row.code,
+    name: row.name,
+    cronExpression: row.cronExpression,
+    timezone: row.timezone,
+    handlerKey: row.handlerKey,
+    ownerPluginId: row.ownerPluginId,
+    enabled: row.enabled,
+    createdAt: row.createdAt,
+    updatedAt: row.updatedAt,
+  };
+}
 
-export type JobRunRecord = {
-  id: string;
-  jobDefinitionId: string;
-  status: JobRunStatus;
-  attempt: number;
-  queueJobId: string | null;
-  startedAt: Date | null;
-  finishedAt: Date | null;
-  errorMessage: string | null;
-  createdAt: Date;
-};
+function toJobRunType(row: JobRunEntity): JobRunType {
+  return {
+    id: row.id,
+    jobDefinitionId: row.jobDefinitionId,
+    status: row.status,
+    attempt: row.attempt,
+    queueJobId: row.queueJobId,
+    startedAt: row.startedAt,
+    finishedAt: row.finishedAt,
+    errorMessage: row.errorMessage,
+    createdAt: row.createdAt,
+  };
+}
 
 /**
- * Core jobs service — persist definitions, bridge queue, record runs (A-02/A-03).
+ * Core `jobs` module service (Phase 8 A-02/A-03).
+ *
+ * Ties {@link ScheduledJobRegistry} (in-process handlers), the pluggable
+ * {@link JobQueueAdapter} (BullMQ in production; in-memory stub for unit
+ * gates — see docs/readiness/jobs-cron-contracts.md), and the TypeORM
+ * `job_definitions` / `job_runs` tables together so every execution is
+ * persisted and observable regardless of which adapter is wired.
  */
 @Injectable()
 export class JobsService implements OnModuleInit {
@@ -56,38 +70,38 @@ export class JobsService implements OnModuleInit {
   ) {}
 
   onModuleInit(): void {
-    const hook = async (
-      code: string,
-      handler: ScheduledJobHandler,
-      queueJobId: string,
-      attempt: number,
-    ) => {
-      await this.executeAndRecord(code, handler, queueJobId, attempt);
-    };
-    if (this.queue instanceof InMemoryJobQueueAdapter) {
-      this.queue.setExecuteHook(hook);
-    } else if (this.queue instanceof BullMqJobQueueAdapter) {
-      this.queue.setExecuteHook(hook);
-    }
+    this.queue.setExecuteHook?.(this.recordExecution.bind(this));
   }
 
   /**
-   * Register a cron job (core or plugin). Persists definition + upserts queue.
+   * Registers a cron-style job: persists/updates the `job_definitions` row,
+   * activates the in-process handler in the registry, and upserts the cron
+   * in the queue adapter. `pluginId` is null for core-owned jobs.
+   * `active` mirrors plugin enable state at registration time.
    */
   async registerScheduledJob(
     pluginId: string | null,
     input: RegisterScheduledJobInput,
     active = true,
-  ): Promise<JobDefinitionRecord> {
-    const cron = assertCronExpression(input.cron);
+  ): Promise<JobDefinitionType> {
     const localCode = input.code.trim();
     if (!localCode) {
-      throw new Error('Scheduled job code is required');
+      throw new BadRequestException('Scheduled job code is required');
     }
     const code = pluginId ? `${pluginId}:${localCode}` : localCode;
-    const timezone = (input.timezone ?? 'UTC').trim() || 'UTC';
-    const displayName = input.displayName?.trim() || code;
-    const handlerKey = code;
+    const cron = assertCronExpression(input.cron);
+    const timezone = input.timezone?.trim() || 'UTC';
+    const displayName = input.displayName?.trim() || localCode;
+
+    const definition = await this.upsertDefinition({
+      code,
+      name: displayName,
+      cronExpression: cron,
+      timezone,
+      handlerKey: code,
+      ownerPluginId: pluginId,
+      enabled: active,
+    });
 
     this.registry.register(
       pluginId,
@@ -96,35 +110,11 @@ export class JobsService implements OnModuleInit {
         displayName,
         cron,
         timezone,
-        handlerKey,
+        handlerKey: code,
         handler: input.handler,
       },
       active,
     );
-
-    const existing = await this.definitions.findOne({ where: { code } });
-    let row: JobDefinitionEntity;
-    if (existing) {
-      existing.name = displayName;
-      existing.cronExpression = cron;
-      existing.timezone = timezone;
-      existing.handlerKey = handlerKey;
-      existing.ownerPluginId = pluginId;
-      existing.enabled = active;
-      row = await this.definitions.save(existing);
-    } else {
-      row = await this.definitions.save(
-        this.definitions.create({
-          code,
-          name: displayName,
-          cronExpression: cron,
-          timezone,
-          handlerKey,
-          ownerPluginId: pluginId,
-          enabled: active,
-        }),
-      );
-    }
 
     if (active) {
       await this.queue.upsertCronJob({
@@ -137,9 +127,10 @@ export class JobsService implements OnModuleInit {
       await this.queue.removeCronJob(code);
     }
 
-    return this.toDefinitionRecord(row);
+    return toJobDefinitionType(definition);
   }
 
+  /** Enable/disable all scheduled jobs owned by a plugin (lifecycle). */
   async setPluginJobsActive(pluginId: string, active: boolean): Promise<void> {
     if (active) {
       this.registry.activatePlugin(pluginId);
@@ -168,6 +159,7 @@ export class JobsService implements OnModuleInit {
     }
   }
 
+  /** Remove plugin job definitions from registry, queue, and TypeORM. */
   async removePluginJobs(pluginId: string): Promise<void> {
     const removed = this.registry.removePlugin(pluginId);
     for (const job of removed) {
@@ -176,127 +168,126 @@ export class JobsService implements OnModuleInit {
     }
   }
 
-  /** Trigger a registered job and record a run (unit / Admin). */
-  async trigger(code: string, attempt = 1): Promise<JobRunRecord> {
-    const registered = this.registry.get(code);
-    if (!registered) {
-      throw new Error(`Scheduled job "${code}" is not registered or inactive`);
-    }
-    await this.queue.upsertCronJob({
-      code: registered.code,
-      cron: registered.cron,
-      timezone: registered.timezone,
-      handler: registered.handler,
-    });
-    const queueJobId = await this.queue.trigger(code, attempt);
-    const runs = await this.listRuns(code, 1);
-    const latest = runs[0];
-    if (!latest) {
-      // Hook may be missing in some test wiring — synthesize from last execute.
-      return {
-        id: 'unknown',
-        jobDefinitionId: 'unknown',
-        status: 'succeeded',
-        attempt,
-        queueJobId,
-        startedAt: new Date(),
-        finishedAt: new Date(),
-        errorMessage: null,
-        createdAt: new Date(),
-      };
-    }
-    return latest;
+  /** Manually fire a registered job (Admin trigger / test gate). */
+  async trigger(code: string, attempt = 1): Promise<string> {
+    return this.queue.trigger(code, attempt);
   }
 
-  async listDefinitions(): Promise<JobDefinitionRecord[]> {
-    const rows = await this.definitions.find({
-      order: { code: 'ASC' },
-    });
-    return rows.map((r) => this.toDefinitionRecord(r));
+  /**
+   * Fire every registered cron job due at `at` (memory adapter / A-04 jobs gate).
+   * Production BullMQ workers schedule via Redis repeatables instead.
+   */
+  async runDueAt(
+    at: Date,
+    attempt = 1,
+  ): Promise<Array<{ code: string; queueJobId: string; run: JobRunType }>> {
+    if (!(this.queue instanceof InMemoryJobQueueAdapter)) {
+      throw new BadRequestException(
+        'runDueAt requires the in-memory job queue adapter (jobs gate / unit tests)',
+      );
+    }
+    const fired = await this.queue.runDueAt(at, attempt);
+    const out: Array<{ code: string; queueJobId: string; run: JobRunType }> =
+      [];
+    for (const [code, queueJobId] of fired) {
+      const runs = await this.listRuns(code);
+      const run = runs[0];
+      if (!run) {
+        throw new Error(
+          `Job "${code}" fired but no job_runs observability row was recorded`,
+        );
+      }
+      out.push({ code, queueJobId, run });
+    }
+    return out;
   }
 
-  async listRuns(jobCode: string, limit = 20): Promise<JobRunRecord[]> {
-    const def = await this.definitions.findOne({ where: { code: jobCode } });
-    if (!def) {
-      return [];
+  async listDefinitions(): Promise<JobDefinitionType[]> {
+    const rows = await this.definitions.find({ order: { code: 'ASC' } });
+    return rows.map(toJobDefinitionType);
+  }
+
+  async findDefinitionByCode(code: string): Promise<JobDefinitionType> {
+    const row = await this.definitions.findOne({ where: { code } });
+    if (!row) {
+      throw new NotFoundException(`Scheduled job "${code}" not found`);
+    }
+    return toJobDefinitionType(row);
+  }
+
+  async listRuns(code: string): Promise<JobRunType[]> {
+    const definition = await this.definitions.findOne({ where: { code } });
+    if (!definition) {
+      throw new NotFoundException(`Scheduled job "${code}" not found`);
     }
     const rows = await this.runs.find({
-      where: { jobDefinitionId: def.id },
+      where: { jobDefinitionId: definition.id },
       order: { createdAt: 'DESC' },
-      take: limit,
     });
-    return rows.map((r) => this.toRunRecord(r));
+    return rows.map(toJobRunType);
   }
 
-  private async executeAndRecord(
+  /**
+   * Queue-agnostic execution wrapper: creates a `job_runs` row, invokes the
+   * handler, then records success/failure. Wired via
+   * {@link JobQueueAdapter.setExecuteHook} in {@link onModuleInit} so both
+   * the in-memory stub and a future BullMQ worker share the same recording
+   * logic.
+   */
+  private async recordExecution(
     code: string,
     handler: ScheduledJobHandler,
     queueJobId: string,
     attempt: number,
   ): Promise<void> {
-    const def = await this.definitions.findOne({ where: { code } });
-    if (!def) {
-      throw new Error(`No job_definitions row for "${code}"`);
+    const definition = await this.definitions.findOne({ where: { code } });
+    if (!definition) {
+      throw new Error(`Unknown scheduled job "${code}" — no job_definitions row`);
     }
+
+    const startedAt = new Date();
     const run = await this.runs.save(
       this.runs.create({
-        jobDefinitionId: def.id,
-        status: 'pending',
+        jobDefinitionId: definition.id,
+        status: 'running',
         attempt,
         queueJobId,
-        startedAt: null,
-        finishedAt: null,
-        errorMessage: null,
+        startedAt,
       }),
     );
-    run.status = 'running';
-    run.startedAt = new Date();
-    await this.runs.save(run);
 
     try {
-      await handler({
-        jobCode: code,
-        attempt,
-        queuedAt: run.createdAt,
+      await handler({ jobCode: code, attempt, queuedAt: startedAt });
+      await this.runs.update(run.id, {
+        status: 'succeeded',
+        finishedAt: new Date(),
       });
-      run.status = 'succeeded';
-      run.finishedAt = new Date();
-      run.errorMessage = null;
-      await this.runs.save(run);
-    } catch (err) {
-      run.status = 'failed';
-      run.finishedAt = new Date();
-      run.errorMessage =
-        err instanceof Error ? err.message : String(err);
-      await this.runs.save(run);
-      throw err;
+    } catch (error) {
+      await this.runs.update(run.id, {
+        status: 'failed',
+        finishedAt: new Date(),
+        errorMessage: error instanceof Error ? error.message : String(error),
+      });
+      throw error;
     }
   }
 
-  private toDefinitionRecord(row: JobDefinitionEntity): JobDefinitionRecord {
-    return {
-      id: row.id,
-      code: row.code,
-      name: row.name,
-      cronExpression: row.cronExpression,
-      timezone: row.timezone,
-      handlerKey: row.handlerKey,
-      ownerPluginId: row.ownerPluginId,
-      enabled: row.enabled,
-    };
-  }
-
-  private toRunRecord(row: JobRunEntity): JobRunRecord {
-    return {
-      id: row.id,
-      jobDefinitionId: row.jobDefinitionId,
-      status: row.status,
-      attempt: row.attempt,
-      queueJobId: row.queueJobId,
-      startedAt: row.startedAt,
-      finishedAt: row.finishedAt,
-      errorMessage: row.errorMessage,
-      createdAt: row.createdAt,
-    };
+  private async upsertDefinition(data: {
+    code: string;
+    name: string;
+    cronExpression: string;
+    timezone: string;
+    handlerKey: string;
+    ownerPluginId: string | null;
+    enabled: boolean;
+  }): Promise<JobDefinitionEntity> {
+    const existing = await this.definitions.findOne({
+      where: { code: data.code },
+    });
+    if (existing) {
+      Object.assign(existing, data);
+      return this.definitions.save(existing);
+    }
+    return this.definitions.save(this.definitions.create(data));
   }
 }

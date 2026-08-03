@@ -2,37 +2,53 @@ import { describe, expect, it } from 'vitest';
 
 import {
   assertCronExpression,
+  cronMatchesAt,
   isValidCronExpression,
 } from './cron-expression';
-import { isJobRunStatus, JOB_RUN_STATUSES } from './job-status';
 
-describe('cron-expression (A-01)', () => {
-  it('accepts standard 5-field expressions', () => {
-    expect(isValidCronExpression('*/5 * * * *')).toBe(true);
-    expect(isValidCronExpression('0 * * * *')).toBe(true);
-    expect(isValidCronExpression('0 0 * * *')).toBe(true);
-    expect(isValidCronExpression('30 2 * * 1')).toBe(true);
-    expect(assertCronExpression('  0 * * * *  ')).toBe('0 * * * *');
+describe('cron-expression (A-01/A-04)', () => {
+  it('accepts standard 5-field crontab expressions', () => {
+    const valid = [
+      '*/5 * * * *',
+      '0 * * * *',
+      '0 0 * * *',
+      '30 2 * * 1',
+      '*   *   *   *   *',
+    ];
+    for (const expr of valid) {
+      expect(isValidCronExpression(expr)).toBe(true);
+      expect(assertCronExpression(expr)).toBe(expr.trim());
+    }
   });
 
-  it('rejects empty or wrong field counts', () => {
-    expect(isValidCronExpression('')).toBe(false);
-    expect(isValidCronExpression('* * * *')).toBe(false);
-    expect(isValidCronExpression('* * * * * *')).toBe(false);
-    expect(() => assertCronExpression('not-a-cron')).toThrow(/Invalid cron/);
+  it('rejects empty, blank, and malformed expressions', () => {
+    const invalid = [
+      '',
+      '   ',
+      '* * * *',
+      '* * * * * *',
+      'not a cron',
+      '*/x * * * *',
+    ];
+    for (const expr of invalid) {
+      expect(isValidCronExpression(expr)).toBe(false);
+      expect(() => assertCronExpression(expr)).toThrow(
+        /Invalid cron expression/,
+      );
+    }
   });
-});
 
-describe('job-status (A-01/A-02)', () => {
-  it('enumerates observability statuses', () => {
-    expect(JOB_RUN_STATUSES).toEqual([
-      'pending',
-      'running',
-      'succeeded',
-      'failed',
-      'canceled',
-    ]);
-    expect(isJobRunStatus('succeeded')).toBe(true);
-    expect(isJobRunStatus('unknown')).toBe(false);
+  it('trims surrounding whitespace before validating', () => {
+    expect(isValidCronExpression('  0 0 * * *  ')).toBe(true);
+    expect(assertCronExpression('  0 0 * * *  ')).toBe('0 0 * * *');
+  });
+
+  it('matches due times for step and hourly expressions (UTC)', () => {
+    const atHour = new Date('2026-08-04T04:00:00Z');
+    const atOne = new Date('2026-08-04T04:01:00Z');
+    expect(cronMatchesAt('*/5 * * * *', atHour)).toBe(true);
+    expect(cronMatchesAt('*/5 * * * *', atOne)).toBe(false);
+    expect(cronMatchesAt('0 * * * *', atHour)).toBe(true);
+    expect(cronMatchesAt('0 * * * *', atOne)).toBe(false);
   });
 });

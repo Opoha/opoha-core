@@ -1,10 +1,11 @@
+import { NotFoundException } from '@nestjs/common';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 
 import { InMemoryJobQueueAdapter } from './in-memory-job-queue.adapter';
 import { JobsService } from './jobs.service';
 import { ScheduledJobRegistry } from './scheduled-job.registry';
 
-type DefRow = {
+type DefinitionRow = {
   id: string;
   code: string;
   name: string;
@@ -31,177 +32,196 @@ type RunRow = {
 
 describe('JobsService (A-02/A-03)', () => {
   const now = new Date('2026-08-04T04:00:00Z');
-  let defs: DefRow[];
+  let definitions: DefinitionRow[];
   let runs: RunRow[];
-  let definitionsRepo: {
-    find: ReturnType<typeof vi.fn>;
-    findOne: ReturnType<typeof vi.fn>;
-    create: ReturnType<typeof vi.fn>;
-    save: ReturnType<typeof vi.fn>;
-    delete: ReturnType<typeof vi.fn>;
-  };
-  let runsRepo: {
-    find: ReturnType<typeof vi.fn>;
-    create: ReturnType<typeof vi.fn>;
-    save: ReturnType<typeof vi.fn>;
-  };
-  let registry: ScheduledJobRegistry;
-  let queue: InMemoryJobQueueAdapter;
+  let defSeq = 0;
+  let runSeq = 0;
   let service: JobsService;
+  let queue: InMemoryJobQueueAdapter;
 
-  beforeEach(() => {
-    defs = [];
+  function buildService(): JobsService {
+    definitions = [];
     runs = [];
-    let defSeq = 0;
-    let runSeq = 0;
+    defSeq = 0;
+    runSeq = 0;
 
-    definitionsRepo = {
-      find: vi.fn(async () =>
-        [...defs].sort((a, b) => a.code.localeCompare(b.code)),
+    const definitionsRepo = {
+      find: vi.fn(async () => [...definitions].sort((a, b) => a.code.localeCompare(b.code))),
+      findOne: vi.fn(async ({ where }: { where: Partial<DefinitionRow> }) =>
+        definitions.find((row) =>
+          Object.entries(where).every(
+            ([k, v]) => row[k as keyof DefinitionRow] === v,
+          ),
+        ) ?? null,
       ),
-      findOne: vi.fn(async ({ where }: { where: Partial<DefRow> }) => {
-        if (where.code) {
-          return defs.find((d) => d.code === where.code) ?? null;
-        }
-        if (where.id) {
-          return defs.find((d) => d.id === where.id) ?? null;
-        }
-        return null;
-      }),
-      create: vi.fn((input: Partial<DefRow>) => ({ ...input })),
-      save: vi.fn(async (row: Partial<DefRow>) => {
-        if (row.id) {
-          const idx = defs.findIndex((d) => d.id === row.id);
-          if (idx >= 0) {
-            defs[idx] = { ...defs[idx]!, ...row, updatedAt: now } as DefRow;
-            return defs[idx];
-          }
-        }
-        defSeq += 1;
-        const created: DefRow = {
-          id: `def-${defSeq}`,
-          code: row.code!,
-          name: row.name!,
-          cronExpression: row.cronExpression!,
-          timezone: row.timezone ?? 'UTC',
-          handlerKey: row.handlerKey!,
-          ownerPluginId: row.ownerPluginId ?? null,
-          enabled: row.enabled ?? true,
-          createdAt: now,
-          updatedAt: now,
-        };
-        defs.push(created);
-        return created;
-      }),
-      delete: vi.fn(async ({ code }: { code: string }) => {
-        defs = defs.filter((d) => d.code !== code);
-      }),
-    };
-
-    runsRepo = {
-      find: vi.fn(
-        async ({
-          where,
-          take,
-        }: {
-          where: { jobDefinitionId: string };
-          take?: number;
-        }) => {
-          const matched = runs
-            .filter((r) => r.jobDefinitionId === where.jobDefinitionId)
-            .sort((a, b) => b.createdAt.getTime() - a.createdAt.getTime());
-          return take ? matched.slice(0, take) : matched;
-        },
-      ),
-      create: vi.fn((input: Partial<RunRow>) => ({
-        ...input,
+      create: vi.fn((data: Partial<DefinitionRow>) => ({
+        id: `def-${++defSeq}`,
+        enabled: true,
         createdAt: now,
+        updatedAt: now,
+        ...data,
       })),
-      save: vi.fn(async (row: Partial<RunRow> & { createdAt?: Date }) => {
-        if (row.id) {
-          const idx = runs.findIndex((r) => r.id === row.id);
-          if (idx >= 0) {
-            runs[idx] = { ...runs[idx]!, ...row } as RunRow;
-            return runs[idx];
-          }
+      save: vi.fn(async (row: DefinitionRow) => {
+        const idx = definitions.findIndex((r) => r.id === row.id);
+        const saved = { ...row, updatedAt: now };
+        if (idx >= 0) {
+          definitions[idx] = saved;
+        } else {
+          definitions.push(saved);
         }
-        runSeq += 1;
-        const created: RunRow = {
-          id: `run-${runSeq}`,
-          jobDefinitionId: row.jobDefinitionId!,
-          status: (row.status as string) ?? 'pending',
-          attempt: row.attempt ?? 1,
-          queueJobId: row.queueJobId ?? null,
-          startedAt: row.startedAt ?? null,
-          finishedAt: row.finishedAt ?? null,
-          errorMessage: row.errorMessage ?? null,
-          createdAt: row.createdAt ?? now,
-        };
-        runs.push(created);
-        return created;
+        return saved;
       }),
     };
 
-    registry = new ScheduledJobRegistry();
+    const runsRepo = {
+      find: vi.fn(async ({ where }: { where: Partial<RunRow> }) =>
+        runs
+          .filter((row) =>
+            Object.entries(where).every(
+              ([k, v]) => row[k as keyof RunRow] === v,
+            ),
+          )
+          .sort((a, b) => b.createdAt.getTime() - a.createdAt.getTime()),
+      ),
+      create: vi.fn((data: Partial<RunRow>) => ({
+        id: `run-${++runSeq}`,
+        status: 'pending',
+        attempt: 1,
+        queueJobId: null,
+        startedAt: null,
+        finishedAt: null,
+        errorMessage: null,
+        createdAt: now,
+        ...data,
+      })),
+      save: vi.fn(async (row: RunRow) => {
+        runs.push(row);
+        return row;
+      }),
+      update: vi.fn(async (id: string, patch: Partial<RunRow>) => {
+        const idx = runs.findIndex((r) => r.id === id);
+        if (idx >= 0) {
+          runs[idx] = { ...runs[idx]!, ...patch };
+        }
+      }),
+    };
+
     queue = new InMemoryJobQueueAdapter();
-    service = new JobsService(
+    const registry = new ScheduledJobRegistry();
+
+    const svc = new JobsService(
       definitionsRepo as never,
       runsRepo as never,
       registry,
       queue,
     );
-    service.onModuleInit();
+    svc.onModuleInit();
+    return svc;
+  }
+
+  beforeEach(() => {
+    service = buildService();
   });
 
-  it('registers a core cron job, persists definition, and records a successful run', async () => {
+  it('registers a core job, persisting a job_definitions row', async () => {
     const handler = vi.fn(async () => undefined);
-    const def = await service.registerScheduledJob(null, {
-      code: 'heartbeat',
-      displayName: 'Heartbeat',
+    const definition = await service.registerScheduledJob(null, {
+      code: 'cleanup',
+      displayName: 'Cleanup',
+      cron: '0 0 * * *',
+      handler,
+    });
+
+    expect(definition.code).toBe('cleanup');
+    expect(definition.cronExpression).toBe('0 0 * * *');
+    expect(definition.timezone).toBe('UTC');
+    expect(definition.ownerPluginId).toBeNull();
+    expect(definitions).toHaveLength(1);
+  });
+
+  it('prefixes plugin-registered job codes with the plugin id', async () => {
+    const definition = await service.registerScheduledJob('plugin-subscriptions', {
+      code: 'renew-due',
+      cron: '0 * * * *',
+      handler: vi.fn(async () => undefined),
+    });
+
+    expect(definition.code).toBe('plugin-subscriptions:renew-due');
+    expect(definition.ownerPluginId).toBe('plugin-subscriptions');
+  });
+
+  it('rejects an invalid cron expression', async () => {
+    await expect(
+      service.registerScheduledJob(null, {
+        code: 'bad',
+        cron: 'not-a-cron',
+        handler: vi.fn(async () => undefined),
+      }),
+    ).rejects.toThrow(/Invalid cron expression/);
+  });
+
+  it('trigger executes the handler and records a succeeded run — cron job is observable', async () => {
+    const handler = vi.fn(async () => undefined);
+    await service.registerScheduledJob(null, {
+      code: 'cleanup',
+      displayName: 'Cleanup',
       cron: '*/5 * * * *',
       handler,
     });
 
-    expect(def.code).toBe('heartbeat');
-    expect(def.cronExpression).toBe('*/5 * * * *');
-    expect(defs).toHaveLength(1);
-    expect(queue.listCodes()).toEqual(['heartbeat']);
+    const queueJobId = await service.trigger('cleanup');
 
-    const run = await service.trigger('heartbeat');
-    expect(handler).toHaveBeenCalledOnce();
-    expect(run.status).toBe('succeeded');
-    expect(run.queueJobId).toMatch(/^memory:/);
-    expect(runs).toHaveLength(1);
-    expect(runs[0]?.status).toBe('succeeded');
+    expect(handler).toHaveBeenCalledTimes(1);
+    expect(queueJobId).toMatch(/^memory:/);
+
+    const history = await service.listRuns('cleanup');
+    expect(history).toHaveLength(1);
+    expect(history[0]).toMatchObject({
+      status: 'succeeded',
+      attempt: 1,
+      queueJobId,
+    });
+    expect(history[0]!.startedAt).toBeInstanceOf(Date);
+    expect(history[0]!.finishedAt).toBeInstanceOf(Date);
   });
 
-  it('prefixes plugin job codes and records failures', async () => {
-    const handler = vi.fn(async () => {
-      throw new Error('boom');
-    });
-    await service.registerScheduledJob('subscription', {
-      code: 'renew-due',
+  it('trigger records a failed run with the error message when the handler throws', async () => {
+    await service.registerScheduledJob(null, {
+      code: 'flaky',
       cron: '0 * * * *',
-      handler,
+      handler: vi.fn(async () => {
+        throw new Error('boom');
+      }),
     });
 
-    expect(defs[0]?.code).toBe('subscription:renew-due');
-    expect(defs[0]?.ownerPluginId).toBe('subscription');
+    await expect(service.trigger('flaky')).rejects.toThrow('boom');
 
-    await expect(service.trigger('subscription:renew-due')).rejects.toThrow(
-      'boom',
-    );
-    expect(runs[0]?.status).toBe('failed');
-    expect(runs[0]?.errorMessage).toBe('boom');
+    const history = await service.listRuns('flaky');
+    expect(history).toHaveLength(1);
+    expect(history[0]).toMatchObject({ status: 'failed', errorMessage: 'boom' });
   });
 
-  it('rejects invalid cron at registration', async () => {
-    await expect(
-      service.registerScheduledJob(null, {
-        code: 'bad',
-        cron: '* * *',
-        handler: async () => undefined,
-      }),
-    ).rejects.toThrow(/Invalid cron/);
+  it('listRuns throws NotFoundException for an unknown job code', async () => {
+    await expect(service.listRuns('missing')).rejects.toThrow(NotFoundException);
+  });
+
+  it('re-registering the same code updates the existing definition instead of duplicating', async () => {
+    await service.registerScheduledJob(null, {
+      code: 'cleanup',
+      displayName: 'Cleanup v1',
+      cron: '0 0 * * *',
+      handler: vi.fn(async () => undefined),
+    });
+    await service.registerScheduledJob(null, {
+      code: 'cleanup',
+      displayName: 'Cleanup v2',
+      cron: '0 1 * * *',
+      handler: vi.fn(async () => undefined),
+    });
+
+    expect(definitions).toHaveLength(1);
+    const list = await service.listDefinitions();
+    expect(list[0]!.name).toBe('Cleanup v2');
+    expect(list[0]!.cronExpression).toBe('0 1 * * *');
   });
 });
