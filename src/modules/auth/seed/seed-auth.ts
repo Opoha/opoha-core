@@ -36,6 +36,14 @@ export const DEFAULT_PERMISSIONS = [
   { key: 'brand:read', description: 'Read catalog brands' },
   { key: 'brand:update', description: 'Update catalog brands' },
   { key: 'brand:delete', description: 'Delete catalog brands' },
+  { key: 'attribute:create', description: 'Create catalog attribute definitions' },
+  { key: 'attribute:read', description: 'Read catalog attributes' },
+  { key: 'attribute:update', description: 'Update catalog attributes and values' },
+  { key: 'attribute:delete', description: 'Delete catalog attributes and values' },
+  { key: 'product-media:create', description: 'Attach media files to products' },
+  { key: 'product-media:read', description: 'Read product media links' },
+  { key: 'product-media:update', description: 'Update product media links' },
+  { key: 'product-media:delete', description: 'Detach product media links' },
 ] as const;
 
 export type SeedAdminOptions = {

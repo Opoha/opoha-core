@@ -30,10 +30,10 @@ import { ShippingEngineModule } from './modules/shipping-engine/public';
     RedisModule,
     ApiVersioningModule,
     AuthModule,
+    FilesModule,
     CatalogModule,
     PaymentEngineModule,
     ShippingEngineModule,
-    FilesModule,
     PluginLoaderModule,
     GraphQLModule.forRoot<ApolloDriverConfig>({
       driver: ApolloDriver,

@@ -12,6 +12,7 @@ import { FilesInit1722684000000 } from './migrations/1722684000000-FilesInit';
 import { PluginStatesInit1722685100000 } from './migrations/1722685100000-PluginStatesInit';
 import { CatalogProductsInit1722686200000 } from './migrations/1722686200000-CatalogProductsInit';
 import { CatalogTaxonomyInit1722687300000 } from './migrations/1722687300000-CatalogTaxonomyInit';
+import { CatalogAttributesMediaInit1722688400000 } from './migrations/1722688400000-CatalogAttributesMediaInit';
 
 loadDotenv();
 
@@ -36,6 +37,7 @@ export default new DataSource({
     PluginStatesInit1722685100000,
     CatalogProductsInit1722686200000,
     CatalogTaxonomyInit1722687300000,
+    CatalogAttributesMediaInit1722688400000,
   ],
   synchronize: false,
 });
