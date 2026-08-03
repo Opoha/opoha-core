@@ -4,6 +4,15 @@
 export { NotificationsModule } from '../notifications.module';
 export { NotificationsService } from '../notifications.service';
 export { NotificationProviderRegistry } from '../notification-provider.registry';
+export { NotificationTemplateRegistry } from '../notification-template.registry';
+export {
+  NotificationTemplateCode,
+  formatMinorAmount,
+} from '../notification-template';
+export type {
+  NotificationTemplate,
+  NotificationTemplateRendered,
+} from '../notification-template';
 export type {
   NotificationChannel,
   NotificationRecipient,

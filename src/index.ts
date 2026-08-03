@@ -131,6 +131,9 @@ export {
   NotificationsModule,
   NotificationsService,
   NotificationProviderRegistry,
+  NotificationTemplateRegistry,
+  NotificationTemplateCode,
+  formatMinorAmount,
 } from './modules/notifications/public';
 export type {
   NotificationChannel,
@@ -140,4 +143,6 @@ export type {
   NotificationSendResult,
   NotificationProvider,
   RegisteredNotificationProvider,
+  NotificationTemplate,
+  NotificationTemplateRendered,
 } from './modules/notifications/public';

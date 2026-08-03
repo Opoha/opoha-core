@@ -3,20 +3,27 @@ import { BadRequestException, Injectable, Optional } from '@nestjs/common';
 import { EventBusService } from '../event-bus/event-bus.service';
 import { CoreEventName } from '../event-bus/event-catalog';
 import { NotificationProviderRegistry } from './notification-provider.registry';
+import { NotificationTemplateRegistry } from './notification-template.registry';
 import type {
   NotificationProvider,
+  NotificationRecipient,
   NotificationSendInput,
   NotificationSendResult,
 } from './notification-provider';
+import type {
+  NotificationTemplate,
+  NotificationTemplateRendered,
+} from './notification-template';
 
 /**
- * Notifications orchestration — register / get / list providers + send.
- * Templates (E-02) and event listeners (E-03) build on this service.
+ * Notifications orchestration — providers, templates, and send.
+ * Event listeners (E-03) build on sendTemplated / sendOrSkip.
  */
 @Injectable()
 export class NotificationsService {
   constructor(
     private readonly registry: NotificationProviderRegistry,
+    private readonly templates: NotificationTemplateRegistry,
     @Optional() private readonly eventBus?: EventBusService,
   ) {}
 
@@ -37,20 +44,54 @@ export class NotificationsService {
     return this.registry.list(true).length > 0;
   }
 
+  /** Lookup a registered transactional template. */
+  getTemplate(code: string): NotificationTemplate | undefined {
+    return this.templates.get(code);
+  }
+
+  /** List registered transactional templates. */
+  listTemplates(): readonly NotificationTemplate[] {
+    return this.templates.list();
+  }
+
+  /** Register or replace a transactional template. */
+  registerTemplate(template: NotificationTemplate): void {
+    this.templates.register(template);
+  }
+
+  /**
+   * Render a registered template. Throws BadRequestException when unknown.
+   */
+  renderTemplate(
+    code: string,
+    data: Record<string, unknown> = {},
+  ): NotificationTemplateRendered {
+    try {
+      return this.templates.render(code, data);
+    } catch (err) {
+      throw new BadRequestException(
+        err instanceof Error ? err.message : `Unknown template "${code}"`,
+      );
+    }
+  }
+
   /**
    * Send via a specific provider, or the sole active provider when omitted.
+   * When `templateCode` is set, subject/body are filled from the registry
+   * unless the caller already supplied them.
    * Publishes NotificationQueued after a successful handoff (queued/sent).
    */
   async send(
     input: NotificationSendInput,
     providerCode?: string,
   ): Promise<NotificationSendResult> {
-    this.requireSendInput(input);
+    const resolved = this.applyTemplate(input);
+    this.requireSendInput(resolved);
     const provider = this.resolveProvider(providerCode);
 
     let result: NotificationSendResult;
     try {
-      result = await provider.send(input);
+      result = await provider.send(resolved);
     } catch (err) {
       throw new BadRequestException(
         err instanceof Error
@@ -64,7 +105,7 @@ export class NotificationsService {
     }
 
     if (result.status === 'queued' || result.status === 'sent') {
-      await this.publishQueued(input, result);
+      await this.publishQueued(resolved, result);
     }
 
     return result;
@@ -78,7 +119,8 @@ export class NotificationsService {
     input: NotificationSendInput,
     providerCode?: string,
   ): Promise<NotificationSendResult> {
-    this.requireSendInput(input);
+    const resolved = this.applyTemplate(input);
+    this.requireSendInput(resolved);
     if (!this.hasActiveProvider()) {
       return {
         status: 'skipped',
@@ -86,7 +128,26 @@ export class NotificationsService {
         metadata: { reason: 'no_active_notification_provider' },
       };
     }
-    return this.send(input, providerCode);
+    return this.send(resolved, providerCode);
+  }
+
+  /**
+   * Convenience: render `templateCode` and send (or skip) to recipients.
+   */
+  async sendTemplated(
+    templateCode: string,
+    to: NotificationRecipient | NotificationRecipient[],
+    data: Record<string, unknown> = {},
+    providerCode?: string,
+  ): Promise<NotificationSendResult> {
+    return this.sendOrSkip(
+      {
+        templateCode,
+        to,
+        data,
+      },
+      providerCode,
+    );
   }
 
   private resolveProvider(providerCode?: string): NotificationProvider {
@@ -109,6 +170,42 @@ export class NotificationsService {
       );
     }
     return active[0]!.provider;
+  }
+
+  /**
+   * Fill subject/body from the template registry when templateCode is set
+   * and the caller did not already supply those fields.
+   */
+  private applyTemplate(input: NotificationSendInput): NotificationSendInput {
+    const code = input.templateCode?.trim();
+    if (!code) {
+      return input;
+    }
+    const needsSubject = !(input.subject && input.subject.trim().length > 0);
+    const needsBodyText = !(input.bodyText && input.bodyText.trim().length > 0);
+    const needsBodyHtml = input.bodyHtml === undefined;
+    if (!needsSubject && !needsBodyText && !needsBodyHtml) {
+      return input;
+    }
+    if (!this.templates.has(code)) {
+      if (
+        (input.subject && input.subject.trim().length > 0) ||
+        (input.bodyText && input.bodyText.trim().length > 0) ||
+        (input.bodyHtml && input.bodyHtml.trim().length > 0)
+      ) {
+        return input;
+      }
+      throw new BadRequestException(
+        `Notification template "${code}" is not registered`,
+      );
+    }
+    const rendered = this.templates.render(code, input.data ?? {});
+    return {
+      ...input,
+      subject: needsSubject ? rendered.subject : input.subject,
+      bodyText: needsBodyText ? rendered.bodyText : input.bodyText,
+      bodyHtml: needsBodyHtml ? rendered.bodyHtml : input.bodyHtml,
+    };
   }
 
   private requireSendInput(input: NotificationSendInput): void {
