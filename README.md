@@ -235,7 +235,25 @@ Per-store channel configuration owned by the configuration module (`store_channe
 | Q | `storeChannelSettingsList` | `settings:read` |
 | M | `updateStoreChannelSettings` | `settings:update` |
 
-Defaults are created on first read and when a store is created (`StoreCreated` listener). Display vs settlement currency FX remains Phase 5 D.
+Defaults are created on first read and when a store is created (`StoreCreated` listener).
+
+## Store currency config (Phase 5 D-01)
+
+Per-store display vs settlement currency owned by the currency module (`store_currency_config`).
+
+| Field | Meaning | Default |
+|-------|---------|---------|
+| `settlementCurrencyCode` | ISO 4217 capture / settlement currency | store `defaultCurrencyCode` |
+| `displayCurrencyCode` | Primary customer-facing ISO 4217 | same as settlement |
+| `enabledDisplayCurrencies` | Additional allowed display currencies | `[display]` (primary always included) |
+
+| Op | Name | Permission |
+|----|------|------------|
+| Q | `storeCurrencyConfig(storeId)` | `currency:read` |
+| Q | `storeCurrencyConfigList` | `currency:read` |
+| M | `updateStoreCurrencyConfig` | `currency:update` |
+
+Defaults are created on first read and when a store is created (`StoreCreated` listener). Exchange rates (D-02) and cart conversion (D-03) follow.
 
 ## Multi-store catalog filters (Phase 5 B-04)
 

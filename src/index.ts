@@ -267,6 +267,20 @@ export type {
   StoreChannelSettingsUpdatedEvent,
 } from './modules/config/public';
 export {
+  CurrencyModule,
+  StoreCurrencyConfigService,
+  StoreCurrencyConfigEntity,
+  currencyEntities,
+  DEFAULT_STORE_CURRENCY,
+  defaultStoreCurrencyConfig,
+  StoreCurrencyConfigType,
+  UpdateStoreCurrencyConfigInput,
+} from './modules/currency/public';
+export type {
+  StoreCurrencyConfigUpdatedData,
+  StoreCurrencyConfigUpdatedEvent,
+} from './modules/currency/public';
+export {
   AdminOpsModule,
   ReportsService,
   BulkOpsService,

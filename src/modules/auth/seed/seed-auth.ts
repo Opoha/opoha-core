@@ -194,6 +194,14 @@ export const DEFAULT_PERMISSIONS = [
     description: 'Update store-scoped channel / configuration settings',
   },
   {
+    key: 'currency:read',
+    description: 'Read store display/settlement currency configuration',
+  },
+  {
+    key: 'currency:update',
+    description: 'Update store display/settlement currency configuration',
+  },
+  {
     key: 'localization:read',
     description: 'Read deployment localization settings',
   },
