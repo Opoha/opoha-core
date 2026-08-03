@@ -21,8 +21,8 @@ export class AuthResolver {
     description: 'Staff login — returns JWT access token (public)',
   })
   login(
-    @Args('email') email: string,
-    @Args('password') password: string,
+    @Args('email', { type: () => String }) email: string,
+    @Args('password', { type: () => String }) password: string,
   ): Promise<AuthPayload> {
     return this.authService.login(email, password);
   }

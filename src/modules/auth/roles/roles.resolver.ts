@@ -30,7 +30,9 @@ export class RolesResolver {
     name: 'assignRole',
     description: 'Assign a role to a staff user (authenticated staff only)',
   })
-  assignRole(@Args('input') input: AssignRoleInput): Promise<RoleType> {
+  assignRole(
+    @Args('input', { type: () => AssignRoleInput }) input: AssignRoleInput,
+  ): Promise<RoleType> {
     return this.rolesService.assignRole(input.userId, input.roleId);
   }
 
@@ -38,7 +40,9 @@ export class RolesResolver {
     name: 'removeRole',
     description: 'Remove a role from a staff user (authenticated staff only)',
   })
-  removeRole(@Args('input') input: AssignRoleInput): Promise<RoleType> {
+  removeRole(
+    @Args('input', { type: () => AssignRoleInput }) input: AssignRoleInput,
+  ): Promise<RoleType> {
     return this.rolesService.removeRole(input.userId, input.roleId);
   }
 }

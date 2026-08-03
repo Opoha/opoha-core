@@ -30,7 +30,9 @@ export class UsersResolver {
     name: 'createUser',
     description: 'Create staff user (authenticated staff only)',
   })
-  createUser(@Args('input') input: CreateUserInput): Promise<UserType> {
+  createUser(
+    @Args('input', { type: () => CreateUserInput }) input: CreateUserInput,
+  ): Promise<UserType> {
     return this.usersService.create(input);
   }
 
@@ -40,7 +42,7 @@ export class UsersResolver {
   })
   updateUser(
     @Args('id', { type: () => ID }) id: string,
-    @Args('input') input: UpdateUserInput,
+    @Args('input', { type: () => UpdateUserInput }) input: UpdateUserInput,
   ): Promise<UserType> {
     return this.usersService.update(id, input);
   }
