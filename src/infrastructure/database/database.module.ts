@@ -6,7 +6,9 @@ import { catalogEntities } from '../../modules/catalog/entities';
 import { customerEntities } from '../../modules/customer/entities';
 import { filesEntities } from '../../modules/files/entities';
 import { fulfillmentEntities } from '../../modules/fulfillment/entities';
+import { giftCardEntities } from '../../modules/gift-cards/entities';
 import { inventoryEntities } from '../../modules/inventory/entities';
+import { loyaltyEntities } from '../../modules/loyalty/entities';
 import { returnEntities } from '../../modules/returns/entities';
 import { supplyEntities } from '../../modules/supply/entities';
 import { warehouseEntities } from '../../modules/warehouses/entities';
@@ -36,6 +38,8 @@ import { DatabaseHealthService } from './database-health.service';
           ...filesEntities,
           ...inventoryEntities,
           ...fulfillmentEntities,
+          ...giftCardEntities,
+          ...loyaltyEntities,
           ...returnEntities,
           ...supplyEntities,
           ...warehouseEntities,

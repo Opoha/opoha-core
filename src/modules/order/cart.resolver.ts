@@ -13,6 +13,7 @@ import {
   CreateCartInput,
   SelectCartShippingInput,
   SetCartCouponInput,
+  SetCartGiftCardInput,
   SetCartTaxContextInput,
   UpdateCartLineInput,
 } from './order.types';
@@ -123,5 +124,18 @@ export class CartResolver {
     input: SetCartCouponInput,
   ): Promise<CartType> {
     return this.cartService.setCoupon(input);
+  }
+
+  @Mutation(() => CartType, {
+    name: 'setCartGiftCard',
+    description:
+      'Set or clear a gift card code on a cart for GiftCardService (C-02)',
+  })
+  @RequirePermission('cart:update')
+  setCartGiftCard(
+    @Args('input', { type: () => SetCartGiftCardInput })
+    input: SetCartGiftCardInput,
+  ): Promise<CartType> {
+    return this.cartService.setGiftCard(input);
   }
 }

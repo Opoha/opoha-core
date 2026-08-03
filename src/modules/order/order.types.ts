@@ -100,6 +100,17 @@ export class CartType {
   })
   discountMinor!: string;
 
+  @Field(() => String, {
+    nullable: true,
+    description: 'Gift card code for GiftCardService redeem (C-02)',
+  })
+  giftCardCode!: string | null;
+
+  @Field(() => String, {
+    description: 'Last calculated gift card apply amount in minor units',
+  })
+  giftCardMinor!: string;
+
   @Field(() => [CartLineType])
   lines!: CartLineType[];
 
@@ -142,7 +153,7 @@ export class UpdateCartLineInput {
 
 @ObjectType({
   description:
-    'Checkout totals — shipping + TaxEngine tax + PromotionsEngine discount',
+    'Checkout totals — shipping + TaxEngine tax + PromotionsEngine discount + gift card',
 })
 export class CheckoutTotalsType {
   @Field(() => String)
@@ -155,6 +166,11 @@ export class CheckoutTotalsType {
     description: 'Promotion discount in minor units (D-01)',
   })
   discountMinor!: string;
+
+  @Field(() => String, {
+    description: 'Gift card amount applied in minor units (C-02)',
+  })
+  giftCardMinor!: string;
 
   @Field(() => String)
   taxMinor!: string;
@@ -246,6 +262,17 @@ export class OrderType {
     description: 'Coupon code applied at checkout',
   })
   couponCode!: string | null;
+
+  @Field(() => String, {
+    nullable: true,
+    description: 'Gift card code applied at checkout',
+  })
+  giftCardCode!: string | null;
+
+  @Field(() => String, {
+    description: 'Gift card amount applied in minor units',
+  })
+  giftCardMinor!: string;
 
   @Field(() => String, {
     nullable: true,
@@ -344,6 +371,21 @@ export class SetCartCouponInput {
     description: 'Coupon code; omit or null to clear',
   })
   couponCode?: string | null;
+}
+
+@InputType({
+  description:
+    'Set or clear a gift card code on a cart for GiftCardService (C-02)',
+})
+export class SetCartGiftCardInput {
+  @Field(() => ID)
+  cartId!: string;
+
+  @Field(() => String, {
+    nullable: true,
+    description: 'Gift card code; omit or null to clear',
+  })
+  giftCardCode?: string | null;
 }
 
 @InputType({

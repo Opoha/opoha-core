@@ -51,6 +51,8 @@ describe('OrdersService place + status (D-04 / D-05 / D-06 / A-04)', () => {
     shippingMinor: string;
     discountMinor: string;
     couponCode: string | null;
+    giftCardCode: string | null;
+    giftCardMinor: string;
     shippingMethodCode: string | null;
     shippingRateCode: string | null;
     totalMinor: string;
@@ -70,6 +72,8 @@ describe('OrdersService place + status (D-04 / D-05 / D-06 / A-04)', () => {
       shippingMinor: '0',
       discountMinor: '0',
       couponCode: null,
+      giftCardCode: null,
+      giftCardMinor: '0',
       shippingMethodCode: null,
       shippingRateCode: null,
       totalMinor: '2000',
@@ -95,6 +99,8 @@ describe('OrdersService place + status (D-04 / D-05 / D-06 / A-04)', () => {
           taxMinor: '0',
           couponCode: null,
           discountMinor: '0',
+          giftCardCode: null,
+          giftCardMinor: '0',
         },
         lines: [
           {
@@ -158,6 +164,31 @@ describe('OrdersService place + status (D-04 / D-05 / D-06 / A-04)', () => {
       })),
     };
 
+    const giftCards = {
+      quoteRedeem: vi.fn(async () => ({
+        giftCardId: '',
+        code: '',
+        currencyCode: 'USD',
+        availableMinor: '0',
+        appliedMinor: '0',
+      })),
+      redeem: vi.fn(async () => ({
+        id: 'gc-1',
+        code: 'GC-1',
+        currencyCode: 'USD',
+        initialBalanceMinor: '0',
+        balanceMinor: '0',
+        status: 'depleted',
+        customerId: null,
+        purchasedOrderId: null,
+        expiresAt: null,
+        issuedAt: now,
+        metadata: null,
+        createdAt: now,
+        updatedAt: now,
+      })),
+    };
+
     ordersRepo = {
       find: vi.fn(async () => [orderRow]),
       findOne: vi.fn(async () => ({ ...orderRow })),
@@ -193,6 +224,7 @@ describe('OrdersService place + status (D-04 / D-05 / D-06 / A-04)', () => {
       payments as never,
       tax as never,
       promotions as never,
+      giftCards as never,
     );
   });
 

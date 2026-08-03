@@ -1,6 +1,7 @@
 import { describe, expect, it } from 'vitest';
 
 import {
+  applyGiftCardToTotals,
   buildPromotionApplyInput,
   buildTaxCalculateInput,
   resolveCartPricingMode,
@@ -107,7 +108,24 @@ describe('checkout-tax helpers (C-03 / D-01)', () => {
       freeShipping: true,
     });
     expect(totals.discountMinor).toBe('300');
+    expect(totals.giftCardMinor).toBe('0');
     expect(totals.shippingMinor).toBe('0');
     expect(totals.totalMinor).toBe('1700');
+  });
+
+  it('applyGiftCardToTotals reduces payable total (C-02)', () => {
+    const base = totalsWithTax({
+      currencyCode: 'USD',
+      subtotalMinor: 2000n,
+      shippingMinor: 0n,
+      tax: { taxMinor: '0', pricingMode: 'exclusive' },
+    });
+    const withGift = applyGiftCardToTotals(base, 500n);
+    expect(withGift.giftCardMinor).toBe('500');
+    expect(withGift.totalMinor).toBe('1500');
+
+    const capped = applyGiftCardToTotals(base, 99999n);
+    expect(capped.giftCardMinor).toBe('2000');
+    expect(capped.totalMinor).toBe('0');
   });
 });

@@ -6,6 +6,7 @@ import {
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 
+import { GiftCardService } from '../gift-cards/public';
 import { InventoryService } from '../inventory/public';
 import { CoreEventName } from '../event-bus/event-catalog';
 import { EventBusService } from '../event-bus/event-bus.service';
@@ -13,6 +14,7 @@ import { PaymentEngine } from '../payment-engine/public';
 import { TaxEngine } from '../tax-engine/public';
 import { PromotionsEngine } from '../promotions-engine/public';
 import {
+  applyGiftCardToTotals,
   buildPromotionApplyInput,
   buildTaxCalculateInput,
   lineSubtotalMinor,
@@ -61,6 +63,8 @@ function toOrderType(row: OrderEntity, lines: OrderLineEntity[]): OrderType {
     shippingMinor: String(row.shippingMinor),
     discountMinor: String(row.discountMinor ?? '0'),
     couponCode: row.couponCode ?? null,
+    giftCardCode: row.giftCardCode ?? null,
+    giftCardMinor: String(row.giftCardMinor ?? '0'),
     shippingMethodCode: row.shippingMethodCode ?? null,
     shippingRateCode: row.shippingRateCode ?? null,
     totalMinor: String(row.totalMinor),
@@ -103,6 +107,7 @@ export class OrdersService {
     private readonly payments: PaymentEngine,
     private readonly tax: TaxEngine,
     private readonly promotions: PromotionsEngine,
+    private readonly giftCards: GiftCardService,
   ) {}
 
   async findAll(): Promise<OrderType[]> {
@@ -161,7 +166,7 @@ export class OrdersService {
       taxInput,
       cart.taxProviderCode ?? undefined,
     );
-    const totals = totalsWithTax({
+    const totalsBase = totalsWithTax({
       currencyCode: cart.currencyCode,
       subtotalMinor: subtotal,
       shippingMinor,
@@ -169,6 +174,19 @@ export class OrdersService {
       discountMinor: BigInt(String(promoResult.discountMinor || '0')),
       freeShipping: promoResult.freeShipping === true,
     });
+
+    let giftCardMinor = 0n;
+    const giftCode = cart.giftCardCode?.trim();
+    if (giftCode) {
+      const quote = await this.giftCards.quoteRedeem({
+        code: giftCode,
+        currencyCode: cart.currencyCode,
+        maxAmountMinor: totalsBase.totalMinor,
+      });
+      giftCardMinor = BigInt(String(quote.appliedMinor || '0'));
+    }
+    const totals = applyGiftCardToTotals(totalsBase, giftCardMinor);
+
     const taxMinor = BigInt(totals.taxMinor);
     const discountMinor = BigInt(totals.discountMinor);
     const effectiveShipping = BigInt(totals.shippingMinor);
@@ -197,6 +215,8 @@ export class OrdersService {
         shippingMinor: effectiveShipping.toString(),
         discountMinor: discountMinor.toString(),
         couponCode: cart.couponCode ?? null,
+        giftCardCode: giftCode ? giftCode.toUpperCase() : null,
+        giftCardMinor: giftCardMinor.toString(),
         shippingMethodCode: cart.shippingMethodCode ?? null,
         shippingRateCode: cart.shippingRateCode ?? null,
         totalMinor: totalMinor.toString(),
@@ -217,6 +237,27 @@ export class OrdersService {
         }),
       ),
     );
+
+    if (giftCode && giftCardMinor > 0n) {
+      try {
+        await this.giftCards.redeem({
+          code: giftCode,
+          amountMinor: giftCardMinor.toString(),
+          orderId: order.id,
+          note: `Redeemed on order ${order.id}`,
+        });
+      } catch (err) {
+        await this.transitionStatus(order.id, 'cancelled', {
+          note: 'Gift card redeem failed during placeOrder',
+        });
+        if (err instanceof BadRequestException) {
+          throw err;
+        }
+        throw new BadRequestException(
+          err instanceof Error ? err.message : 'Gift card redeem failed',
+        );
+      }
+    }
 
     let payment;
     try {

@@ -5,6 +5,7 @@ import { AuthModule } from '../auth/public';
 import { ProductVariantEntity } from '../catalog/public';
 import { CustomerModule } from '../customer/public';
 import { InventoryModule } from '../inventory/public';
+import { GiftCardsModule } from '../gift-cards/public';
 import { PaymentEngineModule } from '../payment-engine/public';
 import { ShippingEngineModule } from '../shipping-engine/public';
 import { TaxEngineModule } from '../tax-engine/public';
@@ -28,6 +29,7 @@ import { OrdersService } from './orders.service';
     ShippingEngineModule,
     TaxEngineModule,
     PromotionsEngineModule,
+    GiftCardsModule,
     TypeOrmModule.forFeature([...orderEntities, ProductVariantEntity]),
   ],
   providers: [

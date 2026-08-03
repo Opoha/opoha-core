@@ -20,6 +20,7 @@ import type {
   CreateCartInput,
   SelectCartShippingInput,
   SetCartCouponInput,
+  SetCartGiftCardInput,
   SetCartTaxContextInput,
   UpdateCartLineInput,
 } from './order.types';
@@ -64,6 +65,8 @@ function toCartType(row: CartEntity, lines: CartLineEntity[]): CartType {
     taxMinor: String(row.taxMinor ?? '0'),
     couponCode: row.couponCode ?? null,
     discountMinor: String(row.discountMinor ?? '0'),
+    giftCardCode: row.giftCardCode ?? null,
+    giftCardMinor: String(row.giftCardMinor ?? '0'),
     lines: lines.map(toLineType),
     createdAt: row.createdAt,
     updatedAt: row.updatedAt,
@@ -136,6 +139,8 @@ export class CartService {
       taxMinor: '0',
       couponCode: null,
       discountMinor: '0',
+      giftCardCode: null,
+      giftCardMinor: '0',
     });
 
     try {
@@ -342,6 +347,19 @@ export class CartService {
     return this.hydrate(cart);
   }
 
+  /**
+   * Set or clear gift card code on the cart (C-02).
+   * Invalidates prior gift card snapshot until prepareCheckout recalculates.
+   */
+  async setGiftCard(input: SetCartGiftCardInput): Promise<CartType> {
+    const cart = await this.requireSelectableCart(input.cartId);
+    const code = input.giftCardCode?.trim().toUpperCase() || null;
+    cart.giftCardCode = code;
+    cart.giftCardMinor = '0';
+    await this.carts.save(cart);
+    return this.hydrate(cart);
+  }
+
   /** Persist discountMinor after prepareCheckout PromotionsEngine apply. */
   async persistDiscountResult(
     cartId: string,
@@ -350,6 +368,17 @@ export class CartService {
     await this.carts.update(
       { id: cartId },
       { discountMinor: String(discountMinor) },
+    );
+  }
+
+  /** Persist giftCardMinor after prepareCheckout GiftCardService quote. */
+  async persistGiftCardResult(
+    cartId: string,
+    giftCardMinor: string,
+  ): Promise<void> {
+    await this.carts.update(
+      { id: cartId },
+      { giftCardMinor: String(giftCardMinor) },
     );
   }
 

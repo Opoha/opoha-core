@@ -72,6 +72,14 @@ export class CartEntity {
   @Column({ name: 'discount_minor', type: 'bigint', default: '0' })
   discountMinor!: string;
 
+  /** Optional gift card code for GiftCardService redeem (Phase 4 C-02). */
+  @Column({ name: 'gift_card_code', type: 'text', nullable: true })
+  giftCardCode!: string | null;
+
+  /** Last calculated gift card apply amount in minor units. */
+  @Column({ name: 'gift_card_minor', type: 'bigint', default: '0' })
+  giftCardMinor!: string;
+
   @CreateDateColumn({ name: 'created_at', type: 'timestamptz' })
   createdAt!: Date;
 

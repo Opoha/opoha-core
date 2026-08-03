@@ -123,9 +123,34 @@ export function totalsWithTax(args: {
     currencyCode: args.currencyCode,
     subtotalMinor: args.subtotalMinor.toString(),
     discountMinor: discount.toString(),
+    giftCardMinor: '0',
     taxMinor: taxMinor.toString(),
     shippingMinor: shipping.toString(),
     totalMinor: (total < 0n ? 0n : total).toString(),
+  };
+}
+
+/**
+ * Apply a gift card amount to post-promo/tax totals (C-02).
+ * Caps by remaining total; never increases total.
+ */
+export function applyGiftCardToTotals(
+  totals: CheckoutTotalsType,
+  giftCardMinor: bigint,
+): CheckoutTotalsType {
+  let gift = giftCardMinor;
+  if (gift < 0n) {
+    gift = 0n;
+  }
+  const priorTotal = BigInt(String(totals.totalMinor || '0'));
+  if (gift > priorTotal) {
+    gift = priorTotal;
+  }
+  const nextTotal = priorTotal - gift;
+  return {
+    ...totals,
+    giftCardMinor: gift.toString(),
+    totalMinor: nextTotal.toString(),
   };
 }
 

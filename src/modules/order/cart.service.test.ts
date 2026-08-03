@@ -23,6 +23,8 @@ type CartRow = {
   taxMinor: string;
   couponCode: string | null;
   discountMinor: string;
+  giftCardCode: string | null;
+  giftCardMinor: string;
   createdAt: Date;
   updatedAt: Date;
 };
@@ -106,6 +108,8 @@ describe('CartService (unit)', () => {
         taxMinor: '0',
         couponCode: null,
         discountMinor: '0',
+        giftCardCode: null,
+        giftCardMinor: '0',
         createdAt: now,
         updatedAt: now,
         ...data,

@@ -5,10 +5,12 @@ import {
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 
+import { GiftCardService } from '../gift-cards/public';
 import { InventoryService } from '../inventory/public';
 import { PromotionsEngine } from '../promotions-engine/public';
 import { TaxEngine } from '../tax-engine/public';
 import {
+  applyGiftCardToTotals,
   buildPromotionApplyInput,
   buildTaxCalculateInput,
   lineSubtotalMinor,
@@ -21,7 +23,8 @@ import type { CheckoutPreviewType } from './order.types';
 /**
  * Checkout prepare — reserve stock for cart lines and compute totals.
  * Shipping from cart selection (B-03); tax via TaxEngine (C-03);
- * promotions via PromotionsEngine TypeORM provider (D-01 / D-03).
+ * promotions via PromotionsEngine TypeORM provider (D-01 / D-03);
+ * gift cards via GiftCardService quote (Phase 4 C-02).
  */
 @Injectable()
 export class CheckoutService {
@@ -32,6 +35,7 @@ export class CheckoutService {
     private readonly lines: Repository<CartLineEntity>,
     private readonly tax: TaxEngine,
     private readonly promotions: PromotionsEngine,
+    private readonly giftCards: GiftCardService,
   ) {}
 
   async prepare(cartId: string): Promise<CheckoutPreviewType> {
@@ -100,10 +104,8 @@ export class CheckoutService {
 
     await this.carts.persistTaxResult(cartId, taxResult.taxMinor);
     await this.carts.persistDiscountResult(cartId, promoResult.discountMinor);
-    await this.carts.setStatus(cartId, 'locked');
 
-    const refreshed = await this.carts.findById(cartId);
-    const totals = totalsWithTax({
+    let totals = totalsWithTax({
       currencyCode: cart.currencyCode,
       subtotalMinor: lineSubtotalMinor(lines),
       shippingMinor: BigInt(String(cart.shippingMinor ?? '0')),
@@ -111,6 +113,23 @@ export class CheckoutService {
       discountMinor: BigInt(String(promoResult.discountMinor || '0')),
       freeShipping: promoResult.freeShipping === true,
     });
+
+    let giftCardMinor = 0n;
+    const giftCode = cart.giftCardCode?.trim();
+    if (giftCode) {
+      const quote = await this.giftCards.quoteRedeem({
+        code: giftCode,
+        currencyCode: cart.currencyCode,
+        maxAmountMinor: totals.totalMinor,
+      });
+      giftCardMinor = BigInt(String(quote.appliedMinor || '0'));
+      totals = applyGiftCardToTotals(totals, giftCardMinor);
+    }
+
+    await this.carts.persistGiftCardResult(cartId, giftCardMinor.toString());
+    await this.carts.setStatus(cartId, 'locked');
+
+    const refreshed = await this.carts.findById(cartId);
 
     return {
       cartId,

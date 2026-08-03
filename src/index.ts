@@ -148,6 +148,29 @@ export type {
   ReturnResolution,
 } from './modules/returns/public';
 export {
+  GiftCardsModule,
+  GiftCardService,
+  GiftCardEntity,
+  GiftCardTransactionEntity,
+  giftCardEntities,
+  GIFT_CARD_STATUSES,
+  GIFT_CARD_TRANSACTION_TYPES,
+  isGiftCardStatus,
+  canTransitionGiftCardStatus,
+  generateGiftCardCode,
+} from './modules/gift-cards/public';
+export type {
+  GiftCardStatus,
+  GiftCardTransactionType,
+  GiftCardType,
+  GiftCardLedgerEntryType,
+  IssueGiftCardInput,
+  PurchaseGiftCardInput,
+  RedeemGiftCardInput,
+  QuoteGiftCardRedeemInput,
+  QuoteGiftCardRedeemResult,
+} from './modules/gift-cards/public';
+export {
   AdminOpsModule,
   ReportsService,
   BulkOpsService,

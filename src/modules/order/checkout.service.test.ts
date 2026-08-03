@@ -12,6 +12,7 @@ describe('CheckoutService (unit)', () => {
     attachReservations: ReturnType<typeof vi.fn>;
     persistTaxResult: ReturnType<typeof vi.fn>;
     persistDiscountResult: ReturnType<typeof vi.fn>;
+    persistGiftCardResult: ReturnType<typeof vi.fn>;
     setStatus: ReturnType<typeof vi.fn>;
     findById: ReturnType<typeof vi.fn>;
   };
@@ -27,6 +28,9 @@ describe('CheckoutService (unit)', () => {
   };
   let promotions: {
     applyOrZero: ReturnType<typeof vi.fn>;
+  };
+  let giftCards: {
+    quoteRedeem: ReturnType<typeof vi.fn>;
   };
   let service: CheckoutService;
 
@@ -46,6 +50,8 @@ describe('CheckoutService (unit)', () => {
     taxMinor: '0',
     couponCode: null,
     discountMinor: '0',
+    giftCardCode: null,
+    giftCardMinor: '0',
     createdAt: now,
     updatedAt: now,
   };
@@ -80,12 +86,14 @@ describe('CheckoutService (unit)', () => {
       attachReservations: vi.fn(async () => undefined),
       persistTaxResult: vi.fn(async () => undefined),
       persistDiscountResult: vi.fn(async () => undefined),
+      persistGiftCardResult: vi.fn(async () => undefined),
       setStatus: vi.fn(async () => undefined),
       findById: vi.fn(async () => ({
         ...baseCart,
         status: 'locked',
         taxMinor: '0',
         discountMinor: '0',
+        giftCardMinor: '0',
         lines: [],
       })),
     };
@@ -120,12 +128,23 @@ describe('CheckoutService (unit)', () => {
       })),
     };
 
+    giftCards = {
+      quoteRedeem: vi.fn(async () => ({
+        giftCardId: '',
+        code: '',
+        currencyCode: 'USD',
+        availableMinor: '0',
+        appliedMinor: '0',
+      })),
+    };
+
     service = new CheckoutService(
       cartService as unknown as CartService,
       inventory as never,
       linesRepo as never,
       tax as unknown as TaxEngine,
       promotions as never,
+      giftCards as never,
     );
   });
 
@@ -144,6 +163,10 @@ describe('CheckoutService (unit)', () => {
     ]);
     expect(cartService.persistTaxResult).toHaveBeenCalledWith('cart-1', '0');
     expect(cartService.persistDiscountResult).toHaveBeenCalledWith(
+      'cart-1',
+      '0',
+    );
+    expect(cartService.persistGiftCardResult).toHaveBeenCalledWith(
       'cart-1',
       '0',
     );

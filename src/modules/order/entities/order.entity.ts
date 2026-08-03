@@ -48,6 +48,14 @@ export class OrderEntity {
   @Column({ name: 'coupon_code', type: 'text', nullable: true })
   couponCode!: string | null;
 
+  /** Gift card code applied at checkout (copied from cart). */
+  @Column({ name: 'gift_card_code', type: 'text', nullable: true })
+  giftCardCode!: string | null;
+
+  /** Gift card amount applied in minor units (Phase 4 C-02). */
+  @Column({ name: 'gift_card_minor', type: 'bigint', default: '0' })
+  giftCardMinor!: string;
+
   /** Selected ShippingMethodProvider.code copied from cart at placeOrder. */
   @Column({ name: 'shipping_method_code', type: 'text', nullable: true })
   shippingMethodCode!: string | null;
