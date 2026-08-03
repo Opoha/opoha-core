@@ -6,8 +6,8 @@ import type {
 } from './payment-provider';
 
 /**
- * MVP stub registry for payment providers (D-08 / AC-MVP-027).
- * Checkout callers arrive in Phase 1 — this module only accepts registrations.
+ * Registry for payment providers (MVP D-08 / Phase 2 A-01).
+ * Plugins register; PaymentEngine orchestrates authorize/capture/refund.
  */
 @Injectable()
 export class PaymentProviderRegistry {

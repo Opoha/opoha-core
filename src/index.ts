@@ -58,8 +58,16 @@ export {
   PaymentEngineModule,
   PaymentEngine,
   PaymentProviderRegistry,
+  PaymentEntity,
 } from './modules/payment-engine/public';
-export type { PaymentProvider } from './modules/payment-engine/public';
+export type {
+  PaymentProvider,
+  MoneyAmount,
+  PaymentStatus,
+  AuthorizePaymentInput,
+  CapturePaymentInput,
+  RefundPaymentInput,
+} from './modules/payment-engine/public';
 export {
   ShippingEngineModule,
   ShippingEngine,

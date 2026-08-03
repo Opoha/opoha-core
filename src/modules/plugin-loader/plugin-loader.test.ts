@@ -332,6 +332,15 @@ describe('PluginLoaderService lifecycle + registrations', () => {
         ctx.registerPaymentProvider({
           code: 'manual',
           displayName: 'Manual',
+          async authorize() {
+            return { status: 'authorized' };
+          },
+          async capture() {
+            return { status: 'captured' };
+          },
+          async refund() {
+            return { status: 'refunded' };
+          },
         });
         ctx.registerShippingMethod({
           code: 'flat-rate',
