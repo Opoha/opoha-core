@@ -4,7 +4,10 @@ import { EventBusService } from '../../event-bus/event-bus.service';
 import { CoreEventName } from '../../event-bus/event-catalog';
 import type { DomainEvent } from '../../event-bus/domain-event';
 import { AppLogger } from '../../logging/app-logger';
-import { NotificationsService } from '../../notifications/public';
+import {
+  NotificationTemplateCode,
+  NotificationsService,
+} from '../../notifications/public';
 import { CustomersService } from '../../customer/public';
 import { OrdersService } from '../orders.service';
 import type { OrderCreatedData } from './order-events';
@@ -19,10 +22,18 @@ type PaymentEventData =
   | PaymentRefundedData
   | PaymentFailedData;
 
+/** Loose ShipmentCreated payload until fulfillment owns a strict schema. */
+type ShipmentCreatedData = {
+  orderId: string;
+  trackingNumber?: string | null;
+  customerId?: string | null;
+  customerEmail?: string | null;
+};
+
 /**
- * Bridges order/payment domain events to templated transactional emails
- * (Phase 2 E-03). Uses `sendOrSkip` semantics: no notification provider
- * registered simply means no email goes out yet — never fails checkout.
+ * Bridges order/payment/shipment domain events to templated transactional emails
+ * (Phase 2 E-03). Uses `sendTemplated` / sendOrSkip semantics: no notification
+ * provider registered simply means no email goes out yet — never fails checkout.
  */
 @Injectable()
 export class OrderNotificationsListener implements OnModuleInit {
@@ -41,20 +52,23 @@ export class OrderNotificationsListener implements OnModuleInit {
     this.eventBus.subscribe(CoreEventName.PaymentCaptured, (event) =>
       this.handlePaymentEvent(
         event as DomainEvent<PaymentEventData>,
-        'payment.captured',
+        NotificationTemplateCode.PaymentCaptured,
       ),
     );
     this.eventBus.subscribe(CoreEventName.PaymentRefunded, (event) =>
       this.handlePaymentEvent(
         event as DomainEvent<PaymentEventData>,
-        'payment.refunded',
+        NotificationTemplateCode.PaymentRefunded,
       ),
     );
     this.eventBus.subscribe(CoreEventName.PaymentFailed, (event) =>
       this.handlePaymentEvent(
         event as DomainEvent<PaymentEventData>,
-        'payment.failed',
+        NotificationTemplateCode.PaymentFailed,
       ),
+    );
+    this.eventBus.subscribe(CoreEventName.ShipmentCreated, (event) =>
+      this.handleShipmentCreated(event as DomainEvent<ShipmentCreatedData>),
     );
   }
 
@@ -68,7 +82,7 @@ export class OrderNotificationsListener implements OnModuleInit {
       return;
     }
     await this.notifications.sendTemplated(
-      'order.confirmation',
+      NotificationTemplateCode.OrderConfirmation,
       { email },
       { orderId, totalMinor, currencyCode, paymentMethod },
     );
@@ -76,9 +90,13 @@ export class OrderNotificationsListener implements OnModuleInit {
 
   private async handlePaymentEvent(
     event: DomainEvent<PaymentEventData>,
-    templateCode: 'payment.captured' | 'payment.refunded' | 'payment.failed',
+    templateCode:
+      | typeof NotificationTemplateCode.PaymentCaptured
+      | typeof NotificationTemplateCode.PaymentRefunded
+      | typeof NotificationTemplateCode.PaymentFailed,
   ): Promise<void> {
-    const { orderId, amountMinor, currencyCode } = event.data;
+    const { orderId, paymentId, amountMinor, currencyCode, providerCode } =
+      event.data;
     const errorMessage =
       'errorMessage' in event.data ? event.data.errorMessage : undefined;
 
@@ -100,12 +118,48 @@ export class OrderNotificationsListener implements OnModuleInit {
     await this.notifications.sendTemplated(
       templateCode,
       { email },
-      { orderId, amountMinor, currencyCode, errorMessage },
+      {
+        orderId,
+        paymentId,
+        amountMinor,
+        currencyCode,
+        providerCode,
+        errorMessage,
+      },
     );
   }
 
+  private async handleShipmentCreated(
+    event: DomainEvent<ShipmentCreatedData>,
+  ): Promise<void> {
+    const { orderId, trackingNumber, customerId, customerEmail } = event.data;
+    const email =
+      (customerEmail && customerEmail.trim()) ||
+      (await this.resolveEmail(customerId ?? null)) ||
+      (await this.resolveEmailFromOrder(orderId));
+    if (!email) {
+      return;
+    }
+    await this.notifications.sendTemplated(
+      NotificationTemplateCode.ShipmentCreated,
+      { email },
+      { orderId, trackingNumber: trackingNumber ?? undefined },
+    );
+  }
+
+  private async resolveEmailFromOrder(
+    orderId: string,
+  ): Promise<string | undefined> {
+    try {
+      const order = await this.orders.findById(orderId);
+      return this.resolveEmail(order.customerId);
+    } catch {
+      return undefined;
+    }
+  }
+
   private async resolveEmail(
-    customerId: string | null,
+    customerId: string | null | undefined,
   ): Promise<string | undefined> {
     if (!customerId) {
       return undefined;
