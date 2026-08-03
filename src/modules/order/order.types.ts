@@ -184,3 +184,29 @@ export class OrderType {
   @Field(() => Date)
   updatedAt!: Date;
 }
+
+@InputType({
+  description:
+    'Place order from a locked checkout cart (manual or zero payment)',
+})
+export class PlaceOrderInput {
+  @Field(() => ID)
+  cartId!: string;
+
+  @Field(() => String, {
+    description: 'Payment path: manual (no capture) or zero (total must be 0)',
+    defaultValue: 'manual',
+  })
+  paymentMethod?: 'manual' | 'zero';
+}
+
+@InputType({ description: 'Transition an order to a new status' })
+export class UpdateOrderStatusInput {
+  @Field(() => ID)
+  id!: string;
+
+  @Field(() => String, {
+    description: 'Target status (pending|confirmed|fulfilled|cancelled)',
+  })
+  status!: string;
+}

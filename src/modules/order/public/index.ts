@@ -11,6 +11,8 @@ export {
   OrderEntity,
   OrderLineEntity,
   ORDER_STATUSES,
+  ORDER_STATUS_TRANSITIONS,
+  canTransitionOrderStatus,
   isOrderStatus,
   orderEntities,
 } from '../entities';
@@ -24,5 +26,7 @@ export type {
   CreateCartInput,
   OrderLineType,
   OrderType,
+  PlaceOrderInput,
   UpdateCartLineInput,
+  UpdateOrderStatusInput,
 } from '../order.types';

@@ -1,5 +1,5 @@
 import { UseGuards } from '@nestjs/common';
-import { Args, ID, Query, Resolver } from '@nestjs/graphql';
+import { Args, ID, Mutation, Query, Resolver } from '@nestjs/graphql';
 
 import {
   GqlAuthGuard,
@@ -7,7 +7,11 @@ import {
   RequirePermission,
 } from '../auth/public';
 import { OrdersService } from './orders.service';
-import { OrderType } from './order.types';
+import {
+  OrderType,
+  PlaceOrderInput,
+  UpdateOrderStatusInput,
+} from './order.types';
 
 @Resolver(() => OrderType)
 @UseGuards(GqlAuthGuard, PermissionsGuard)
@@ -30,5 +34,28 @@ export class OrdersResolver {
   @RequirePermission('order:read')
   order(@Args('id', { type: () => ID }) id: string): Promise<OrderType> {
     return this.ordersService.findById(id);
+  }
+
+  @Mutation(() => OrderType, {
+    name: 'placeOrder',
+    description:
+      'Place order from a locked cart (manual or zero payment; no capture)',
+  })
+  @RequirePermission('order:create')
+  placeOrder(
+    @Args('input') input: PlaceOrderInput,
+  ): Promise<OrderType> {
+    return this.ordersService.placeOrder(input);
+  }
+
+  @Mutation(() => OrderType, {
+    name: 'updateOrderStatus',
+    description: 'Transition order status along the allowed state machine',
+  })
+  @RequirePermission('order:update')
+  updateOrderStatus(
+    @Args('input') input: UpdateOrderStatusInput,
+  ): Promise<OrderType> {
+    return this.ordersService.updateStatus(input);
   }
 }

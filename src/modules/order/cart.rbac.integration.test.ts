@@ -60,7 +60,7 @@ describe('cart/order RBAC (resolver metadata + PermissionsGuard deny)', () => {
     ).toEqual(['cart:checkout']);
   });
 
-  it('OrdersResolver declares order:read', () => {
+  it('OrdersResolver declares order:read/create/update', () => {
     const reflector = new Reflector();
     expect(
       reflector.get(REQUIRE_PERMISSION_KEY, OrdersResolver.prototype.orders),
@@ -68,6 +68,15 @@ describe('cart/order RBAC (resolver metadata + PermissionsGuard deny)', () => {
     expect(
       reflector.get(REQUIRE_PERMISSION_KEY, OrdersResolver.prototype.order),
     ).toEqual(['order:read']);
+    expect(
+      reflector.get(REQUIRE_PERMISSION_KEY, OrdersResolver.prototype.placeOrder),
+    ).toEqual(['order:create']);
+    expect(
+      reflector.get(
+        REQUIRE_PERMISSION_KEY,
+        OrdersResolver.prototype.updateOrderStatus,
+      ),
+    ).toEqual(['order:update']);
   });
 
   it('PermissionsGuard denies addCartLine without cart:update', async () => {

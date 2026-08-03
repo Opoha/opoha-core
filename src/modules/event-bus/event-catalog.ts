@@ -17,6 +17,8 @@ export const CoreEventName = {
   InventoryReservationReleased: 'InventoryReservationReleased',
   CartCreated: 'CartCreated',
   OrderCreated: 'OrderCreated',
+  OrderStatusChanged: 'OrderStatusChanged',
+  OrderTimeline: 'OrderTimeline',
   OrderPaid: 'OrderPaid',
   OrderCancelled: 'OrderCancelled',
   PaymentSucceeded: 'PaymentSucceeded',

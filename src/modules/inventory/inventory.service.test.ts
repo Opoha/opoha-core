@@ -306,4 +306,28 @@ describe('InventoryService (unit)', () => {
       NotFoundException,
     );
   });
+
+  it('commit deducts on-hand and marks reservation committed', async () => {
+    const reservation = await service.reserve({
+      variantId: 'var-1',
+      quantity: 3,
+    });
+    eventBus.publish.mockClear();
+    const committed = await service.commit(reservation.id);
+    expect(committed.status).toBe('committed');
+    const item = await service.findByVariantId('var-1');
+    expect(item.quantityOnHand).toBe(7);
+    expect(item.quantityReserved).toBe(2);
+    expect(item.quantityAvailable).toBe(5);
+    expect(eventBus.publish).toHaveBeenCalledWith(
+      expect.objectContaining({
+        eventName: CoreEventName.InventoryUpdated,
+        data: expect.objectContaining({
+          delta: -3,
+          quantityOnHand: 7,
+          reason: `reservation_committed:${reservation.id}`,
+        }),
+      }),
+    );
+  });
 });

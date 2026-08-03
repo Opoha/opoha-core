@@ -396,6 +396,91 @@ export class InventoryService {
     return toReservationType(row);
   }
 
+  /**
+   * Commit an active reservation: deduct on-hand and free reserved qty.
+   * Used when an order is placed against checkout reservations.
+   */
+  async commit(reservationId: string): Promise<InventoryReservationType> {
+    const snapshot = await this.dataSource.transaction(async (manager) => {
+      const reservation = await manager
+        .getRepository(InventoryReservationEntity)
+        .createQueryBuilder('res')
+        .setLock('pessimistic_write')
+        .where('res.id = :id', { id: reservationId })
+        .getOne();
+
+      if (!reservation) {
+        throw new NotFoundException(`Reservation ${reservationId} not found`);
+      }
+      if (reservation.status !== 'active') {
+        throw new BadRequestException(
+          `Reservation ${reservationId} is ${reservation.status}, not active`,
+        );
+      }
+
+      const item = await manager
+        .getRepository(InventoryItemEntity)
+        .createQueryBuilder('item')
+        .setLock('pessimistic_write')
+        .where('item.id = :id', { id: reservation.inventoryItemId })
+        .getOne();
+
+      if (!item) {
+        throw new NotFoundException(
+          `Inventory item ${reservation.inventoryItemId} not found`,
+        );
+      }
+
+      if (item.quantityOnHand < reservation.quantity) {
+        throw new ConflictException(
+          `Cannot commit reservation ${reservationId}: on-hand ${item.quantityOnHand} < ${reservation.quantity}`,
+        );
+      }
+
+      item.quantityOnHand -= reservation.quantity;
+      item.quantityReserved = Math.max(
+        0,
+        item.quantityReserved - reservation.quantity,
+      );
+      await manager.save(item);
+
+      reservation.status = 'committed';
+      await manager.save(reservation);
+
+      return {
+        reservationId: reservation.id,
+        inventoryItemId: item.id,
+        variantId: item.variantId,
+        quantity: reservation.quantity,
+        quantityOnHand: item.quantityOnHand,
+        quantityReserved: item.quantityReserved,
+        quantityAvailable: item.quantityOnHand - item.quantityReserved,
+      };
+    });
+
+    await this.eventBus.publish({
+      eventName: CoreEventName.InventoryUpdated,
+      aggregateType: 'inventory_item',
+      aggregateId: snapshot.inventoryItemId,
+      data: {
+        inventoryItemId: snapshot.inventoryItemId,
+        variantId: snapshot.variantId,
+        delta: -snapshot.quantity,
+        quantityOnHand: snapshot.quantityOnHand,
+        quantityReserved: snapshot.quantityReserved,
+        reason: `reservation_committed:${snapshot.reservationId}`,
+      },
+    });
+
+    const row = await this.reservations.findOne({
+      where: { id: reservationId },
+    });
+    if (!row) {
+      throw new NotFoundException(`Reservation ${reservationId} not found`);
+    }
+    return toReservationType(row);
+  }
+
   async listAdjustments(
     inventoryItemId: string,
   ): Promise<InventoryAdjustmentType[]> {
