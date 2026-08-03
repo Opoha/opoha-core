@@ -45,4 +45,35 @@ describe('loadEnv', () => {
       }),
     ).toThrow(/Invalid environment configuration/);
   });
+
+  it('applies JWT_SECRET fallback outside production', () => {
+    const env = loadEnv({
+      DATABASE_URL: 'postgresql://opoha:opoha@localhost:5433/opoha',
+      REDIS_URL: 'redis://localhost:6380',
+      NODE_ENV: 'development',
+    });
+    expect(env.JWT_SECRET.length).toBeGreaterThan(0);
+    expect(env.JWT_EXPIRES_IN).toBe('1h');
+  });
+
+  it('uses provided JWT_SECRET and JWT_EXPIRES_IN', () => {
+    const env = loadEnv({
+      DATABASE_URL: 'postgresql://opoha:opoha@localhost:5433/opoha',
+      REDIS_URL: 'redis://localhost:6380',
+      JWT_SECRET: 'unit-test-secret',
+      JWT_EXPIRES_IN: '15m',
+    });
+    expect(env.JWT_SECRET).toBe('unit-test-secret');
+    expect(env.JWT_EXPIRES_IN).toBe('15m');
+  });
+
+  it('fails fast in production when JWT_SECRET is missing', () => {
+    expect(() =>
+      loadEnv({
+        NODE_ENV: 'production',
+        DATABASE_URL: 'postgresql://opoha:opoha@localhost:5433/opoha',
+        REDIS_URL: 'redis://localhost:6380',
+      }),
+    ).toThrow(/JWT_SECRET/);
+  });
 });

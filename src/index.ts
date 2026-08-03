@@ -17,3 +17,11 @@ export {
 } from './modules/api-versioning/api-version';
 export { getTracer, trace } from './modules/otel/tracing';
 export { CORE_PACKAGE_NAME, getCorePackageName } from './package-meta';
+export {
+  AuthModule,
+  AuthService,
+  GqlAuthGuard,
+  hashPassword,
+  verifyPassword,
+} from './modules/auth/public';
+export type { AuthUser, JwtPayload } from './modules/auth/public';

@@ -6,6 +6,7 @@ import { PrismaModule } from './infrastructure/prisma/prisma.module';
 import { RedisModule } from './infrastructure/redis/redis.module';
 import { ApiVersionMiddleware } from './modules/api-versioning/api-version.middleware';
 import { ApiVersioningModule } from './modules/api-versioning/api-versioning.module';
+import { AuthModule } from './modules/auth/auth.module';
 import { ConfigModule } from './modules/config/config.module';
 import { ShellResolver } from './modules/graphql/shell.resolver';
 import { HealthModule } from './modules/health/health.module';
@@ -21,12 +22,14 @@ import { OpenTelemetryModule } from './modules/otel/otel.module';
     PrismaModule,
     RedisModule,
     ApiVersioningModule,
+    AuthModule,
     GraphQLModule.forRoot<ApolloDriverConfig>({
       driver: ApolloDriver,
       autoSchemaFile: true,
       sortSchema: true,
       playground: true,
       path: '/graphql',
+      context: ({ req }: { req: unknown }) => ({ req }),
     }),
     HealthModule,
   ],

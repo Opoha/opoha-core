@@ -40,7 +40,36 @@ pnpm dev                # NestJS + GraphQL on :4000
 
 - `.env` loaded via `dotenv` + Zod (`src/modules/config/env.schema.ts`)
 - Typed `ConfigService` is global; invalid env fails boot
-- Documented keys: `PORT`, `DATABASE_URL`, `REDIS_URL`, `LOG_LEVEL`, `OTEL_ENABLED`
+- Documented keys: `PORT`, `DATABASE_URL`, `REDIS_URL`, `LOG_LEVEL`, `OTEL_ENABLED`, `JWT_SECRET`, `JWT_EXPIRES_IN`
+
+## Auth (C-01 · C-02 · C-03)
+
+Staff JWT auth + RBAC GraphQL surface (customers deferred).
+
+| Env | Notes |
+|-----|-------|
+| `JWT_SECRET` | **Required in production** (fail-fast). Dev/test use an insecure fallback when unset. |
+| `JWT_EXPIRES_IN` | Default `1h` (jsonwebtoken duration string) |
+
+Public GraphQL: `ping`, `login`. Protected (Bearer JWT): `users` / `createUser` / `roles` / `assignRole` / `permissions`, etc. Password hashes are never exposed in GraphQL types. Seeded `admin` role + permissions from B-07 remain the baseline.
+
+```graphql
+mutation Login {
+  login(email: "admin@example.com", password: "change-me-in-local-dev") {
+    accessToken
+    user { id email isActive }
+  }
+}
+
+mutation CreateUser {
+  createUser(input: { email: "staff@example.com", password: "temporary-pass" }) {
+    id
+    email
+  }
+}
+```
+
+Send `Authorization: Bearer <accessToken>` on protected operations.
 
 ## Logging (B-03)
 

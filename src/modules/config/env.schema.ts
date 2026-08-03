@@ -1,22 +1,44 @@
 import { config as loadDotenv } from 'dotenv';
 import { z } from 'zod';
 
-export const envSchema = z.object({
-  NODE_ENV: z.enum(['development', 'test', 'production']).default('development'),
-  PORT: z.coerce.number().int().positive().default(4000),
-  DATABASE_URL: z
-    .string()
-    .min(1)
-    .default('postgresql://opoha:opoha@localhost:5433/opoha'),
-  REDIS_URL: z.string().min(1).default('redis://localhost:6380'),
-  LOG_LEVEL: z.enum(['fatal', 'error', 'warn', 'info', 'debug']).default('info'),
-  OTEL_ENABLED: z
-    .string()
-    .optional()
-    .transform((value) => ['1', 'true', 'yes', 'on'].includes((value ?? '').toLowerCase())),
-});
+/** Dev/test-only default — production must set JWT_SECRET explicitly. */
+export const DEV_JWT_SECRET_FALLBACK = 'dev-only-insecure-jwt-secret-change-me';
 
-export type AppEnv = z.infer<typeof envSchema>;
+export const envSchema = z
+  .object({
+    NODE_ENV: z.enum(['development', 'test', 'production']).default('development'),
+    PORT: z.coerce.number().int().positive().default(4000),
+    DATABASE_URL: z
+      .string()
+      .min(1)
+      .default('postgresql://opoha:opoha@localhost:5433/opoha'),
+    REDIS_URL: z.string().min(1).default('redis://localhost:6380'),
+    LOG_LEVEL: z.enum(['fatal', 'error', 'warn', 'info', 'debug']).default('info'),
+    OTEL_ENABLED: z
+      .string()
+      .optional()
+      .transform((value) =>
+        ['1', 'true', 'yes', 'on'].includes((value ?? '').toLowerCase()),
+      ),
+    /** HS256 signing secret. Required in production; optional elsewhere (dev fallback). */
+    JWT_SECRET: z.string().min(1).optional(),
+    /** jose/jsonwebtoken duration string, e.g. `15m`, `1h`. */
+    JWT_EXPIRES_IN: z.string().min(1).default('1h'),
+  })
+  .superRefine((data, ctx) => {
+    if (data.NODE_ENV === 'production' && !data.JWT_SECRET) {
+      ctx.addIssue({
+        code: 'custom',
+        path: ['JWT_SECRET'],
+        message: 'JWT_SECRET is required when NODE_ENV=production',
+      });
+    }
+  });
+
+export type AppEnv = z.infer<typeof envSchema> & {
+  /** Resolved secret — never empty after loadEnv. */
+  JWT_SECRET: string;
+};
 
 /**
  * Load and Zod-validate process env. Fail-fast on invalid values.
@@ -33,5 +55,9 @@ export function loadEnv(source?: NodeJS.ProcessEnv): AppEnv {
       .join('; ');
     throw new Error(`Invalid environment configuration: ${details}`);
   }
-  return parsed.data;
+  const data = parsed.data;
+  return {
+    ...data,
+    JWT_SECRET: data.JWT_SECRET ?? DEV_JWT_SECRET_FALLBACK,
+  };
 }
