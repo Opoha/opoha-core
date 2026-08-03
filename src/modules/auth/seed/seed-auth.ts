@@ -49,6 +49,14 @@ export const DEFAULT_PERMISSIONS = [
   { key: 'inventory:adjust', description: 'Adjust inventory on-hand quantities' },
   { key: 'inventory:reserve', description: 'Reserve inventory stock' },
   { key: 'inventory:release', description: 'Release inventory reservations' },
+  { key: 'customer:create', description: 'Create customer accounts (staff)' },
+  { key: 'customer:read', description: 'Read customer accounts' },
+  { key: 'customer:update', description: 'Update customer profiles' },
+  { key: 'customer:delete', description: 'Delete customer accounts' },
+  { key: 'customer-group:create', description: 'Create customer groups' },
+  { key: 'customer-group:read', description: 'Read customer groups' },
+  { key: 'customer-group:update', description: 'Update customer groups and membership' },
+  { key: 'customer-group:delete', description: 'Delete customer groups' },
 ] as const;
 
 export type SeedAdminOptions = {

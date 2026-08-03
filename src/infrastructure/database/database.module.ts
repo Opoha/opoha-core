@@ -3,6 +3,7 @@ import { TypeOrmModule } from '@nestjs/typeorm';
 
 import { authEntities } from '../../modules/auth/entities';
 import { catalogEntities } from '../../modules/catalog/entities';
+import { customerEntities } from '../../modules/customer/entities';
 import { filesEntities } from '../../modules/files/entities';
 import { inventoryEntities } from '../../modules/inventory/entities';
 import { pluginLoaderEntities } from '../../modules/plugin-loader/entities';
@@ -22,6 +23,7 @@ import { DatabaseHealthService } from './database-health.service';
         entities: [
           ...authEntities,
           ...catalogEntities,
+          ...customerEntities,
           ...filesEntities,
           ...inventoryEntities,
           ...pluginLoaderEntities,

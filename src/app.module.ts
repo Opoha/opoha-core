@@ -9,6 +9,7 @@ import { ApiVersioningModule } from './modules/api-versioning/api-versioning.mod
 import { AuthModule } from './modules/auth/auth.module';
 import { CatalogModule } from './modules/catalog/public';
 import { ConfigModule } from './modules/config/config.module';
+import { CustomerModule } from './modules/customer/public';
 import { EventBusModule } from './modules/event-bus/event-bus.module';
 import { FilesModule } from './modules/files/public';
 import { ShellResolver } from './modules/graphql/shell.resolver';
@@ -34,6 +35,7 @@ import { ShippingEngineModule } from './modules/shipping-engine/public';
     FilesModule,
     CatalogModule,
     InventoryModule,
+    CustomerModule,
     PaymentEngineModule,
     ShippingEngineModule,
     PluginLoaderModule,

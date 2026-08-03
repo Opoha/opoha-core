@@ -4,6 +4,7 @@ import { DataSource } from 'typeorm';
 
 import { authEntities } from '../src/modules/auth/entities';
 import { catalogEntities } from '../src/modules/catalog/entities';
+import { customerEntities } from '../src/modules/customer/entities';
 import { filesEntities } from '../src/modules/files/entities';
 import { inventoryEntities } from '../src/modules/inventory/entities';
 import { pluginLoaderEntities } from '../src/modules/plugin-loader/entities';
@@ -15,6 +16,7 @@ import { CatalogProductsInit1722686200000 } from './migrations/1722686200000-Cat
 import { CatalogTaxonomyInit1722687300000 } from './migrations/1722687300000-CatalogTaxonomyInit';
 import { CatalogAttributesMediaInit1722688400000 } from './migrations/1722688400000-CatalogAttributesMediaInit';
 import { InventoryInit1722689500000 } from './migrations/1722689500000-InventoryInit';
+import { CustomersInit1722690600000 } from './migrations/1722690600000-CustomersInit';
 
 loadDotenv();
 
@@ -29,6 +31,7 @@ export default new DataSource({
   entities: [
     ...authEntities,
     ...catalogEntities,
+    ...customerEntities,
     ...filesEntities,
     ...inventoryEntities,
     ...pluginLoaderEntities,
@@ -42,6 +45,7 @@ export default new DataSource({
     CatalogTaxonomyInit1722687300000,
     CatalogAttributesMediaInit1722688400000,
     InventoryInit1722689500000,
+    CustomersInit1722690600000,
   ],
   synchronize: false,
 });
