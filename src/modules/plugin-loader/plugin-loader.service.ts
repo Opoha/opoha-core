@@ -5,6 +5,7 @@ import { pathToFileURL } from 'node:url';
 import { Injectable, OnModuleInit, Optional } from '@nestjs/common';
 
 import { ConfigService } from '../config/config.service';
+import { FXRateProviderRegistry } from '../currency/public';
 import { StorageAdapterRegistry } from '../files/public';
 import { AppLogger } from '../logging/app-logger';
 import { NotificationProviderRegistry } from '../notifications/public';
@@ -65,6 +66,7 @@ export class PluginLoaderService implements OnModuleInit {
     private readonly notificationProviders: NotificationProviderRegistry,
     private readonly storageAdapters: StorageAdapterRegistry,
     private readonly searchProviders: SearchProviderRegistry,
+    private readonly fxProviders: FXRateProviderRegistry,
     @Optional() private readonly logger?: AppLogger,
   ) {}
 
@@ -241,6 +243,7 @@ export class PluginLoaderService implements OnModuleInit {
     this.notificationProviders.activatePlugin(pluginId);
     this.storageAdapters.activatePlugin(pluginId);
     this.searchProviders.activatePlugin(pluginId);
+    this.fxProviders.activatePlugin(pluginId);
     const ctx = this.contextFor(record, true);
     await record.definition?.enable?.(ctx);
     this.logger?.log(`Plugin enabled: ${pluginId}`, 'PluginLoaderService');
@@ -259,6 +262,7 @@ export class PluginLoaderService implements OnModuleInit {
     this.notificationProviders.deactivatePlugin(pluginId);
     this.storageAdapters.deactivatePlugin(pluginId);
     this.searchProviders.deactivatePlugin(pluginId);
+    this.fxProviders.deactivatePlugin(pluginId);
     const ctx = this.contextFor(record, false);
     await record.definition?.disable?.(ctx);
     this.logger?.log(`Plugin disabled: ${pluginId}`, 'PluginLoaderService');
@@ -279,6 +283,7 @@ export class PluginLoaderService implements OnModuleInit {
     this.notificationProviders.removePlugin(pluginId);
     this.storageAdapters.removePlugin(pluginId);
     this.searchProviders.removePlugin(pluginId);
+    this.fxProviders.removePlugin(pluginId);
     record.booted = false;
     this.logger?.log(`Plugin uninstalled: ${pluginId}`, 'PluginLoaderService');
     return record.state;
@@ -306,6 +311,7 @@ export class PluginLoaderService implements OnModuleInit {
         notifications: this.notificationProviders,
         storage: this.storageAdapters,
         search: this.searchProviders,
+        fx: this.fxProviders,
       },
     );
   }

@@ -4,6 +4,7 @@ import { join } from 'node:path';
 
 import { describe, expect, it } from 'vitest';
 
+import { FXRateProviderRegistry } from '../currency/public';
 import { EventBusService } from '../event-bus/event-bus.service';
 import { StorageAdapterRegistry } from '../files/public';
 import { NotificationProviderRegistry } from '../notifications/public';
@@ -64,6 +65,7 @@ function createLoader(configGet?: (key: string) => string | undefined) {
   const notifications = new NotificationProviderRegistry();
   const storage = new StorageAdapterRegistry();
   const search = new SearchProviderRegistry();
+  const fx = new FXRateProviderRegistry();
   const config = {
     get: (key: string) => {
       if (configGet) {
@@ -86,6 +88,7 @@ function createLoader(configGet?: (key: string) => string | undefined) {
     notifications,
     storage,
     search,
+    fx,
   );
   return {
     loader,
@@ -99,6 +102,7 @@ function createLoader(configGet?: (key: string) => string | undefined) {
     notifications,
     storage,
     search,
+    fx,
   };
 }
 
@@ -348,7 +352,7 @@ describe('PluginLoaderService lifecycle + registrations', () => {
     expect(admin.getContribution('sample')).toBeUndefined();
   });
 
-  it('registers payment, shipping, tax, promotions, notifications, storage, and search engines via context', async () => {
+  it('registers payment, shipping, tax, promotions, notifications, storage, search, and fx engines via context', async () => {
     const {
       loader,
       payment,
@@ -358,6 +362,7 @@ describe('PluginLoaderService lifecycle + registrations', () => {
       notifications,
       storage,
       search,
+      fx,
     } = createLoader();
     loader.registerDefinition({
       id: 'engines-demo',
@@ -436,6 +441,13 @@ describe('PluginLoaderService lifecycle + registrations', () => {
             };
           },
         });
+        ctx.registerFXProvider({
+          code: 'openexchangerates',
+          displayName: 'Open Exchange Rates',
+          async getRate() {
+            return { rate: 1 };
+          },
+        });
       },
     });
 
@@ -448,6 +460,7 @@ describe('PluginLoaderService lifecycle + registrations', () => {
     expect(notifications.get('smtp')).toBeUndefined();
     expect(storage.get('localfs')).toBeUndefined();
     expect(search.get('meilisearch')).toBeUndefined();
+    expect(fx.get('openexchangerates')).toBeUndefined();
 
     await loader.enable('engines-demo');
     expect(payment.get('manual')?.displayName).toBe('Manual');
@@ -457,6 +470,9 @@ describe('PluginLoaderService lifecycle + registrations', () => {
     expect(notifications.get('smtp')?.displayName).toBe('SMTP');
     expect(storage.get('localfs')?.code).toBe('localfs');
     expect(search.get('meilisearch')?.displayName).toBe('Meilisearch');
+    expect(fx.get('openexchangerates')?.displayName).toBe(
+      'Open Exchange Rates',
+    );
 
     await loader.disable('engines-demo');
     expect(payment.get('manual')).toBeUndefined();
@@ -466,6 +482,7 @@ describe('PluginLoaderService lifecycle + registrations', () => {
     expect(notifications.get('smtp')).toBeUndefined();
     expect(storage.get('localfs')).toBeUndefined();
     expect(search.get('meilisearch')).toBeUndefined();
+    expect(fx.get('openexchangerates')).toBeUndefined();
   });
 
   it('detects GraphQL contribution name conflicts across plugins', async () => {

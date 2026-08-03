@@ -65,3 +65,28 @@ export class UpdateExchangeRateInput {
   })
   source?: string;
 }
+
+@InputType({
+  description: 'Currency pair to quote from a registered FX provider (D-04)',
+})
+export class FXRatePairInput {
+  @Field(() => String, { description: 'ISO 4217 source currency' })
+  fromCurrencyCode!: string;
+
+  @Field(() => String, { description: 'ISO 4217 target currency' })
+  toCurrencyCode!: string;
+}
+
+@InputType({
+  description:
+    'Sync one or more pairs from a registered FX provider into exchange_rates (D-04, optional)',
+})
+export class SyncExchangeRatesInput {
+  @Field(() => String, {
+    description: 'Registered FX provider code (see FXRateProvider port)',
+  })
+  providerCode!: string;
+
+  @Field(() => [FXRatePairInput])
+  pairs!: FXRatePairInput[];
+}

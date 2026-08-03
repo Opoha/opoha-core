@@ -8,7 +8,9 @@ import { beforeEach, describe, expect, it, vi } from 'vitest';
 
 import { CoreEventName } from '../event-bus/event-catalog';
 import { ExchangeRateService } from './exchange-rate.service';
+import { FXRateProviderRegistry } from './fx-rate-provider.registry';
 import type { ExchangeRateEntity } from './entities';
+import type { FXRateProvider } from './fx-rate-provider';
 
 type RateRow = ExchangeRateEntity;
 
@@ -24,6 +26,7 @@ describe('ExchangeRateService (unit)', () => {
     remove: ReturnType<typeof vi.fn>;
   };
   let eventBus: { publish: ReturnType<typeof vi.fn> };
+  let fxProviders: FXRateProviderRegistry;
   let nextId: number;
 
   beforeEach(() => {
@@ -113,9 +116,11 @@ describe('ExchangeRateService (unit)', () => {
       }),
     };
     eventBus = { publish: vi.fn(async () => undefined) };
+    fxProviders = new FXRateProviderRegistry();
     service = new ExchangeRateService(
       ratesRepo as never,
       eventBus as never,
+      fxProviders,
     );
   });
 
@@ -259,5 +264,59 @@ describe('ExchangeRateService (unit)', () => {
     });
     expect(pair).toHaveLength(1);
     expect(pair[0]?.rate).toBe(1.1);
+  });
+
+  describe('syncFromProvider (D-04)', () => {
+    const provider: FXRateProvider = {
+      code: 'openexchangerates',
+      displayName: 'Open Exchange Rates',
+      getRate: vi.fn(async ({ fromCurrencyCode, toCurrencyCode }) => {
+        if (fromCurrencyCode === 'USD' && toCurrencyCode === 'EUR') {
+          return { rate: 0.93, asOf: '2026-08-04T00:00:00Z' };
+        }
+        return { rate: 1 };
+      }),
+    };
+
+    it('rejects an unregistered provider', async () => {
+      await expect(
+        service.syncFromProvider('missing', [
+          { fromCurrencyCode: 'USD', toCurrencyCode: 'EUR' },
+        ]),
+      ).rejects.toBeInstanceOf(NotFoundException);
+    });
+
+    it('rejects an empty pairs list', async () => {
+      fxProviders.register('fx-plugin', provider);
+      await expect(
+        service.syncFromProvider('openexchangerates', []),
+      ).rejects.toBeInstanceOf(BadRequestException);
+    });
+
+    it('fetches quotes from the registered provider and upserts as source=providerCode', async () => {
+      fxProviders.register('fx-plugin', provider);
+
+      const [synced] = await service.syncFromProvider('openexchangerates', [
+        { fromCurrencyCode: 'usd', toCurrencyCode: 'eur' },
+      ]);
+
+      expect(provider.getRate).toHaveBeenCalledWith({
+        fromCurrencyCode: 'USD',
+        toCurrencyCode: 'EUR',
+      });
+      expect(synced?.rate).toBe(0.93);
+      expect(synced?.source).toBe('openexchangerates');
+      expect(await service.getRate('USD', 'EUR')).toBe(0.93);
+    });
+
+    it('ignores an inactive provider', async () => {
+      fxProviders.register('fx-plugin', provider);
+      fxProviders.deactivatePlugin('fx-plugin');
+      await expect(
+        service.syncFromProvider('openexchangerates', [
+          { fromCurrencyCode: 'USD', toCurrencyCode: 'EUR' },
+        ]),
+      ).rejects.toBeInstanceOf(NotFoundException);
+    });
   });
 });

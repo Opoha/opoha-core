@@ -1,5 +1,9 @@
 import type { EventListener, SubscribeOptions } from '../event-bus/domain-event';
 import type {
+  FXRateProvider,
+  FXRateProviderRegistry,
+} from '../currency/public';
+import type {
   PaymentProvider,
   PaymentProviderRegistry,
 } from '../payment-engine/public';
@@ -64,6 +68,8 @@ export type PluginRegistrationContext = {
   registerNotificationProvider(provider: NotificationProvider): void;
   registerStorageAdapter(adapter: StorageAdapter): void;
   registerSearchProvider(provider: SearchProvider): void;
+  /** Register a live FX rate provider (Phase 5 D-04, optional). */
+  registerFXProvider(provider: FXRateProvider): void;
 };
 
 /**
@@ -87,6 +93,7 @@ export type PluginEngineRegistries = {
   notifications?: NotificationProviderRegistry;
   storage?: StorageAdapterRegistry;
   search?: SearchProviderRegistry;
+  fx?: FXRateProviderRegistry;
 };
 
 export function createPluginRegistrationContext(
@@ -179,6 +186,12 @@ export function createPluginRegistrationContext(
         throw new Error('Search engine registry is not available');
       }
       engines.search.register(pluginId, provider, active);
+    },
+    registerFXProvider(provider) {
+      if (!engines.fx) {
+        throw new Error('FX rate provider registry is not available');
+      }
+      engines.fx.register(pluginId, provider, active);
     },
   };
 }

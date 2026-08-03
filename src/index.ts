@@ -284,6 +284,7 @@ export {
   ExchangeRateType,
   CreateExchangeRateInput,
   UpdateExchangeRateInput,
+  FXRateProviderRegistry,
 } from './modules/currency/public';
 export type {
   StoreCurrencyConfigUpdatedData,
@@ -294,6 +295,10 @@ export type {
   DisplayTotalsInput,
   DisplayTotalsResult,
   CurrencyRoundingMode,
+  FXRateQuoteInput,
+  FXRateQuoteResult,
+  FXRateProvider,
+  RegisteredFXRateProvider,
 } from './modules/currency/public';
 export {
   AdminOpsModule,

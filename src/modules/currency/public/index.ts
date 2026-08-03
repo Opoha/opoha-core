@@ -4,6 +4,13 @@
 export { CurrencyModule } from '../currency.module';
 export { StoreCurrencyConfigService } from '../store-currency-config.service';
 export { ExchangeRateService } from '../exchange-rate.service';
+export { FXRateProviderRegistry } from '../fx-rate-provider.registry';
+export type {
+  FXRateQuoteInput,
+  FXRateQuoteResult,
+  FXRateProvider,
+  RegisteredFXRateProvider,
+} from '../fx-rate-provider';
 export { CurrencyConversionService } from '../currency-conversion.service';
 export type {
   ConvertedAmount,

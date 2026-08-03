@@ -3,6 +3,7 @@ import { TypeOrmModule } from '@nestjs/typeorm';
 
 import { AuthModule } from '../auth/auth.module';
 import { ConfigModule } from '../config/config.module';
+import { CurrencyModule } from '../currency/public';
 import { EventBusModule } from '../event-bus/event-bus.module';
 import { FilesModule } from '../files/public';
 import { NotificationsModule } from '../notifications/public';
@@ -33,6 +34,7 @@ import { PluginsResolver } from './plugins.resolver';
     NotificationsModule,
     FilesModule,
     SearchEngineModule,
+    CurrencyModule,
     TypeOrmModule.forFeature([PluginStateEntity]),
   ],
   providers: [

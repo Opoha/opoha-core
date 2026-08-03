@@ -15,6 +15,7 @@ import type {
   ExchangeRateType,
   UpdateExchangeRateInput,
 } from './exchange-rate.types';
+import { FXRateProviderRegistry } from './fx-rate-provider.registry';
 
 const CURRENCY_RE = /^[A-Z]{3}$/;
 const DEFAULT_SOURCE = 'manual';
@@ -72,6 +73,7 @@ export class ExchangeRateService {
     @InjectRepository(ExchangeRateEntity)
     private readonly rates: Repository<ExchangeRateEntity>,
     private readonly eventBus: EventBusService,
+    private readonly fxProviders: FXRateProviderRegistry,
   ) {}
 
   async findAll(filters?: {
@@ -257,6 +259,51 @@ export class ExchangeRateService {
     });
 
     return snapshot;
+  }
+
+  /**
+   * Fetch live quotes from a registered FX provider and upsert them as
+   * manual-equivalent rows with `source` set to the provider code (Phase 5 D-04).
+   * Optional — core never calls a provider SDK directly; the registered
+   * provider object (registered by a plugin) is the only bridge.
+   */
+  async syncFromProvider(
+    providerCode: string,
+    pairs: Array<{ fromCurrencyCode: string; toCurrencyCode: string }>,
+  ): Promise<ExchangeRateType[]> {
+    if (!providerCode?.trim()) {
+      throw new BadRequestException('providerCode must be a non-empty string');
+    }
+    if (!pairs || pairs.length === 0) {
+      throw new BadRequestException('pairs must contain at least one currency pair');
+    }
+    const provider = this.fxProviders.get(providerCode.trim());
+    if (!provider) {
+      throw new NotFoundException(
+        `FX provider "${providerCode}" is not registered or inactive`,
+      );
+    }
+
+    const results: ExchangeRateType[] = [];
+    for (const pair of pairs) {
+      const fromCurrencyCode = assertCurrencyCode(
+        pair.fromCurrencyCode,
+        'fromCurrencyCode',
+      );
+      const toCurrencyCode = assertCurrencyCode(
+        pair.toCurrencyCode,
+        'toCurrencyCode',
+      );
+      const quote = await provider.getRate({ fromCurrencyCode, toCurrencyCode });
+      const saved = await this.upsert({
+        fromCurrencyCode,
+        toCurrencyCode,
+        rate: assertRate(quote.rate),
+        source: provider.code,
+      });
+      results.push(saved);
+    }
+    return results;
   }
 
   private async publishUpdated(row: ExchangeRateEntity): Promise<void> {

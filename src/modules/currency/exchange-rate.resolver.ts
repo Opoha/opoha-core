@@ -10,6 +10,7 @@ import { ExchangeRateService } from './exchange-rate.service';
 import {
   CreateExchangeRateInput,
   ExchangeRateType,
+  SyncExchangeRatesInput,
   UpdateExchangeRateInput,
 } from './exchange-rate.types';
 
@@ -90,5 +91,19 @@ export class ExchangeRateResolver {
     @Args('id', { type: () => ID }) id: string,
   ): Promise<ExchangeRateType> {
     return this.rates.remove(id);
+  }
+
+  @Mutation(() => [ExchangeRateType], {
+    name: 'syncExchangeRatesFromProvider',
+    description:
+      'Fetch live quotes from a registered FX provider (Phase 5 D-04, optional) ' +
+      'and upsert them with source=providerCode; core never calls a provider SDK directly.',
+  })
+  @RequirePermission('currency:update')
+  syncExchangeRatesFromProvider(
+    @Args('input', { type: () => SyncExchangeRatesInput })
+    input: SyncExchangeRatesInput,
+  ): Promise<ExchangeRateType[]> {
+    return this.rates.syncFromProvider(input.providerCode, input.pairs);
   }
 }
