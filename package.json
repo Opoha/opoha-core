@@ -19,7 +19,8 @@
     "lint": "eslint .",
     "format": "prettier --write .",
     "docker:up": "docker compose up -d",
-    "docker:down": "docker compose down"
+    "docker:down": "docker compose down",
+    "typecheck": "tsc -p tsconfig.json --noEmit"
   },
   "engines": {
     "node": ">=20"
@@ -49,5 +50,6 @@
     "typescript": "^5.8.2",
     "vitest": "^3.0.8"
   },
-  "prettier": "@opoha/prettier-config"
+  "prettier": "@opoha/prettier-config",
+  "packageManager": "pnpm@11.7.0"
 }
