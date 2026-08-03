@@ -4,3 +4,6 @@ packages:
 allowBuilds:
   esbuild: true
   "@apollo/protobufjs": true
+  '@prisma/engines': true
+  prisma: true
+  '@prisma/client': true

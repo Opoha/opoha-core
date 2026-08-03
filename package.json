@@ -20,7 +20,13 @@
     "format": "prettier --write .",
     "docker:up": "docker compose up -d",
     "docker:down": "docker compose down",
-    "typecheck": "tsc -p tsconfig.json --noEmit"
+    "typecheck": "tsc -p tsconfig.json --noEmit",
+    "prisma:generate": "prisma generate --schema=database/prisma",
+    "prisma:migrate": "prisma migrate dev --schema=database/prisma",
+    "prisma:studio": "prisma studio --schema=database/prisma"
+  },
+  "prisma": {
+    "schema": "database/prisma"
   },
   "engines": {
     "node": ">=20"
@@ -33,9 +39,12 @@
     "@nestjs/core": "^11.0.11",
     "@nestjs/graphql": "^13.0.3",
     "@nestjs/platform-express": "^11.0.11",
+    "@prisma/client": "^6.19.3",
+    "dotenv": "^17.4.2",
     "graphql": "^16.10.0",
     "reflect-metadata": "^0.2.2",
-    "rxjs": "^7.8.2"
+    "rxjs": "^7.8.2",
+    "zod": "^4.4.3"
   },
   "devDependencies": {
     "@opoha/eslint-config": "file:../opoha-devkit/packages/eslint-config",
@@ -46,6 +55,7 @@
     "@types/node": "^22.13.10",
     "eslint": "^9.22.0",
     "prettier": "^3.5.3",
+    "prisma": "^6.19.3",
     "tsx": "^4.19.3",
     "typescript": "^5.8.2",
     "vitest": "^3.0.8"
