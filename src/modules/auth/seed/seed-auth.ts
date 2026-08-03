@@ -18,6 +18,8 @@ export const DEFAULT_PERMISSIONS = [
   { key: 'api-key:read', description: 'Read API keys' },
   { key: 'api-key:revoke', description: 'Revoke API keys' },
   { key: 'audit:read', description: 'Read audit logs' },
+  { key: 'plugin:read', description: 'Read plugin status and admin extension manifests' },
+  { key: 'plugin:manage', description: 'Install, enable, disable, and uninstall plugins' },
 ] as const;
 
 export type SeedAdminOptions = {

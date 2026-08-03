@@ -315,24 +315,68 @@ describe('PluginLoaderService lifecycle + registrations', () => {
     expect(admin.getContribution('sample')).toBeUndefined();
   });
 
-  it('detects GraphQL contribution conflicts across plugins', async () => {
+  it('detects GraphQL contribution name conflicts across plugins', async () => {
     const { loader, contributions } = createLoader();
     loader.registerDefinition({
       id: 'a',
       boot(ctx) {
-        ctx.registerGraphQL({ name: 'shared', kind: 'query' });
+        ctx.registerGraphQL({ name: 'sharedQuery', kind: 'query' });
       },
     });
     loader.registerDefinition({
       id: 'b',
       boot(ctx) {
-        ctx.registerGraphQL({ name: 'shared', kind: 'query' });
+        ctx.registerGraphQL({ name: 'sharedQuery', kind: 'query' });
       },
     });
     await loader.install('a');
-    await loader.enable('a');
     await loader.install('b');
-    await expect(loader.enable('b')).rejects.toThrow(/conflict/);
-    expect(contributions.listGraphQL().map((g) => g.pluginId)).toEqual(['a']);
+    await loader.enable('a');
+    await expect(loader.enable('b')).rejects.toThrow(
+      /GraphQL contribution conflict/,
+    );
+    expect(contributions.listGraphQL(true)).toHaveLength(1);
+  });
+
+  it('enable without prior boot activates contributions registered during boot', async () => {
+    const { loader, contributions, admin } = createLoader();
+    loader.registerDefinition({
+      id: 'direct',
+      boot(ctx) {
+        ctx.registerGraphQL({ name: 'directQ', kind: 'query' });
+        ctx.registerAdmin({
+          pages: [{ id: 'p1', path: '/p', title: 'P' }],
+        });
+      },
+    });
+    await loader.install('direct');
+    await loader.enable('direct');
+    expect(loader.getState('direct')).toBe('enabled');
+    expect(contributions.listGraphQL(true)).toHaveLength(1);
+    expect(admin.getManifest(true).plugins).toHaveLength(1);
+  });
+});
+
+describe('AdminExtensionRegistry', () => {
+  it('returns only active plugins in the merged manifest', () => {
+    const admin = new AdminExtensionRegistry();
+    admin.register(
+      {
+        pluginId: 'on',
+        navigation: [{ id: 'n1', label: 'On', path: '/on' }],
+      },
+      true,
+    );
+    admin.register(
+      {
+        pluginId: 'off',
+        navigation: [{ id: 'n2', label: 'Off', path: '/off' }],
+      },
+      false,
+    );
+    expect(admin.getManifest(true).plugins.map((p) => p.pluginId)).toEqual([
+      'on',
+    ]);
+    expect(admin.getManifest(false).plugins).toHaveLength(2);
   });
 });

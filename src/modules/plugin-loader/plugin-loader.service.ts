@@ -80,11 +80,7 @@ export class PluginLoaderService implements OnModuleInit {
       }
     }
     this.logger?.log(
-      {
-        message: 'Plugins discovered',
-        count: this.ordered.length,
-        order: this.ordered.map((p) => p.manifest.id),
-      },
+      `Plugins discovered: count=${this.ordered.length} order=${this.ordered.map((p) => p.manifest.id).join(',')}`,
       'PluginLoaderService',
     );
     return this.ordered;
@@ -174,7 +170,7 @@ export class PluginLoaderService implements OnModuleInit {
     await record.definition?.boot?.(ctx);
     record.booted = true;
     this.logger?.log(
-      { message: 'Plugin booted', pluginId, active },
+      `Plugin booted: ${pluginId} active=${active}`,
       'PluginLoaderService',
     );
   }
@@ -184,10 +180,10 @@ export class PluginLoaderService implements OnModuleInit {
     record.state = transitionPluginState(record.state, 'enable');
     if (!record.booted) {
       await this.boot(pluginId);
-    } else {
-      this.contributions.activatePlugin(pluginId);
-      this.adminExtensions.setActive(pluginId, true);
     }
+    // Activate any contributions registered inactive during install/boot.
+    this.contributions.activatePlugin(pluginId);
+    this.adminExtensions.setActive(pluginId, true);
     const ctx = this.contextFor(record, true);
     await record.definition?.enable?.(ctx);
     this.logger?.log(`Plugin enabled: ${pluginId}`, 'PluginLoaderService');
