@@ -9,6 +9,7 @@ import { DataSource, QueryFailedError, Repository } from 'typeorm';
 
 import { CoreEventName } from '../event-bus/event-catalog';
 import { EventBusService } from '../event-bus/event-bus.service';
+import { WarehouseEntity } from '../warehouses/entities/warehouse.entity';
 import { InventoryAdjustmentEntity } from './entities/inventory-adjustment.entity';
 import { InventoryItemEntity } from './entities/inventory-item.entity';
 import { InventoryReservationEntity } from './entities/inventory-reservation.entity';
@@ -45,6 +46,7 @@ function toItemType(row: InventoryItemEntity): InventoryItemType {
   return {
     id: row.id,
     variantId: row.variantId,
+    warehouseId: row.warehouseId,
     quantityOnHand: row.quantityOnHand,
     quantityReserved: row.quantityReserved,
     quantityAvailable: row.quantityOnHand - row.quantityReserved,
@@ -89,12 +91,42 @@ export class InventoryService {
     private readonly reservations: Repository<InventoryReservationEntity>,
     @InjectRepository(InventoryAdjustmentEntity)
     private readonly adjustments: Repository<InventoryAdjustmentEntity>,
+    @InjectRepository(WarehouseEntity)
+    private readonly warehouses: Repository<WarehouseEntity>,
     private readonly dataSource: DataSource,
     private readonly eventBus: EventBusService,
   ) {}
 
-  async findAll(): Promise<InventoryItemType[]> {
-    const rows = await this.items.find({ order: { createdAt: 'ASC' } });
+  /**
+   * Resolve warehouse id — explicit id, else the default warehouse.
+   */
+  async resolveWarehouseId(warehouseId?: string | null): Promise<string> {
+    if (warehouseId) {
+      const row = await this.warehouses.findOne({ where: { id: warehouseId } });
+      if (!row) {
+        throw new NotFoundException(`Warehouse ${warehouseId} not found`);
+      }
+      if (!row.isActive) {
+        throw new BadRequestException(
+          `Warehouse ${warehouseId} is not active`,
+        );
+      }
+      return row.id;
+    }
+    const def = await this.warehouses.findOne({ where: { isDefault: true } });
+    if (!def) {
+      throw new BadRequestException(
+        'No default warehouse configured; create one or pass warehouseId',
+      );
+    }
+    return def.id;
+  }
+
+  async findAll(warehouseId?: string): Promise<InventoryItemType[]> {
+    const rows = await this.items.find({
+      where: warehouseId ? { warehouseId } : {},
+      order: { createdAt: 'ASC' },
+    });
     return rows.map(toItemType);
   }
 
@@ -106,11 +138,20 @@ export class InventoryService {
     return toItemType(row);
   }
 
-  async findByVariantId(variantId: string): Promise<InventoryItemType> {
-    const row = await this.items.findOne({ where: { variantId } });
+  /**
+   * Stock for a variant at a warehouse (default warehouse when omitted).
+   */
+  async findByVariantId(
+    variantId: string,
+    warehouseId?: string,
+  ): Promise<InventoryItemType> {
+    const resolvedWarehouseId = await this.resolveWarehouseId(warehouseId);
+    const row = await this.items.findOne({
+      where: { variantId, warehouseId: resolvedWarehouseId },
+    });
     if (!row) {
       throw new NotFoundException(
-        `Inventory item for variant ${variantId} not found`,
+        `Inventory item for variant ${variantId} at warehouse ${resolvedWarehouseId} not found`,
       );
     }
     return toItemType(row);
@@ -121,8 +162,10 @@ export class InventoryService {
     if (!Number.isInteger(onHand) || onHand < 0) {
       throw new BadRequestException('quantityOnHand must be a non-negative integer');
     }
+    const warehouseId = await this.resolveWarehouseId(input.warehouseId);
     const item = this.items.create({
       variantId: input.variantId,
+      warehouseId,
       quantityOnHand: onHand,
       quantityReserved: 0,
     });
@@ -132,12 +175,12 @@ export class InventoryService {
     } catch (error) {
       if (isUniqueViolation(error)) {
         throw new ConflictException(
-          `Inventory item for variant ${input.variantId} already exists`,
+          `Inventory item for variant ${input.variantId} at warehouse ${warehouseId} already exists`,
         );
       }
       if (isForeignKeyViolation(error)) {
         throw new BadRequestException(
-          `Product variant ${input.variantId} does not exist`,
+          `Product variant ${input.variantId} or warehouse ${warehouseId} does not exist`,
         );
       }
       throw error;
@@ -152,12 +195,17 @@ export class InventoryService {
       throw new BadRequestException('delta must be a non-zero integer');
     }
 
+    const warehouseId = await this.resolveWarehouseId(input.warehouseId);
+
     const snapshot = await this.dataSource.transaction(async (manager) => {
       let item = await manager
         .getRepository(InventoryItemEntity)
         .createQueryBuilder('item')
         .setLock('pessimistic_write')
-        .where('item.variantId = :variantId', { variantId: input.variantId })
+        .where(
+          'item.variantId = :variantId AND item.warehouseId = :warehouseId',
+          { variantId: input.variantId, warehouseId },
+        )
         .getOne();
 
       if (!item) {
@@ -165,6 +213,7 @@ export class InventoryService {
           item = await manager.save(
             manager.create(InventoryItemEntity, {
               variantId: input.variantId,
+              warehouseId,
               quantityOnHand: 0,
               quantityReserved: 0,
             }),
@@ -172,7 +221,7 @@ export class InventoryService {
         } catch (error) {
           if (isForeignKeyViolation(error)) {
             throw new BadRequestException(
-              `Product variant ${input.variantId} does not exist`,
+              `Product variant ${input.variantId} or warehouse ${warehouseId} does not exist`,
             );
           }
           throw error;
@@ -185,7 +234,7 @@ export class InventoryService {
           .getOne();
         if (!item) {
           throw new NotFoundException(
-            `Inventory item for variant ${input.variantId} not found`,
+            `Inventory item for variant ${input.variantId} at warehouse ${warehouseId} not found`,
           );
         }
       }
@@ -215,6 +264,7 @@ export class InventoryService {
       return {
         inventoryItemId: item.id,
         variantId: item.variantId,
+        warehouseId: item.warehouseId,
         delta: input.delta,
         quantityOnHand: nextOnHand,
         quantityReserved: item.quantityReserved,
@@ -233,7 +283,8 @@ export class InventoryService {
   }
 
   /**
-   * Reserve stock for a variant; fails if available quantity is insufficient.
+   * Reserve stock for a variant at a warehouse; fails if available qty is insufficient.
+   * Omitting warehouseId uses the default warehouse (checkout/order path).
    */
   async reserve(
     input: ReserveInventoryInput,
@@ -242,12 +293,17 @@ export class InventoryService {
       throw new BadRequestException('quantity must be a positive integer');
     }
 
+    const warehouseId = await this.resolveWarehouseId(input.warehouseId);
+
     const snapshot = await this.dataSource.transaction(async (manager) => {
       let item = await manager
         .getRepository(InventoryItemEntity)
         .createQueryBuilder('item')
         .setLock('pessimistic_write')
-        .where('item.variantId = :variantId', { variantId: input.variantId })
+        .where(
+          'item.variantId = :variantId AND item.warehouseId = :warehouseId',
+          { variantId: input.variantId, warehouseId },
+        )
         .getOne();
 
       if (!item) {
@@ -255,6 +311,7 @@ export class InventoryService {
           item = await manager.save(
             manager.create(InventoryItemEntity, {
               variantId: input.variantId,
+              warehouseId,
               quantityOnHand: 0,
               quantityReserved: 0,
             }),
@@ -262,7 +319,7 @@ export class InventoryService {
         } catch (error) {
           if (isForeignKeyViolation(error)) {
             throw new BadRequestException(
-              `Product variant ${input.variantId} does not exist`,
+              `Product variant ${input.variantId} or warehouse ${warehouseId} does not exist`,
             );
           }
           throw error;
@@ -275,7 +332,7 @@ export class InventoryService {
           .getOne();
         if (!item) {
           throw new NotFoundException(
-            `Inventory item for variant ${input.variantId} not found`,
+            `Inventory item for variant ${input.variantId} at warehouse ${warehouseId} not found`,
           );
         }
       }
@@ -283,7 +340,7 @@ export class InventoryService {
       const available = item.quantityOnHand - item.quantityReserved;
       if (input.quantity > available) {
         throw new ConflictException(
-          `Insufficient stock for variant ${input.variantId} (available=${available}, requested=${input.quantity})`,
+          `Insufficient stock for variant ${input.variantId} at warehouse ${warehouseId} (available=${available}, requested=${input.quantity})`,
         );
       }
 
@@ -302,6 +359,7 @@ export class InventoryService {
         reservationId: reservation.id,
         inventoryItemId: item.id,
         variantId: item.variantId,
+        warehouseId: item.warehouseId,
         quantity: input.quantity,
         reference: reservation.reference,
         quantityReserved: item.quantityReserved,
@@ -374,6 +432,7 @@ export class InventoryService {
         reservationId: reservation.id,
         inventoryItemId: item.id,
         variantId: item.variantId,
+        warehouseId: item.warehouseId,
         quantity: reservation.quantity,
         quantityReserved: item.quantityReserved,
         quantityAvailable: item.quantityOnHand - item.quantityReserved,
@@ -451,6 +510,7 @@ export class InventoryService {
         reservationId: reservation.id,
         inventoryItemId: item.id,
         variantId: item.variantId,
+        warehouseId: item.warehouseId,
         quantity: reservation.quantity,
         quantityOnHand: item.quantityOnHand,
         quantityReserved: item.quantityReserved,
@@ -465,6 +525,7 @@ export class InventoryService {
       data: {
         inventoryItemId: snapshot.inventoryItemId,
         variantId: snapshot.variantId,
+        warehouseId: snapshot.warehouseId,
         delta: -snapshot.quantity,
         quantityOnHand: snapshot.quantityOnHand,
         quantityReserved: snapshot.quantityReserved,

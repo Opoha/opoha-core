@@ -6,6 +6,7 @@ import { DataSource } from 'typeorm';
 import { ProductEntity } from '../catalog/entities/product.entity';
 import { ProductVariantEntity } from '../catalog/entities/product-variant.entity';
 import { EventBusService } from '../event-bus/event-bus.service';
+import { WarehouseEntity } from '../warehouses/entities/warehouse.entity';
 import { InventoryAdjustmentEntity } from './entities/inventory-adjustment.entity';
 import { InventoryItemEntity } from './entities/inventory-item.entity';
 import { InventoryReservationEntity } from './entities/inventory-reservation.entity';
@@ -17,7 +18,7 @@ const databaseUrl = process.env.DATABASE_URL;
 const describeDb = databaseUrl ? describe : describe.skip;
 
 /**
- * B-04 — real Postgres concurrent reservation (pessimistic locks).
+ * Real Postgres concurrent reservation (pessimistic locks).
  * Skips when DATABASE_URL is unset so unit-only environments still pass.
  */
 describeDb('InventoryService concurrent reservations (no oversell)', () => {
@@ -25,6 +26,8 @@ describeDb('InventoryService concurrent reservations (no oversell)', () => {
   let service: InventoryService;
   let variantId: string;
   let productId: string;
+  let warehouseId: string;
+  let createdWarehouse = false;
 
   const stockOnHand = 10;
   const concurrentAttempts = 40;
@@ -36,6 +39,7 @@ describeDb('InventoryService concurrent reservations (no oversell)', () => {
       entities: [
         ProductEntity,
         ProductVariantEntity,
+        WarehouseEntity,
         InventoryItemEntity,
         InventoryReservationEntity,
         InventoryAdjustmentEntity,
@@ -46,7 +50,29 @@ describeDb('InventoryService concurrent reservations (no oversell)', () => {
 
     const products = dataSource.getRepository(ProductEntity);
     const variants = dataSource.getRepository(ProductVariantEntity);
+    const warehouses = dataSource.getRepository(WarehouseEntity);
     const items = dataSource.getRepository(InventoryItemEntity);
+
+    let defaultWh = await warehouses.findOne({ where: { isDefault: true } });
+    if (!defaultWh) {
+      defaultWh = await warehouses.save(
+        warehouses.create({
+          code: `DEFAULT-CONC-${Date.now()}`,
+          name: 'Concurrent test default warehouse',
+          description: null,
+          isActive: true,
+          isDefault: true,
+          addressLine1: null,
+          addressLine2: null,
+          city: null,
+          province: null,
+          postalCode: null,
+          countryCode: null,
+        }),
+      );
+      createdWarehouse = true;
+    }
+    warehouseId = defaultWh.id;
 
     const suffix = `${Date.now()}-${Math.random().toString(36).slice(2, 8)}`;
     const product = await products.save(
@@ -74,6 +100,7 @@ describeDb('InventoryService concurrent reservations (no oversell)', () => {
     await items.save(
       items.create({
         variantId,
+        warehouseId,
         quantityOnHand: stockOnHand,
         quantityReserved: 0,
       }),
@@ -83,6 +110,7 @@ describeDb('InventoryService concurrent reservations (no oversell)', () => {
       dataSource.getRepository(InventoryItemEntity),
       dataSource.getRepository(InventoryReservationEntity),
       dataSource.getRepository(InventoryAdjustmentEntity),
+      dataSource.getRepository(WarehouseEntity),
       dataSource,
       new EventBusService(),
     );
@@ -94,6 +122,9 @@ describeDb('InventoryService concurrent reservations (no oversell)', () => {
     }
     // Cascade: delete product removes variants; inventory FKs cascade from items/variants via migration.
     await dataSource.getRepository(ProductEntity).delete({ id: productId });
+    if (createdWarehouse) {
+      await dataSource.getRepository(WarehouseEntity).delete({ id: warehouseId });
+    }
     await dataSource.destroy();
   });
 
@@ -122,6 +153,7 @@ describeDb('InventoryService concurrent reservations (no oversell)', () => {
     }
 
     const item = await service.findByVariantId(variantId);
+    expect(item.warehouseId).toBe(warehouseId);
     expect(item.quantityOnHand).toBe(stockOnHand);
     expect(item.quantityReserved).toBe(stockOnHand);
     expect(item.quantityAvailable).toBe(0);

@@ -7,6 +7,7 @@ export const inventoryUpdatedDataSchema = z
   .object({
     inventoryItemId: z.string().uuid(),
     variantId: z.string().uuid(),
+    warehouseId: z.string().uuid(),
     delta: z.number().int(),
     quantityOnHand: z.number().int().nonnegative(),
     quantityReserved: z.number().int().nonnegative(),
@@ -21,6 +22,7 @@ export const inventoryReservationCreatedDataSchema = z
     reservationId: z.string().uuid(),
     inventoryItemId: z.string().uuid(),
     variantId: z.string().uuid(),
+    warehouseId: z.string().uuid(),
     quantity: z.number().int().positive(),
     reference: z.string().nullable(),
     quantityReserved: z.number().int().nonnegative(),
@@ -37,6 +39,7 @@ export const inventoryReservationReleasedDataSchema = z
     reservationId: z.string().uuid(),
     inventoryItemId: z.string().uuid(),
     variantId: z.string().uuid(),
+    warehouseId: z.string().uuid(),
     quantity: z.number().int().positive(),
     quantityReserved: z.number().int().nonnegative(),
     quantityAvailable: z.number().int().nonnegative(),

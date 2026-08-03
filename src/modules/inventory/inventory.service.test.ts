@@ -11,6 +11,7 @@ import { InventoryService } from './inventory.service';
 type ItemRow = {
   id: string;
   variantId: string;
+  warehouseId: string;
   quantityOnHand: number;
   quantityReserved: number;
   createdAt: Date;
@@ -27,10 +28,20 @@ type ReservationRow = {
   updatedAt: Date;
 };
 
+type WarehouseRow = {
+  id: string;
+  code: string;
+  isActive: boolean;
+  isDefault: boolean;
+};
+
 describe('InventoryService (unit)', () => {
   const now = new Date('2026-08-03T12:00:00Z');
+  const defaultWarehouseId = 'wh-default';
+  const secondaryWarehouseId = 'wh-nyc';
   let itemStore: ItemRow[];
   let reservationStore: ReservationRow[];
+  let warehouseStore: WarehouseRow[];
   let service: InventoryService;
   let itemsRepo: {
     find: ReturnType<typeof vi.fn>;
@@ -44,16 +55,43 @@ describe('InventoryService (unit)', () => {
   let adjustmentsRepo: {
     find: ReturnType<typeof vi.fn>;
   };
+  let warehousesRepo: {
+    findOne: ReturnType<typeof vi.fn>;
+  };
   let dataSource: { transaction: ReturnType<typeof vi.fn> };
   let eventBus: { publish: ReturnType<typeof vi.fn> };
 
   beforeEach(() => {
+    warehouseStore = [
+      {
+        id: defaultWarehouseId,
+        code: 'DEFAULT',
+        isActive: true,
+        isDefault: true,
+      },
+      {
+        id: secondaryWarehouseId,
+        code: 'NYC-01',
+        isActive: true,
+        isDefault: false,
+      },
+    ];
     itemStore = [
       {
         id: 'item-1',
         variantId: 'var-1',
+        warehouseId: defaultWarehouseId,
         quantityOnHand: 10,
         quantityReserved: 2,
+        createdAt: now,
+        updatedAt: now,
+      },
+      {
+        id: 'item-2',
+        variantId: 'var-1',
+        warehouseId: secondaryWarehouseId,
+        quantityOnHand: 5,
+        quantityReserved: 0,
         createdAt: now,
         updatedAt: now,
       },
@@ -61,10 +99,24 @@ describe('InventoryService (unit)', () => {
     reservationStore = [];
 
     itemsRepo = {
-      find: vi.fn(async () => [...itemStore]),
+      find: vi.fn(async ({ where }: { where?: Partial<ItemRow> } = {}) => {
+        if (where?.warehouseId) {
+          return itemStore.filter((r) => r.warehouseId === where.warehouseId);
+        }
+        return [...itemStore];
+      }),
       findOne: vi.fn(async ({ where }: { where: Partial<ItemRow> }) => {
         if (where.id) {
           return itemStore.find((r) => r.id === where.id) ?? null;
+        }
+        if (where.variantId && where.warehouseId) {
+          return (
+            itemStore.find(
+              (r) =>
+                r.variantId === where.variantId &&
+                r.warehouseId === where.warehouseId,
+            ) ?? null
+          );
         }
         if (where.variantId) {
           return itemStore.find((r) => r.variantId === where.variantId) ?? null;
@@ -99,6 +151,18 @@ describe('InventoryService (unit)', () => {
       find: vi.fn(async () => []),
     };
 
+    warehousesRepo = {
+      findOne: vi.fn(async ({ where }: { where: Partial<WarehouseRow> }) => {
+        if (where.id) {
+          return warehouseStore.find((w) => w.id === where.id) ?? null;
+        }
+        if (where.isDefault === true) {
+          return warehouseStore.find((w) => w.isDefault) ?? null;
+        }
+        return null;
+      }),
+    };
+
     dataSource = {
       transaction: vi.fn(async (fn: (manager: unknown) => Promise<unknown>) => {
         const manager = {
@@ -106,11 +170,18 @@ describe('InventoryService (unit)', () => {
             if (entity.name === 'InventoryItemEntity') {
               return {
                 createQueryBuilder: () => {
-                  const state: { variantId?: string; id?: string } = {};
+                  const state: {
+                    variantId?: string;
+                    warehouseId?: string;
+                    id?: string;
+                  } = {};
                   const qb = {
                     setLock: () => qb,
                     where: (_sql: string, params: Record<string, string>) => {
                       if (params.variantId) state.variantId = params.variantId;
+                      if (params.warehouseId) {
+                        state.warehouseId = params.warehouseId;
+                      }
                       if (params.id) state.id = params.id;
                       return qb;
                     },
@@ -118,6 +189,15 @@ describe('InventoryService (unit)', () => {
                       if (state.id) {
                         return (
                           itemStore.find((r) => r.id === state.id) ?? null
+                        );
+                      }
+                      if (state.variantId && state.warehouseId) {
+                        return (
+                          itemStore.find(
+                            (r) =>
+                              r.variantId === state.variantId &&
+                              r.warehouseId === state.warehouseId,
+                          ) ?? null
                         );
                       }
                       if (state.variantId) {
@@ -207,22 +287,38 @@ describe('InventoryService (unit)', () => {
       itemsRepo as never,
       reservationsRepo as never,
       adjustmentsRepo as never,
+      warehousesRepo as never,
       dataSource as never,
       eventBus as never,
     );
   });
 
-  it('findByVariantId returns available = onHand - reserved', async () => {
+  it('findByVariantId uses default warehouse when warehouseId omitted', async () => {
     const item = await service.findByVariantId('var-1');
+    expect(item.warehouseId).toBe(defaultWarehouseId);
     expect(item.quantityAvailable).toBe(8);
   });
 
-  it('adjust increases on-hand and records via transaction', async () => {
+  it('findByVariantId returns stock at an explicit warehouse', async () => {
+    const item = await service.findByVariantId('var-1', secondaryWarehouseId);
+    expect(item.id).toBe('item-2');
+    expect(item.quantityOnHand).toBe(5);
+    expect(item.quantityAvailable).toBe(5);
+  });
+
+  it('findAll filters by warehouseId', async () => {
+    const items = await service.findAll(secondaryWarehouseId);
+    expect(items).toHaveLength(1);
+    expect(items[0]?.id).toBe('item-2');
+  });
+
+  it('adjust increases on-hand at default warehouse and records via transaction', async () => {
     const item = await service.adjust({
       variantId: 'var-1',
       delta: 5,
       reason: 'restock',
     });
+    expect(item.warehouseId).toBe(defaultWarehouseId);
     expect(item.quantityOnHand).toBe(15);
     expect(item.quantityAvailable).toBe(13);
     expect(eventBus.publish).toHaveBeenCalledWith(
@@ -231,12 +327,28 @@ describe('InventoryService (unit)', () => {
         aggregateType: 'inventory_item',
         data: expect.objectContaining({
           variantId: 'var-1',
+          warehouseId: defaultWarehouseId,
           delta: 5,
           quantityOnHand: 15,
           reason: 'restock',
         }),
       }),
     );
+  });
+
+  it('adjust at secondary warehouse does not change default warehouse stock', async () => {
+    await service.adjust({
+      variantId: 'var-1',
+      warehouseId: secondaryWarehouseId,
+      delta: 3,
+    });
+    const defaultItem = await service.findByVariantId('var-1');
+    const nycItem = await service.findByVariantId(
+      'var-1',
+      secondaryWarehouseId,
+    );
+    expect(defaultItem.quantityOnHand).toBe(10);
+    expect(nycItem.quantityOnHand).toBe(8);
   });
 
   it('adjust rejects when result would go negative', async () => {
@@ -262,12 +374,29 @@ describe('InventoryService (unit)', () => {
         aggregateType: 'inventory_reservation',
         data: expect.objectContaining({
           quantity: 3,
+          warehouseId: defaultWarehouseId,
           reference: 'cart-line-1',
           quantityReserved: 5,
           quantityAvailable: 5,
         }),
       }),
     );
+  });
+
+  it('reserve at secondary warehouse leaves default stock untouched', async () => {
+    await service.reserve({
+      variantId: 'var-1',
+      warehouseId: secondaryWarehouseId,
+      quantity: 2,
+    });
+    const defaultItem = await service.findByVariantId('var-1');
+    const nycItem = await service.findByVariantId(
+      'var-1',
+      secondaryWarehouseId,
+    );
+    expect(defaultItem.quantityReserved).toBe(2);
+    expect(nycItem.quantityReserved).toBe(2);
+    expect(nycItem.quantityAvailable).toBe(3);
   });
 
   it('reserve rejects when insufficient available stock', async () => {
@@ -293,6 +422,7 @@ describe('InventoryService (unit)', () => {
         aggregateType: 'inventory_reservation',
         data: expect.objectContaining({
           reservationId: reservation.id,
+          warehouseId: defaultWarehouseId,
           quantity: 4,
           quantityReserved: 2,
           quantityAvailable: 8,
@@ -323,11 +453,23 @@ describe('InventoryService (unit)', () => {
       expect.objectContaining({
         eventName: CoreEventName.InventoryUpdated,
         data: expect.objectContaining({
+          warehouseId: defaultWarehouseId,
           delta: -3,
           quantityOnHand: 7,
           reason: `reservation_committed:${reservation.id}`,
         }),
       }),
     );
+  });
+
+  it('create at explicit warehouse keeps composite uniqueness per location', async () => {
+    const created = await service.create({
+      variantId: 'var-2',
+      warehouseId: secondaryWarehouseId,
+      quantityOnHand: 4,
+    });
+    expect(created.warehouseId).toBe(secondaryWarehouseId);
+    expect(created.variantId).toBe('var-2');
+    expect(created.quantityOnHand).toBe(4);
   });
 });

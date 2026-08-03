@@ -23,11 +23,14 @@ export class InventoryResolver {
 
   @Query(() => [InventoryItemType], {
     name: 'inventoryItems',
-    description: 'List inventory items',
+    description: 'List inventory items (optionally filtered by warehouse)',
   })
   @RequirePermission('inventory:read')
-  inventoryItems(): Promise<InventoryItemType[]> {
-    return this.inventoryService.findAll();
+  inventoryItems(
+    @Args('warehouseId', { type: () => ID, nullable: true })
+    warehouseId?: string,
+  ): Promise<InventoryItemType[]> {
+    return this.inventoryService.findAll(warehouseId);
   }
 
   @Query(() => InventoryItemType, {
@@ -43,13 +46,16 @@ export class InventoryResolver {
 
   @Query(() => InventoryItemType, {
     name: 'inventoryItemByVariant',
-    description: 'Get inventory item by product variant id',
+    description:
+      'Get inventory item by product variant id (default warehouse when warehouseId omitted)',
   })
   @RequirePermission('inventory:read')
   inventoryItemByVariant(
     @Args('variantId', { type: () => ID }) variantId: string,
+    @Args('warehouseId', { type: () => ID, nullable: true })
+    warehouseId?: string,
   ): Promise<InventoryItemType> {
-    return this.inventoryService.findByVariantId(variantId);
+    return this.inventoryService.findByVariantId(variantId, warehouseId);
   }
 
   @Query(() => [InventoryAdjustmentType], {
@@ -65,7 +71,8 @@ export class InventoryResolver {
 
   @Mutation(() => InventoryItemType, {
     name: 'createInventoryItem',
-    description: 'Create an inventory item for a product variant',
+    description:
+      'Create an inventory item for a product variant at a warehouse',
   })
   @RequirePermission('inventory:create')
   createInventoryItem(
@@ -77,7 +84,7 @@ export class InventoryResolver {
 
   @Mutation(() => InventoryItemType, {
     name: 'adjustInventory',
-    description: 'Apply a signed on-hand stock adjustment',
+    description: 'Apply a signed on-hand stock adjustment at a warehouse',
   })
   @RequirePermission('inventory:adjust')
   adjustInventory(
@@ -89,7 +96,8 @@ export class InventoryResolver {
 
   @Mutation(() => InventoryReservationType, {
     name: 'reserveInventory',
-    description: 'Reserve available stock for a variant (transactional)',
+    description:
+      'Reserve available stock for a variant at a warehouse (transactional)',
   })
   @RequirePermission('inventory:reserve')
   reserveInventory(
