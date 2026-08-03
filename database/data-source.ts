@@ -11,6 +11,7 @@ import { localizationEntities } from '../src/modules/localization/entities';
 import { orderEntities } from '../src/modules/order/entities';
 import { paymentEntities } from '../src/modules/payment-engine/entities';
 import { pluginLoaderEntities } from '../src/modules/plugin-loader/entities';
+import { promotionsEntities } from '../src/modules/promotions-engine/entities';
 import { taxEntities } from '../src/modules/tax-engine/entities';
 import { AuthSpikeInit1722681855000 } from './migrations/1722681855000-AuthSpikeInit';
 import { AuditLogsInit1722682800000 } from './migrations/1722682800000-AuditLogsInit';
@@ -29,6 +30,7 @@ import { ShippingSelectionOnCheckout1722696100000 } from './migrations/172269610
 import { TaxClassesRulesInit1722697200000 } from './migrations/1722697200000-TaxClassesRulesInit';
 import { CartTaxContextOnCheckout1722698300000 } from './migrations/1722698300000-CartTaxContextOnCheckout';
 import { CartPromotionsOnCheckout1722699400000 } from './migrations/1722699400000-CartPromotionsOnCheckout';
+import { CouponsDiscountRulesInit1722700500000 } from './migrations/1722700500000-CouponsDiscountRulesInit';
 
 loadDotenv();
 
@@ -50,6 +52,7 @@ export default new DataSource({
     ...orderEntities,
     ...paymentEntities,
     ...pluginLoaderEntities,
+    ...promotionsEntities,
     ...taxEntities,
   ],
   migrations: [
@@ -70,6 +73,7 @@ export default new DataSource({
     TaxClassesRulesInit1722697200000,
     CartTaxContextOnCheckout1722698300000,
     CartPromotionsOnCheckout1722699400000,
+    CouponsDiscountRulesInit1722700500000,
   ],
   synchronize: false,
 });

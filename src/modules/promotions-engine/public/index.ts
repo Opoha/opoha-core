@@ -4,6 +4,11 @@
 export { PromotionsEngineModule } from '../promotions-engine.module';
 export { PromotionsEngine } from '../promotions-engine.service';
 export { PromotionRuleRegistry } from '../promotion-rule.registry';
+export { CouponEntity } from '../entities/coupon.entity';
+export { DiscountRuleEntity } from '../entities/discount-rule.entity';
+export { promotionsEntities } from '../entities';
+export type { CouponKind } from '../entities/coupon.entity';
+export type { DiscountRuleKind } from '../entities/discount-rule.entity';
 export type {
   PromotionApplyLineItem,
   PromotionApplyInput,
