@@ -55,7 +55,11 @@ function walkTsFiles(dir: string, out: string[] = []): string[] {
   return out;
 }
 
-describe('D-10 core → plugin boundary', () => {
+/**
+ * H-02 / D-10 — core dependency boundary audit.
+ * Core must never depend on `@opoha/plugin-*` or provider SDKs (ADR-0003).
+ */
+describe('H-02 / D-10 core → plugin boundary', () => {
   it('package.json has no @opoha/plugin-* or provider SDK dependencies', () => {
     const pkg = JSON.parse(
       readFileSync(join(ROOT, 'package.json'), 'utf8'),

@@ -199,12 +199,29 @@ If either is missing, seed skips the user and only applies roles/permissions. Pa
 
 CLI stubs (from a project checkout): `opoha migrate` / `opoha seed` → see `@opoha/cli`.
 
+## Walking skeleton (H-01)
+
+Automated MVP spine check (no catalog/cart/checkout):
+
+```bash
+pnpm walking-skeleton
+# or: SKIP_DOCKER=1 pnpm walking-skeleton   # when Postgres/Redis already up
+```
+
+Steps: `docker compose up` → migrate → seed → boot → `/health/*` → GraphQL `login` + `me` → (local multi-repo) `opoha plugin install` + `opoha doctor`.
+
+CI: `.github/workflows/walking-skeleton.yml` runs the same script against service containers, plus `pnpm test:boundary` (H-02).
+
+Full multi-repo path (create-opoha + admin UI) is described in the workspace design doc; this package owns the runtime gate.
+
 ## Scripts
 
 ```bash
 pnpm build
 pnpm start
 pnpm test
+pnpm test:boundary      # H-02 core → plugin / provider SDK audit
+pnpm walking-skeleton   # H-01 MVP spine
 pnpm lint
 pnpm db:migrate
 pnpm db:seed

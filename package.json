@@ -16,6 +16,8 @@
     "start:prod": "node dist/main.js",
     "test": "vitest run",
     "test:watch": "vitest",
+    "test:boundary": "vitest run src/boundary.test.ts",
+    "walking-skeleton": "node ./scripts/walking-skeleton.mjs",
     "lint": "eslint .",
     "format": "prettier --write .",
     "docker:up": "docker compose up -d",
