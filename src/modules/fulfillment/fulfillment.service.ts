@@ -20,6 +20,11 @@ import {
   OrderLineEntity,
   OrdersService,
 } from '../order/public';
+import {
+  ShippingMethodRegistry,
+  type ShippingAddress,
+  type ShippingLabelResult,
+} from '../shipping-engine/public';
 import { WarehouseEntity } from '../warehouses/public';
 import { FulfillmentLineEntity } from './entities/fulfillment-line.entity';
 import { FulfillmentPackageEntity } from './entities/fulfillment-package.entity';
@@ -35,6 +40,12 @@ import type {
   PackFulfillmentInput,
   ShipFulfillmentInput,
 } from './fulfillment.types';
+
+type LabelOrchestrationResult = {
+  trackingNumber: string | null;
+  labelUrl: string | null;
+  carrierCode: string | null;
+};
 
 function isForeignKeyViolation(error: unknown): boolean {
   return (
@@ -101,6 +112,7 @@ export class FulfillmentService {
     @InjectRepository(OrderLineEntity)
     private readonly orderLines: Repository<OrderLineEntity>,
     private readonly ordersService: OrdersService,
+    private readonly shippingMethods: ShippingMethodRegistry,
     private readonly dataSource: DataSource,
     private readonly eventBus: EventBusService,
   ) {}
@@ -306,6 +318,8 @@ export class FulfillmentService {
 
   /**
    * Ship a packed fulfillment from its warehouse.
+   * When the order's ShippingMethodProvider implements createLabel and
+   * skipLabel is not set, orchestrates a label and persists tracking/labelUrl.
    * Validates inventory rows exist at the warehouse (allocation location).
    * Publishes ShipmentCreated; marks the order fulfilled when all qty is shipped.
    * Stock on-hand was already deducted at placeOrder (reservation commit).
@@ -314,6 +328,21 @@ export class FulfillmentService {
     id: string,
     input: ShipFulfillmentInput = {},
   ): Promise<FulfillmentType> {
+    const preview = await this.fulfillments.findOne({
+      where: { id },
+      relations: { lines: true, packages: true },
+    });
+    if (!preview) {
+      throw new NotFoundException(`Fulfillment ${id} not found`);
+    }
+    if (preview.status !== 'packed') {
+      throw new BadRequestException(
+        `Fulfillment ${id} is ${preview.status}, expected packed`,
+      );
+    }
+
+    const label = await this.orchestrateLabel(preview, input);
+
     const snapshot = await this.dataSource.transaction(async (manager) => {
       const fulfillment = await this.lockFulfillment(manager, id);
       if (fulfillment.status !== 'packed') {
@@ -355,9 +384,18 @@ export class FulfillmentService {
         where: { fulfillmentId: id },
         order: { createdAt: 'ASC' },
       });
+
+      await this.persistLabelOnPackages(manager, id, packages, label);
+
+      const refreshedPackages = await manager.find(FulfillmentPackageEntity, {
+        where: { fulfillmentId: id },
+        order: { createdAt: 'ASC' },
+      });
+
       const tracking =
         input.trackingNumber?.trim() ||
-        packages.find((p) => p.trackingNumber)?.trackingNumber ||
+        label.trackingNumber ||
+        refreshedPackages.find((p) => p.trackingNumber)?.trackingNumber ||
         null;
 
       fulfillment.status = 'shipped';
@@ -415,6 +453,156 @@ export class FulfillmentService {
       await manager.save(fulfillment);
     });
     return this.findById(id);
+  }
+
+  /**
+   * Call ShippingMethodProvider.createLabel when present on the order's method.
+   * Runs outside the ship transaction so carrier I/O does not hold row locks.
+   */
+  private async orchestrateLabel(
+    fulfillment: FulfillmentEntity,
+    input: ShipFulfillmentInput,
+  ): Promise<LabelOrchestrationResult> {
+    if (input.skipLabel) {
+      return { trackingNumber: null, labelUrl: null, carrierCode: null };
+    }
+
+    const order = await this.orders.findOne({
+      where: { id: fulfillment.orderId },
+    });
+    const methodCode = order?.shippingMethodCode?.trim();
+    if (!methodCode) {
+      return { trackingNumber: null, labelUrl: null, carrierCode: null };
+    }
+
+    const method = this.shippingMethods.get(methodCode);
+    if (!method?.createLabel) {
+      return { trackingNumber: null, labelUrl: null, carrierCode: null };
+    }
+
+    const warehouse = await this.warehouses.findOne({
+      where: { id: fulfillment.warehouseId },
+    });
+
+    const destination: ShippingAddress = input.destination
+      ? {
+          countryCode: input.destination.countryCode.trim().toUpperCase(),
+          postalCode: input.destination.postalCode,
+          province: input.destination.province,
+          city: input.destination.city,
+          line1: input.destination.line1,
+          line2: input.destination.line2,
+        }
+      : {
+          countryCode: (warehouse?.countryCode ?? 'US').toUpperCase(),
+          postalCode: warehouse?.postalCode ?? undefined,
+          province: warehouse?.province ?? undefined,
+          city: warehouse?.city ?? undefined,
+          line1: warehouse?.addressLine1 ?? undefined,
+          line2: warehouse?.addressLine2 ?? undefined,
+        };
+
+    if (!destination.countryCode) {
+      throw new BadRequestException(
+        'destination.countryCode is required to create a shipping label',
+      );
+    }
+
+    const orderLines = await this.orderLines.find({
+      where: { orderId: fulfillment.orderId },
+    });
+    const orderLineById = new Map(orderLines.map((l) => [l.id, l]));
+    const fulfillmentLines = fulfillment.lines ?? [];
+    const items = fulfillmentLines.map((line) => {
+      const orderLine = orderLineById.get(line.orderLineId);
+      return {
+        variantId: line.variantId,
+        quantity: line.quantity,
+        unitAmountMinor: orderLine?.unitPriceMinor ?? '0',
+      };
+    });
+
+    const origin: ShippingAddress | undefined = warehouse
+      ? {
+          countryCode: (warehouse.countryCode ?? 'US').toUpperCase(),
+          postalCode: warehouse.postalCode ?? undefined,
+          province: warehouse.province ?? undefined,
+          city: warehouse.city ?? undefined,
+          line1: warehouse.addressLine1 ?? undefined,
+          line2: warehouse.addressLine2 ?? undefined,
+        }
+      : undefined;
+
+    let result: ShippingLabelResult;
+    try {
+      result = await method.createLabel({
+        orderId: fulfillment.orderId,
+        shipmentId: fulfillment.id,
+        rateCode: order?.shippingRateCode?.trim() || method.code,
+        destination,
+        origin,
+        items,
+        amount: {
+          amountMinor: order?.shippingMinor ?? '0',
+          currencyCode: order?.currencyCode ?? 'USD',
+        },
+      });
+    } catch (err) {
+      throw new BadRequestException(
+        err instanceof Error
+          ? `createLabel failed: ${err.message}`
+          : `createLabel failed for shipping method "${methodCode}"`,
+      );
+    }
+
+    if (result.status === 'failed') {
+      throw new BadRequestException(
+        result.errorMessage?.trim() ||
+          `createLabel failed for shipping method "${methodCode}"`,
+      );
+    }
+
+    return {
+      trackingNumber: result.trackingNumber?.trim() || null,
+      labelUrl: result.labelUrl?.trim() || null,
+      carrierCode: method.code,
+    };
+  }
+
+  private async persistLabelOnPackages(
+    manager: EntityManager,
+    fulfillmentId: string,
+    packages: FulfillmentPackageEntity[],
+    label: LabelOrchestrationResult,
+  ): Promise<void> {
+    if (!label.trackingNumber && !label.labelUrl && !label.carrierCode) {
+      return;
+    }
+
+    if (!packages.length) {
+      await manager.save(
+        manager.create(FulfillmentPackageEntity, {
+          fulfillmentId,
+          trackingNumber: label.trackingNumber,
+          carrierCode: label.carrierCode,
+          labelUrl: label.labelUrl,
+          weightGrams: null,
+        }),
+      );
+      return;
+    }
+
+    const target = packages[0]!;
+    if (label.trackingNumber && !target.trackingNumber) {
+      target.trackingNumber = label.trackingNumber;
+    }
+    if (label.labelUrl && !target.labelUrl) {
+      target.labelUrl = label.labelUrl;
+    }
+    if (label.carrierCode && !target.carrierCode) {
+      target.carrierCode = label.carrierCode;
+    }
+    await manager.save(target);
   }
 
   private async maybeMarkOrderFulfilled(orderId: string): Promise<void> {

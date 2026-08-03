@@ -68,6 +68,18 @@ export const DEFAULT_PERMISSIONS = [
     description: 'Receive purchase orders into warehouse stock',
   },
   { key: 'purchase-order:cancel', description: 'Cancel draft purchase orders' },
+  { key: 'fulfillment:read', description: 'Read fulfillments and shipments' },
+  { key: 'fulfillment:create', description: 'Create fulfillments' },
+  { key: 'fulfillment:pick', description: 'Mark fulfillments as picked' },
+  { key: 'fulfillment:pack', description: 'Mark fulfillments as packed' },
+  {
+    key: 'fulfillment:ship',
+    description: 'Ship fulfillments (including label orchestration)',
+  },
+  {
+    key: 'fulfillment:cancel',
+    description: 'Cancel pending or picked fulfillments',
+  },
   { key: 'customer:create', description: 'Create customer accounts (staff)' },
   { key: 'customer:read', description: 'Read customer accounts' },
   { key: 'customer:update', description: 'Update customer profiles' },

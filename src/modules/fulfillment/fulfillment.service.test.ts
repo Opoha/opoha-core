@@ -59,6 +59,10 @@ type OrderRow = {
   id: string;
   status: string;
   customerId: string | null;
+  currencyCode: string;
+  shippingMinor: string;
+  shippingMethodCode: string | null;
+  shippingRateCode: string | null;
 };
 
 type OrderLineRow = {
@@ -66,11 +70,18 @@ type OrderLineRow = {
   orderId: string;
   variantId: string;
   quantity: number;
+  unitPriceMinor: string;
 };
 
 type WarehouseRow = {
   id: string;
   isActive: boolean;
+  countryCode: string | null;
+  postalCode: string | null;
+  province: string | null;
+  city: string | null;
+  addressLine1: string | null;
+  addressLine2: string | null;
 };
 
 describe('FulfillmentService (unit)', () => {
@@ -99,8 +110,10 @@ describe('FulfillmentService (unit)', () => {
   let ordersRepo: { findOne: ReturnType<typeof vi.fn> };
   let orderLinesRepo: { find: ReturnType<typeof vi.fn> };
   let ordersService: { updateStatus: ReturnType<typeof vi.fn> };
+  let shippingMethods: { get: ReturnType<typeof vi.fn> };
   let dataSource: { transaction: ReturnType<typeof vi.fn> };
   let eventBus: { publish: ReturnType<typeof vi.fn> };
+  let createLabel: ReturnType<typeof vi.fn>;
 
   beforeEach(() => {
     fulfillmentStore = [];
@@ -122,12 +135,45 @@ describe('FulfillmentService (unit)', () => {
         quantityReserved: 0,
       },
     ];
-    orderStore = [{ id: orderId, status: 'confirmed', customerId }];
-    orderLineStore = [
-      { id: orderLineA, orderId, variantId: variantA, quantity: 2 },
-      { id: orderLineB, orderId, variantId: variantB, quantity: 1 },
+    orderStore = [
+      {
+        id: orderId,
+        status: 'confirmed',
+        customerId,
+        currencyCode: 'USD',
+        shippingMinor: '500',
+        shippingMethodCode: null,
+        shippingRateCode: null,
+      },
     ];
-    warehouseStore = [{ id: warehouseId, isActive: true }];
+    orderLineStore = [
+      {
+        id: orderLineA,
+        orderId,
+        variantId: variantA,
+        quantity: 2,
+        unitPriceMinor: '1000',
+      },
+      {
+        id: orderLineB,
+        orderId,
+        variantId: variantB,
+        quantity: 1,
+        unitPriceMinor: '2000',
+      },
+    ];
+    warehouseStore = [
+      {
+        id: warehouseId,
+        isActive: true,
+        countryCode: 'US',
+        postalCode: '10001',
+        province: 'NY',
+        city: 'New York',
+        addressLine1: '1 Warehouse Way',
+        addressLine2: null,
+      },
+    ];
 
     const hydrate = (f: FulfillmentRow) => ({
       ...f,
@@ -250,6 +296,47 @@ describe('FulfillmentService (unit)', () => {
               );
             }
             const row = entityOrEntities as Record<string, unknown>;
+            if (
+              'fulfillmentId' in row &&
+              !('orderLineId' in row) &&
+              !('orderId' in row)
+            ) {
+              const existingIdx = packageStore.findIndex(
+                (p) => p.id === (row.id as string),
+              );
+              if (existingIdx >= 0) {
+                const updated: PackageRow = {
+                  ...packageStore[existingIdx]!,
+                  trackingNumber:
+                    (row.trackingNumber as string | null) ??
+                    packageStore[existingIdx]!.trackingNumber,
+                  carrierCode:
+                    (row.carrierCode as string | null) ??
+                    packageStore[existingIdx]!.carrierCode,
+                  labelUrl:
+                    (row.labelUrl as string | null) ??
+                    packageStore[existingIdx]!.labelUrl,
+                  weightGrams:
+                    (row.weightGrams as number | null) ??
+                    packageStore[existingIdx]!.weightGrams,
+                  updatedAt: now,
+                };
+                packageStore[existingIdx] = updated;
+                return updated;
+              }
+              const pkg: PackageRow = {
+                id: (row.id as string) ?? `pkg-${packageStore.length + 1}`,
+                fulfillmentId: row.fulfillmentId as string,
+                trackingNumber: (row.trackingNumber as string | null) ?? null,
+                carrierCode: (row.carrierCode as string | null) ?? null,
+                labelUrl: (row.labelUrl as string | null) ?? null,
+                weightGrams: (row.weightGrams as number | null) ?? null,
+                createdAt: now,
+                updatedAt: now,
+              };
+              packageStore.push(pkg);
+              return pkg;
+            }
             if ('orderId' in row && 'warehouseId' in row && !('orderLineId' in row)) {
               const f: FulfillmentRow = {
                 id: (row.id as string) ?? `ff-${fulfillmentStore.length + 1}`,
@@ -362,6 +449,27 @@ describe('FulfillmentService (unit)', () => {
     };
 
     eventBus = { publish: vi.fn(async () => undefined) };
+    createLabel = vi.fn();
+    shippingMethods = {
+      get: vi.fn((code: string) => {
+        if (code === 'dhl') {
+          return {
+            code: 'dhl',
+            displayName: 'DHL Express',
+            quoteRates: async () => [],
+            createLabel,
+          };
+        }
+        if (code === 'flat-rate') {
+          return {
+            code: 'flat-rate',
+            displayName: 'Flat Rate',
+            quoteRates: async () => [],
+          };
+        }
+        return undefined;
+      }),
+    };
 
     service = new FulfillmentService(
       fulfillmentRepo as never,
@@ -369,6 +477,7 @@ describe('FulfillmentService (unit)', () => {
       ordersRepo as never,
       orderLinesRepo as never,
       ordersService as never,
+      shippingMethods as never,
       dataSource as never,
       eventBus as never,
     );
@@ -512,6 +621,82 @@ describe('FulfillmentService (unit)', () => {
   it('findById throws when missing', async () => {
     await expect(service.findById('missing')).rejects.toBeInstanceOf(
       NotFoundException,
+    );
+  });
+
+  it('ship calls createLabel when method supports it and persists tracking', async () => {
+    orderStore[0]!.shippingMethodCode = 'dhl';
+    orderStore[0]!.shippingRateCode = 'EXPRESS';
+    createLabel.mockResolvedValue({
+      status: 'created',
+      trackingNumber: 'JDSTUB111111111111',
+      labelUrl: 'https://example.invalid/dhl/labels/JDSTUB.pdf',
+    });
+
+    const created = await createFullOrderFulfillment();
+    await service.pick(created.id);
+    await service.pack(created.id);
+    const shipped = await service.ship(created.id, {
+      destination: { countryCode: 'TH', city: 'Bangkok' },
+    });
+
+    expect(createLabel).toHaveBeenCalledWith(
+      expect.objectContaining({
+        orderId,
+        shipmentId: created.id,
+        rateCode: 'EXPRESS',
+        destination: expect.objectContaining({ countryCode: 'TH' }),
+        amount: { amountMinor: '500', currencyCode: 'USD' },
+      }),
+    );
+    expect(shipped.trackingNumber).toBe('JDSTUB111111111111');
+    expect(shipped.packages).toHaveLength(1);
+    expect(shipped.packages[0]!.labelUrl).toBe(
+      'https://example.invalid/dhl/labels/JDSTUB.pdf',
+    );
+    expect(shipped.packages[0]!.carrierCode).toBe('dhl');
+  });
+
+  it('ship skips createLabel when method has no label hook', async () => {
+    orderStore[0]!.shippingMethodCode = 'flat-rate';
+    const created = await createFullOrderFulfillment();
+    await service.pick(created.id);
+    await service.pack(created.id, {
+      packages: [{ trackingNumber: 'MANUAL-1' }],
+    });
+    const shipped = await service.ship(created.id);
+    expect(createLabel).not.toHaveBeenCalled();
+    expect(shipped.trackingNumber).toBe('MANUAL-1');
+  });
+
+  it('ship skipLabel bypasses createLabel', async () => {
+    orderStore[0]!.shippingMethodCode = 'dhl';
+    createLabel.mockResolvedValue({
+      status: 'created',
+      trackingNumber: 'SHOULD-NOT-USE',
+    });
+    const created = await createFullOrderFulfillment();
+    await service.pick(created.id);
+    await service.pack(created.id);
+    const shipped = await service.ship(created.id, {
+      skipLabel: true,
+      trackingNumber: 'OVERRIDE',
+    });
+    expect(createLabel).not.toHaveBeenCalled();
+    expect(shipped.trackingNumber).toBe('OVERRIDE');
+  });
+
+  it('ship fails when createLabel returns failed', async () => {
+    orderStore[0]!.shippingMethodCode = 'dhl';
+    createLabel.mockResolvedValue({
+      status: 'failed',
+      errorMessage: 'carrier unavailable',
+    });
+    const created = await createFullOrderFulfillment();
+    await service.pick(created.id);
+    await service.pack(created.id);
+    await expect(service.ship(created.id)).rejects.toBeInstanceOf(
+      BadRequestException,
     );
   });
 });

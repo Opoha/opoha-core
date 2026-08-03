@@ -10,7 +10,8 @@ export {
   fulfillmentEntities,
 } from '../entities';
 export type { FulfillmentStatus } from '../entities';
-export type {
+export { FulfillmentResolver } from '../fulfillment.resolver';
+export {
   CreateFulfillmentInput,
   FulfillmentLineInput,
   FulfillmentLineType,
