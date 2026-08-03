@@ -7,6 +7,7 @@ import { ProductEntity, ProductVariantEntity } from '../catalog/public';
 import { CurrencyModule } from '../currency/public';
 import { CustomerModule } from '../customer/public';
 import { InventoryModule } from '../inventory/public';
+import { DigitalModule } from '../digital/public';
 import { GiftCardsModule } from '../gift-cards/public';
 import { LoyaltyModule } from '../loyalty/public';
 import { PaymentEngineModule } from '../payment-engine/public';
@@ -37,6 +38,7 @@ import { OrdersService } from './orders.service';
     TaxEngineModule,
     PromotionsEngineModule,
     GiftCardsModule,
+    DigitalModule,
     LoyaltyModule,
     StoresModule,
     CurrencyModule,

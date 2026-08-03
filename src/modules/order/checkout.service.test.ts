@@ -129,6 +129,13 @@ describe('CheckoutService (unit)', () => {
       save: vi.fn(async (row: unknown) => row),
     };
 
+    const variantsRepo = {
+      find: vi.fn(async () => [
+        { id: 'var-1', fulfillmentMode: 'physical' },
+        { id: 'var-2', fulfillmentMode: 'physical' },
+      ]),
+    };
+
     tax = {
       calculateOrZero: vi.fn(async (input: { pricingMode: string }) => ({
         currencyCode: 'USD',
@@ -187,6 +194,7 @@ describe('CheckoutService (unit)', () => {
       cartService as unknown as CartService,
       inventory as never,
       linesRepo as never,
+      variantsRepo as never,
       tax as unknown as TaxEngine,
       promotions as never,
       giftCards as never,

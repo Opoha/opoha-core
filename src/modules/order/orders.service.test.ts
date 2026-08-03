@@ -313,7 +313,7 @@ describe('OrdersService place + status (D-04 / D-05 / D-06 / A-04)', () => {
       linesRepo as never,
       {
         find: vi.fn(async () => [
-          { id: variantId, productId: 'prod-1' },
+          { id: variantId, productId: 'prod-1', fulfillmentMode: 'physical' },
         ]),
       } as never,
       {
@@ -326,6 +326,7 @@ describe('OrdersService place + status (D-04 / D-05 / D-06 / A-04)', () => {
       tax as never,
       promotions as never,
       giftCards as never,
+      { issueForOrder: vi.fn(async () => ({ orderId, downloadTokens: [], licenseKeys: [] })) } as never,
       loyalty as never,
       stores as never,
       companies as never,
@@ -466,7 +467,9 @@ describe('OrdersService place + status (D-04 / D-05 / D-06 / A-04)', () => {
       ordersRepo as never,
       linesRepo as never,
       {
-        find: vi.fn(async () => [{ id: variantId, productId: 'prod-1' }]),
+        find: vi.fn(async () => [
+          { id: variantId, productId: 'prod-1', fulfillmentMode: 'physical' },
+        ]),
       } as never,
       products as never,
       carts as unknown as CartService,
@@ -476,6 +479,7 @@ describe('OrdersService place + status (D-04 / D-05 / D-06 / A-04)', () => {
       tax as never,
       promotions as never,
       giftCards as never,
+      { issueForOrder: vi.fn(async () => ({ orderId, downloadTokens: [], licenseKeys: [] })) } as never,
       loyalty as never,
       stores as never,
       companies as never,

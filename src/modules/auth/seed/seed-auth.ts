@@ -248,6 +248,14 @@ export const DEFAULT_PERMISSIONS = [
   { key: 'vendor:read', description: 'Read marketplace vendor accounts' },
   { key: 'vendor:update', description: 'Update marketplace vendors and product assignment' },
   { key: 'vendor:delete', description: 'Delete marketplace vendor accounts' },
+  {
+    key: 'digital:read',
+    description: 'Read digital download tokens and license keys',
+  },
+  {
+    key: 'digital:issue',
+    description: 'Issue digital download tokens and license keys',
+  },
 ] as const;
 
 export type SeedAdminOptions = {

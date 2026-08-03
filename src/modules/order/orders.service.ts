@@ -11,6 +11,10 @@ import {
   ProductEntity,
   ProductVariantEntity,
 } from '../catalog/public';
+import {
+  DigitalFulfillmentService,
+  isNonPhysicalFulfillment,
+} from '../digital/public';
 import { GiftCardService } from '../gift-cards/public';
 import { InventoryService } from '../inventory/public';
 import { CoreEventName } from '../event-bus/event-catalog';
@@ -157,6 +161,7 @@ export class OrdersService {
     private readonly tax: TaxEngine,
     private readonly promotions: PromotionsEngine,
     private readonly giftCards: GiftCardService,
+    private readonly digital: DigitalFulfillmentService,
     private readonly loyalty: LoyaltyService,
     private readonly stores: StoreService,
     private readonly companies: CompanyService,
@@ -222,7 +227,16 @@ export class OrdersService {
       contextStoreId,
     });
 
+    const fulfillmentByVariant = await this.resolveFulfillmentModesByVariantIds(
+      lines.map((line) => line.variantId),
+    );
+
     for (const line of lines) {
+      const mode = fulfillmentByVariant.get(line.variantId);
+      // Digital / service SKUs skip inventory reservation (D-02).
+      if (isNonPhysicalFulfillment(mode)) {
+        continue;
+      }
       if (!line.reservationId) {
         throw new BadRequestException(
           `Cart line ${line.id} has no inventory reservation; run prepareCheckout first`,
@@ -350,7 +364,13 @@ export class OrdersService {
       );
 
       for (const line of lines) {
-        await this.inventory.commit(line.reservationId!);
+        const mode = fulfillmentByVariant.get(line.variantId);
+        if (isNonPhysicalFulfillment(mode)) {
+          continue;
+        }
+        if (line.reservationId) {
+          await this.inventory.commit(line.reservationId);
+        }
       }
       await this.carts.setStatus(cart.id, 'converted');
 
@@ -525,7 +545,13 @@ export class OrdersService {
     }
 
     for (const line of lines) {
-      await this.inventory.commit(line.reservationId!);
+      const mode = fulfillmentByVariant.get(line.variantId);
+      if (isNonPhysicalFulfillment(mode)) {
+        continue;
+      }
+      if (line.reservationId) {
+        await this.inventory.commit(line.reservationId);
+      }
     }
 
     await this.carts.setStatus(cart.id, 'converted');
@@ -598,6 +624,18 @@ export class OrdersService {
       storeId: cart.storeId,
       orderSource,
       lines: savedLines,
+    });
+
+    // Phase 7 D-02 — issue download tokens / license keys for digital SKUs.
+    // Digital carts do not require shipping selection.
+    await this.digital.issueForOrder({
+      orderId: order.id,
+      customerId: cart.customerId,
+      lines: savedLines.map((line) => ({
+        id: line.id,
+        variantId: line.variantId,
+        quantity: line.quantity,
+      })),
     });
 
     return confirmed;
@@ -950,6 +988,30 @@ export class OrdersService {
       aggregateId: data.orderId,
       data,
     });
+  }
+
+  /** Map variant ids → fulfillment modes from catalog (D-02). */
+  private async resolveFulfillmentModesByVariantIds(
+    variantIds: string[],
+  ): Promise<Map<string, string>> {
+    const unique = [...new Set(variantIds.filter(Boolean))];
+    const result = new Map<string, string>();
+    if (unique.length === 0) {
+      return result;
+    }
+
+    const variants = await this.variants.find({
+      where: { id: In(unique) },
+    });
+    for (const variant of variants) {
+      result.set(variant.id, variant.fulfillmentMode ?? 'physical');
+    }
+    for (const id of unique) {
+      if (!result.has(id)) {
+        result.set(id, 'physical');
+      }
+    }
+    return result;
   }
 
   /** Map variant ids → marketplace vendor ids from catalog products (C-02). */

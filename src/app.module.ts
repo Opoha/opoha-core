@@ -14,6 +14,7 @@ import { ConfigModule } from './modules/config/config.module';
 import { ConfigurationSettingsModule } from './modules/config/public';
 import { CurrencyModule } from './modules/currency/public';
 import { CustomerModule } from './modules/customer/public';
+import { DigitalModule } from './modules/digital/public';
 import { EventBusModule } from './modules/event-bus/event-bus.module';
 import { FilesModule } from './modules/files/public';
 import { ShellResolver } from './modules/graphql/shell.resolver';
@@ -62,6 +63,7 @@ type GqlHttpRequest = {
     InventoryModule,
     SupplyModule,
     VendorsModule,
+    DigitalModule,
     FulfillmentModule,
     GiftCardsModule,
     LoyaltyModule,

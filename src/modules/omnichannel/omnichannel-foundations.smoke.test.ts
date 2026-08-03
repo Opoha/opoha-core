@@ -277,6 +277,13 @@ describe('Omnichannel foundations smoke (A-04)', () => {
           redeem: noop.redeem,
         } as never,
         {
+          issueForOrder: vi.fn(async () => ({
+            orderId,
+            downloadTokens: [],
+            licenseKeys: [],
+          })),
+        } as never,
+        {
           quoteRedeem: noop.quoteRedeem,
           redeem: noop.redeem,
         } as never,

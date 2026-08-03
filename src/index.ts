@@ -184,6 +184,29 @@ export type {
   GiftCardTransactionType,
 } from './modules/gift-cards/public';
 export {
+  DigitalModule,
+  DigitalFulfillmentService,
+  DigitalResolver,
+  DigitalDownloadTokenEntity,
+  DigitalLicenseKeyEntity,
+  digitalEntities,
+  isNonPhysicalFulfillment,
+  DIGITAL_DOWNLOAD_TOKEN_STATUSES,
+  DIGITAL_LICENSE_KEY_STATUSES,
+  isDigitalDownloadTokenStatus,
+  isDigitalLicenseKeyStatus,
+  generateDownloadToken,
+  generateLicenseKey,
+  DigitalDownloadTokenType,
+  DigitalLicenseKeyType,
+  DigitalFulfillmentResultType,
+} from './modules/digital/public';
+export type {
+  DigitalDownloadTokenStatus,
+  DigitalLicenseKeyStatus,
+  IssueDigitalLineInput,
+} from './modules/digital/public';
+export {
   LoyaltyModule,
   LoyaltyService,
   LoyaltyResolver,

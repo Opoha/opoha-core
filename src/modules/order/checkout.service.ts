@@ -1,11 +1,10 @@
-import {
-  BadRequestException,
-  Injectable,
-} from '@nestjs/common';
+import { Injectable, BadRequestException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { Repository } from 'typeorm';
+import { In, Repository } from 'typeorm';
 
 import { CurrencyConversionService } from '../currency/public';
+import { ProductVariantEntity } from '../catalog/public';
+import { isNonPhysicalFulfillment } from '../digital/public';
 import { CoreEventName } from '../event-bus/event-catalog';
 import { EventBusService } from '../event-bus/event-bus.service';
 import { InventoryService } from '../inventory/public';
@@ -42,6 +41,8 @@ import {
  * Phase 5 B-02: validates cart storeId against request store context.
  * Phase 5 D-03: converts settlement totals to display currency via rates.
  * Phase 5 E-02: reservations prefer warehouses linked to the cart store.
+ * Phase 7 D-02: digital/service SKUs skip inventory reservation and do not
+ * require shipping selection.
  */
 @Injectable()
 export class CheckoutService {
@@ -50,6 +51,8 @@ export class CheckoutService {
     private readonly inventory: InventoryService,
     @InjectRepository(CartLineEntity)
     private readonly lines: Repository<CartLineEntity>,
+    @InjectRepository(ProductVariantEntity)
+    private readonly variants: Repository<ProductVariantEntity>,
     private readonly tax: TaxEngine,
     private readonly promotions: PromotionsEngine,
     private readonly giftCards: GiftCardService,
@@ -107,11 +110,20 @@ export class CheckoutService {
       }
     }
 
+    const modeByVariant = await this.resolveFulfillmentModes(
+      pricedLines.map((line) => line.variantId),
+    );
+
     const reservationIds: string[] = [];
     const attachments: Array<{ lineId: string; reservationId: string }> = [];
 
     try {
       for (const line of pricedLines) {
+        const mode = modeByVariant.get(line.variantId);
+        // Digital / service: no stock reservation, no shipping requirement (D-02).
+        if (isNonPhysicalFulfillment(mode)) {
+          continue;
+        }
         const reservation = await this.inventory.reserveForStore({
           variantId: line.variantId,
           storeId: cart.storeId,
@@ -136,7 +148,9 @@ export class CheckoutService {
       throw error;
     }
 
-    await this.carts.attachReservations(attachments);
+    if (attachments.length > 0) {
+      await this.carts.attachReservations(attachments);
+    }
 
     const promoInput = buildPromotionApplyInput(cart, pricedLines);
     const promoResult = await this.promotions.applyOrZero(promoInput);
@@ -230,5 +244,27 @@ export class CheckoutService {
       displayTotals,
       reservationIds,
     };
+  }
+
+  private async resolveFulfillmentModes(
+    variantIds: string[],
+  ): Promise<Map<string, string>> {
+    const unique = [...new Set(variantIds.filter(Boolean))];
+    const result = new Map<string, string>();
+    if (unique.length === 0) {
+      return result;
+    }
+    const variants = await this.variants.find({
+      where: { id: In(unique) },
+    });
+    for (const variant of variants) {
+      result.set(variant.id, variant.fulfillmentMode ?? 'physical');
+    }
+    for (const id of unique) {
+      if (!result.has(id)) {
+        result.set(id, 'physical');
+      }
+    }
+    return result;
   }
 }
