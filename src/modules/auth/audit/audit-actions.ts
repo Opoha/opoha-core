@@ -14,6 +14,9 @@ export const AuditAction = {
   ROLE_REMOVE: 'role.remove',
   API_KEY_CREATE: 'api-key.create',
   API_KEY_REVOKE: 'api-key.revoke',
+  PLUGIN_ENABLE: 'plugin.enable',
+  PLUGIN_DISABLE: 'plugin.disable',
+  PLUGIN_CONFIGURE: 'plugin.configure',
 } as const;
 
 export type AuditActionValue =
