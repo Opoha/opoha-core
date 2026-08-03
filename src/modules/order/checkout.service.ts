@@ -21,7 +21,7 @@ import type { CheckoutPreviewType } from './order.types';
 /**
  * Checkout prepare — reserve stock for cart lines and compute totals.
  * Shipping from cart selection (B-03); tax via TaxEngine (C-03);
- * promotions via PromotionsEngine (D-01).
+ * promotions via PromotionsEngine TypeORM provider (D-01 / D-03).
  */
 @Injectable()
 export class CheckoutService {

@@ -95,8 +95,10 @@ export class PromotionsEngine {
   }
 
   /**
-   * Checkout helper (D-01): when no provider is registered, discount is zero so
-   * prepareCheckout / placeOrder still succeed until coupon/discount plugins register.
+   * Checkout helper (D-01 / D-03): when no provider is registered, discount is
+   * zero so prepareCheckout / placeOrder still succeed. With the core TypeORM
+   * provider registered on boot, coupon + automatic discounts apply from
+   * Coupon / DiscountRule entities; plugins may register additional providers.
    */
   async applyOrZero(
     input: PromotionApplyInput,
