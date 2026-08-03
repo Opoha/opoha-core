@@ -7,6 +7,7 @@ import { customerEntities } from '../../modules/customer/entities';
 import { filesEntities } from '../../modules/files/entities';
 import { fulfillmentEntities } from '../../modules/fulfillment/entities';
 import { inventoryEntities } from '../../modules/inventory/entities';
+import { returnEntities } from '../../modules/returns/entities';
 import { supplyEntities } from '../../modules/supply/entities';
 import { warehouseEntities } from '../../modules/warehouses/entities';
 import { localizationEntities } from '../../modules/localization/entities';
@@ -35,6 +36,7 @@ import { DatabaseHealthService } from './database-health.service';
           ...filesEntities,
           ...inventoryEntities,
           ...fulfillmentEntities,
+          ...returnEntities,
           ...supplyEntities,
           ...warehouseEntities,
           ...localizationEntities,

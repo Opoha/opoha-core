@@ -128,6 +128,24 @@ export type {
   StorageAdapter,
 } from './modules/files/public';
 export {
+  ReturnsModule,
+  ReturnsService,
+  ReturnEntity,
+  ReturnLineEntity,
+  returnEntities,
+  RETURN_STATUSES,
+  RETURN_RESOLUTIONS,
+  canTransitionReturnStatus,
+} from './modules/returns/public';
+export type {
+  ReturnStatus,
+  ReturnResolution,
+  CreateReturnInput,
+  CompleteRefundInput,
+  ReturnType,
+  ReturnLineType,
+} from './modules/returns/public';
+export {
   NotificationsModule,
   NotificationsService,
   NotificationProviderRegistry,
