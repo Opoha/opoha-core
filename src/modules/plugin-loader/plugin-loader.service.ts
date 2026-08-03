@@ -1,5 +1,6 @@
 import { existsSync } from 'node:fs';
 import { join } from 'node:path';
+import { pathToFileURL } from 'node:url';
 
 import { Injectable, OnModuleInit, Optional } from '@nestjs/common';
 
@@ -30,6 +31,8 @@ export type PluginLoadResult = {
   ordered: DiscoveredPlugin[];
   /** Manifest + entry path checks that passed without executing plugin code. */
   validated: Array<{ id: string; entryPath: string }>;
+  /** Definitions imported from plugin entry modules (D-11). */
+  loaded: Array<{ id: string; entryPath: string }>;
 };
 
 export type PluginRuntimeRecord = {
@@ -104,7 +107,40 @@ export class PluginLoaderService implements OnModuleInit {
       }
       validated.push({ id: plugin.manifest.id, entryPath });
     }
-    return { ordered, validated };
+    return { ordered, validated, loaded: [] };
+  }
+
+  /**
+   * Discover plugins, dynamically import entry modules, and register definitions.
+   * Core never statically imports plugin packages (D-10 / D-11).
+   */
+  async loadDefinitions(): Promise<PluginLoadResult> {
+    const result = this.load();
+    const loaded: PluginLoadResult['loaded'] = [];
+    for (const plugin of result.ordered) {
+      const entryPath = join(plugin.rootPath, plugin.manifest.entry);
+      if (!existsSync(entryPath)) {
+        if (plugin.manifest.required) {
+          throw new Error(
+            `Required plugin "${plugin.manifest.id}" entry not found: ${entryPath}`,
+          );
+        }
+        this.logger?.warn(
+          `Skipping plugin "${plugin.manifest.id}" — entry missing: ${entryPath}`,
+          'PluginLoaderService',
+        );
+        continue;
+      }
+      const definition = await importPluginDefinition(entryPath);
+      if (definition.id !== plugin.manifest.id) {
+        throw new Error(
+          `Plugin id mismatch for ${entryPath}: manifest="${plugin.manifest.id}" definition="${definition.id}"`,
+        );
+      }
+      this.registerDefinition(definition);
+      loaded.push({ id: definition.id, entryPath });
+    }
+    return { ...result, loaded };
   }
 
   getOrderedPlugins(): readonly DiscoveredPlugin[] {
@@ -270,4 +306,29 @@ export class PluginLoaderService implements OnModuleInit {
     }
     return [...byId.values()];
   }
+}
+
+/**
+ * Dynamically import a plugin entry module. Never statically import plugin packages.
+ */
+export async function importPluginDefinition(
+  entryPath: string,
+): Promise<PluginDefinition> {
+  const href = pathToFileURL(entryPath).href;
+  const mod = (await import(href)) as {
+    default?: PluginDefinition;
+    plugin?: PluginDefinition;
+  };
+  const definition = mod.default ?? mod.plugin;
+  if (
+    !definition ||
+    typeof definition !== 'object' ||
+    typeof definition.id !== 'string' ||
+    definition.id.trim().length === 0
+  ) {
+    throw new Error(
+      `Plugin entry must default-export a PluginDefinition with id: ${entryPath}`,
+    );
+  }
+  return definition;
 }

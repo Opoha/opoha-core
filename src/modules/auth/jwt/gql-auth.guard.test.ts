@@ -1,7 +1,6 @@
 import { UnauthorizedException } from '@nestjs/common';
 import { describe, expect, it, vi } from 'vitest';
 
-import { ApiKeysService } from '../api-keys/api-keys.service';
 import { GqlAuthGuard } from './gql-auth.guard';
 
 describe('GqlAuthGuard', () => {
