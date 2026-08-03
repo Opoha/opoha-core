@@ -1,7 +1,6 @@
 import { Module } from '@nestjs/common';
 import { JwtModule } from '@nestjs/jwt';
 import { PassportModule } from '@nestjs/passport';
-import { TypeOrmModule } from '@nestjs/typeorm';
 
 import { ConfigModule } from '../config/config.module';
 import { ConfigService } from '../config/config.service';
@@ -9,7 +8,6 @@ import { ApiKeysResolver } from './api-keys/api-keys.resolver';
 import { ApiKeysService } from './api-keys/api-keys.service';
 import { AuthResolver } from './auth.resolver';
 import { AuthService } from './auth.service';
-import { authEntities } from './entities';
 import { GqlAuthGuard } from './jwt/gql-auth.guard';
 import { JwtStrategy } from './jwt/jwt.strategy';
 import { PermissionsGuard } from './permissions/permissions.guard';
@@ -24,7 +22,6 @@ import { UsersService } from './users/users.service';
 @Module({
   imports: [
     ConfigModule,
-    TypeOrmModule.forFeature([...authEntities]),
     PassportModule.register({ defaultStrategy: 'jwt' }),
     JwtModule.registerAsync({
       imports: [ConfigModule],
@@ -32,9 +29,7 @@ import { UsersService } from './users/users.service';
       useFactory: (config: ConfigService) => ({
         secret: config.get('JWT_SECRET'),
         signOptions: {
-          expiresIn: config.get(
-            'JWT_EXPIRES_IN',
-          ) as `${number}${'s' | 'm' | 'h' | 'd'}`,
+          expiresIn: config.get('JWT_EXPIRES_IN') as `${number}${'s' | 'm' | 'h' | 'd'}`,
         },
       }),
     }),
@@ -61,8 +56,8 @@ import { UsersService } from './users/users.service';
     RolesService,
     PermissionsService,
     PermissionsGuard,
-    ApiKeysService,
     RefreshTokensService,
+    ApiKeysService,
     GqlAuthGuard,
     JwtModule,
     PassportModule,

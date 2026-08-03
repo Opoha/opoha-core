@@ -21,11 +21,17 @@
     "docker:up": "docker compose up -d",
     "docker:down": "docker compose down",
     "typecheck": "tsc -p tsconfig.json --noEmit",
-    "db:migrate": "tsx ./node_modules/typeorm/cli.js migration:run -d database/data-source.ts",
-    "db:seed": "tsx database/seed.ts",
-    "dev:tsx": "tsx watch src/main.ts",
-    "typeorm": "tsx ./node_modules/typeorm/cli.js",
-    "db:migrate:revert": "tsx ./node_modules/typeorm/cli.js migration:revert -d database/data-source.ts"
+    "prisma:generate": "prisma generate --schema=database/prisma",
+    "prisma:migrate": "prisma migrate dev --schema=database/prisma",
+    "prisma:studio": "prisma studio --schema=database/prisma",
+    "prisma:seed": "prisma db seed",
+    "db:migrate": "prisma migrate deploy --schema=database/prisma",
+    "db:seed": "prisma db seed",
+    "dev:tsx": "tsx watch src/main.ts"
+  },
+  "prisma": {
+    "schema": "database/prisma",
+    "seed": "tsx database/prisma/seed.ts"
   },
   "engines": {
     "node": ">=20"
@@ -42,6 +48,7 @@
     "@nestjs/platform-express": "^11.0.11",
     "@opentelemetry/api": "^1.9.1",
     "@opentelemetry/sdk-trace-base": "^2.10.0",
+    "@prisma/client": "^6.19.3",
     "dotenv": "^17.4.2",
     "graphql": "^16.10.0",
     "ioredis": "^6.0.0",
@@ -49,10 +56,7 @@
     "passport-jwt": "^4.0.1",
     "reflect-metadata": "^0.2.2",
     "rxjs": "^7.8.2",
-    "zod": "^4.4.3",
-    "@nestjs/typeorm": "^11.0.0",
-    "typeorm": "0.3.27",
-    "pg": "^8.14.1"
+    "zod": "^4.4.3"
   },
   "devDependencies": {
     "@opoha/eslint-config": "file:../opoha-devkit/packages/eslint-config",
@@ -64,10 +68,10 @@
     "@types/passport-jwt": "^4.0.1",
     "eslint": "^9.22.0",
     "prettier": "^3.5.3",
+    "prisma": "^6.19.3",
     "tsx": "^4.19.3",
     "typescript": "^5.8.2",
-    "vitest": "^3.0.8",
-    "@types/pg": "^8.11.11"
+    "vitest": "^3.0.8"
   },
   "prettier": "@opoha/prettier-config",
   "packageManager": "pnpm@11.7.0"

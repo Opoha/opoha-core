@@ -1,35 +1,32 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
-import { InjectRepository } from '@nestjs/typeorm';
-import { Repository } from 'typeorm';
 
-import { RoleEntity } from '../entities/role.entity';
-import { UserEntity } from '../entities/user.entity';
-import { UserRoleEntity } from '../entities/user-role.entity';
-import type { PermissionType, RoleType } from './role.types';
+import { PrismaService } from '../../../infrastructure/prisma/prisma.service';
+import type { PermissionType, RoleType } from '../roles/role.types';
 
 @Injectable()
 export class RolesService {
-  constructor(
-    @InjectRepository(RoleEntity)
-    private readonly roles: Repository<RoleEntity>,
-    @InjectRepository(UserEntity)
-    private readonly users: Repository<UserEntity>,
-    @InjectRepository(UserRoleEntity)
-    private readonly userRoles: Repository<UserRoleEntity>,
-  ) {}
+  constructor(private readonly prisma: PrismaService) {}
 
   async findAll(): Promise<RoleType[]> {
-    const rows = await this.roles.find({
-      order: { name: 'ASC' },
-      relations: { rolePermissions: { permission: true } },
+    const rows = await this.prisma.role.findMany({
+      orderBy: { name: 'asc' },
+      include: {
+        permissions: {
+          include: { permission: true },
+        },
+      },
     });
     return rows.map((row) => this.toRoleType(row));
   }
 
   async findById(id: string): Promise<RoleType> {
-    const row = await this.roles.findOne({
+    const row = await this.prisma.role.findUnique({
       where: { id },
-      relations: { rolePermissions: { permission: true } },
+      include: {
+        permissions: {
+          include: { permission: true },
+        },
+      },
     });
     if (!row) {
       throw new NotFoundException(`Role ${id} not found`);
@@ -38,30 +35,47 @@ export class RolesService {
   }
 
   async assignRole(userId: string, roleId: string): Promise<RoleType> {
-    const user = await this.users.findOne({ where: { id: userId } });
+    const user = await this.prisma.user.findUnique({ where: { id: userId } });
     if (!user) {
       throw new NotFoundException(`User ${userId} not found`);
     }
     const role = await this.findById(roleId);
-    const existing = await this.userRoles.findOne({ where: { userId, roleId } });
-    if (!existing) {
-      await this.userRoles.save(this.userRoles.create({ userId, roleId }));
-    }
+    await this.prisma.userRole.upsert({
+      where: { userId_roleId: { userId, roleId } },
+      create: { userId, roleId },
+      update: {},
+    });
     return role;
   }
 
   async removeRole(userId: string, roleId: string): Promise<RoleType> {
     const role = await this.findById(roleId);
-    const user = await this.users.findOne({ where: { id: userId } });
+    const user = await this.prisma.user.findUnique({ where: { id: userId } });
     if (!user) {
       throw new NotFoundException(`User ${userId} not found`);
     }
-    await this.userRoles.delete({ userId, roleId });
+    await this.prisma.userRole.deleteMany({
+      where: { userId, roleId },
+    });
     return role;
   }
 
-  private toRoleType(row: RoleEntity): RoleType {
-    const permissions: PermissionType[] = (row.rolePermissions ?? []).map((rp) => ({
+  private toRoleType(row: {
+    id: string;
+    name: string;
+    description: string | null;
+    createdAt: Date;
+    updatedAt: Date;
+    permissions: Array<{
+      permission: {
+        id: string;
+        key: string;
+        description: string | null;
+        createdAt: Date;
+      };
+    }>;
+  }): RoleType {
+    const permissions: PermissionType[] = row.permissions.map((rp) => ({
       id: rp.permission.id,
       key: rp.permission.key,
       description: rp.permission.description,

@@ -3,10 +3,8 @@ import {
   Injectable,
   NotFoundException,
 } from '@nestjs/common';
-import { InjectRepository } from '@nestjs/typeorm';
-import { QueryFailedError, Repository } from 'typeorm';
 
-import { UserEntity } from '../entities/user.entity';
+import { PrismaService } from '../../../infrastructure/prisma/prisma.service';
 import { hashPassword } from '../seed/password';
 import type { CreateUserInput, UpdateUserInput, UserType } from './user.types';
 
@@ -18,8 +16,6 @@ type UserRow = {
   updatedAt: Date;
 };
 
-const PUBLIC_FIELDS = ['id', 'email', 'isActive', 'createdAt', 'updatedAt'] as const;
-
 function toUserType(row: UserRow): UserType {
   return {
     id: row.id,
@@ -30,35 +26,34 @@ function toUserType(row: UserRow): UserType {
   };
 }
 
-function isUniqueViolation(error: unknown): boolean {
-  return (
-    error instanceof QueryFailedError &&
-    typeof error.driverError === 'object' &&
-    error.driverError !== null &&
-    'code' in error.driverError &&
-    (error.driverError as { code: string }).code === '23505'
-  );
-}
-
 @Injectable()
 export class UsersService {
-  constructor(
-    @InjectRepository(UserEntity)
-    private readonly users: Repository<UserEntity>,
-  ) {}
+  constructor(private readonly prisma: PrismaService) {}
 
   async findAll(): Promise<UserType[]> {
-    const rows = await this.users.find({
-      order: { createdAt: 'ASC' },
-      select: [...PUBLIC_FIELDS],
+    const rows = await this.prisma.user.findMany({
+      orderBy: { createdAt: 'asc' },
+      select: {
+        id: true,
+        email: true,
+        isActive: true,
+        createdAt: true,
+        updatedAt: true,
+      },
     });
     return rows.map(toUserType);
   }
 
   async findById(id: string): Promise<UserType> {
-    const row = await this.users.findOne({
+    const row = await this.prisma.user.findUnique({
       where: { id },
-      select: [...PUBLIC_FIELDS],
+      select: {
+        id: true,
+        email: true,
+        isActive: true,
+        createdAt: true,
+        updatedAt: true,
+      },
     });
     if (!row) {
       throw new NotFoundException(`User ${id} not found`);
@@ -69,52 +64,78 @@ export class UsersService {
   async findByEmailWithHash(
     email: string,
   ): Promise<(UserRow & { passwordHash: string }) | null> {
-    return this.users.findOne({
+    return this.prisma.user.findUnique({
       where: { email },
-      select: [...PUBLIC_FIELDS, 'passwordHash'],
+      select: {
+        id: true,
+        email: true,
+        isActive: true,
+        createdAt: true,
+        updatedAt: true,
+        passwordHash: true,
+      },
     });
   }
 
   async create(input: CreateUserInput): Promise<UserType> {
     const email = input.email.trim().toLowerCase();
-    const existing = await this.users.findOne({ where: { email } });
+    const existing = await this.prisma.user.findUnique({ where: { email } });
     if (existing) {
       throw new ConflictException(`User with email ${email} already exists`);
     }
-    try {
-      const row = await this.users.save(
-        this.users.create({
-          email,
-          passwordHash: hashPassword(input.password),
-          isActive: input.isActive ?? true,
-        }),
-      );
-      return toUserType(row);
-    } catch (error: unknown) {
-      if (isUniqueViolation(error)) {
-        throw new ConflictException(`User with email ${email} already exists`);
-      }
-      throw error;
-    }
+    const row = await this.prisma.user.create({
+      data: {
+        email,
+        passwordHash: hashPassword(input.password),
+        isActive: input.isActive ?? true,
+      },
+      select: {
+        id: true,
+        email: true,
+        isActive: true,
+        createdAt: true,
+        updatedAt: true,
+      },
+    });
+    return toUserType(row);
   }
 
   async update(id: string, input: UpdateUserInput): Promise<UserType> {
     await this.findById(id);
-    const patch: Partial<UserEntity> = {};
+    const data: {
+      email?: string;
+      passwordHash?: string;
+      isActive?: boolean;
+    } = {};
     if (input.email !== undefined) {
-      patch.email = input.email.trim().toLowerCase();
+      data.email = input.email.trim().toLowerCase();
     }
     if (input.password !== undefined) {
-      patch.passwordHash = hashPassword(input.password);
+      data.passwordHash = hashPassword(input.password);
     }
     if (input.isActive !== undefined) {
-      patch.isActive = input.isActive;
+      data.isActive = input.isActive;
     }
     try {
-      await this.users.update(id, patch);
-      return this.findById(id);
+      const row = await this.prisma.user.update({
+        where: { id },
+        data,
+        select: {
+          id: true,
+          email: true,
+          isActive: true,
+          createdAt: true,
+          updatedAt: true,
+        },
+      });
+      return toUserType(row);
     } catch (error: unknown) {
-      if (isUniqueViolation(error)) {
+      if (
+        typeof error === 'object' &&
+        error !== null &&
+        'code' in error &&
+        (error as { code: string }).code === 'P2002'
+      ) {
         throw new ConflictException('Email already in use');
       }
       throw error;
@@ -122,8 +143,17 @@ export class UsersService {
   }
 
   async remove(id: string): Promise<UserType> {
-    const row = await this.findById(id);
-    await this.users.delete(id);
-    return row;
+    await this.findById(id);
+    const row = await this.prisma.user.delete({
+      where: { id },
+      select: {
+        id: true,
+        email: true,
+        isActive: true,
+        createdAt: true,
+        updatedAt: true,
+      },
+    });
+    return toUserType(row);
   }
 }

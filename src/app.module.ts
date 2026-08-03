@@ -2,7 +2,7 @@ import { type MiddlewareConsumer, Module, type NestModule } from '@nestjs/common
 import { GraphQLModule } from '@nestjs/graphql';
 import { ApolloDriver, type ApolloDriverConfig } from '@nestjs/apollo';
 
-import { DatabaseModule } from './infrastructure/database/database.module';
+import { PrismaModule } from './infrastructure/prisma/prisma.module';
 import { RedisModule } from './infrastructure/redis/redis.module';
 import { ApiVersionMiddleware } from './modules/api-versioning/api-version.middleware';
 import { ApiVersioningModule } from './modules/api-versioning/api-versioning.module';
@@ -19,7 +19,7 @@ import { OpenTelemetryModule } from './modules/otel/otel.module';
     ConfigModule,
     LoggingModule,
     OpenTelemetryModule,
-    DatabaseModule,
+    PrismaModule,
     RedisModule,
     ApiVersioningModule,
     AuthModule,
