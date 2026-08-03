@@ -25,7 +25,8 @@ pnpm install
 pnpm docker:up          # Postgres 16 + Redis 7 (host :5433 / :6380)
 cp .env.example .env
 pnpm prisma:generate
-pnpm exec prisma migrate deploy --schema=database/prisma
+pnpm db:migrate         # apply migrations (deploy)
+pnpm db:seed            # admin role + permissions (+ optional admin user)
 pnpm dev                # NestJS + GraphQL on :4000
 ```
 
@@ -80,9 +81,27 @@ Multi-file schema under `database/prisma/` (auth fragment owned by auth module).
 
 ```bash
 pnpm prisma:generate
-pnpm prisma:migrate          # migrate dev (new migrations)
-pnpm exec prisma migrate deploy --schema=database/prisma
+pnpm prisma:migrate          # migrate dev (new migrations / local iteration)
+pnpm db:migrate              # migrate deploy (apply existing migrations)
+pnpm db:seed                 # or: pnpm prisma:seed
 ```
+
+### Seed (B-07)
+
+`pnpm db:seed` upserts:
+
+- Role `admin`
+- Baseline permissions (`user:*`, `role:*`, `permission:read`, `api-key:*`, `audit:read`)
+- Role↔permission links
+
+Optional admin **user** (idempotent): set both in `.env` (see `.env.example` comments):
+
+- `SEED_ADMIN_EMAIL`
+- `SEED_ADMIN_PASSWORD`
+
+If either is missing, seed skips the user and only applies roles/permissions. Password hashing uses Node `scrypt` for seed-time only (Phase C may replace with argon2/bcrypt).
+
+CLI stubs (from a project checkout): `opoha migrate` / `opoha seed` → see `@opoha/cli`.
 
 ## Scripts
 
@@ -91,6 +110,8 @@ pnpm build
 pnpm start
 pnpm test
 pnpm lint
+pnpm db:migrate
+pnpm db:seed
 pnpm docker:down
 ```
 

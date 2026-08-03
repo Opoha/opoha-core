@@ -23,10 +23,14 @@
     "typecheck": "tsc -p tsconfig.json --noEmit",
     "prisma:generate": "prisma generate --schema=database/prisma",
     "prisma:migrate": "prisma migrate dev --schema=database/prisma",
-    "prisma:studio": "prisma studio --schema=database/prisma"
+    "prisma:studio": "prisma studio --schema=database/prisma",
+    "prisma:seed": "prisma db seed",
+    "db:migrate": "prisma migrate deploy --schema=database/prisma",
+    "db:seed": "prisma db seed"
   },
   "prisma": {
-    "schema": "database/prisma"
+    "schema": "database/prisma",
+    "seed": "tsx database/prisma/seed.ts"
   },
   "engines": {
     "node": ">=20"
