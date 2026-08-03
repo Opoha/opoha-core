@@ -17,23 +17,27 @@ function lineTotalMinor(unitPriceMinor: string, quantity: number): bigint {
 function toTotals(
   currencyCode: string,
   lines: CartLineEntity[],
+  shippingMinor = '0',
 ): CheckoutTotalsType {
   let subtotal = 0n;
   for (const line of lines) {
     subtotal += lineTotalMinor(String(line.unitPriceMinor), line.quantity);
   }
+  const shipping = BigInt(String(shippingMinor || '0'));
+  const tax = 0n;
   return {
     currencyCode,
     subtotalMinor: subtotal.toString(),
-    taxMinor: '0',
-    shippingMinor: '0',
-    totalMinor: subtotal.toString(),
+    taxMinor: tax.toString(),
+    shippingMinor: shipping.toString(),
+    totalMinor: (subtotal + tax + shipping).toString(),
   };
 }
 
 /**
- * Checkout prepare — reserve stock for cart lines and compute totals stub (no tax).
- * Place-order (D-04) consumes this preview.
+ * Checkout prepare — reserve stock for cart lines and compute totals.
+ * Shipping uses the cart's selected rate amount (Phase 2 B-03); tax still stubbed.
+ * Place-order consumes this preview.
  */
 @Injectable()
 export class CheckoutService {
@@ -101,7 +105,11 @@ export class CheckoutService {
     await this.carts.setStatus(cartId, 'locked');
 
     const refreshed = await this.carts.findById(cartId);
-    const totals = toTotals(cart.currencyCode, lines);
+    const totals = toTotals(
+      cart.currencyCode,
+      lines,
+      String(cart.shippingMinor ?? '0'),
+    );
 
     return {
       cartId,

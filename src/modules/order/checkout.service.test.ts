@@ -29,6 +29,9 @@ describe('CheckoutService (unit)', () => {
           customerId: null,
           status: 'open',
           currencyCode: 'USD',
+          shippingMethodCode: null,
+          shippingRateCode: null,
+          shippingMinor: '0',
           createdAt: now,
           updatedAt: now,
         },
@@ -62,6 +65,9 @@ describe('CheckoutService (unit)', () => {
         customerId: null,
         status: 'locked',
         currencyCode: 'USD',
+        shippingMethodCode: null,
+        shippingRateCode: null,
+        shippingMinor: '0',
         lines: [],
         createdAt: now,
         updatedAt: now,
@@ -87,7 +93,7 @@ describe('CheckoutService (unit)', () => {
     );
   });
 
-  it('reserves stock, stubs tax/shipping at zero, and locks cart', async () => {
+  it('reserves stock, stubs tax at zero, and locks cart', async () => {
     const preview = await service.prepare('cart-1');
 
     expect(preview.totals.subtotalMinor).toBe('2500');
@@ -101,6 +107,42 @@ describe('CheckoutService (unit)', () => {
     ]);
     expect(cartService.setStatus).toHaveBeenCalledWith('cart-1', 'locked');
     expect(inventory.reserve).toHaveBeenCalledTimes(2);
+  });
+
+  it('includes selected shippingMinor in prepareCheckout totals (B-03)', async () => {
+    cartService.getEntityWithLines.mockResolvedValueOnce({
+      cart: {
+        id: 'cart-1',
+        customerId: null,
+        status: 'open',
+        currencyCode: 'USD',
+        shippingMethodCode: 'flat-rate',
+        shippingRateCode: 'flat-rate',
+        shippingMinor: '500',
+        createdAt: now,
+        updatedAt: now,
+      },
+      lines: [
+        {
+          id: 'line-1',
+          cartId: 'cart-1',
+          variantId: 'var-1',
+          quantity: 2,
+          unitPriceMinor: '1000',
+          reservationId: null,
+          createdAt: now,
+          updatedAt: now,
+        },
+      ],
+    });
+    inventory.reserve = vi.fn().mockResolvedValueOnce({ id: 'res-1' });
+
+    const preview = await service.prepare('cart-1');
+
+    expect(preview.totals.subtotalMinor).toBe('2000');
+    expect(preview.totals.shippingMinor).toBe('500');
+    expect(preview.totals.taxMinor).toBe('0');
+    expect(preview.totals.totalMinor).toBe('2500');
   });
 
   it('rejects empty carts', async () => {

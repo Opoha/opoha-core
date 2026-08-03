@@ -101,7 +101,8 @@ export class UpdateCartLineInput {
 }
 
 @ObjectType({
-  description: 'Checkout totals stub (tax/shipping zero until Phase 2)',
+  description:
+    'Checkout totals — shipping from cart selection (B-03); tax stub until Phase C',
 })
 export class CheckoutTotalsType {
   @Field(() => String)
@@ -121,7 +122,8 @@ export class CheckoutTotalsType {
 }
 
 @ObjectType({
-  description: 'Result of preparing checkout — reservations + totals stub',
+  description:
+    'Result of preparing checkout — reservations + totals (incl. shipping)',
 })
 export class CheckoutPreviewType {
   @Field(() => ID)
