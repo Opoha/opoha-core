@@ -199,9 +199,22 @@ export class CartService {
       existing.quantity += input.quantity;
       existing.unitPriceMinor = String(variant.priceMinor);
       existing.reservationId = null;
-      await this.lines.save(existing);
+      const saved = await this.lines.save(existing);
+      await this.eventBus.publish({
+        eventName: CoreEventName.CartLineUpdated,
+        aggregateType: 'cart',
+        aggregateId: cart.id,
+        data: {
+          cartId: cart.id,
+          lineId: saved.id,
+          variantId: saved.variantId,
+          quantity: saved.quantity,
+          unitPriceMinor: String(saved.unitPriceMinor),
+          currencyCode: cart.currencyCode,
+        },
+      });
     } else {
-      await this.lines.save(
+      const saved = await this.lines.save(
         this.lines.create({
           cartId: cart.id,
           variantId: input.variantId,
@@ -210,6 +223,19 @@ export class CartService {
           reservationId: null,
         }),
       );
+      await this.eventBus.publish({
+        eventName: CoreEventName.CartLineAdded,
+        aggregateType: 'cart',
+        aggregateId: cart.id,
+        data: {
+          cartId: cart.id,
+          lineId: saved.id,
+          variantId: saved.variantId,
+          quantity: saved.quantity,
+          unitPriceMinor: String(saved.unitPriceMinor),
+          currencyCode: cart.currencyCode,
+        },
+      });
     }
 
     return this.findById(cart.id);
@@ -224,11 +250,24 @@ export class CartService {
     if (!line) {
       throw new NotFoundException(`Cart line ${input.id} not found`);
     }
-    await this.requireOpenCart(line.cartId);
+    const cart = await this.requireOpenCart(line.cartId);
 
     line.quantity = input.quantity;
     line.reservationId = null;
-    await this.lines.save(line);
+    const saved = await this.lines.save(line);
+    await this.eventBus.publish({
+      eventName: CoreEventName.CartLineUpdated,
+      aggregateType: 'cart',
+      aggregateId: cart.id,
+      data: {
+        cartId: cart.id,
+        lineId: saved.id,
+        variantId: saved.variantId,
+        quantity: saved.quantity,
+        unitPriceMinor: String(saved.unitPriceMinor),
+        currencyCode: cart.currencyCode,
+      },
+    });
     return this.findById(line.cartId);
   }
 
@@ -237,9 +276,22 @@ export class CartService {
     if (!line) {
       throw new NotFoundException(`Cart line ${lineId} not found`);
     }
+    const cart = await this.requireOpenCart(line.cartId);
     const cartId = line.cartId;
-    await this.requireOpenCart(cartId);
     await this.lines.delete(lineId);
+    await this.eventBus.publish({
+      eventName: CoreEventName.CartLineRemoved,
+      aggregateType: 'cart',
+      aggregateId: cartId,
+      data: {
+        cartId,
+        lineId: line.id,
+        variantId: line.variantId,
+        quantity: line.quantity,
+        unitPriceMinor: String(line.unitPriceMinor),
+        currencyCode: cart.currencyCode,
+      },
+    });
     return this.findById(cartId);
   }
 

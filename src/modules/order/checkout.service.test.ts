@@ -36,6 +36,7 @@ describe('CheckoutService (unit)', () => {
   let loyalty: {
     quoteRedeem: ReturnType<typeof vi.fn>;
   };
+  let eventBus: { publish: ReturnType<typeof vi.fn> };
   let service: CheckoutService;
 
   const baseCart = {
@@ -155,6 +156,8 @@ describe('CheckoutService (unit)', () => {
       })),
     };
 
+    eventBus = { publish: vi.fn(async () => undefined) };
+
     service = new CheckoutService(
       cartService as unknown as CartService,
       inventory as never,
@@ -163,6 +166,7 @@ describe('CheckoutService (unit)', () => {
       promotions as never,
       giftCards as never,
       loyalty as never,
+      eventBus as never,
     );
   });
 
@@ -179,6 +183,17 @@ describe('CheckoutService (unit)', () => {
       { lineId: 'line-1', reservationId: 'res-1' },
       { lineId: 'line-2', reservationId: 'res-2' },
     ]);
+    expect(eventBus.publish).toHaveBeenCalledWith(
+      expect.objectContaining({
+        eventName: 'CheckoutPrepared',
+        aggregateId: 'cart-1',
+        data: expect.objectContaining({
+          cartId: 'cart-1',
+          totalMinor: '2500',
+          lineCount: 2,
+        }),
+      }),
+    );
     expect(cartService.persistTaxResult).toHaveBeenCalledWith('cart-1', '0');
     expect(cartService.persistDiscountResult).toHaveBeenCalledWith(
       'cart-1',

@@ -29,9 +29,17 @@ export {
   EventBusModule,
   EventBusService,
   CoreEventName,
+  ANALYTICS_EVENT_NAMES,
+  ANALYTICS_STOREFRONT_MAP,
+  isAnalyticsEventName,
   createDomainEvent,
 } from './modules/event-bus/public';
-export type { DomainEvent, EventListener } from './modules/event-bus/public';
+export type {
+  DomainEvent,
+  EventListener,
+  AnalyticsEventName,
+  AnalyticsStorefrontMapping,
+} from './modules/event-bus/public';
 export {
   PluginLoaderModule,
   PluginLoaderService,

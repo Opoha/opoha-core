@@ -5,6 +5,8 @@ import {
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 
+import { CoreEventName } from '../event-bus/event-catalog';
+import { EventBusService } from '../event-bus/event-bus.service';
 import { GiftCardService } from '../gift-cards/public';
 import { InventoryService } from '../inventory/public';
 import { LoyaltyService } from '../loyalty/public';
@@ -28,6 +30,7 @@ import type { CheckoutPreviewType } from './order.types';
  * promotions via PromotionsEngine TypeORM provider (D-01 / D-03);
  * gift cards via GiftCardService quote (Phase 4 C-02);
  * loyalty via LoyaltyService quote (Phase 4 C-03).
+ * Publishes CheckoutPrepared for analytics sinks (Phase 4 F-02).
  */
 @Injectable()
 export class CheckoutService {
@@ -40,6 +43,7 @@ export class CheckoutService {
     private readonly promotions: PromotionsEngine,
     private readonly giftCards: GiftCardService,
     private readonly loyalty: LoyaltyService,
+    private readonly eventBus: EventBusService,
   ) {}
 
   async prepare(cartId: string): Promise<CheckoutPreviewType> {
@@ -148,6 +152,23 @@ export class CheckoutService {
     await this.carts.setStatus(cartId, 'locked');
 
     const refreshed = await this.carts.findById(cartId);
+
+    await this.eventBus.publish({
+      eventName: CoreEventName.CheckoutPrepared,
+      aggregateType: 'cart',
+      aggregateId: cartId,
+      data: {
+        cartId,
+        customerId: cart.customerId,
+        currencyCode: totals.currencyCode,
+        subtotalMinor: totals.subtotalMinor,
+        shippingMinor: totals.shippingMinor,
+        taxMinor: totals.taxMinor,
+        discountMinor: totals.discountMinor,
+        totalMinor: totals.totalMinor,
+        lineCount: lines.length,
+      },
+    });
 
     return {
       cartId,

@@ -19,3 +19,12 @@ export type {
 } from '../domain-event';
 export { AUTH_EVENT_NAMES, CoreEventName } from '../event-catalog';
 export type { AuthEventName } from '../event-catalog';
+export {
+  ANALYTICS_EVENT_NAMES,
+  ANALYTICS_STOREFRONT_MAP,
+  isAnalyticsEventName,
+} from '../analytics-catalog';
+export type {
+  AnalyticsEventName,
+  AnalyticsStorefrontMapping,
+} from '../analytics-catalog';

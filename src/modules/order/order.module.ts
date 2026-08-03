@@ -19,6 +19,7 @@ import { orderEntities } from './entities';
 import { LoyaltyAccrualListener } from './events/loyalty-accrual.listener';
 import { OrderEventsRegistrar } from './events/order-events.registrar';
 import { OrderNotificationsListener } from './events/order-notifications.listener';
+import { OrderPaidAnalyticsListener } from './events/order-paid-analytics.listener';
 import { OrdersResolver } from './orders.resolver';
 import { OrdersService } from './orders.service';
 
@@ -45,6 +46,7 @@ import { OrdersService } from './orders.service';
     OrderEventsRegistrar,
     OrderNotificationsListener,
     LoyaltyAccrualListener,
+    OrderPaidAnalyticsListener,
   ],
   exports: [CartService, CheckoutService, OrdersService, TypeOrmModule],
 })
