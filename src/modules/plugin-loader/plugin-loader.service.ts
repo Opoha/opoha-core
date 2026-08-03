@@ -10,6 +10,7 @@ import { AppLogger } from '../logging/app-logger';
 import { NotificationProviderRegistry } from '../notifications/public';
 import { PaymentProviderRegistry } from '../payment-engine/public';
 import { PromotionRuleRegistry } from '../promotions-engine/public';
+import { SearchProviderRegistry } from '../search-engine/public';
 import { ShippingMethodRegistry } from '../shipping-engine/public';
 import { TaxProviderRegistry } from '../tax-engine/public';
 import { AdminExtensionRegistry } from './admin-extension-registry';
@@ -63,6 +64,7 @@ export class PluginLoaderService implements OnModuleInit {
     private readonly promotionRules: PromotionRuleRegistry,
     private readonly notificationProviders: NotificationProviderRegistry,
     private readonly storageAdapters: StorageAdapterRegistry,
+    private readonly searchProviders: SearchProviderRegistry,
     @Optional() private readonly logger?: AppLogger,
   ) {}
 
@@ -238,6 +240,7 @@ export class PluginLoaderService implements OnModuleInit {
     this.promotionRules.activatePlugin(pluginId);
     this.notificationProviders.activatePlugin(pluginId);
     this.storageAdapters.activatePlugin(pluginId);
+    this.searchProviders.activatePlugin(pluginId);
     const ctx = this.contextFor(record, true);
     await record.definition?.enable?.(ctx);
     this.logger?.log(`Plugin enabled: ${pluginId}`, 'PluginLoaderService');
@@ -255,6 +258,7 @@ export class PluginLoaderService implements OnModuleInit {
     this.promotionRules.deactivatePlugin(pluginId);
     this.notificationProviders.deactivatePlugin(pluginId);
     this.storageAdapters.deactivatePlugin(pluginId);
+    this.searchProviders.deactivatePlugin(pluginId);
     const ctx = this.contextFor(record, false);
     await record.definition?.disable?.(ctx);
     this.logger?.log(`Plugin disabled: ${pluginId}`, 'PluginLoaderService');
@@ -274,6 +278,7 @@ export class PluginLoaderService implements OnModuleInit {
     this.promotionRules.removePlugin(pluginId);
     this.notificationProviders.removePlugin(pluginId);
     this.storageAdapters.removePlugin(pluginId);
+    this.searchProviders.removePlugin(pluginId);
     record.booted = false;
     this.logger?.log(`Plugin uninstalled: ${pluginId}`, 'PluginLoaderService');
     return record.state;
@@ -300,6 +305,7 @@ export class PluginLoaderService implements OnModuleInit {
         promotions: this.promotionRules,
         notifications: this.notificationProviders,
         storage: this.storageAdapters,
+        search: this.searchProviders,
       },
     );
   }

@@ -31,6 +31,7 @@ import { ShippingEngineModule } from './modules/shipping-engine/public';
 import { TaxEngineModule } from './modules/tax-engine/public';
 import { NotificationsModule } from './modules/notifications/public';
 import { PromotionsEngineModule } from './modules/promotions-engine/public';
+import { SearchEngineModule } from './modules/search-engine/public';
 
 @Module({
   imports: [
@@ -58,6 +59,7 @@ import { PromotionsEngineModule } from './modules/promotions-engine/public';
     TaxEngineModule,
     PromotionsEngineModule,
     NotificationsModule,
+    SearchEngineModule,
     PluginLoaderModule,
     GraphQLModule.forRoot<ApolloDriverConfig>({
       driver: ApolloDriver,

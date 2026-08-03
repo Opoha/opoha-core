@@ -3,10 +3,13 @@ import {
   ConflictException,
   Injectable,
   NotFoundException,
+  Optional,
 } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { QueryFailedError, Repository } from 'typeorm';
 
+import { EventBusService } from '../../event-bus/event-bus.service';
+import { CoreEventName } from '../../event-bus/event-catalog';
 import { ProductVariantEntity } from '../entities/product-variant.entity';
 import { ProductEntity } from '../entities/product.entity';
 import type {
@@ -70,6 +73,7 @@ export class ProductsService {
     private readonly products: Repository<ProductEntity>,
     @InjectRepository(ProductVariantEntity)
     private readonly variants: Repository<ProductVariantEntity>,
+    @Optional() private readonly eventBus?: EventBusService,
   ) {}
 
   async findAll(): Promise<ProductType[]> {
@@ -104,7 +108,9 @@ export class ProductsService {
       if (input.variants?.length) {
         await this.createVariants(saved.id, input.variants);
       }
-      return this.findById(saved.id);
+      const created = await this.findById(saved.id);
+      await this.publishProductEvent(CoreEventName.ProductCreated, created);
+      return created;
     } catch (error) {
       if (isUniqueViolation(error)) {
         throw new ConflictException(
@@ -134,7 +140,9 @@ export class ProductsService {
     }
     try {
       await this.products.save(row);
-      return this.findById(id);
+      const updated = await this.findById(id);
+      await this.publishProductEvent(CoreEventName.ProductUpdated, updated);
+      return updated;
     } catch (error) {
       if (isUniqueViolation(error)) {
         throw new ConflictException(`Product slug "${row.slug}" already exists`);
@@ -146,7 +154,41 @@ export class ProductsService {
   async remove(id: string): Promise<ProductType> {
     const existing = await this.findById(id);
     await this.products.delete({ id });
+    if (this.eventBus) {
+      await this.eventBus.publish({
+        eventName: CoreEventName.ProductDeleted,
+        aggregateType: 'product',
+        aggregateId: existing.id,
+        data: {
+          productId: existing.id,
+          slug: existing.slug,
+        },
+      });
+    }
     return existing;
+  }
+
+  private async publishProductEvent(
+    eventName:
+      | typeof CoreEventName.ProductCreated
+      | typeof CoreEventName.ProductUpdated,
+    product: ProductType,
+  ): Promise<void> {
+    if (!this.eventBus) {
+      return;
+    }
+    await this.eventBus.publish({
+      eventName,
+      aggregateType: 'product',
+      aggregateId: product.id,
+      data: {
+        productId: product.id,
+        slug: product.slug,
+        name: product.name,
+        description: product.description,
+        isActive: product.isActive,
+      },
+    });
   }
 
   private async createVariants(

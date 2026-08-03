@@ -8,6 +8,7 @@ import { FilesModule } from '../files/public';
 import { NotificationsModule } from '../notifications/public';
 import { PaymentEngineModule } from '../payment-engine/public';
 import { PromotionsEngineModule } from '../promotions-engine/public';
+import { SearchEngineModule } from '../search-engine/public';
 import { ShippingEngineModule } from '../shipping-engine/public';
 import { TaxEngineModule } from '../tax-engine/public';
 import { AdminExtensionRegistry } from './admin-extension-registry';
@@ -30,6 +31,7 @@ import { PluginsResolver } from './plugins.resolver';
     PromotionsEngineModule,
     NotificationsModule,
     FilesModule,
+    SearchEngineModule,
     TypeOrmModule.forFeature([PluginStateEntity]),
   ],
   providers: [

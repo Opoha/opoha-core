@@ -160,6 +160,10 @@ export const DEFAULT_PERMISSIONS = [
     description: 'Read notification providers and transactional templates',
   },
   {
+    key: 'search:read',
+    description: 'Read search providers and run product search queries',
+  },
+  {
     key: 'localization:read',
     description: 'Read deployment localization settings',
   },

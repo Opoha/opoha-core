@@ -23,6 +23,10 @@ import type {
   NotificationProvider,
   NotificationProviderRegistry,
 } from '../notifications/public';
+import type {
+  SearchProvider,
+  SearchProviderRegistry,
+} from '../search-engine/public';
 
 import type { AdminContribution } from './admin-extension-registry';
 import type { AdminExtensionRegistry } from './admin-extension-registry';
@@ -59,6 +63,7 @@ export type PluginRegistrationContext = {
   registerPromotionRuleProvider(provider: PromotionRuleProvider): void;
   registerNotificationProvider(provider: NotificationProvider): void;
   registerStorageAdapter(adapter: StorageAdapter): void;
+  registerSearchProvider(provider: SearchProvider): void;
 };
 
 /**
@@ -81,6 +86,7 @@ export type PluginEngineRegistries = {
   promotions?: PromotionRuleRegistry;
   notifications?: NotificationProviderRegistry;
   storage?: StorageAdapterRegistry;
+  search?: SearchProviderRegistry;
 };
 
 export function createPluginRegistrationContext(
@@ -167,6 +173,12 @@ export function createPluginRegistrationContext(
         throw new Error('Storage adapter registry is not available');
       }
       engines.storage.register(pluginId, adapter, active);
+    },
+    registerSearchProvider(provider) {
+      if (!engines.search) {
+        throw new Error('Search engine registry is not available');
+      }
+      engines.search.register(pluginId, provider, active);
     },
   };
 }

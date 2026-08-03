@@ -9,6 +9,7 @@ import { StorageAdapterRegistry } from '../files/public';
 import { NotificationProviderRegistry } from '../notifications/public';
 import { PaymentProviderRegistry } from '../payment-engine/public';
 import { PromotionRuleRegistry } from '../promotions-engine/public';
+import { SearchProviderRegistry } from '../search-engine/public';
 import { ShippingMethodRegistry } from '../shipping-engine/public';
 import { TaxProviderRegistry } from '../tax-engine/public';
 import { AdminExtensionRegistry } from './admin-extension-registry';
@@ -62,6 +63,7 @@ function createLoader(configGet?: (key: string) => string | undefined) {
   const promotions = new PromotionRuleRegistry();
   const notifications = new NotificationProviderRegistry();
   const storage = new StorageAdapterRegistry();
+  const search = new SearchProviderRegistry();
   const config = {
     get: (key: string) => {
       if (configGet) {
@@ -83,6 +85,7 @@ function createLoader(configGet?: (key: string) => string | undefined) {
     promotions,
     notifications,
     storage,
+    search,
   );
   return {
     loader,
@@ -95,6 +98,7 @@ function createLoader(configGet?: (key: string) => string | undefined) {
     promotions,
     notifications,
     storage,
+    search,
   };
 }
 
@@ -344,7 +348,7 @@ describe('PluginLoaderService lifecycle + registrations', () => {
     expect(admin.getContribution('sample')).toBeUndefined();
   });
 
-  it('registers payment, shipping, tax, promotions, notifications, and storage engines via context', async () => {
+  it('registers payment, shipping, tax, promotions, notifications, storage, and search engines via context', async () => {
     const {
       loader,
       payment,
@@ -353,6 +357,7 @@ describe('PluginLoaderService lifecycle + registrations', () => {
       promotions,
       notifications,
       storage,
+      search,
     } = createLoader();
     loader.registerDefinition({
       id: 'engines-demo',
@@ -417,6 +422,20 @@ describe('PluginLoaderService lifecycle + registrations', () => {
           },
           async delete() {},
         });
+        ctx.registerSearchProvider({
+          code: 'meilisearch',
+          displayName: 'Meilisearch',
+          async indexDocument() {},
+          async deleteDocument() {},
+          async search(input) {
+            return {
+              query: input.query,
+              hits: [],
+              total: 0,
+              providerCode: 'meilisearch',
+            };
+          },
+        });
       },
     });
 
@@ -428,6 +447,7 @@ describe('PluginLoaderService lifecycle + registrations', () => {
     expect(promotions.get('coupon')).toBeUndefined();
     expect(notifications.get('smtp')).toBeUndefined();
     expect(storage.get('localfs')).toBeUndefined();
+    expect(search.get('meilisearch')).toBeUndefined();
 
     await loader.enable('engines-demo');
     expect(payment.get('manual')?.displayName).toBe('Manual');
@@ -436,6 +456,7 @@ describe('PluginLoaderService lifecycle + registrations', () => {
     expect(promotions.get('coupon')?.displayName).toBe('Coupon');
     expect(notifications.get('smtp')?.displayName).toBe('SMTP');
     expect(storage.get('localfs')?.code).toBe('localfs');
+    expect(search.get('meilisearch')?.displayName).toBe('Meilisearch');
 
     await loader.disable('engines-demo');
     expect(payment.get('manual')).toBeUndefined();
@@ -444,6 +465,7 @@ describe('PluginLoaderService lifecycle + registrations', () => {
     expect(promotions.get('coupon')).toBeUndefined();
     expect(notifications.get('smtp')).toBeUndefined();
     expect(storage.get('localfs')).toBeUndefined();
+    expect(search.get('meilisearch')).toBeUndefined();
   });
 
   it('detects GraphQL contribution name conflicts across plugins', async () => {

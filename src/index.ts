@@ -171,3 +171,18 @@ export type {
   NotificationTemplate,
   NotificationTemplateRendered,
 } from './modules/notifications/public';
+export {
+  SearchEngineModule,
+  SearchEngine,
+  SearchProviderRegistry,
+} from './modules/search-engine/public';
+export type {
+  SearchDocumentType,
+  SearchDocument,
+  SearchDeleteInput,
+  SearchQueryInput,
+  SearchHit,
+  SearchQueryResult,
+  SearchProvider,
+  RegisteredSearchProvider,
+} from './modules/search-engine/public';

@@ -9,6 +9,7 @@ import { StorageAdapterRegistry } from '../files/public';
 import { NotificationProviderRegistry } from '../notifications/public';
 import { PaymentProviderRegistry } from '../payment-engine/public';
 import { PromotionRuleRegistry } from '../promotions-engine/public';
+import { SearchProviderRegistry } from '../search-engine/public';
 import { ShippingMethodRegistry } from '../shipping-engine/public';
 import { TaxProviderRegistry } from '../tax-engine/public';
 import { AdminExtensionRegistry } from './admin-extension-registry';
@@ -38,6 +39,7 @@ function createLoader(pluginPath: string) {
   const promotions = new PromotionRuleRegistry();
   const notifications = new NotificationProviderRegistry();
   const storage = new StorageAdapterRegistry();
+  const search = new SearchProviderRegistry();
   const config = {
     get: (key: string) => {
       if (key === 'OPOHA_PLUGINS') {
@@ -59,6 +61,7 @@ function createLoader(pluginPath: string) {
     promotions,
     notifications,
     storage,
+    search,
   );
   return { loader, contributions, admin, eventBus };
 }

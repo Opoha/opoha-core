@@ -2,6 +2,7 @@ import { Module } from '@nestjs/common';
 import { TypeOrmModule } from '@nestjs/typeorm';
 
 import { AuthModule } from '../auth/public';
+import { EventBusModule } from '../event-bus/event-bus.module';
 import { FilesModule } from '../files/public';
 import { AttributesResolver } from './attributes/attributes.resolver';
 import { AttributesService } from './attributes/attributes.service';
@@ -20,6 +21,7 @@ import { ProductsService } from './products/products.service';
 @Module({
   imports: [
     AuthModule,
+    EventBusModule,
     FilesModule,
     TypeOrmModule.forFeature([...catalogEntities]),
   ],
