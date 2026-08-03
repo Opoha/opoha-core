@@ -21,6 +21,7 @@ import { OrderLineEntity } from './order-line.entity';
 @Entity({ name: 'orders' })
 @Index('orders_store_id_idx', ['storeId'])
 @Index('orders_order_source_idx', ['orderSource'])
+@Index('orders_vendor_id_idx', ['vendorId'])
 export class OrderEntity {
   @PrimaryGeneratedColumn('uuid')
   id!: string;
@@ -52,6 +53,14 @@ export class OrderEntity {
    */
   @Column({ name: 'order_source', type: 'text', default: 'web' })
   orderSource!: OrderSource;
+
+  /**
+   * Primary marketplace vendor when all lines share one vendor (Phase 7 C-02).
+   * Null for multi-vendor or non-marketplace orders.
+   * FK to `vendors.id` (cross-module ID reference only).
+   */
+  @Column({ name: 'vendor_id', type: 'uuid', nullable: true })
+  vendorId!: string | null;
 
   @Column({ type: 'text', default: 'pending' })
   status!: OrderStatus;

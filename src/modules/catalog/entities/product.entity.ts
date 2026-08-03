@@ -22,6 +22,7 @@ import { ProductVariantEntity } from './product-variant.entity';
 @Entity({ name: 'products' })
 @Index('products_store_id_idx', ['storeId'])
 @Index('products_fulfillment_mode_idx', ['fulfillmentMode'])
+@Index('products_vendor_id_idx', ['vendorId'])
 export class ProductEntity {
   @PrimaryGeneratedColumn('uuid')
   id!: string;
@@ -51,6 +52,14 @@ export class ProductEntity {
    */
   @Column({ name: 'store_id', type: 'uuid', nullable: true })
   storeId!: string | null;
+
+  /**
+   * Marketplace vendor that lists this product (Phase 7 C-02).
+   * FK to `vendors.id` (cross-module ID reference only).
+   * Column owned by catalog; vendors table owned by vendors module.
+   */
+  @Column({ name: 'vendor_id', type: 'uuid', nullable: true })
+  vendorId!: string | null;
 
   @CreateDateColumn({ name: 'created_at', type: 'timestamptz' })
   createdAt!: Date;

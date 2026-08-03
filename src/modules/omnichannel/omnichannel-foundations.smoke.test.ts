@@ -256,6 +256,12 @@ describe('Omnichannel foundations smoke (A-04)', () => {
       service = new OrdersService(
         ordersRepo as never,
         linesRepo as never,
+        {
+          find: vi.fn(async () => []),
+        } as never,
+        {
+          find: vi.fn(async () => []),
+        } as never,
         carts as unknown as CartService,
         { commit: noop.commit } as never,
         eventBus as never,

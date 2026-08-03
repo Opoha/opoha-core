@@ -20,6 +20,7 @@ describe('ProductsResolver.reviewAggregate (Phase 4 D-04)', () => {
     isActive: true,
     fulfillmentMode: 'physical',
     storeId: null,
+    vendorId: null,
     createdAt: new Date('2026-08-03T00:00:00Z'),
     updatedAt: new Date('2026-08-03T00:00:00Z'),
   } satisfies ProductType;

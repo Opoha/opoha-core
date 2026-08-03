@@ -46,6 +46,8 @@ describe('OrdersService place + status (D-04 / D-05 / D-06 / A-04)', () => {
     customerId: null | string;
     companyId: null | string;
     cartId: string | null;
+    orderSource: string;
+    vendorId: string | null;
     status: string;
     currencyCode: string;
     subtotalMinor: string;
@@ -80,6 +82,8 @@ describe('OrdersService place + status (D-04 / D-05 / D-06 / A-04)', () => {
       customerId: null,
       companyId: null,
       cartId,
+      orderSource: 'web',
+      vendorId: null,
       status: 'pending',
       currencyCode: 'USD',
       subtotalMinor: '2000',
@@ -244,6 +248,7 @@ describe('OrdersService place + status (D-04 / D-05 / D-06 / A-04)', () => {
           id: 'ol-1',
           orderId,
           variantId,
+          vendorId: null,
           quantity: 2,
           unitPriceMinor: '1000',
           lineTotalMinor: '2000',
@@ -251,7 +256,14 @@ describe('OrdersService place + status (D-04 / D-05 / D-06 / A-04)', () => {
         },
       ]),
       create: vi.fn((data: unknown) => data),
-      save: vi.fn(async (rows: unknown) => rows),
+      save: vi.fn(async (rows: Array<Record<string, unknown>>) =>
+        rows.map((row, i) => ({
+          id: `ol-${i + 1}`,
+          createdAt: now,
+          vendorId: null,
+          ...row,
+        })),
+      ),
     };
 
     stores = {
@@ -299,6 +311,14 @@ describe('OrdersService place + status (D-04 / D-05 / D-06 / A-04)', () => {
     service = new OrdersService(
       ordersRepo as never,
       linesRepo as never,
+      {
+        find: vi.fn(async () => [
+          { id: variantId, productId: 'prod-1' },
+        ]),
+      } as never,
+      {
+        find: vi.fn(async () => [{ id: 'prod-1', vendorId: null }]),
+      } as never,
       carts as unknown as CartService,
       inventory as never,
       eventBus as never,

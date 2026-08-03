@@ -15,6 +15,7 @@ import { returnEntities } from '../src/modules/returns/entities';
 import { segmentEntities } from '../src/modules/segments/entities';
 import { storeEntities } from '../src/modules/stores/entities';
 import { supplyEntities } from '../src/modules/supply/entities';
+import { vendorEntities } from '../src/modules/vendors/entities';
 import { warehouseEntities } from '../src/modules/warehouses/entities';
 import { localizationEntities } from '../src/modules/localization/entities';
 import { configurationEntities } from '../src/modules/config/entities';
@@ -68,6 +69,7 @@ import { B2bQuotesInit1722724700000 } from './migrations/1722724700000-B2bQuotes
 import { OrdersStatusB2bStatuses1722725800000 } from './migrations/1722725800000-OrdersStatusB2bStatuses';
 import { CatalogFulfillmentMode1722726900000 } from './migrations/1722726900000-CatalogFulfillmentMode';
 import { OrdersOrderSource1722728000000 } from './migrations/1722728000000-OrdersOrderSource';
+import { MarketplaceVendorsInit1722729100000 } from './migrations/1722729100000-MarketplaceVendorsInit';
 
 loadDotenv();
 
@@ -95,6 +97,7 @@ export default new DataSource({
     ...currencyEntities,
     ...returnEntities,
     ...supplyEntities,
+    ...vendorEntities,
     ...warehouseEntities,
     ...localizationEntities,
     ...orderEntities,
@@ -148,6 +151,7 @@ export default new DataSource({
     OrdersStatusB2bStatuses1722725800000,
     CatalogFulfillmentMode1722726900000,
     OrdersOrderSource1722728000000,
+    MarketplaceVendorsInit1722729100000,
   ],
   synchronize: false,
 });

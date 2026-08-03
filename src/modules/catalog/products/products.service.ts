@@ -72,6 +72,7 @@ function toProductType(row: ProductEntity): ProductType {
     isActive: row.isActive,
     fulfillmentMode: row.fulfillmentMode ?? 'physical',
     storeId: row.storeId ?? null,
+    vendorId: row.vendorId ?? null,
     createdAt: row.createdAt,
     updatedAt: row.updatedAt,
     variants: (row.variants ?? []).map(toVariantType),
@@ -192,6 +193,7 @@ export class ProductsService {
 
   async create(input: CreateProductInput): Promise<ProductType> {
     const storeId = normalizeStoreId(input.storeId) ?? null;
+    const vendorId = normalizeStoreId(input.vendorId) ?? null;
     const fulfillmentMode = parseFulfillmentMode(input.fulfillmentMode);
     const product = this.products.create({
       name: input.name.trim(),
@@ -200,6 +202,7 @@ export class ProductsService {
       isActive: input.isActive ?? true,
       fulfillmentMode,
       storeId,
+      vendorId,
     });
 
     try {
@@ -212,7 +215,11 @@ export class ProductsService {
       return created;
     } catch (error) {
       if (isFkViolation(error)) {
-        throw new BadRequestException(`Store ${storeId} not found`);
+        throw new BadRequestException(
+          storeId || vendorId
+            ? `Store or vendor reference not found`
+            : `Foreign key violation`,
+        );
       }
       if (isUniqueViolation(error)) {
         throw new ConflictException(
@@ -246,6 +253,9 @@ export class ProductsService {
     if (input.storeId !== undefined) {
       row.storeId = normalizeStoreId(input.storeId) ?? null;
     }
+    if (input.vendorId !== undefined) {
+      row.vendorId = normalizeStoreId(input.vendorId) ?? null;
+    }
     try {
       await this.products.save(row);
       const updated = await this.findById(id);
@@ -253,7 +263,9 @@ export class ProductsService {
       return updated;
     } catch (error) {
       if (isFkViolation(error)) {
-        throw new BadRequestException(`Store ${row.storeId} not found`);
+        throw new BadRequestException(
+          `Store or vendor reference not found`,
+        );
       }
       if (isUniqueViolation(error)) {
         throw new ConflictException(`Product slug "${row.slug}" already exists`);

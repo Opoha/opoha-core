@@ -320,6 +320,12 @@ export class OrderLineType {
   @Field(() => ID)
   variantId!: string;
 
+  @Field(() => ID, {
+    nullable: true,
+    description: 'Marketplace vendor for this line (Phase 7 C-02)',
+  })
+  vendorId!: string | null;
+
   @Field(() => Int)
   quantity!: number;
 
@@ -359,6 +365,13 @@ export class OrderType {
     description: 'Sales channel: web | pos | marketplace (Phase 7 A-03)',
   })
   orderSource!: string;
+
+  @Field(() => ID, {
+    nullable: true,
+    description:
+      'Primary marketplace vendor when all lines share one vendor (Phase 7 C-02)',
+  })
+  vendorId!: string | null;
 
   @Field(() => String)
   status!: string;

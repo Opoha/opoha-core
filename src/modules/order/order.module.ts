@@ -3,7 +3,7 @@ import { TypeOrmModule } from '@nestjs/typeorm';
 
 import { AuthModule } from '../auth/public';
 import { B2bModule } from '../b2b/public';
-import { ProductVariantEntity } from '../catalog/public';
+import { ProductEntity, ProductVariantEntity } from '../catalog/public';
 import { CurrencyModule } from '../currency/public';
 import { CustomerModule } from '../customer/public';
 import { InventoryModule } from '../inventory/public';
@@ -40,7 +40,11 @@ import { OrdersService } from './orders.service';
     LoyaltyModule,
     StoresModule,
     CurrencyModule,
-    TypeOrmModule.forFeature([...orderEntities, ProductVariantEntity]),
+    TypeOrmModule.forFeature([
+      ...orderEntities,
+      ProductVariantEntity,
+      ProductEntity,
+    ]),
   ],
   providers: [
     CartService,

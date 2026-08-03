@@ -32,6 +32,13 @@ export class ProductType {
   @Field(() => ID, { nullable: true })
   storeId!: string | null;
 
+  /**
+   * Marketplace vendor that lists this product (Phase 7 C-02).
+   * Null = merchant-owned / not marketplace-scoped.
+   */
+  @Field(() => ID, { nullable: true })
+  vendorId!: string | null;
+
   @Field(() => Date)
   createdAt!: Date;
 
@@ -151,6 +158,12 @@ export class CreateProductInput {
   @Field(() => ID, { nullable: true })
   storeId?: string | null;
 
+  /**
+   * Optional marketplace vendor that lists this product.
+   */
+  @Field(() => ID, { nullable: true })
+  vendorId?: string | null;
+
   @Field(() => [CreateProductVariantInput], { nullable: true })
   variants?: CreateProductVariantInput[];
 }
@@ -180,4 +193,10 @@ export class UpdateProductInput {
    */
   @Field(() => ID, { nullable: true })
   storeId?: string | null;
+
+  /**
+   * Set to assign a marketplace vendor. Pass null to clear.
+   */
+  @Field(() => ID, { nullable: true })
+  vendorId?: string | null;
 }

@@ -27,6 +27,7 @@ import { SegmentsModule } from './modules/segments/public';
 import { StoresModule } from './modules/stores/public';
 import { resolveStoreContext } from './modules/stores/store-context';
 import { SupplyModule } from './modules/supply/public';
+import { VendorsModule } from './modules/vendors/public';
 import { WarehousesModule } from './modules/warehouses/public';
 import { LocalizationModule } from './modules/localization/public';
 import { CorrelationIdMiddleware } from './modules/logging/correlation-id.middleware';
@@ -60,6 +61,7 @@ type GqlHttpRequest = {
     WarehousesModule,
     InventoryModule,
     SupplyModule,
+    VendorsModule,
     FulfillmentModule,
     GiftCardsModule,
     LoyaltyModule,

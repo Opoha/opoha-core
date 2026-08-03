@@ -4,9 +4,13 @@ import {
   NotFoundException,
 } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { Repository } from 'typeorm';
+import { In, Repository } from 'typeorm';
 
 import { B2bQuoteService, CompanyService } from '../b2b/public';
+import {
+  ProductEntity,
+  ProductVariantEntity,
+} from '../catalog/public';
 import { GiftCardService } from '../gift-cards/public';
 import { InventoryService } from '../inventory/public';
 import { CoreEventName } from '../event-bus/event-catalog';
@@ -58,6 +62,7 @@ function toLineType(row: OrderLineEntity): OrderLineType {
     id: row.id,
     orderId: row.orderId,
     variantId: row.variantId,
+    vendorId: row.vendorId ?? null,
     quantity: row.quantity,
     unitPriceMinor: String(row.unitPriceMinor),
     lineTotalMinor: String(row.lineTotalMinor),
@@ -86,6 +91,7 @@ function toOrderType(row: OrderEntity, lines: OrderLineEntity[]): OrderType {
     companyId: row.companyId ?? null,
     cartId: row.cartId,
     orderSource: row.orderSource ?? 'web',
+    vendorId: row.vendorId ?? null,
     status: row.status,
     currencyCode: row.currencyCode,
     subtotalMinor: String(row.subtotalMinor),
@@ -126,6 +132,13 @@ function resolvePaymentPath(paymentMethod: string): {
   };
 }
 
+function primaryVendorId(vendorIds: Array<string | null>): string | null {
+  const distinct = [
+    ...new Set(vendorIds.filter((id): id is string => id != null)),
+  ];
+  return distinct.length === 1 ? distinct[0]! : null;
+}
+
 @Injectable()
 export class OrdersService {
   constructor(
@@ -133,6 +146,10 @@ export class OrdersService {
     private readonly orders: Repository<OrderEntity>,
     @InjectRepository(OrderLineEntity)
     private readonly lines: Repository<OrderLineEntity>,
+    @InjectRepository(ProductVariantEntity)
+    private readonly variants: Repository<ProductVariantEntity>,
+    @InjectRepository(ProductEntity)
+    private readonly products: Repository<ProductEntity>,
     private readonly carts: CartService,
     private readonly inventory: InventoryService,
     private readonly eventBus: EventBusService,
@@ -213,6 +230,14 @@ export class OrdersService {
       }
     }
 
+    const vendorByVariant = await this.resolveVendorIdsByVariantIds(
+      lines.map((line) => line.variantId),
+    );
+    const lineVendorIds = lines.map(
+      (line) => vendorByVariant.get(line.variantId) ?? null,
+    );
+    const orderVendorId = primaryVendorId(lineVendorIds);
+
     const subtotal = lineSubtotalMinor(lines);
     const shippingMinor = BigInt(String(cart.shippingMinor ?? '0'));
 
@@ -290,6 +315,7 @@ export class OrdersService {
           companyId: cart.companyId,
           cartId: cart.id,
           orderSource,
+          vendorId: orderVendorId,
           status: 'draft',
           currencyCode: cart.currencyCode,
           subtotalMinor: subtotal.toString(),
@@ -307,11 +333,12 @@ export class OrdersService {
         }),
       );
 
-      await this.lines.save(
+      const savedLines = await this.lines.save(
         lines.map((line) =>
           this.lines.create({
             orderId: order.id,
             variantId: line.variantId,
+            vendorId: vendorByVariant.get(line.variantId) ?? null,
             quantity: line.quantity,
             unitPriceMinor: String(line.unitPriceMinor),
             lineTotalMinor: lineTotalMinor(
@@ -344,6 +371,13 @@ export class OrdersService {
         },
       });
 
+      await this.publishVendorOrderRouted({
+        orderId: order.id,
+        storeId: cart.storeId,
+        orderSource,
+        lines: savedLines,
+      });
+
       await this.publishTimeline({
         orderId: order.id,
         type: 'created',
@@ -369,6 +403,7 @@ export class OrdersService {
         companyId: null,
         cartId: cart.id,
         orderSource,
+        vendorId: orderVendorId,
         status: 'pending',
         currencyCode: cart.currencyCode,
         subtotalMinor: subtotal.toString(),
@@ -386,11 +421,12 @@ export class OrdersService {
       }),
     );
 
-    await this.lines.save(
+    const savedLines = await this.lines.save(
       lines.map((line) =>
         this.lines.create({
           orderId: order.id,
           variantId: line.variantId,
+          vendorId: vendorByVariant.get(line.variantId) ?? null,
           quantity: line.quantity,
           unitPriceMinor: String(line.unitPriceMinor),
           lineTotalMinor: lineTotalMinor(
@@ -556,6 +592,13 @@ export class OrdersService {
         },
       });
     }
+
+    await this.publishVendorOrderRouted({
+      orderId: order.id,
+      storeId: cart.storeId,
+      orderSource,
+      lines: savedLines,
+    });
 
     return confirmed;
   }
@@ -907,6 +950,72 @@ export class OrdersService {
       aggregateId: data.orderId,
       data,
     });
+  }
+
+  /** Map variant ids → marketplace vendor ids from catalog products (C-02). */
+  private async resolveVendorIdsByVariantIds(
+    variantIds: string[],
+  ): Promise<Map<string, string | null>> {
+    const unique = [...new Set(variantIds.filter(Boolean))];
+    const result = new Map<string, string | null>();
+    if (unique.length === 0) {
+      return result;
+    }
+
+    const variants = await this.variants.find({
+      where: { id: In(unique) },
+    });
+    const productIds = [...new Set(variants.map((v) => v.productId))];
+    const products =
+      productIds.length === 0
+        ? []
+        : await this.products.find({ where: { id: In(productIds) } });
+    const vendorByProduct = new Map(
+      products.map((p) => [p.id, p.vendorId ?? null] as const),
+    );
+
+    for (const variant of variants) {
+      result.set(variant.id, vendorByProduct.get(variant.productId) ?? null);
+    }
+    for (const id of unique) {
+      if (!result.has(id)) {
+        result.set(id, null);
+      }
+    }
+    return result;
+  }
+
+  /** Publish VendorOrderRouted once per distinct vendor on the order. */
+  private async publishVendorOrderRouted(input: {
+    orderId: string;
+    storeId: string;
+    orderSource: string;
+    lines: OrderLineEntity[];
+  }): Promise<void> {
+    const byVendor = new Map<string, string[]>();
+    for (const line of input.lines) {
+      if (!line.vendorId) {
+        continue;
+      }
+      const ids = byVendor.get(line.vendorId) ?? [];
+      ids.push(line.id);
+      byVendor.set(line.vendorId, ids);
+    }
+    for (const [vendorId, lineIds] of byVendor) {
+      await this.eventBus.publish({
+        eventName: CoreEventName.VendorOrderRouted,
+        aggregateType: 'order',
+        aggregateId: input.orderId,
+        data: {
+          orderId: input.orderId,
+          vendorId,
+          storeId: input.storeId,
+          orderSource: input.orderSource,
+          lineCount: lineIds.length,
+          lineIds,
+        },
+      });
+    }
   }
 
   private async hydrate(row: OrderEntity): Promise<OrderType> {

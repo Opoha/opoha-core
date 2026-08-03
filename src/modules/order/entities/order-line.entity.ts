@@ -25,6 +25,13 @@ export class OrderLineEntity {
   @Column({ name: 'variant_id', type: 'uuid' })
   variantId!: string;
 
+  /**
+   * Marketplace vendor for this line (copied from product at placeOrder).
+   * FK to `vendors.id` (cross-module ID reference only).
+   */
+  @Column({ name: 'vendor_id', type: 'uuid', nullable: true })
+  vendorId!: string | null;
+
   @Column({ type: 'integer' })
   quantity!: number;
 

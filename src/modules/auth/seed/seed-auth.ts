@@ -244,6 +244,10 @@ export const DEFAULT_PERMISSIONS = [
     key: 'b2b:convert',
     description: 'Convert accepted B2B quotes to draft orders',
   },
+  { key: 'vendor:create', description: 'Create marketplace vendor accounts' },
+  { key: 'vendor:read', description: 'Read marketplace vendor accounts' },
+  { key: 'vendor:update', description: 'Update marketplace vendors and product assignment' },
+  { key: 'vendor:delete', description: 'Delete marketplace vendor accounts' },
 ] as const;
 
 export type SeedAdminOptions = {
