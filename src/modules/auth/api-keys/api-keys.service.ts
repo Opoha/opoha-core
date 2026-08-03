@@ -4,9 +4,13 @@ import {
   NotFoundException,
   UnauthorizedException,
 } from '@nestjs/common';
+import { InjectRepository } from '@nestjs/typeorm';
+import { In, Repository } from 'typeorm';
 
-import { PrismaService } from '../../../infrastructure/prisma/prisma.service';
 import { generateOpaqueToken, hashOpaqueToken } from '../crypto/token-hash';
+import { ApiKeyEntity } from '../entities/api-key.entity';
+import { ApiKeyPermissionEntity } from '../entities/api-key-permission.entity';
+import { PermissionEntity } from '../entities/permission.entity';
 import type { AuthUser } from '../jwt/auth-user';
 import { PermissionsService } from '../permissions/permissions.service';
 import type {
@@ -18,7 +22,12 @@ import type {
 @Injectable()
 export class ApiKeysService {
   constructor(
-    private readonly prisma: PrismaService,
+    @InjectRepository(ApiKeyEntity)
+    private readonly apiKeys: Repository<ApiKeyEntity>,
+    @InjectRepository(PermissionEntity)
+    private readonly permissions: Repository<PermissionEntity>,
+    @InjectRepository(ApiKeyPermissionEntity)
+    private readonly apiKeyPermissions: Repository<ApiKeyPermissionEntity>,
     private readonly permissionsService: PermissionsService,
   ) {}
 
@@ -48,12 +57,12 @@ export class ApiKeysService {
       );
     }
 
-    const permissions = await this.prisma.permission.findMany({
-      where: { key: { in: permissionKeys } },
-      select: { id: true, key: true },
+    const permissionRows = await this.permissions.find({
+      where: { key: In(permissionKeys) },
+      select: ['id', 'key'],
     });
-    if (permissions.length !== permissionKeys.length) {
-      const found = new Set(permissions.map((p) => p.key));
+    if (permissionRows.length !== permissionKeys.length) {
+      const found = new Set(permissionRows.map((p) => p.key));
       const missing = permissionKeys.filter((k) => !found.has(k));
       throw new BadRequestException(
         `Unknown permission key(s): ${missing.join(', ')}`,
@@ -62,20 +71,31 @@ export class ApiKeysService {
 
     const raw = generateOpaqueToken('opk_');
     const keyPrefix = raw.slice(0, 12);
-    const row = await this.prisma.apiKey.create({
-      data: {
+    const saved = await this.apiKeys.save(
+      this.apiKeys.create({
         userId: ownerUserId,
         name,
         keyPrefix,
         keyHash: hashOpaqueToken(raw),
-        permissions: {
-          create: permissions.map((p) => ({ permissionId: p.id })),
-        },
-      },
-      include: {
-        permissions: { include: { permission: true } },
-      },
+      }),
+    );
+
+    await this.apiKeyPermissions.save(
+      permissionRows.map((p) =>
+        this.apiKeyPermissions.create({
+          apiKeyId: saved.id,
+          permissionId: p.id,
+        }),
+      ),
+    );
+
+    const row = await this.apiKeys.findOne({
+      where: { id: saved.id },
+      relations: { apiKeyPermissions: { permission: true } },
     });
+    if (!row) {
+      throw new NotFoundException('API key not found after create');
+    }
 
     return {
       apiKey: this.toType(row),
@@ -84,22 +104,18 @@ export class ApiKeysService {
   }
 
   async listForUser(userId: string): Promise<ApiKeyType[]> {
-    const rows = await this.prisma.apiKey.findMany({
+    const rows = await this.apiKeys.find({
       where: { userId },
-      orderBy: { createdAt: 'desc' },
-      include: {
-        permissions: { include: { permission: true } },
-      },
+      order: { createdAt: 'DESC' },
+      relations: { apiKeyPermissions: { permission: true } },
     });
     return rows.map((row) => this.toType(row));
   }
 
   async revoke(userId: string, apiKeyId: string): Promise<ApiKeyType> {
-    const existing = await this.prisma.apiKey.findFirst({
+    const existing = await this.apiKeys.findOne({
       where: { id: apiKeyId, userId },
-      include: {
-        permissions: { include: { permission: true } },
-      },
+      relations: { apiKeyPermissions: { permission: true } },
     });
     if (!existing) {
       throw new NotFoundException(`API key ${apiKeyId} not found`);
@@ -107,24 +123,20 @@ export class ApiKeysService {
     if (existing.revokedAt) {
       return this.toType(existing);
     }
-    const row = await this.prisma.apiKey.update({
-      where: { id: apiKeyId },
-      data: { revokedAt: new Date() },
-      include: {
-        permissions: { include: { permission: true } },
-      },
+    existing.revokedAt = new Date();
+    const row = await this.apiKeys.save(existing);
+    const reloaded = await this.apiKeys.findOne({
+      where: { id: row.id },
+      relations: { apiKeyPermissions: { permission: true } },
     });
-    return this.toType(row);
+    return this.toType(reloaded ?? row);
   }
 
   async authenticate(rawKey: string): Promise<AuthUser> {
     const keyHash = hashOpaqueToken(rawKey.trim());
-    const row = await this.prisma.apiKey.findUnique({
+    const row = await this.apiKeys.findOne({
       where: { keyHash },
-      include: {
-        user: true,
-        permissions: { include: { permission: true } },
-      },
+      relations: { user: true, apiKeyPermissions: { permission: true } },
     });
     if (!row || row.revokedAt) {
       throw new UnauthorizedException('Invalid API key');
@@ -133,33 +145,24 @@ export class ApiKeysService {
       throw new UnauthorizedException('User account is inactive');
     }
 
-    await this.prisma.apiKey.update({
-      where: { id: row.id },
-      data: { lastUsedAt: new Date() },
-    });
+    await this.apiKeys.update(row.id, { lastUsedAt: new Date() });
 
     return {
       userId: row.user.id,
       email: row.user.email,
       apiKeyId: row.id,
-      permissions: row.permissions.map((p) => p.permission.key).sort(),
+      permissions: row.apiKeyPermissions.map((p) => p.permission.key).sort(),
     };
   }
 
-  private toType(row: {
-    id: string;
-    name: string;
-    keyPrefix: string;
-    lastUsedAt: Date | null;
-    revokedAt: Date | null;
-    createdAt: Date;
-    permissions: { permission: { key: string } }[];
-  }): ApiKeyType {
+  private toType(row: ApiKeyEntity): ApiKeyType {
     return {
       id: row.id,
       name: row.name,
       keyPrefix: row.keyPrefix,
-      permissionKeys: row.permissions.map((p) => p.permission.key).sort(),
+      permissionKeys: (row.apiKeyPermissions ?? [])
+        .map((p) => p.permission.key)
+        .sort(),
       lastUsedAt: row.lastUsedAt,
       revokedAt: row.revokedAt,
       createdAt: row.createdAt,

@@ -27,6 +27,10 @@ export class AuthService {
     return this.issueTokens(user);
   }
 
+  /**
+   * Rotate refresh token and issue a new access + refresh pair.
+   * Revoked or replayed refresh tokens are rejected.
+   */
   async refresh(rawRefreshToken: string): Promise<AuthPayload> {
     const { userId, refreshToken } =
       await this.refreshTokensService.rotate(rawRefreshToken);
@@ -49,6 +53,7 @@ export class AuthService {
     };
   }
 
+  /** Revoke a refresh token (idempotent). */
   async logout(rawRefreshToken: string): Promise<boolean> {
     await this.refreshTokensService.revoke(rawRefreshToken);
     return true;

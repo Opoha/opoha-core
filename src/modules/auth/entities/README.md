@@ -1,0 +1,1 @@
+# Auth TypeORM entities\n\nOWNER: auth module. Plugins must not alter these tables.\n

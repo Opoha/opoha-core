@@ -1,6 +1,6 @@
 import { Inject, Injectable } from '@nestjs/common';
 
-import { PrismaService } from '../../infrastructure/prisma/prisma.service';
+import { DatabaseHealthService } from '../../infrastructure/database/database-health.service';
 import { RedisService } from '../../infrastructure/redis/redis.service';
 
 export type LivenessResult = {
@@ -20,7 +20,7 @@ export type ReadinessResult = {
 @Injectable()
 export class HealthService {
   constructor(
-    @Inject(PrismaService) private readonly prisma: PrismaService,
+    @Inject(DatabaseHealthService) private readonly database: DatabaseHealthService,
     @Inject(RedisService) private readonly redis: RedisService,
   ) {}
 
@@ -28,13 +28,9 @@ export class HealthService {
     return { status: 'ok' };
   }
 
-  /**
-   * Readiness probes Postgres (`SELECT 1`) and Redis (`PING`).
-   * Returns `unavailable` when either check fails (controller maps to 503).
-   */
   async readiness(): Promise<ReadinessResult> {
     const [postgres, redis] = await Promise.all([
-      this.probe(() => this.prisma.ping()),
+      this.probe(() => this.database.ping()),
       this.probe(() => this.redis.ping()),
     ]);
 

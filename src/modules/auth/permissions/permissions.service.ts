@@ -1,53 +1,44 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
+import { InjectRepository } from '@nestjs/typeorm';
+import { Repository } from 'typeorm';
 
-import { PrismaService } from '../../../infrastructure/prisma/prisma.service';
+import { PermissionEntity } from '../entities/permission.entity';
 import type { PermissionType } from '../roles/role.types';
 
 @Injectable()
 export class PermissionsService {
-  constructor(private readonly prisma: PrismaService) {}
+  constructor(
+    @InjectRepository(PermissionEntity)
+    private readonly permissions: Repository<PermissionEntity>,
+  ) {}
 
   async findAll(): Promise<PermissionType[]> {
-    const rows = await this.prisma.permission.findMany({
-      orderBy: { key: 'asc' },
-    });
+    const rows = await this.permissions.find({ order: { key: 'ASC' } });
     return rows.map((row) => this.toPermissionType(row));
   }
 
   async findById(id: string): Promise<PermissionType> {
-    const row = await this.prisma.permission.findUnique({ where: { id } });
+    const row = await this.permissions.findOne({ where: { id } });
     if (!row) {
       throw new NotFoundException(`Permission ${id} not found`);
     }
     return this.toPermissionType(row);
   }
 
-  /** Distinct permission keys granted to a user via their roles. */
   async listKeysForUser(userId: string): Promise<string[]> {
-    const rows = await this.prisma.permission.findMany({
-      where: {
-        roles: {
-          some: {
-            role: {
-              users: {
-                some: { userId },
-              },
-            },
-          },
-        },
-      },
-      select: { key: true },
-      orderBy: { key: 'asc' },
-    });
+    const rows = await this.permissions
+      .createQueryBuilder('p')
+      .innerJoin('p.rolePermissions', 'rp')
+      .innerJoin('rp.role', 'r')
+      .innerJoin('r.userRoles', 'ur')
+      .where('ur.userId = :userId', { userId })
+      .select('DISTINCT p.key', 'key')
+      .orderBy('p.key', 'ASC')
+      .getRawMany<{ key: string }>();
     return rows.map((row) => row.key);
   }
 
-  private toPermissionType(row: {
-    id: string;
-    key: string;
-    description: string | null;
-    createdAt: Date;
-  }): PermissionType {
+  private toPermissionType(row: PermissionEntity): PermissionType {
     return {
       id: row.id,
       key: row.key,
