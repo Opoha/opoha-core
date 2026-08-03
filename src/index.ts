@@ -33,12 +33,16 @@ export {
   ANALYTICS_STOREFRONT_MAP,
   isAnalyticsEventName,
   createDomainEvent,
+  AnalyticsSinkRegistry,
+  AnalyticsSinkDispatcher,
 } from './modules/event-bus/public';
 export type {
   DomainEvent,
   EventListener,
   AnalyticsEventName,
   AnalyticsStorefrontMapping,
+  AnalyticsSink,
+  RegisteredAnalyticsSink,
 } from './modules/event-bus/public';
 export {
   PluginLoaderModule,
