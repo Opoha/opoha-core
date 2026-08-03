@@ -1,11 +1,12 @@
 #!/usr/bin/env node
 /**
- * MVP + Phase 1–3 walking skeleton.
+ * MVP + Phase 1–4 walking skeleton.
  *
  * Proves: docker deps → migrate → seed → boot → health → staff login → me
  *   → catalog product+variant → multi-location inventory/transfer
  *   → cart → (ops) select shipping + tax → prepareCheckout → placeOrder
- *   → (store-mgmt) fulfillment pick/pack/ship → RMA refund path (Phase 3 H-02).
+ *   → (store-mgmt) fulfillment pick/pack/ship → RMA refund path (Phase 3 H-02)
+ *   → (content-marketing) searchProducts + CMS page read + gift-card redeem (Phase 4 H-02).
  * When sibling CLI + plugin paths exist (local multi-repo), also:
  *   opoha plugin install, plugin GraphQL probe, opoha doctor.
  *
@@ -21,6 +22,7 @@
  *   SKIP_COMMERCE=1   skip catalog→order smoke (G-02)
  *   SKIP_COMMERCE_OPS=1  skip payment+shipping+tax assertions (Phase 2 G-02)
  *   SKIP_STORE_MGMT=1    skip multi-location + fulfillment + RMA (Phase 3 H-02)
+ *   SKIP_CONTENT_MARKETING=1  skip search + CMS + gift-card redeem (Phase 4 H-02)
  *   OPOHA_FLAT_RATE_AMOUNT / OPOHA_TAX_STANDARD_DEFAULT_RATE_BPS  ops smoke defaults
  *   WALKING_SKELETON_PORT  override listen port for spawned core (default 4000)
  */
@@ -45,6 +47,7 @@ const SKIP_DOCTOR = process.env.SKIP_DOCTOR === '1';
 const SKIP_COMMERCE = process.env.SKIP_COMMERCE === '1';
 const SKIP_COMMERCE_OPS = process.env.SKIP_COMMERCE_OPS === '1';
 const SKIP_STORE_MGMT = process.env.SKIP_STORE_MGMT === '1';
+const SKIP_CONTENT_MARKETING = process.env.SKIP_CONTENT_MARKETING === '1';
 
 /** Phase 2 G-02 ops plugins (payment + shipping + tax). */
 const OPS_PLUGIN_DIRS = [
@@ -52,9 +55,12 @@ const OPS_PLUGIN_DIRS = [
   'plugin-shipping-flat-rate',
   'plugin-tax-standard',
 ];
+/** Phase 4 H-02 content plugins (CMS). Search works without Meilisearch (empty hits). */
+const CONTENT_PLUGIN_DIRS = ['plugin-cms'];
 const PLUGIN_PATH = join(SIBLING, 'plugin-manual-payment');
 const FLAT_RATE_PLUGIN_PATH = join(SIBLING, 'plugin-shipping-flat-rate');
 const TAX_STANDARD_PLUGIN_PATH = join(SIBLING, 'plugin-tax-standard');
+const CMS_PLUGIN_PATH = join(SIBLING, 'plugin-cms');
 const CLI_BIN = join(SIBLING, 'opoha-cli', 'dist', 'cli.js');
 
 const OPS_FLAT_RATE_AMOUNT = process.env.OPOHA_FLAT_RATE_AMOUNT ?? '500';
@@ -62,6 +68,13 @@ const OPS_TAX_RATE_BPS = process.env.OPOHA_TAX_STANDARD_DEFAULT_RATE_BPS ?? '100
 
 function resolveOpsPluginPaths() {
   return OPS_PLUGIN_DIRS.map((name) => join(SIBLING, name)).filter((p) =>
+    existsSync(p),
+  );
+}
+
+function resolveContentPluginPaths() {
+  if (SKIP_CONTENT_MARKETING) return [];
+  return CONTENT_PLUGIN_DIRS.map((name) => join(SIBLING, name)).filter((p) =>
     existsSync(p),
   );
 }
@@ -238,16 +251,19 @@ async function main() {
   }
 
   const opsPluginPaths = !SKIP_PLUGIN ? resolveOpsPluginPaths() : [];
+  const contentPluginPaths = !SKIP_PLUGIN ? resolveContentPluginPaths() : [];
   const hasManual = opsPluginPaths.includes(PLUGIN_PATH);
   const hasFlatRate = opsPluginPaths.includes(FLAT_RATE_PLUGIN_PATH);
   const hasTaxStandard = opsPluginPaths.includes(TAX_STANDARD_PLUGIN_PATH);
+  const hasCms = contentPluginPaths.includes(CMS_PLUGIN_PATH);
 
   const pluginEnv = {};
-  if (opsPluginPaths.length > 0) {
-    for (const p of opsPluginPaths) {
+  const allPluginPaths = [...opsPluginPaths, ...contentPluginPaths];
+  if (allPluginPaths.length > 0) {
+    for (const p of allPluginPaths) {
       ensurePluginBuilt(p);
     }
-    pluginEnv.OPOHA_PLUGINS = opsPluginPaths.join(',');
+    pluginEnv.OPOHA_PLUGINS = allPluginPaths.join(',');
     // Always pin ops smoke amounts (override .env / parent) so quotes are non-zero.
     if (hasFlatRate) {
       pluginEnv.OPOHA_FLAT_RATE_AMOUNT =
@@ -260,7 +276,7 @@ async function main() {
     log('plugin', `OPOHA_PLUGINS=${pluginEnv.OPOHA_PLUGINS}`);
     log(
       'plugin',
-      `ops env flatRate=${pluginEnv.OPOHA_FLAT_RATE_AMOUNT ?? 'n/a'} taxBps=${pluginEnv.OPOHA_TAX_STANDARD_DEFAULT_RATE_BPS ?? 'n/a'}`,
+      `ops env flatRate=${pluginEnv.OPOHA_FLAT_RATE_AMOUNT ?? 'n/a'} taxBps=${pluginEnv.OPOHA_TAX_STANDARD_DEFAULT_RATE_BPS ?? 'n/a'} cms=${hasCms}`,
     );
   }
 
@@ -324,12 +340,13 @@ async function main() {
     }
     log('auth', 'me OK');
 
-    // Enable ops plugins so Payment/Shipping/Tax registries are active (G-02).
-    if (!SKIP_PLUGIN && opsPluginPaths.length > 0) {
+    // Enable ops + content plugins so registries / CMS host are active.
+    if (!SKIP_PLUGIN && allPluginPaths.length > 0) {
       const pluginIds = [];
       if (hasManual) pluginIds.push('manual-payment');
       if (hasFlatRate) pluginIds.push('shipping-flat-rate');
       if (hasTaxStandard) pluginIds.push('tax-standard');
+      if (hasCms) pluginIds.push('cms');
       for (const id of pluginIds) {
         const enabled = await gql(
           `mutation($id: ID!) {
@@ -967,6 +984,151 @@ async function main() {
       }
     } else {
       log('commerce', 'skipped (SKIP_COMMERCE=1)');
+    }
+
+    if (!SKIP_CONTENT_MARKETING) {
+      log('content-marketing', 'Phase 4 H-02 search + CMS + gift-card redeem');
+
+      const searchData = await gql(
+        `query($input: SearchProductsInput!) {
+          searchProducts(input: $input) {
+            query
+            total
+            providerCode
+            hits { id type title slug }
+          }
+        }`,
+        { input: { query: 'Walking', limit: 10 } },
+        token,
+      );
+      if (!searchData.searchProducts || typeof searchData.searchProducts.total !== 'number') {
+        fail('content-marketing', 'searchProducts returned unexpected payload');
+      }
+      log(
+        'content-marketing',
+        `searchProducts query="${searchData.searchProducts.query}" total=${searchData.searchProducts.total} provider=${searchData.searchProducts.providerCode}`,
+      );
+
+      if (hasCms) {
+        const cmsSlug = `ws-cms-${Date.now().toString(36)}`;
+        const createdPage = await gql(
+          `mutation($input: CreateCmsPageInput!) {
+            createCmsPage(input: $input) {
+              id
+              slug
+              title
+              status
+            }
+          }`,
+          {
+            input: {
+              slug: cmsSlug,
+              title: 'Walking Skeleton CMS',
+              status: 'draft',
+            },
+          },
+          token,
+        );
+        const pageId = createdPage.createCmsPage?.id;
+        if (!pageId) {
+          fail('content-marketing', 'createCmsPage returned no id');
+        }
+        await gql(
+          `mutation($id: ID!, $input: UpdateCmsPageInput!) {
+            updateCmsPage(id: $id, input: $input) {
+              id
+              status
+            }
+          }`,
+          { id: pageId, input: { status: 'published' } },
+          token,
+        );
+        const published = await gql(
+          `query($slug: String!) {
+            cmsPageBySlug(slug: $slug) {
+              id
+              slug
+              title
+              status
+            }
+          }`,
+          { slug: cmsSlug },
+          token,
+        );
+        if (
+          !published.cmsPageBySlug ||
+          published.cmsPageBySlug.status !== 'published' ||
+          published.cmsPageBySlug.slug !== cmsSlug
+        ) {
+          fail(
+            'content-marketing',
+            `cmsPageBySlug expected published ${cmsSlug}, got ${JSON.stringify(published.cmsPageBySlug)}`,
+          );
+        }
+        log(
+          'content-marketing',
+          `CMS page ${pageId} slug=${cmsSlug} published OK`,
+        );
+      } else {
+        log(
+          'content-marketing',
+          'CMS skipped (plugin-cms sibling missing — set SKIP_CONTENT_MARKETING=1 to silence)',
+        );
+      }
+
+      const gcCode = `WS-GC-${Date.now().toString(36).toUpperCase()}`;
+      const issued = await gql(
+        `mutation($input: IssueGiftCardInput!) {
+          issueGiftCard(input: $input) {
+            id
+            code
+            balanceMinor
+            status
+          }
+        }`,
+        {
+          input: {
+            currencyCode: 'USD',
+            amountMinor: '2500',
+            code: gcCode,
+            note: 'Phase 4 H-02 walking skeleton',
+          },
+        },
+        token,
+      );
+      if (!issued.issueGiftCard?.id) {
+        fail('content-marketing', 'issueGiftCard returned no id');
+      }
+      const redeemed = await gql(
+        `mutation($input: RedeemGiftCardInput!) {
+          redeemGiftCard(input: $input) {
+            id
+            code
+            balanceMinor
+            status
+          }
+        }`,
+        {
+          input: {
+            code: gcCode,
+            amountMinor: '1000',
+            note: 'Phase 4 H-02 redeem smoke',
+          },
+        },
+        token,
+      );
+      if (redeemed.redeemGiftCard?.balanceMinor !== '1500') {
+        fail(
+          'content-marketing',
+          `expected gift card balance 1500 after redeem, got ${redeemed.redeemGiftCard?.balanceMinor}`,
+        );
+      }
+      log(
+        'content-marketing',
+        `gift card ${gcCode} issue+redeem OK balance=${redeemed.redeemGiftCard.balanceMinor}`,
+      );
+    } else {
+      log('content-marketing', 'skipped (SKIP_CONTENT_MARKETING=1)');
     }
 
     if (!SKIP_PLUGIN && existsSync(CLI_BIN) && existsSync(PLUGIN_PATH)) {

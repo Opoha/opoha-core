@@ -13,6 +13,7 @@ import { ShippingEngineModule } from '../shipping-engine/public';
 import { TaxEngineModule } from '../tax-engine/public';
 import { AdminExtensionRegistry } from './admin-extension-registry';
 import { AdminExtensionsResolver } from './admin-extensions.resolver';
+import { CmsHostResolver } from './cms-host.resolver';
 import { ContributionRegistry } from './contribution-registry';
 import { PluginStateEntity } from './entities/plugin-state.entity';
 import { PluginBootstrapService } from './plugin-bootstrap.service';
@@ -42,6 +43,7 @@ import { PluginsResolver } from './plugins.resolver';
     PluginBootstrapService,
     AdminExtensionsResolver,
     PluginsResolver,
+    CmsHostResolver,
   ],
   exports: [
     PluginLoaderService,

@@ -47,6 +47,7 @@ import { ReturnsInit1722707100000 } from './migrations/1722707100000-ReturnsInit
 import { GiftCardsInit1722708200000 } from './migrations/1722708200000-GiftCardsInit';
 import { CartGiftCardOnCheckout1722708300000 } from './migrations/1722708300000-CartGiftCardOnCheckout';
 import { LoyaltyInit1722709300000 } from './migrations/1722709300000-LoyaltyInit';
+import { CartLoyaltyOnCheckout1722710400000 } from './migrations/1722710400000-CartLoyaltyOnCheckout';
 import { SegmentsInit1722711500000 } from './migrations/1722711500000-SegmentsInit';
 
 loadDotenv();
@@ -107,6 +108,7 @@ export default new DataSource({
     GiftCardsInit1722708200000,
     CartGiftCardOnCheckout1722708300000,
     LoyaltyInit1722709300000,
+    CartLoyaltyOnCheckout1722710400000,
     SegmentsInit1722711500000,
   ],
   synchronize: false,
