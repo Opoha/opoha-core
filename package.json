@@ -23,7 +23,9 @@
     "typecheck": "tsc -p tsconfig.json --noEmit",
     "db:migrate": "tsx ./node_modules/typeorm/cli.js migration:run -d database/data-source.ts",
     "db:seed": "tsx database/seed.ts",
-    "dev:tsx": "tsx watch src/main.ts"
+    "dev:tsx": "tsx watch src/main.ts",
+    "typeorm": "tsx ./node_modules/typeorm/cli.js",
+    "db:migrate:revert": "tsx ./node_modules/typeorm/cli.js migration:revert -d database/data-source.ts"
   },
   "engines": {
     "node": ">=20"
