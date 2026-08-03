@@ -54,3 +54,25 @@ export type {
   AdminContribution,
   AdminExtensionManifest,
 } from './modules/plugin-loader/public';
+export {
+  PaymentEngineModule,
+  PaymentEngine,
+  PaymentProviderRegistry,
+} from './modules/payment-engine/public';
+export type { PaymentProvider } from './modules/payment-engine/public';
+export {
+  ShippingEngineModule,
+  ShippingEngine,
+  ShippingMethodRegistry,
+} from './modules/shipping-engine/public';
+export type { ShippingMethodProvider } from './modules/shipping-engine/public';
+export {
+  FilesModule,
+  FilesService,
+  StorageAdapterRegistry,
+  FileEntity,
+} from './modules/files/public';
+export type {
+  CreateFileMetadataInput,
+  StorageAdapter,
+} from './modules/files/public';

@@ -4,7 +4,10 @@ import { join } from 'node:path';
 import { Injectable, OnModuleInit, Optional } from '@nestjs/common';
 
 import { ConfigService } from '../config/config.service';
+import { StorageAdapterRegistry } from '../files/storage-adapter.registry';
 import { AppLogger } from '../logging/app-logger';
+import { PaymentProviderRegistry } from '../payment-engine/payment-provider.registry';
+import { ShippingMethodRegistry } from '../shipping-engine/shipping-method.registry';
 import { AdminExtensionRegistry } from './admin-extension-registry';
 import { ContributionRegistry } from './contribution-registry';
 import { orderPluginsByDependency } from './dependency-order';
@@ -48,6 +51,9 @@ export class PluginLoaderService implements OnModuleInit {
     private readonly config: ConfigService,
     private readonly contributions: ContributionRegistry,
     private readonly adminExtensions: AdminExtensionRegistry,
+    private readonly paymentProviders: PaymentProviderRegistry,
+    private readonly shippingMethods: ShippingMethodRegistry,
+    private readonly storageAdapters: StorageAdapterRegistry,
     @Optional() private readonly logger?: AppLogger,
   ) {}
 
@@ -184,6 +190,9 @@ export class PluginLoaderService implements OnModuleInit {
     // Activate any contributions registered inactive during install/boot.
     this.contributions.activatePlugin(pluginId);
     this.adminExtensions.setActive(pluginId, true);
+    this.paymentProviders.activatePlugin(pluginId);
+    this.shippingMethods.activatePlugin(pluginId);
+    this.storageAdapters.activatePlugin(pluginId);
     const ctx = this.contextFor(record, true);
     await record.definition?.enable?.(ctx);
     this.logger?.log(`Plugin enabled: ${pluginId}`, 'PluginLoaderService');
@@ -195,6 +204,9 @@ export class PluginLoaderService implements OnModuleInit {
     record.state = transitionPluginState(record.state, 'disable');
     this.contributions.deactivatePlugin(pluginId);
     this.adminExtensions.setActive(pluginId, false);
+    this.paymentProviders.deactivatePlugin(pluginId);
+    this.shippingMethods.deactivatePlugin(pluginId);
+    this.storageAdapters.deactivatePlugin(pluginId);
     const ctx = this.contextFor(record, false);
     await record.definition?.disable?.(ctx);
     this.logger?.log(`Plugin disabled: ${pluginId}`, 'PluginLoaderService');
@@ -208,6 +220,9 @@ export class PluginLoaderService implements OnModuleInit {
     await record.definition?.uninstall?.(ctx);
     this.contributions.removePlugin(pluginId);
     this.adminExtensions.remove(pluginId);
+    this.paymentProviders.removePlugin(pluginId);
+    this.shippingMethods.removePlugin(pluginId);
+    this.storageAdapters.removePlugin(pluginId);
     record.booted = false;
     this.logger?.log(`Plugin uninstalled: ${pluginId}`, 'PluginLoaderService');
     return record.state;
@@ -227,6 +242,11 @@ export class PluginLoaderService implements OnModuleInit {
       this.contributions,
       this.adminExtensions,
       active,
+      {
+        payment: this.paymentProviders,
+        shipping: this.shippingMethods,
+        storage: this.storageAdapters,
+      },
     );
   }
 

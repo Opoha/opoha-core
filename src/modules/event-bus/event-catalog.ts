@@ -21,6 +21,7 @@ export const CoreEventName = {
   PaymentFailed: 'PaymentFailed',
   ShipmentCreated: 'ShipmentCreated',
   ShipmentDelivered: 'ShipmentDelivered',
+  FileCreated: 'FileCreated',
   ReturnRequested: 'ReturnRequested',
   RefundCompleted: 'RefundCompleted',
 } as const;

@@ -3,9 +3,16 @@ import type { EventListener, SubscribeOptions } from '../event-bus/domain-event'
 import type { AdminContribution } from './admin-extension-registry';
 import type { AdminExtensionRegistry } from './admin-extension-registry';
 import type { ContributionRegistry } from './contribution-registry';
+import type { PaymentProvider } from '../payment-engine/payment-provider';
+import type { PaymentProviderRegistry } from '../payment-engine/payment-provider.registry';
+import type { ShippingMethodProvider } from '../shipping-engine/shipping-method';
+import type { ShippingMethodRegistry } from '../shipping-engine/shipping-method.registry';
+import type { StorageAdapter } from '../files/storage-adapter';
+import type { StorageAdapterRegistry } from '../files/storage-adapter.registry';
 
 /**
  * Registration API handed to plugins during install/boot/enable/disable/uninstall.
+ * Mirrors `@opoha/plugin-sdk` PluginContext (D-07).
  */
 export type PluginRegistrationContext = {
   readonly pluginId: string;
@@ -28,11 +35,14 @@ export type PluginRegistrationContext = {
     tabs?: AdminContribution['tabs'];
     permissions?: AdminContribution['permissions'];
   }): void;
+  registerPaymentProvider(provider: PaymentProvider): void;
+  registerShippingMethod(method: ShippingMethodProvider): void;
+  registerStorageAdapter(adapter: StorageAdapter): void;
 };
 
 /**
  * In-process plugin module contract invoked by the loader (D-04 / D-05).
- * Authoring helpers move to `@opoha/plugin-sdk` in D-07.
+ * Authors should prefer `definePlugin` from `@opoha/plugin-sdk`.
  */
 export type PluginDefinition = {
   id: string;
@@ -43,11 +53,18 @@ export type PluginDefinition = {
   uninstall?(ctx: PluginRegistrationContext): void | Promise<void>;
 };
 
+export type PluginEngineRegistries = {
+  payment?: PaymentProviderRegistry;
+  shipping?: ShippingMethodRegistry;
+  storage?: StorageAdapterRegistry;
+};
+
 export function createPluginRegistrationContext(
   pluginId: string,
   contributions: ContributionRegistry,
   admin: AdminExtensionRegistry,
   active: boolean,
+  engines: PluginEngineRegistries = {},
 ): PluginRegistrationContext {
   return {
     pluginId,
@@ -90,6 +107,24 @@ export function createPluginRegistrationContext(
         },
         active,
       );
+    },
+    registerPaymentProvider(provider) {
+      if (!engines.payment) {
+        throw new Error('Payment engine registry is not available');
+      }
+      engines.payment.register(pluginId, provider, active);
+    },
+    registerShippingMethod(method) {
+      if (!engines.shipping) {
+        throw new Error('Shipping engine registry is not available');
+      }
+      engines.shipping.register(pluginId, method, active);
+    },
+    registerStorageAdapter(adapter) {
+      if (!engines.storage) {
+        throw new Error('Storage adapter registry is not available');
+      }
+      engines.storage.register(pluginId, adapter, active);
     },
   };
 }

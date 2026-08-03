@@ -5,6 +5,9 @@ import { join } from 'node:path';
 import { describe, expect, it } from 'vitest';
 
 import { EventBusService } from '../event-bus/event-bus.service';
+import { StorageAdapterRegistry } from '../files/storage-adapter.registry';
+import { PaymentProviderRegistry } from '../payment-engine/payment-provider.registry';
+import { ShippingMethodRegistry } from '../shipping-engine/shipping-method.registry';
 import { AdminExtensionRegistry } from './admin-extension-registry';
 import { ContributionRegistry } from './contribution-registry';
 import { orderPluginsByDependency } from './dependency-order';
@@ -50,6 +53,9 @@ function createLoader(configGet?: (key: string) => string | undefined) {
   const eventBus = new EventBusService();
   const contributions = new ContributionRegistry(eventBus);
   const admin = new AdminExtensionRegistry();
+  const payment = new PaymentProviderRegistry();
+  const shipping = new ShippingMethodRegistry();
+  const storage = new StorageAdapterRegistry();
   const config = {
     get: (key: string) => {
       if (configGet) {
@@ -65,8 +71,11 @@ function createLoader(configGet?: (key: string) => string | undefined) {
     config as never,
     contributions,
     admin,
+    payment,
+    shipping,
+    storage,
   );
-  return { loader, contributions, admin, eventBus };
+  return { loader, contributions, admin, eventBus, payment, shipping, storage };
 }
 
 describe('parsePluginManifest', () => {
@@ -313,6 +322,49 @@ describe('PluginLoaderService lifecycle + registrations', () => {
     expect(loader.getState('sample')).toBe('uninstalled');
     expect(contributions.listGraphQL()).toHaveLength(0);
     expect(admin.getContribution('sample')).toBeUndefined();
+  });
+
+  it('registers payment, shipping, and storage engines via context', async () => {
+    const { loader, payment, shipping, storage } = createLoader();
+    loader.registerDefinition({
+      id: 'engines-demo',
+      boot(ctx) {
+        ctx.registerPaymentProvider({
+          code: 'manual',
+          displayName: 'Manual',
+        });
+        ctx.registerShippingMethod({
+          code: 'flat-rate',
+          displayName: 'Flat rate',
+        });
+        ctx.registerStorageAdapter({
+          code: 'localfs',
+          async put({ key, body }) {
+            return { key, size: body.byteLength };
+          },
+          async get() {
+            return new Uint8Array();
+          },
+          async delete() {},
+        });
+      },
+    });
+
+    await loader.install('engines-demo');
+    await loader.boot('engines-demo');
+    expect(payment.get('manual')).toBeUndefined();
+    expect(shipping.get('flat-rate')).toBeUndefined();
+    expect(storage.get('localfs')).toBeUndefined();
+
+    await loader.enable('engines-demo');
+    expect(payment.get('manual')?.displayName).toBe('Manual');
+    expect(shipping.get('flat-rate')?.displayName).toBe('Flat rate');
+    expect(storage.get('localfs')?.code).toBe('localfs');
+
+    await loader.disable('engines-demo');
+    expect(payment.get('manual')).toBeUndefined();
+    expect(shipping.get('flat-rate')).toBeUndefined();
+    expect(storage.get('localfs')).toBeUndefined();
   });
 
   it('detects GraphQL contribution name conflicts across plugins', async () => {

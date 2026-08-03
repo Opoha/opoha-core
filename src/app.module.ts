@@ -9,12 +9,15 @@ import { ApiVersioningModule } from './modules/api-versioning/api-versioning.mod
 import { AuthModule } from './modules/auth/auth.module';
 import { ConfigModule } from './modules/config/config.module';
 import { EventBusModule } from './modules/event-bus/event-bus.module';
+import { FilesModule } from './modules/files/files.module';
 import { ShellResolver } from './modules/graphql/shell.resolver';
 import { HealthModule } from './modules/health/health.module';
 import { CorrelationIdMiddleware } from './modules/logging/correlation-id.middleware';
 import { LoggingModule } from './modules/logging/logging.module';
 import { OpenTelemetryModule } from './modules/otel/otel.module';
+import { PaymentEngineModule } from './modules/payment-engine/payment-engine.module';
 import { PluginLoaderModule } from './modules/plugin-loader/plugin-loader.module';
+import { ShippingEngineModule } from './modules/shipping-engine/shipping-engine.module';
 
 @Module({
   imports: [
@@ -26,6 +29,9 @@ import { PluginLoaderModule } from './modules/plugin-loader/plugin-loader.module
     RedisModule,
     ApiVersioningModule,
     AuthModule,
+    PaymentEngineModule,
+    ShippingEngineModule,
+    FilesModule,
     PluginLoaderModule,
     GraphQLModule.forRoot<ApolloDriverConfig>({
       driver: ApolloDriver,
