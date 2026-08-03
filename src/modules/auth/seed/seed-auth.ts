@@ -76,6 +76,10 @@ export const DEFAULT_PERMISSIONS = [
     key: 'shipping:read',
     description: 'List shipping methods and quote rates',
   },
+  { key: 'tax:read', description: 'Read tax classes, rules, and providers' },
+  { key: 'tax:create', description: 'Create tax classes and rules' },
+  { key: 'tax:update', description: 'Update tax classes and rules' },
+  { key: 'tax:delete', description: 'Delete tax classes and rules' },
   {
     key: 'localization:read',
     description: 'Read deployment localization settings',
