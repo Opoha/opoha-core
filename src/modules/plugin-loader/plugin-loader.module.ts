@@ -23,6 +23,7 @@ import { PluginBootstrapService } from './plugin-bootstrap.service';
 import { PluginLoaderService } from './plugin-loader.service';
 import { PluginManagementService } from './plugin-management.service';
 import { PluginsResolver } from './plugins.resolver';
+import { WorkflowHostResolver } from './workflow-host.resolver';
 
 @Module({
   imports: [
@@ -50,6 +51,7 @@ import { PluginsResolver } from './plugins.resolver';
     AdminExtensionsResolver,
     PluginsResolver,
     CmsHostResolver,
+    WorkflowHostResolver,
   ],
   exports: [
     PluginLoaderService,
