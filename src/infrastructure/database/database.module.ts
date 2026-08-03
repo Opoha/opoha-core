@@ -5,6 +5,7 @@ import { authEntities } from '../../modules/auth/entities';
 import { catalogEntities } from '../../modules/catalog/entities';
 import { customerEntities } from '../../modules/customer/entities';
 import { filesEntities } from '../../modules/files/entities';
+import { fulfillmentEntities } from '../../modules/fulfillment/entities';
 import { inventoryEntities } from '../../modules/inventory/entities';
 import { supplyEntities } from '../../modules/supply/entities';
 import { warehouseEntities } from '../../modules/warehouses/entities';
@@ -33,6 +34,7 @@ import { DatabaseHealthService } from './database-health.service';
           ...customerEntities,
           ...filesEntities,
           ...inventoryEntities,
+          ...fulfillmentEntities,
           ...supplyEntities,
           ...warehouseEntities,
           ...localizationEntities,

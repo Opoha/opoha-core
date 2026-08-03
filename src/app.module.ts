@@ -15,6 +15,7 @@ import { FilesModule } from './modules/files/public';
 import { ShellResolver } from './modules/graphql/shell.resolver';
 import { HealthModule } from './modules/health/health.module';
 import { InventoryModule } from './modules/inventory/public';
+import { FulfillmentModule } from './modules/fulfillment/public';
 import { SupplyModule } from './modules/supply/public';
 import { WarehousesModule } from './modules/warehouses/public';
 import { LocalizationModule } from './modules/localization/public';
@@ -44,6 +45,7 @@ import { PromotionsEngineModule } from './modules/promotions-engine/public';
     WarehousesModule,
     InventoryModule,
     SupplyModule,
+    FulfillmentModule,
     CustomerModule,
     OrderModule,
     LocalizationModule,

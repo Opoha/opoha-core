@@ -6,6 +6,7 @@ import { authEntities } from '../src/modules/auth/entities';
 import { catalogEntities } from '../src/modules/catalog/entities';
 import { customerEntities } from '../src/modules/customer/entities';
 import { filesEntities } from '../src/modules/files/entities';
+import { fulfillmentEntities } from '../src/modules/fulfillment/entities';
 import { inventoryEntities } from '../src/modules/inventory/entities';
 import { supplyEntities } from '../src/modules/supply/entities';
 import { warehouseEntities } from '../src/modules/warehouses/entities';
@@ -37,6 +38,7 @@ import { WarehousesInit1722701600000 } from './migrations/1722701600000-Warehous
 import { InventoryPerLocation1722702700000 } from './migrations/1722702700000-InventoryPerLocation';
 import { StockTransfersInit1722703800000 } from './migrations/1722703800000-StockTransfersInit';
 import { SuppliersPurchaseOrdersInit1722704900000 } from './migrations/1722704900000-SuppliersPurchaseOrdersInit';
+import { FulfillmentsInit1722706000000 } from './migrations/1722706000000-FulfillmentsInit';
 
 loadDotenv();
 
@@ -54,6 +56,7 @@ export default new DataSource({
     ...customerEntities,
     ...filesEntities,
     ...inventoryEntities,
+    ...fulfillmentEntities,
     ...supplyEntities,
     ...warehouseEntities,
     ...localizationEntities,
@@ -86,6 +89,7 @@ export default new DataSource({
     InventoryPerLocation1722702700000,
     StockTransfersInit1722703800000,
     SuppliersPurchaseOrdersInit1722704900000,
+    FulfillmentsInit1722706000000,
   ],
   synchronize: false,
 });
