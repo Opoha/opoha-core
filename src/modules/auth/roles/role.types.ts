@@ -44,3 +44,27 @@ export class AssignRoleInput {
   @Field(() => ID)
   roleId!: string;
 }
+
+@InputType()
+export class CreateRoleInput {
+  @Field(() => String)
+  name!: string;
+
+  @Field(() => String, { nullable: true })
+  description?: string | null;
+
+  @Field(() => [ID], { nullable: true })
+  permissionIds?: string[];
+}
+
+@InputType()
+export class UpdateRoleInput {
+  @Field(() => String, { nullable: true })
+  name?: string;
+
+  @Field(() => String, { nullable: true })
+  description?: string | null;
+
+  @Field(() => [ID], { nullable: true })
+  permissionIds?: string[];
+}

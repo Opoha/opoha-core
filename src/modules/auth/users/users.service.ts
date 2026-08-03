@@ -11,8 +11,17 @@ import { EventBusService } from '../../event-bus/event-bus.service';
 import { AuditAction } from '../audit/audit-actions';
 import { AuditLogsService } from '../audit/audit-logs.service';
 import { UserEntity } from '../entities/user.entity';
+import type { RoleType } from '../roles/role.types';
 import { hashPassword } from '../seed/password';
 import type { CreateUserInput, UpdateUserInput, UserType } from './user.types';
+
+type RoleSummary = {
+  id: string;
+  name: string;
+  description: string | null;
+  createdAt: Date;
+  updatedAt: Date;
+};
 
 type UserRow = {
   id: string;
@@ -20,9 +29,19 @@ type UserRow = {
   isActive: boolean;
   createdAt: Date;
   updatedAt: Date;
+  userRoles?: Array<{ role: RoleSummary }>;
 };
 
-const PUBLIC_FIELDS = ['id', 'email', 'isActive', 'createdAt', 'updatedAt'] as const;
+function toRoleSummary(role: RoleSummary): RoleType {
+  return {
+    id: role.id,
+    name: role.name,
+    description: role.description,
+    createdAt: role.createdAt,
+    updatedAt: role.updatedAt,
+    permissions: [],
+  };
+}
 
 function toUserType(row: UserRow): UserType {
   return {
@@ -31,6 +50,7 @@ function toUserType(row: UserRow): UserType {
     isActive: row.isActive,
     createdAt: row.createdAt,
     updatedAt: row.updatedAt,
+    roles: (row.userRoles ?? []).map((ur) => toRoleSummary(ur.role)),
   };
 }
 
@@ -56,7 +76,7 @@ export class UsersService {
   async findAll(): Promise<UserType[]> {
     const rows = await this.users.find({
       order: { createdAt: 'ASC' },
-      select: [...PUBLIC_FIELDS],
+      relations: { userRoles: { role: true } },
     });
     return rows.map(toUserType);
   }
@@ -64,7 +84,7 @@ export class UsersService {
   async findById(id: string): Promise<UserType> {
     const row = await this.users.findOne({
       where: { id },
-      select: [...PUBLIC_FIELDS],
+      relations: { userRoles: { role: true } },
     });
     if (!row) {
       throw new NotFoundException(`User ${id} not found`);
@@ -77,7 +97,7 @@ export class UsersService {
   ): Promise<(UserRow & { passwordHash: string }) | null> {
     return this.users.findOne({
       where: { email },
-      select: [...PUBLIC_FIELDS, 'passwordHash'],
+      select: ['id', 'email', 'isActive', 'createdAt', 'updatedAt', 'passwordHash'],
     });
   }
 
@@ -98,7 +118,7 @@ export class UsersService {
           isActive: input.isActive ?? true,
         }),
       );
-      const created = toUserType(row);
+      const created = await this.findById(row.id);
       await this.auditLogs.append({
         action: AuditAction.USER_CREATE,
         actorUserId: actorUserId ?? null,

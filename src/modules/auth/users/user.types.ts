@@ -1,5 +1,7 @@
 import { Field, ID, InputType, ObjectType } from '@nestjs/graphql';
 
+import { RoleType } from '../roles/role.types';
+
 @ObjectType({ description: 'Staff user account (password never exposed)' })
 export class UserType {
   @Field(() => ID)
@@ -16,6 +18,9 @@ export class UserType {
 
   @Field(() => Date)
   updatedAt!: Date;
+
+  @Field(() => [RoleType], { nullable: 'itemsAndList' })
+  roles?: RoleType[];
 }
 
 @InputType()
