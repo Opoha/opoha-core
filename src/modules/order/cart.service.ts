@@ -1,0 +1,252 @@
+import {
+  BadRequestException,
+  Injectable,
+  NotFoundException,
+} from '@nestjs/common';
+import { InjectRepository } from '@nestjs/typeorm';
+import { QueryFailedError, Repository } from 'typeorm';
+
+import { ProductVariantEntity } from '../catalog/public';
+import { CoreEventName } from '../event-bus/event-catalog';
+import { EventBusService } from '../event-bus/event-bus.service';
+import { CartLineEntity } from './entities/cart-line.entity';
+import { CartEntity } from './entities/cart.entity';
+import type {
+  AddCartLineInput,
+  CartLineType,
+  CartType,
+  CreateCartInput,
+  UpdateCartLineInput,
+} from './order.types';
+
+function isForeignKeyViolation(error: unknown): boolean {
+  return (
+    error instanceof QueryFailedError &&
+    typeof error.driverError === 'object' &&
+    error.driverError !== null &&
+    'code' in error.driverError &&
+    (error.driverError as { code: string }).code === '23503'
+  );
+}
+
+function toLineType(row: CartLineEntity): CartLineType {
+  return {
+    id: row.id,
+    cartId: row.cartId,
+    variantId: row.variantId,
+    quantity: row.quantity,
+    unitPriceMinor: String(row.unitPriceMinor),
+    reservationId: row.reservationId,
+    createdAt: row.createdAt,
+    updatedAt: row.updatedAt,
+  };
+}
+
+function toCartType(row: CartEntity, lines: CartLineEntity[]): CartType {
+  return {
+    id: row.id,
+    customerId: row.customerId,
+    status: row.status,
+    currencyCode: row.currencyCode,
+    lines: lines.map(toLineType),
+    createdAt: row.createdAt,
+    updatedAt: row.updatedAt,
+  };
+}
+
+@Injectable()
+export class CartService {
+  constructor(
+    @InjectRepository(CartEntity)
+    private readonly carts: Repository<CartEntity>,
+    @InjectRepository(CartLineEntity)
+    private readonly lines: Repository<CartLineEntity>,
+    @InjectRepository(ProductVariantEntity)
+    private readonly variants: Repository<ProductVariantEntity>,
+    private readonly eventBus: EventBusService,
+  ) {}
+
+  async findAll(): Promise<CartType[]> {
+    const rows = await this.carts.find({ order: { createdAt: 'ASC' } });
+    return Promise.all(rows.map((row) => this.hydrate(row)));
+  }
+
+  async findById(id: string): Promise<CartType> {
+    const row = await this.carts.findOne({ where: { id } });
+    if (!row) {
+      throw new NotFoundException(`Cart ${id} not found`);
+    }
+    return this.hydrate(row);
+  }
+
+  /** Internal: load entity + lines (for checkout). */
+  async getEntityWithLines(id: string): Promise<{
+    cart: CartEntity;
+    lines: CartLineEntity[];
+  }> {
+    const cart = await this.carts.findOne({ where: { id } });
+    if (!cart) {
+      throw new NotFoundException(`Cart ${id} not found`);
+    }
+    const lines = await this.lines.find({
+      where: { cartId: id },
+      order: { createdAt: 'ASC' },
+    });
+    return { cart, lines };
+  }
+
+  async create(input: CreateCartInput): Promise<CartType> {
+    const currency =
+      input.currencyCode?.trim().toUpperCase() || 'USD';
+    if (!/^[A-Z]{3}$/.test(currency)) {
+      throw new BadRequestException(
+        'currencyCode must be a 3-letter ISO code',
+      );
+    }
+
+    const cart = this.carts.create({
+      customerId: input.customerId ?? null,
+      status: 'open',
+      currencyCode: currency,
+    });
+
+    try {
+      const saved = await this.carts.save(cart);
+      await this.eventBus.publish({
+        eventName: CoreEventName.CartCreated,
+        aggregateType: 'cart',
+        aggregateId: saved.id,
+        data: {
+          cartId: saved.id,
+          customerId: saved.customerId,
+          currencyCode: saved.currencyCode,
+        },
+      });
+      return this.hydrate(saved);
+    } catch (error) {
+      if (isForeignKeyViolation(error)) {
+        throw new BadRequestException(
+          `Customer ${input.customerId} does not exist`,
+        );
+      }
+      throw error;
+    }
+  }
+
+  async addLine(input: AddCartLineInput): Promise<CartType> {
+    if (!Number.isInteger(input.quantity) || input.quantity <= 0) {
+      throw new BadRequestException('quantity must be a positive integer');
+    }
+
+    const cart = await this.requireOpenCart(input.cartId);
+    const variant = await this.variants.findOne({
+      where: { id: input.variantId },
+    });
+    if (!variant) {
+      throw new NotFoundException(
+        `Product variant ${input.variantId} not found`,
+      );
+    }
+    if (!variant.isActive) {
+      throw new BadRequestException(
+        `Product variant ${input.variantId} is not active`,
+      );
+    }
+
+    const existing = await this.lines.findOne({
+      where: { cartId: cart.id, variantId: input.variantId },
+    });
+
+    if (existing) {
+      existing.quantity += input.quantity;
+      existing.unitPriceMinor = String(variant.priceMinor);
+      existing.reservationId = null;
+      await this.lines.save(existing);
+    } else {
+      await this.lines.save(
+        this.lines.create({
+          cartId: cart.id,
+          variantId: input.variantId,
+          quantity: input.quantity,
+          unitPriceMinor: String(variant.priceMinor),
+          reservationId: null,
+        }),
+      );
+    }
+
+    return this.findById(cart.id);
+  }
+
+  async updateLine(input: UpdateCartLineInput): Promise<CartType> {
+    if (!Number.isInteger(input.quantity) || input.quantity <= 0) {
+      throw new BadRequestException('quantity must be a positive integer');
+    }
+
+    const line = await this.lines.findOne({ where: { id: input.id } });
+    if (!line) {
+      throw new NotFoundException(`Cart line ${input.id} not found`);
+    }
+    await this.requireOpenCart(line.cartId);
+
+    line.quantity = input.quantity;
+    line.reservationId = null;
+    await this.lines.save(line);
+    return this.findById(line.cartId);
+  }
+
+  async removeLine(lineId: string): Promise<CartType> {
+    const line = await this.lines.findOne({ where: { id: lineId } });
+    if (!line) {
+      throw new NotFoundException(`Cart line ${lineId} not found`);
+    }
+    const cartId = line.cartId;
+    await this.requireOpenCart(cartId);
+    await this.lines.delete(lineId);
+    return this.findById(cartId);
+  }
+
+  /** Persist reservation ids on lines after checkout prepare. */
+  async attachReservations(
+    updates: Array<{ lineId: string; reservationId: string }>,
+  ): Promise<void> {
+    for (const update of updates) {
+      await this.lines.update(
+        { id: update.lineId },
+        { reservationId: update.reservationId },
+      );
+    }
+  }
+
+  async setStatus(
+    cartId: string,
+    status: CartEntity['status'],
+  ): Promise<void> {
+    await this.carts.update({ id: cartId }, { status });
+  }
+
+  private async hydrate(row: CartEntity): Promise<CartType> {
+    const lines = await this.lines.find({
+      where: { cartId: row.id },
+      order: { createdAt: 'ASC' },
+    });
+    return toCartType(row, lines);
+  }
+
+  private async requireOpenCart(cartId: string): Promise<CartEntity> {
+    const cart = await this.carts.findOne({ where: { id: cartId } });
+    if (!cart) {
+      throw new NotFoundException(`Cart ${cartId} not found`);
+    }
+    if (cart.status !== 'open' && cart.status !== 'locked') {
+      throw new BadRequestException(
+        `Cart ${cartId} is ${cart.status} and cannot be modified`,
+      );
+    }
+    if (cart.status === 'locked') {
+      throw new BadRequestException(
+        `Cart ${cartId} is locked for checkout; recreate or unlock before editing`,
+      );
+    }
+    return cart;
+  }
+}

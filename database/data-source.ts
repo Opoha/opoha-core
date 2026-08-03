@@ -7,6 +7,7 @@ import { catalogEntities } from '../src/modules/catalog/entities';
 import { customerEntities } from '../src/modules/customer/entities';
 import { filesEntities } from '../src/modules/files/entities';
 import { inventoryEntities } from '../src/modules/inventory/entities';
+import { orderEntities } from '../src/modules/order/entities';
 import { pluginLoaderEntities } from '../src/modules/plugin-loader/entities';
 import { AuthSpikeInit1722681855000 } from './migrations/1722681855000-AuthSpikeInit';
 import { AuditLogsInit1722682800000 } from './migrations/1722682800000-AuditLogsInit';
@@ -17,6 +18,7 @@ import { CatalogTaxonomyInit1722687300000 } from './migrations/1722687300000-Cat
 import { CatalogAttributesMediaInit1722688400000 } from './migrations/1722688400000-CatalogAttributesMediaInit';
 import { InventoryInit1722689500000 } from './migrations/1722689500000-InventoryInit';
 import { CustomersInit1722690600000 } from './migrations/1722690600000-CustomersInit';
+import { OrdersInit1722691700000 } from './migrations/1722691700000-OrdersInit';
 
 loadDotenv();
 
@@ -34,6 +36,7 @@ export default new DataSource({
     ...customerEntities,
     ...filesEntities,
     ...inventoryEntities,
+    ...orderEntities,
     ...pluginLoaderEntities,
   ],
   migrations: [
@@ -46,6 +49,7 @@ export default new DataSource({
     CatalogAttributesMediaInit1722688400000,
     InventoryInit1722689500000,
     CustomersInit1722690600000,
+    OrdersInit1722691700000,
   ],
   synchronize: false,
 });

@@ -18,6 +18,7 @@ import { InventoryModule } from './modules/inventory/public';
 import { CorrelationIdMiddleware } from './modules/logging/correlation-id.middleware';
 import { LoggingModule } from './modules/logging/logging.module';
 import { OpenTelemetryModule } from './modules/otel/otel.module';
+import { OrderModule } from './modules/order/public';
 import { PaymentEngineModule } from './modules/payment-engine/public';
 import { PluginLoaderModule } from './modules/plugin-loader/plugin-loader.module';
 import { ShippingEngineModule } from './modules/shipping-engine/public';
@@ -36,6 +37,7 @@ import { ShippingEngineModule } from './modules/shipping-engine/public';
     CatalogModule,
     InventoryModule,
     CustomerModule,
+    OrderModule,
     PaymentEngineModule,
     ShippingEngineModule,
     PluginLoaderModule,

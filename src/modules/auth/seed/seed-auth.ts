@@ -57,6 +57,14 @@ export const DEFAULT_PERMISSIONS = [
   { key: 'customer-group:read', description: 'Read customer groups' },
   { key: 'customer-group:update', description: 'Update customer groups and membership' },
   { key: 'customer-group:delete', description: 'Delete customer groups' },
+  { key: 'cart:create', description: 'Create shopping carts' },
+  { key: 'cart:read', description: 'Read shopping carts' },
+  { key: 'cart:update', description: 'Add, update, or remove cart lines' },
+  { key: 'cart:delete', description: 'Delete shopping carts' },
+  { key: 'cart:checkout', description: 'Prepare checkout (reserve stock + totals)' },
+  { key: 'order:create', description: 'Create orders (place order)' },
+  { key: 'order:read', description: 'Read orders' },
+  { key: 'order:update', description: 'Update order status and details' },
 ] as const;
 
 export type SeedAdminOptions = {
