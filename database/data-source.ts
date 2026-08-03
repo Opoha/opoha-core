@@ -3,12 +3,14 @@ import { config as loadDotenv } from 'dotenv';
 import { DataSource } from 'typeorm';
 
 import { authEntities } from '../src/modules/auth/entities';
+import { catalogEntities } from '../src/modules/catalog/entities';
 import { filesEntities } from '../src/modules/files/entities';
 import { pluginLoaderEntities } from '../src/modules/plugin-loader/entities';
 import { AuthSpikeInit1722681855000 } from './migrations/1722681855000-AuthSpikeInit';
 import { AuditLogsInit1722682800000 } from './migrations/1722682800000-AuditLogsInit';
 import { FilesInit1722684000000 } from './migrations/1722684000000-FilesInit';
 import { PluginStatesInit1722685100000 } from './migrations/1722685100000-PluginStatesInit';
+import { CatalogProductsInit1722686200000 } from './migrations/1722686200000-CatalogProductsInit';
 
 loadDotenv();
 
@@ -20,12 +22,18 @@ if (!url) {
 export default new DataSource({
   type: 'postgres',
   url,
-  entities: [...authEntities, ...filesEntities, ...pluginLoaderEntities],
+  entities: [
+    ...authEntities,
+    ...catalogEntities,
+    ...filesEntities,
+    ...pluginLoaderEntities,
+  ],
   migrations: [
     AuthSpikeInit1722681855000,
     AuditLogsInit1722682800000,
     FilesInit1722684000000,
     PluginStatesInit1722685100000,
+    CatalogProductsInit1722686200000,
   ],
   synchronize: false,
 });

@@ -20,6 +20,10 @@ export const DEFAULT_PERMISSIONS = [
   { key: 'audit:read', description: 'Read audit logs' },
   { key: 'plugin:read', description: 'Read plugin status and admin extension manifests' },
   { key: 'plugin:manage', description: 'Install, enable, disable, and uninstall plugins' },
+  { key: 'product:create', description: 'Create catalog products' },
+  { key: 'product:read', description: 'Read catalog products' },
+  { key: 'product:update', description: 'Update catalog products' },
+  { key: 'product:delete', description: 'Delete catalog products' },
 ] as const;
 
 export type SeedAdminOptions = {

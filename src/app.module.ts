@@ -7,6 +7,7 @@ import { RedisModule } from './infrastructure/redis/redis.module';
 import { ApiVersionMiddleware } from './modules/api-versioning/api-version.middleware';
 import { ApiVersioningModule } from './modules/api-versioning/api-versioning.module';
 import { AuthModule } from './modules/auth/auth.module';
+import { CatalogModule } from './modules/catalog/public';
 import { ConfigModule } from './modules/config/config.module';
 import { EventBusModule } from './modules/event-bus/event-bus.module';
 import { FilesModule } from './modules/files/public';
@@ -29,6 +30,7 @@ import { ShippingEngineModule } from './modules/shipping-engine/public';
     RedisModule,
     ApiVersioningModule,
     AuthModule,
+    CatalogModule,
     PaymentEngineModule,
     ShippingEngineModule,
     FilesModule,
