@@ -35,13 +35,22 @@ export type { DomainEvent, EventListener } from './modules/event-bus/public';
 export {
   PluginLoaderModule,
   PluginLoaderService,
+  ContributionRegistry,
+  AdminExtensionRegistry,
   PLUGIN_CONTRACT_VERSION,
   parsePluginManifest,
   orderPluginsByDependency,
   discoverPlugins,
+  transitionPluginState,
+  canBootPlugin,
 } from './modules/plugin-loader/public';
 export type {
   DiscoveredPlugin,
   PluginManifest,
   PluginLoadResult,
+  PluginDefinition,
+  PluginRegistrationContext,
+  PluginLifecycleState,
+  AdminContribution,
+  AdminExtensionManifest,
 } from './modules/plugin-loader/public';

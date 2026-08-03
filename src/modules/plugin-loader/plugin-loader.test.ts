@@ -295,6 +295,8 @@ describe('PluginLoaderService lifecycle + registrations', () => {
 
     await eventBus.publish({
       eventName: 'auth.user.created',
+      aggregateType: 'user',
+      aggregateId: 'u1',
       data: { userId: 'u1' },
     });
     expect(seen).toBe(1);

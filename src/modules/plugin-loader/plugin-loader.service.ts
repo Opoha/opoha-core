@@ -5,13 +5,23 @@ import { Injectable, OnModuleInit, Optional } from '@nestjs/common';
 
 import { ConfigService } from '../config/config.service';
 import { AppLogger } from '../logging/app-logger';
+import { AdminExtensionRegistry } from './admin-extension-registry';
+import { ContributionRegistry } from './contribution-registry';
 import { orderPluginsByDependency } from './dependency-order';
 import {
   discoverPlugins,
   discoverPluginsInDirectory,
   parsePluginPathsEnv,
 } from './plugin-discovery';
+import type { PluginDefinition } from './plugin-definition';
+import { createPluginRegistrationContext } from './plugin-definition';
+import {
+  canBootPlugin,
+  transitionPluginState,
+  type PluginLifecycleState,
+} from './plugin-lifecycle';
 import type { DiscoveredPlugin } from './plugin-manifest';
+import { PLUGIN_CONTRACT_VERSION } from './plugin-manifest';
 
 export type PluginLoadResult = {
   ordered: DiscoveredPlugin[];
@@ -19,16 +29,25 @@ export type PluginLoadResult = {
   validated: Array<{ id: string; entryPath: string }>;
 };
 
+export type PluginRuntimeRecord = {
+  discovered: DiscoveredPlugin;
+  state: PluginLifecycleState;
+  definition?: PluginDefinition;
+  booted: boolean;
+};
+
 /**
- * Discovers configured plugins, parses manifests, and resolves dependency order.
- * Lifecycle install/boot (D-04) builds on this ordered list.
+ * Discovers plugins, runs lifecycle hooks, and wires registration surfaces (D-03–D-06).
  */
 @Injectable()
 export class PluginLoaderService implements OnModuleInit {
   private ordered: DiscoveredPlugin[] = [];
+  private readonly records = new Map<string, PluginRuntimeRecord>();
 
   constructor(
     private readonly config: ConfigService,
+    private readonly contributions: ContributionRegistry,
+    private readonly adminExtensions: AdminExtensionRegistry,
     @Optional() private readonly logger?: AppLogger,
   ) {}
 
@@ -36,10 +55,6 @@ export class PluginLoaderService implements OnModuleInit {
     this.reload();
   }
 
-  /**
-   * Re-read plugin config, discover, and store dependency order.
-   * Does not execute plugin entry modules (see {@link load}).
-   */
   reload(): DiscoveredPlugin[] {
     const discovered = this.discoverConfigured();
     if (discovered.length === 0) {
@@ -51,6 +66,19 @@ export class PluginLoaderService implements OnModuleInit {
       return this.ordered;
     }
     this.ordered = orderPluginsByDependency(discovered);
+    for (const plugin of this.ordered) {
+      const id = plugin.manifest.id;
+      const existing = this.records.get(id);
+      if (!existing) {
+        this.records.set(id, {
+          discovered: plugin,
+          state: 'discovered',
+          booted: false,
+        });
+      } else {
+        existing.discovered = plugin;
+      }
+    }
     this.logger?.log(
       {
         message: 'Plugins discovered',
@@ -62,18 +90,11 @@ export class PluginLoaderService implements OnModuleInit {
     return this.ordered;
   }
 
-  /**
-   * Stub load: discover + topological order + validate manifests/entry paths
-   * without requiring or executing real plugin modules (D-03).
-   * Full install/boot lands in D-04.
-   */
   load(): PluginLoadResult {
     const ordered = this.reload();
     const validated: PluginLoadResult['validated'] = [];
     for (const plugin of ordered) {
       const entryPath = join(plugin.rootPath, plugin.manifest.entry);
-      // Entry file may not exist yet during scaffold; warn but do not fail stub load
-      // unless the plugin is marked required.
       if (!existsSync(entryPath) && plugin.manifest.required) {
         throw new Error(
           `Required plugin "${plugin.manifest.id}" entry not found: ${entryPath}`,
@@ -86,6 +107,131 @@ export class PluginLoaderService implements OnModuleInit {
 
   getOrderedPlugins(): readonly DiscoveredPlugin[] {
     return this.ordered;
+  }
+
+  getState(pluginId: string): PluginLifecycleState | undefined {
+    return this.records.get(pluginId)?.state;
+  }
+
+  getRecord(pluginId: string): PluginRuntimeRecord | undefined {
+    return this.records.get(pluginId);
+  }
+
+  listRecords(): readonly PluginRuntimeRecord[] {
+    return [...this.records.values()];
+  }
+
+  registerDefinition(definition: PluginDefinition): void {
+    let record = this.records.get(definition.id);
+    if (!record) {
+      record = {
+        discovered: {
+          rootPath: `in-memory://${definition.id}`,
+          manifestSource: 'opoha.plugin.json',
+          manifest: {
+            id: definition.id,
+            version: '0.0.0-test',
+            contractVersion: PLUGIN_CONTRACT_VERSION,
+            entry: 'dist/index.js',
+            dependsOn: [],
+            required: false,
+          },
+        },
+        state: 'discovered',
+        booted: false,
+      };
+      this.records.set(definition.id, record);
+      this.ordered = [...this.ordered, record.discovered];
+    }
+    record.definition = definition;
+  }
+
+  async install(pluginId: string): Promise<PluginLifecycleState> {
+    const record = this.requireRecord(pluginId);
+    record.state = transitionPluginState(record.state, 'install');
+    const ctx = this.contextFor(record, false);
+    await record.definition?.install?.(ctx);
+    this.logger?.log(`Plugin installed: ${pluginId}`, 'PluginLoaderService');
+    return record.state;
+  }
+
+  async bootAll(): Promise<void> {
+    for (const plugin of this.ordered) {
+      await this.boot(plugin.manifest.id);
+    }
+  }
+
+  async boot(pluginId: string): Promise<void> {
+    const record = this.requireRecord(pluginId);
+    if (!canBootPlugin(record.state)) {
+      return;
+    }
+    if (record.booted) {
+      return;
+    }
+    const active = record.state === 'enabled';
+    const ctx = this.contextFor(record, active);
+    await record.definition?.boot?.(ctx);
+    record.booted = true;
+    this.logger?.log(
+      { message: 'Plugin booted', pluginId, active },
+      'PluginLoaderService',
+    );
+  }
+
+  async enable(pluginId: string): Promise<PluginLifecycleState> {
+    const record = this.requireRecord(pluginId);
+    record.state = transitionPluginState(record.state, 'enable');
+    if (!record.booted) {
+      await this.boot(pluginId);
+    } else {
+      this.contributions.activatePlugin(pluginId);
+      this.adminExtensions.setActive(pluginId, true);
+    }
+    const ctx = this.contextFor(record, true);
+    await record.definition?.enable?.(ctx);
+    this.logger?.log(`Plugin enabled: ${pluginId}`, 'PluginLoaderService');
+    return record.state;
+  }
+
+  async disable(pluginId: string): Promise<PluginLifecycleState> {
+    const record = this.requireRecord(pluginId);
+    record.state = transitionPluginState(record.state, 'disable');
+    this.contributions.deactivatePlugin(pluginId);
+    this.adminExtensions.setActive(pluginId, false);
+    const ctx = this.contextFor(record, false);
+    await record.definition?.disable?.(ctx);
+    this.logger?.log(`Plugin disabled: ${pluginId}`, 'PluginLoaderService');
+    return record.state;
+  }
+
+  async uninstall(pluginId: string): Promise<PluginLifecycleState> {
+    const record = this.requireRecord(pluginId);
+    record.state = transitionPluginState(record.state, 'uninstall');
+    const ctx = this.contextFor(record, false);
+    await record.definition?.uninstall?.(ctx);
+    this.contributions.removePlugin(pluginId);
+    this.adminExtensions.remove(pluginId);
+    record.booted = false;
+    this.logger?.log(`Plugin uninstalled: ${pluginId}`, 'PluginLoaderService');
+    return record.state;
+  }
+
+  private requireRecord(pluginId: string): PluginRuntimeRecord {
+    const record = this.records.get(pluginId);
+    if (!record) {
+      throw new Error(`Unknown plugin "${pluginId}"`);
+    }
+    return record;
+  }
+
+  private contextFor(record: PluginRuntimeRecord, active: boolean) {
+    return createPluginRegistrationContext(
+      record.discovered.manifest.id,
+      this.contributions,
+      this.adminExtensions,
+      active,
+    );
   }
 
   private discoverConfigured(): DiscoveredPlugin[] {
