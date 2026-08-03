@@ -5,39 +5,39 @@ export class UserType {
   @Field(() => ID)
   id!: string;
 
-  @Field(() => String)
+  @Field()
   email!: string;
 
-  @Field(() => Boolean)
+  @Field()
   isActive!: boolean;
 
-  @Field(() => Date)
+  @Field()
   createdAt!: Date;
 
-  @Field(() => Date)
+  @Field()
   updatedAt!: Date;
 }
 
 @InputType()
 export class CreateUserInput {
-  @Field(() => String)
+  @Field()
   email!: string;
 
-  @Field(() => String)
+  @Field()
   password!: string;
 
-  @Field(() => Boolean, { nullable: true, defaultValue: true })
+  @Field({ nullable: true, defaultValue: true })
   isActive?: boolean;
 }
 
 @InputType()
 export class UpdateUserInput {
-  @Field(() => String, { nullable: true })
+  @Field({ nullable: true })
   email?: string;
 
-  @Field(() => String, { nullable: true })
+  @Field({ nullable: true })
   password?: string;
 
-  @Field(() => Boolean, { nullable: true })
+  @Field({ nullable: true })
   isActive?: boolean;
 }

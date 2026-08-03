@@ -24,6 +24,8 @@ export const envSchema = z
     JWT_SECRET: z.string().min(1).optional(),
     /** jose/jsonwebtoken duration string, e.g. `15m`, `1h`. */
     JWT_EXPIRES_IN: z.string().min(1).default('1h'),
+    /** Opaque refresh-token lifetime, e.g. `7d`. */
+    JWT_REFRESH_EXPIRES_IN: z.string().min(1).default('7d'),
   })
   .superRefine((data, ctx) => {
     if (data.NODE_ENV === 'production' && !data.JWT_SECRET) {

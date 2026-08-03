@@ -4,7 +4,7 @@ Commerce engine / runtime — the modular monolith at the center of Opoha.
 
 ## Purpose
 
-Host NestJS application modules, GraphQL (code-first), Prisma composition host, event bus, and plugin loader. This is the only package that owns the commerce runtime.
+Host NestJS application modules, GraphQL (code-first), TypeORM host, event bus, and plugin loader. This is the only package that owns the commerce runtime.
 
 ## Boundaries
 
@@ -16,7 +16,7 @@ Host NestJS application modules, GraphQL (code-first), Prisma composition host, 
 ## Package
 
 - npm: `@opoha/core`
-- Stack (ADR-0002): NestJS · Apollo GraphQL · Prisma · Redis · Vitest
+- Stack (ADR-0002): NestJS · Apollo GraphQL · TypeORM · Redis · Vitest
 
 ## Quick start
 
@@ -24,8 +24,7 @@ Host NestJS application modules, GraphQL (code-first), Prisma composition host, 
 pnpm install
 pnpm docker:up          # Postgres 16 + Redis 7 (host :5433 / :6380)
 cp .env.example .env
-pnpm prisma:generate
-pnpm db:migrate         # apply migrations (deploy)
+pnpm db:migrate         # TypeORM migration:run
 pnpm db:seed            # admin role + permissions (+ optional admin user)
 pnpm dev                # NestJS + GraphQL on :4000
 ```
@@ -79,7 +78,7 @@ Send `Authorization: Bearer <accessToken>` on protected operations.
 ## Health / readiness (B-04)
 
 - `GET /health/live` — process up
-- `GET /health/ready` — `SELECT 1` via Prisma + Redis `PING`
+- `GET /health/ready` — `SELECT 1` via TypeORM + Redis `PING`
   - **200** `{ "status": "ok", "checks": { "postgres": "ok", "redis": "ok" } }`
   - **503** when either check fails (JSON body includes per-check status)
 
@@ -101,19 +100,19 @@ Send `Authorization: Bearer <accessToken>` on protected operations.
 curl -H 'X-API-Version: 1' http://localhost:4000/graphql
 ```
 
-## Prisma (B-01)
+## TypeORM (B-01 / ADR-0010)
 
-Multi-file schema under `database/prisma/` (auth fragment owned by auth module). Spike writeup:
+Auth-owned entities under `src/modules/auth/entities/`; CLI DataSource at `database/data-source.ts`. Spike writeup:
 
-- Workspace: `opoha-workspace/docs/research/2026-08-03-prisma-ownership-spike.md`
-- Local mirror: `database/spikes/prisma-ownership-spike.md`
+- Workspace: `opoha-workspace/docs/research/2026-08-03-typeorm-ownership-spike.md`
+- Local mirror: `database/spikes/typeorm-ownership-spike.md`
 
 ```bash
-pnpm prisma:generate
-pnpm prisma:migrate          # migrate dev (new migrations / local iteration)
-pnpm db:migrate              # migrate deploy (apply existing migrations)
-pnpm db:seed                 # or: pnpm prisma:seed
+pnpm db:migrate              # typeorm migration:run
+pnpm db:seed
 ```
+
+If you previously applied Prisma migrations locally, reset the DB volume first (`pnpm docker:down` with `-v`, then `docker:up`).
 
 ### Seed (B-07)
 
@@ -147,5 +146,6 @@ pnpm docker:down
 ## Related
 
 - ADR-0001 Modular Monolith
-- ADR-0002 NestJS + GraphQL + Prisma
+- ADR-0002 NestJS + GraphQL + TypeORM
+- ADR-0010 TypeORM Persistence
 - ADR-0009 Multi-Repository Ecosystem

@@ -30,9 +30,7 @@ export class UsersResolver {
     name: 'createUser',
     description: 'Create staff user (authenticated staff only)',
   })
-  createUser(
-    @Args('input', { type: () => CreateUserInput }) input: CreateUserInput,
-  ): Promise<UserType> {
+  createUser(@Args('input', { type: () => CreateUserInput }) input: CreateUserInput): Promise<UserType> {
     return this.usersService.create(input);
   }
 

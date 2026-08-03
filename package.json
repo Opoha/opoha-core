@@ -1,7 +1,7 @@
 {
   "name": "@opoha/core",
   "version": "0.1.0",
-  "description": "Opoha commerce engine — NestJS modular monolith runtime",
+  "description": "Opoha commerce engine \u2014 NestJS modular monolith runtime",
   "license": "MIT",
   "type": "commonjs",
   "main": "./dist/main.js",
@@ -11,7 +11,7 @@
   ],
   "scripts": {
     "build": "tsc -p tsconfig.build.json",
-    "dev": "tsx watch src/main.ts",
+    "dev": "tsc -p tsconfig.build.json && node --enable-source-maps --watch dist/main.js",
     "start": "node dist/main.js",
     "start:prod": "node dist/main.js",
     "test": "vitest run",
@@ -26,7 +26,8 @@
     "prisma:studio": "prisma studio --schema=database/prisma",
     "prisma:seed": "prisma db seed",
     "db:migrate": "prisma migrate deploy --schema=database/prisma",
-    "db:seed": "prisma db seed"
+    "db:seed": "prisma db seed",
+    "dev:tsx": "tsx watch src/main.ts"
   },
   "prisma": {
     "schema": "database/prisma",
