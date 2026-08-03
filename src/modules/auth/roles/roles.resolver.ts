@@ -1,6 +1,8 @@
 import { UseGuards } from '@nestjs/common';
 import { Args, ID, Mutation, Query, Resolver } from '@nestjs/graphql';
 
+import type { AuthUser } from '../jwt/auth-user';
+import { CurrentUser } from '../jwt/current-user.decorator';
 import { GqlAuthGuard } from '../jwt/gql-auth.guard';
 import { PermissionsGuard } from '../permissions/permissions.guard';
 import { RequirePermission } from '../permissions/require-permission.decorator';
@@ -36,9 +38,14 @@ export class RolesResolver {
   })
   @RequirePermission('role:update')
   assignRole(
+    @CurrentUser() actor: AuthUser,
     @Args('input', { type: () => AssignRoleInput }) input: AssignRoleInput,
   ): Promise<RoleType> {
-    return this.rolesService.assignRole(input.userId, input.roleId);
+    return this.rolesService.assignRole(
+      input.userId,
+      input.roleId,
+      actor.userId,
+    );
   }
 
   @Mutation(() => RoleType, {
@@ -47,8 +54,13 @@ export class RolesResolver {
   })
   @RequirePermission('role:update')
   removeRole(
+    @CurrentUser() actor: AuthUser,
     @Args('input', { type: () => AssignRoleInput }) input: AssignRoleInput,
   ): Promise<RoleType> {
-    return this.rolesService.removeRole(input.userId, input.roleId);
+    return this.rolesService.removeRole(
+      input.userId,
+      input.roleId,
+      actor.userId,
+    );
   }
 }

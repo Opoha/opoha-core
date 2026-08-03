@@ -7,6 +7,8 @@ import {
 import { InjectRepository } from '@nestjs/typeorm';
 import { In, Repository } from 'typeorm';
 
+import { AuditAction } from '../audit/audit-actions';
+import { AuditLogsService } from '../audit/audit-logs.service';
 import { generateOpaqueToken, hashOpaqueToken } from '../crypto/token-hash';
 import { ApiKeyEntity } from '../entities/api-key.entity';
 import { ApiKeyPermissionEntity } from '../entities/api-key-permission.entity';
@@ -29,6 +31,7 @@ export class ApiKeysService {
     @InjectRepository(ApiKeyPermissionEntity)
     private readonly apiKeyPermissions: Repository<ApiKeyPermissionEntity>,
     private readonly permissionsService: PermissionsService,
+    private readonly auditLogs: AuditLogsService,
   ) {}
 
   async create(
@@ -97,8 +100,20 @@ export class ApiKeysService {
       throw new NotFoundException('API key not found after create');
     }
 
+    const apiKey = this.toType(row);
+    await this.auditLogs.append({
+      action: AuditAction.API_KEY_CREATE,
+      actorUserId: ownerUserId,
+      resourceType: 'api_key',
+      resourceId: apiKey.id,
+      metadata: {
+        name: apiKey.name,
+        keyPrefix: apiKey.keyPrefix,
+        permissionKeys: apiKey.permissionKeys,
+      },
+    });
     return {
-      apiKey: this.toType(row),
+      apiKey,
       secret: raw,
     };
   }
@@ -129,7 +144,15 @@ export class ApiKeysService {
       where: { id: row.id },
       relations: { apiKeyPermissions: { permission: true } },
     });
-    return this.toType(reloaded ?? row);
+    const apiKey = this.toType(reloaded ?? row);
+    await this.auditLogs.append({
+      action: AuditAction.API_KEY_REVOKE,
+      actorUserId: userId,
+      resourceType: 'api_key',
+      resourceId: apiKey.id,
+      metadata: { name: apiKey.name, keyPrefix: apiKey.keyPrefix },
+    });
+    return apiKey;
   }
 
   async authenticate(rawKey: string): Promise<AuthUser> {

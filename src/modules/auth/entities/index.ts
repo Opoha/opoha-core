@@ -1,5 +1,6 @@
 import { ApiKeyEntity } from './api-key.entity';
 import { ApiKeyPermissionEntity } from './api-key-permission.entity';
+import { AuditLogEntity } from './audit-log.entity';
 import { PermissionEntity } from './permission.entity';
 import { RefreshTokenEntity } from './refresh-token.entity';
 import { RolePermissionEntity } from './role-permission.entity';
@@ -16,11 +17,13 @@ export const authEntities = [
   ApiKeyEntity,
   ApiKeyPermissionEntity,
   RefreshTokenEntity,
+  AuditLogEntity,
 ] as const;
 
 export {
   ApiKeyEntity,
   ApiKeyPermissionEntity,
+  AuditLogEntity,
   PermissionEntity,
   RefreshTokenEntity,
   RoleEntity,

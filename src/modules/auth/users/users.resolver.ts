@@ -1,6 +1,8 @@
 import { UseGuards } from '@nestjs/common';
 import { Args, ID, Mutation, Query, Resolver } from '@nestjs/graphql';
 
+import type { AuthUser } from '../jwt/auth-user';
+import { CurrentUser } from '../jwt/current-user.decorator';
 import { GqlAuthGuard } from '../jwt/gql-auth.guard';
 import { PermissionsGuard } from '../permissions/permissions.guard';
 import { RequirePermission } from '../permissions/require-permission.decorator';
@@ -36,9 +38,10 @@ export class UsersResolver {
   })
   @RequirePermission('user:create')
   createUser(
+    @CurrentUser() actor: AuthUser,
     @Args('input', { type: () => CreateUserInput }) input: CreateUserInput,
   ): Promise<UserType> {
-    return this.usersService.create(input);
+    return this.usersService.create(input, actor.userId);
   }
 
   @Mutation(() => UserType, {
@@ -47,10 +50,11 @@ export class UsersResolver {
   })
   @RequirePermission('user:update')
   updateUser(
+    @CurrentUser() actor: AuthUser,
     @Args('id', { type: () => ID }) id: string,
     @Args('input', { type: () => UpdateUserInput }) input: UpdateUserInput,
   ): Promise<UserType> {
-    return this.usersService.update(id, input);
+    return this.usersService.update(id, input, actor.userId);
   }
 
   @Mutation(() => UserType, {
@@ -58,7 +62,10 @@ export class UsersResolver {
     description: 'Delete staff user',
   })
   @RequirePermission('user:delete')
-  deleteUser(@Args('id', { type: () => ID }) id: string): Promise<UserType> {
-    return this.usersService.remove(id);
+  deleteUser(
+    @CurrentUser() actor: AuthUser,
+    @Args('id', { type: () => ID }) id: string,
+  ): Promise<UserType> {
+    return this.usersService.remove(id, actor.userId);
   }
 }

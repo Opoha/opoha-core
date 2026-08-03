@@ -1,8 +1,13 @@
 import { ConflictException, NotFoundException } from '@nestjs/common';
 import { describe, expect, it, vi } from 'vitest';
 
+import { AuditAction } from '../audit/audit-actions';
 import { verifyPassword } from '../seed/password';
 import { UsersService } from './users.service';
+
+function mockAudit() {
+  return { append: vi.fn().mockResolvedValue({ id: 'aud' }) };
+}
 
 describe('UsersService', () => {
   const now = new Date('2026-08-03T00:00:00.000Z');
@@ -24,18 +29,28 @@ describe('UsersService', () => {
       save,
       create: vi.fn((data) => data),
     };
-    const service = new UsersService(users as never);
-    const user = await service.create({
-      email: 'Staff@Example.com',
-      password: 'plain-secret',
-    });
+    const audit = mockAudit();
+    const service = new UsersService(users as never, audit as never);
+    const user = await service.create(
+      {
+        email: 'Staff@Example.com',
+        password: 'plain-secret',
+      },
+      'actor-1',
+    );
     expect(user.email).toBe('staff@example.com');
     expect(user).not.toHaveProperty('passwordHash');
+    expect(audit.append).toHaveBeenCalledWith(
+      expect.objectContaining({
+        action: AuditAction.USER_CREATE,
+        actorUserId: 'actor-1',
+      }),
+    );
   });
 
   it('rejects duplicate emails on create', async () => {
     const users = { findOne: vi.fn().mockResolvedValue({ id: 'existing' }) };
-    const service = new UsersService(users as never);
+    const service = new UsersService(users as never, mockAudit() as never);
     await expect(
       service.create({ email: 'a@b.c', password: 'x' }),
     ).rejects.toBeInstanceOf(ConflictException);
@@ -43,7 +58,7 @@ describe('UsersService', () => {
 
   it('throws NotFoundException when user missing', async () => {
     const users = { findOne: vi.fn().mockResolvedValue(null) };
-    const service = new UsersService(users as never);
+    const service = new UsersService(users as never, mockAudit() as never);
     await expect(service.findById('missing')).rejects.toBeInstanceOf(
       NotFoundException,
     );

@@ -2,6 +2,8 @@ import { Injectable, NotFoundException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 
+import { AuditAction } from '../audit/audit-actions';
+import { AuditLogsService } from '../audit/audit-logs.service';
 import { RoleEntity } from '../entities/role.entity';
 import { UserEntity } from '../entities/user.entity';
 import { UserRoleEntity } from '../entities/user-role.entity';
@@ -16,6 +18,7 @@ export class RolesService {
     private readonly users: Repository<UserEntity>,
     @InjectRepository(UserRoleEntity)
     private readonly userRoles: Repository<UserRoleEntity>,
+    private readonly auditLogs: AuditLogsService,
   ) {}
 
   async findAll(): Promise<RoleType[]> {
@@ -37,7 +40,11 @@ export class RolesService {
     return this.toRoleType(row);
   }
 
-  async assignRole(userId: string, roleId: string): Promise<RoleType> {
+  async assignRole(
+    userId: string,
+    roleId: string,
+    actorUserId?: string | null,
+  ): Promise<RoleType> {
     const user = await this.users.findOne({ where: { id: userId } });
     if (!user) {
       throw new NotFoundException(`User ${userId} not found`);
@@ -47,16 +54,34 @@ export class RolesService {
     if (!existing) {
       await this.userRoles.save(this.userRoles.create({ userId, roleId }));
     }
+    await this.auditLogs.append({
+      action: AuditAction.ROLE_ASSIGN,
+      actorUserId: actorUserId ?? null,
+      resourceType: 'role',
+      resourceId: roleId,
+      metadata: { userId, roleName: role.name },
+    });
     return role;
   }
 
-  async removeRole(userId: string, roleId: string): Promise<RoleType> {
+  async removeRole(
+    userId: string,
+    roleId: string,
+    actorUserId?: string | null,
+  ): Promise<RoleType> {
     const role = await this.findById(roleId);
     const user = await this.users.findOne({ where: { id: userId } });
     if (!user) {
       throw new NotFoundException(`User ${userId} not found`);
     }
     await this.userRoles.delete({ userId, roleId });
+    await this.auditLogs.append({
+      action: AuditAction.ROLE_REMOVE,
+      actorUserId: actorUserId ?? null,
+      resourceType: 'role',
+      resourceId: roleId,
+      metadata: { userId, roleName: role.name },
+    });
     return role;
   }
 

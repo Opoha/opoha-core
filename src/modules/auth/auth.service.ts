@@ -1,6 +1,8 @@
 import { Injectable, UnauthorizedException } from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
 
+import { AuditAction } from './audit/audit-actions';
+import { AuditLogsService } from './audit/audit-logs.service';
 import type { AuthPayload } from './auth.types';
 import type { JwtPayload } from './jwt/auth-user';
 import { RefreshTokensService } from './refresh/refresh-tokens.service';
@@ -13,18 +15,38 @@ export class AuthService {
     private readonly usersService: UsersService,
     private readonly jwtService: JwtService,
     private readonly refreshTokensService: RefreshTokensService,
+    private readonly auditLogs: AuditLogsService,
   ) {}
 
   async login(email: string, password: string): Promise<AuthPayload> {
     const normalized = email.trim().toLowerCase();
     const user = await this.usersService.findByEmailWithHash(normalized);
     if (!user || !verifyPassword(password, user.passwordHash)) {
+      await this.auditLogs.append({
+        action: AuditAction.LOGIN_FAILURE,
+        metadata: { email: normalized },
+      });
       throw new UnauthorizedException('Invalid email or password');
     }
     if (!user.isActive) {
+      await this.auditLogs.append({
+        action: AuditAction.LOGIN_FAILURE,
+        actorUserId: user.id,
+        resourceType: 'user',
+        resourceId: user.id,
+        metadata: { email: normalized, reason: 'inactive' },
+      });
       throw new UnauthorizedException('User account is inactive');
     }
-    return this.issueTokens(user);
+    const tokens = await this.issueTokens(user);
+    await this.auditLogs.append({
+      action: AuditAction.LOGIN_SUCCESS,
+      actorUserId: user.id,
+      resourceType: 'user',
+      resourceId: user.id,
+      metadata: { email: user.email },
+    });
+    return tokens;
   }
 
   /**
@@ -40,6 +62,12 @@ export class AuthService {
     }
     const payload: JwtPayload = { sub: user.id, email: user.email };
     const accessToken = await this.jwtService.signAsync(payload);
+    await this.auditLogs.append({
+      action: AuditAction.REFRESH,
+      actorUserId: user.id,
+      resourceType: 'user',
+      resourceId: user.id,
+    });
     return {
       accessToken,
       refreshToken,
@@ -56,6 +84,10 @@ export class AuthService {
   /** Revoke a refresh token (idempotent). */
   async logout(rawRefreshToken: string): Promise<boolean> {
     await this.refreshTokensService.revoke(rawRefreshToken);
+    await this.auditLogs.append({
+      action: AuditAction.LOGOUT,
+      metadata: { revoked: true },
+    });
     return true;
   }
 

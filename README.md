@@ -41,29 +41,66 @@ pnpm dev                # NestJS + GraphQL on :4000
 - Typed `ConfigService` is global; invalid env fails boot
 - Documented keys: `PORT`, `DATABASE_URL`, `REDIS_URL`, `LOG_LEVEL`, `OTEL_ENABLED`, `JWT_SECRET`, `JWT_EXPIRES_IN`
 
-## Auth (C-01 · C-02 · C-03)
+## Auth (C-01 … C-09)
 
-Staff JWT auth + RBAC GraphQL surface (customers deferred).
+Staff JWT auth + RBAC + API keys + append-only audit (customers deferred).
 
 | Env | Notes |
 |-----|-------|
 | `JWT_SECRET` | **Required in production** (fail-fast). Dev/test use an insecure fallback when unset. |
 | `JWT_EXPIRES_IN` | Default `1h` (jsonwebtoken duration string) |
 
-Public GraphQL: `ping`, `login`. Protected (Bearer JWT): `users` / `createUser` / `roles` / `assignRole` / `permissions`, etc. Password hashes are never exposed in GraphQL types. Seeded `admin` role + permissions from B-07 remain the baseline.
+Password hashes are never exposed in GraphQL types. Seeded `admin` role + permissions from B-07 remain the baseline (`user:*`, `role:*`, `permission:read`, `api-key:*`, `audit:read`).
+
+### GraphQL surface
+
+| Op | Name | Auth | Permission |
+|----|------|------|------------|
+| Q | `ping` | public | — |
+| M | `login` | public | — |
+| M | `refresh` | public | — |
+| M | `logout` | public | — |
+| Q | `me` | Bearer / API key | — |
+| Q | `users` / `user` | Bearer / API key | `user:read` |
+| M | `createUser` / `updateUser` / `deleteUser` | Bearer / API key | `user:create` / `user:update` / `user:delete` |
+| Q | `roles` / `role` | Bearer / API key | `role:read` |
+| M | `assignRole` / `removeRole` | Bearer / API key | `role:update` |
+| Q | `permissions` / `permission` | Bearer / API key | `permission:read` |
+| Q | `apiKeys` | Bearer / API key | `api-key:read` |
+| M | `createApiKey` / `revokeApiKey` | Bearer / API key | `api-key:create` / `api-key:revoke` |
+| Q | `auditLogs` | Bearer / API key | `audit:read` |
+
+Machine auth: send `X-API-Key: <secret>` (takes precedence over Bearer when present). API key create/revoke and auth/user/role mutations append to `audit_logs`.
 
 ```graphql
 mutation Login {
   login(email: "admin@example.com", password: "change-me-in-local-dev") {
     accessToken
+    refreshToken
     user { id email isActive }
   }
+}
+
+query Me {
+  me { id email isActive }
 }
 
 mutation CreateUser {
   createUser(input: { email: "staff@example.com", password: "temporary-pass" }) {
     id
     email
+  }
+}
+
+query AuditLogs {
+  auditLogs(limit: 20) {
+    id
+    action
+    actorUserId
+    resourceType
+    resourceId
+    metadataJson
+    createdAt
   }
 }
 ```

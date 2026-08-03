@@ -6,6 +6,8 @@ import {
 import { InjectRepository } from '@nestjs/typeorm';
 import { QueryFailedError, Repository } from 'typeorm';
 
+import { AuditAction } from '../audit/audit-actions';
+import { AuditLogsService } from '../audit/audit-logs.service';
 import { UserEntity } from '../entities/user.entity';
 import { hashPassword } from '../seed/password';
 import type { CreateUserInput, UpdateUserInput, UserType } from './user.types';
@@ -45,6 +47,7 @@ export class UsersService {
   constructor(
     @InjectRepository(UserEntity)
     private readonly users: Repository<UserEntity>,
+    private readonly auditLogs: AuditLogsService,
   ) {}
 
   async findAll(): Promise<UserType[]> {
@@ -75,7 +78,10 @@ export class UsersService {
     });
   }
 
-  async create(input: CreateUserInput): Promise<UserType> {
+  async create(
+    input: CreateUserInput,
+    actorUserId?: string | null,
+  ): Promise<UserType> {
     const email = input.email.trim().toLowerCase();
     const existing = await this.users.findOne({ where: { email } });
     if (existing) {
@@ -89,7 +95,15 @@ export class UsersService {
           isActive: input.isActive ?? true,
         }),
       );
-      return toUserType(row);
+      const created = toUserType(row);
+      await this.auditLogs.append({
+        action: AuditAction.USER_CREATE,
+        actorUserId: actorUserId ?? null,
+        resourceType: 'user',
+        resourceId: created.id,
+        metadata: { email: created.email },
+      });
+      return created;
     } catch (error: unknown) {
       if (isUniqueViolation(error)) {
         throw new ConflictException(`User with email ${email} already exists`);
@@ -98,7 +112,11 @@ export class UsersService {
     }
   }
 
-  async update(id: string, input: UpdateUserInput): Promise<UserType> {
+  async update(
+    id: string,
+    input: UpdateUserInput,
+    actorUserId?: string | null,
+  ): Promise<UserType> {
     await this.findById(id);
     const patch: Partial<UserEntity> = {};
     if (input.email !== undefined) {
@@ -112,7 +130,20 @@ export class UsersService {
     }
     try {
       await this.users.update(id, patch);
-      return this.findById(id);
+      const updated = await this.findById(id);
+      await this.auditLogs.append({
+        action: AuditAction.USER_UPDATE,
+        actorUserId: actorUserId ?? null,
+        resourceType: 'user',
+        resourceId: id,
+        metadata: {
+          email: updated.email,
+          fields: Object.keys(input).filter(
+            (k) => input[k as keyof UpdateUserInput] !== undefined,
+          ),
+        },
+      });
+      return updated;
     } catch (error: unknown) {
       if (isUniqueViolation(error)) {
         throw new ConflictException('Email already in use');
@@ -121,9 +152,16 @@ export class UsersService {
     }
   }
 
-  async remove(id: string): Promise<UserType> {
+  async remove(id: string, actorUserId?: string | null): Promise<UserType> {
     const row = await this.findById(id);
     await this.users.delete(id);
+    await this.auditLogs.append({
+      action: AuditAction.USER_DELETE,
+      actorUserId: actorUserId ?? null,
+      resourceType: 'user',
+      resourceId: id,
+      metadata: { email: row.email },
+    });
     return row;
   }
 }

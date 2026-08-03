@@ -1,8 +1,13 @@
 import { UnauthorizedException } from '@nestjs/common';
 import { describe, expect, it, vi } from 'vitest';
 
+import { AuditAction } from './audit/audit-actions';
 import { AuthService } from './auth.service';
 import { hashPassword } from './seed/password';
+
+function mockAudit() {
+  return { append: vi.fn().mockResolvedValue({ id: 'aud' }) };
+}
 
 describe('AuthService.login', () => {
   const now = new Date('2026-08-03T00:00:00.000Z');
@@ -25,10 +30,12 @@ describe('AuthService.login', () => {
     const refreshTokensService = {
       issue: vi.fn().mockResolvedValue('opr_refresh_raw'),
     };
+    const audit = mockAudit();
     const service = new AuthService(
       usersService as never,
       jwtService as never,
       refreshTokensService as never,
+      audit as never,
     );
 
     const result = await service.login('admin@example.com', 'good-pass');
@@ -42,9 +49,15 @@ describe('AuthService.login', () => {
       email: 'admin@example.com',
     });
     expect(refreshTokensService.issue).toHaveBeenCalledWith('user-1');
+    expect(audit.append).toHaveBeenCalledWith(
+      expect.objectContaining({
+        action: AuditAction.LOGIN_SUCCESS,
+        actorUserId: 'user-1',
+      }),
+    );
   });
 
-  it('rejects invalid passwords', async () => {
+  it('rejects invalid passwords and audits failure', async () => {
     const usersService = {
       findByEmailWithHash: vi.fn().mockResolvedValue({
         id: 'user-1',
@@ -55,13 +68,18 @@ describe('AuthService.login', () => {
         passwordHash: hashPassword('good-pass'),
       }),
     };
+    const audit = mockAudit();
     const service = new AuthService(
       usersService as never,
       { signAsync: vi.fn() } as never,
       { issue: vi.fn() } as never,
+      audit as never,
     );
     await expect(service.login('admin@example.com', 'wrong')).rejects.toBeInstanceOf(
       UnauthorizedException,
+    );
+    expect(audit.append).toHaveBeenCalledWith(
+      expect.objectContaining({ action: AuditAction.LOGIN_FAILURE }),
     );
   });
 
@@ -80,6 +98,7 @@ describe('AuthService.login', () => {
       usersService as never,
       { signAsync: vi.fn() } as never,
       { issue: vi.fn() } as never,
+      mockAudit() as never,
     );
     await expect(
       service.login('admin@example.com', 'good-pass'),
@@ -109,10 +128,12 @@ describe('AuthService.refresh', () => {
         refreshToken: 'opr_new_refresh',
       }),
     };
+    const audit = mockAudit();
     const service = new AuthService(
       usersService as never,
       jwtService as never,
       refreshTokensService as never,
+      audit as never,
     );
 
     const result = await service.refresh('opr_old_refresh');
@@ -120,6 +141,9 @@ describe('AuthService.refresh', () => {
     expect(result.accessToken).toBe('new.access.token');
     expect(result.refreshToken).toBe('opr_new_refresh');
     expect(refreshTokensService.rotate).toHaveBeenCalledWith('opr_old_refresh');
+    expect(audit.append).toHaveBeenCalledWith(
+      expect.objectContaining({ action: AuditAction.REFRESH }),
+    );
   });
 
   it('rejects when rotated user is inactive', async () => {
@@ -140,6 +164,7 @@ describe('AuthService.refresh', () => {
           refreshToken: 'opr_new',
         }),
       } as never,
+      mockAudit() as never,
     );
     await expect(service.refresh('opr_old')).rejects.toBeInstanceOf(
       UnauthorizedException,
