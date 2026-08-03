@@ -1,3 +1,4 @@
+import { config as loadDotenv } from 'dotenv';
 import { z } from 'zod';
 
 export const envSchema = z.object({
@@ -17,8 +18,15 @@ export const envSchema = z.object({
 
 export type AppEnv = z.infer<typeof envSchema>;
 
-export function loadEnv(source: NodeJS.ProcessEnv = process.env): AppEnv {
-  const parsed = envSchema.safeParse(source);
+/**
+ * Load and Zod-validate process env. Fail-fast on invalid values.
+ * When `source` is omitted, loads `.env` via dotenv then reads `process.env`.
+ */
+export function loadEnv(source?: NodeJS.ProcessEnv): AppEnv {
+  if (source === undefined) {
+    loadDotenv();
+  }
+  const parsed = envSchema.safeParse(source ?? process.env);
   if (!parsed.success) {
     const details = parsed.error.issues
       .map((issue) => `${issue.path.join('.')}: ${issue.message}`)

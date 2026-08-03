@@ -23,15 +23,41 @@ Host NestJS application modules, GraphQL (code-first), Prisma composition host, 
 ```bash
 pnpm install
 pnpm docker:up          # Postgres 16 + Redis 7 (host :5433 / :6380)
-cp .env.example .env    # optional for later phases
+cp .env.example .env
+pnpm prisma:generate
+pnpm exec prisma migrate deploy --schema=database/prisma
 pnpm dev                # NestJS + GraphQL on :4000
 ```
 
 | Endpoint | Purpose |
 |----------|---------|
 | `GET /health/live` | Liveness |
-| `GET /health/ready` | Readiness (stub until Phase B) |
+| `GET /health/ready` | Readiness (stub until B-04) |
 | `POST/GET /graphql` | GraphQL (Apollo playground in dev) |
+
+## Config (B-02)
+
+- `.env` loaded via `dotenv` + Zod (`src/modules/config/env.schema.ts`)
+- Typed `ConfigService` is global; invalid env fails boot
+- Documented keys: `PORT`, `DATABASE_URL`, `REDIS_URL`, `LOG_LEVEL`, `OTEL_ENABLED`
+
+## Logging (B-03)
+
+- Structured JSON logs via `AppLogger`
+- `CorrelationIdMiddleware` sets/propagates `x-request-id` and `x-correlation-id` (UUID if missing)
+
+## Prisma (B-01)
+
+Multi-file schema under `database/prisma/` (auth fragment owned by auth module). Spike writeup:
+
+- Workspace: `opoha-workspace/docs/research/2026-08-03-prisma-ownership-spike.md`
+- Local mirror: `database/spikes/prisma-ownership-spike.md`
+
+```bash
+pnpm prisma:generate
+pnpm prisma:migrate          # migrate dev (new migrations)
+pnpm exec prisma migrate deploy --schema=database/prisma
+```
 
 ## Scripts
 

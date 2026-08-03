@@ -2,6 +2,7 @@
 
 **Date:** 2026-08-03  
 **Repo:** `opoha-core`  
+**Canonical writeup:** [opoha-workspace/docs/research/2026-08-03-prisma-ownership-spike.md](../../../opoha-workspace/docs/research/2026-08-03-prisma-ownership-spike.md)  
 **ADR:** [ADR-0005](../../../opoha-workspace/docs/adr/ADR-0005-prisma-schema-ownership.md)  
 **Design:** [database-module-ownership-design.md](../../../opoha-workspace/docs/design/database-module-ownership-design.md)
 
