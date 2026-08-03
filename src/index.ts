@@ -43,4 +43,5 @@ export {
 export type {
   DiscoveredPlugin,
   PluginManifest,
+  PluginLoadResult,
 } from './modules/plugin-loader/public';

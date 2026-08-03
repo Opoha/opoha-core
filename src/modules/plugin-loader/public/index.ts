@@ -3,6 +3,7 @@
  */
 export { PluginLoaderModule } from '../plugin-loader.module';
 export { PluginLoaderService } from '../plugin-loader.service';
+export type { PluginLoadResult } from '../plugin-loader.service';
 export {
   PLUGIN_CONTRACT_VERSION,
   parsePluginManifest,
@@ -13,5 +14,6 @@ export { orderPluginsByDependency } from '../dependency-order';
 export {
   discoverPluginAt,
   discoverPlugins,
+  discoverPluginsInDirectory,
   parsePluginPathsEnv,
 } from '../plugin-discovery';

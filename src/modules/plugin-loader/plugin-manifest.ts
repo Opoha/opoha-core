@@ -11,6 +11,8 @@ export const pluginManifestSchema = z
       .regex(/^[a-z0-9]+(?:-[a-z0-9]+)*$/, 'plugin id must be kebab-case'),
     version: z.string().min(1),
     contractVersion: z.string().min(1),
+    /** Module entry relative to plugin root (validated by load stub; not executed yet). */
+    entry: z.string().min(1).default('dist/index.js'),
     displayName: z.string().min(1).optional(),
     description: z.string().optional(),
     dependsOn: z.array(z.string().min(1)).default([]),

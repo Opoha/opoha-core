@@ -9,6 +9,19 @@ function mockAudit() {
   return { append: vi.fn().mockResolvedValue({ id: 'aud' }) };
 }
 
+function mockEventBus() {
+  return {
+    publish: vi.fn().mockResolvedValue({
+      event: {},
+      listenerCount: 0,
+      failures: [],
+    }),
+  };
+}
+
+const USER_ID = '11111111-1111-4111-8111-111111111111';
+const API_KEY_ID = '22222222-2222-4222-8222-222222222222';
+
 describe('ApiKeysService', () => {
   it('rejects scopes outside owner permissions', async () => {
     const service = new ApiKeysService(
@@ -19,9 +32,10 @@ describe('ApiKeysService', () => {
         listKeysForUser: vi.fn().mockResolvedValue(['api-key:read']),
       } as never,
       mockAudit() as never,
+      mockEventBus() as never,
     );
     await expect(
-      service.create('user-1', {
+      service.create(USER_ID, {
         name: 'ci',
         permissionKeys: ['user:delete'],
       }),
@@ -33,8 +47,8 @@ describe('ApiKeysService', () => {
       .fn()
       .mockImplementation(async (entity: { name: string; keyPrefix: string; keyHash: string }) => ({
         ...entity,
-        id: 'ak-1',
-        userId: 'user-1',
+        id: API_KEY_ID,
+        userId: USER_ID,
         lastUsedAt: null,
         revokedAt: null,
         createdAt: new Date(),
@@ -43,7 +57,7 @@ describe('ApiKeysService', () => {
       save: saveKey,
       create: vi.fn((data) => data),
       findOne: vi.fn().mockResolvedValue({
-        id: 'ak-1',
+        id: API_KEY_ID,
         name: 'ci',
         keyPrefix: 'opk_xxxx',
         lastUsedAt: null,
@@ -60,6 +74,7 @@ describe('ApiKeysService', () => {
       create: vi.fn((data) => data),
     };
     const audit = mockAudit();
+    const eventBus = mockEventBus();
     const service = new ApiKeysService(
       apiKeys as never,
       permissions as never,
@@ -70,9 +85,10 @@ describe('ApiKeysService', () => {
           .mockResolvedValue(['api-key:read', 'api-key:create']),
       } as never,
       audit as never,
+      eventBus as never,
     );
 
-    const result = await service.create('user-1', {
+    const result = await service.create(USER_ID, {
       name: 'ci',
       permissionKeys: ['api-key:read'],
     });
@@ -85,8 +101,18 @@ describe('ApiKeysService', () => {
     expect(audit.append).toHaveBeenCalledWith(
       expect.objectContaining({
         action: AuditAction.API_KEY_CREATE,
-        actorUserId: 'user-1',
-        resourceId: 'ak-1',
+        actorUserId: USER_ID,
+        resourceId: API_KEY_ID,
+      }),
+    );
+    expect(eventBus.publish).toHaveBeenCalledWith(
+      expect.objectContaining({
+        eventName: 'ApiKeyCreated',
+        aggregateId: API_KEY_ID,
+        data: expect.objectContaining({
+          apiKeyId: API_KEY_ID,
+          ownerUserId: USER_ID,
+        }),
       }),
     );
   });
@@ -94,9 +120,9 @@ describe('ApiKeysService', () => {
   it('authenticates a valid API key into AuthUser with scoped permissions', async () => {
     const apiKeys = {
       findOne: vi.fn().mockResolvedValue({
-        id: 'ak-1',
+        id: API_KEY_ID,
         revokedAt: null,
-        user: { id: 'user-1', email: 'a@b.c', isActive: true },
+        user: { id: USER_ID, email: 'a@b.c', isActive: true },
         apiKeyPermissions: [
           { permission: { key: 'user:read' } },
           { permission: { key: 'api-key:read' } },
@@ -110,13 +136,14 @@ describe('ApiKeysService', () => {
       {} as never,
       {} as never,
       mockAudit() as never,
+      mockEventBus() as never,
     );
 
     const authUser = await service.authenticate('opk_secret');
     expect(authUser).toEqual({
-      userId: 'user-1',
+      userId: USER_ID,
       email: 'a@b.c',
-      apiKeyId: 'ak-1',
+      apiKeyId: API_KEY_ID,
       permissions: ['api-key:read', 'user:read'],
     });
     expect(apiKeys.update).toHaveBeenCalled();

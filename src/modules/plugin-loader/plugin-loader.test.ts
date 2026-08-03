@@ -4,12 +4,21 @@ import { join } from 'node:path';
 
 import { describe, expect, it } from 'vitest';
 
+import { EventBusService } from '../event-bus/event-bus.service';
+import { AdminExtensionRegistry } from './admin-extension-registry';
+import { ContributionRegistry } from './contribution-registry';
 import { orderPluginsByDependency } from './dependency-order';
 import {
   discoverPluginAt,
   discoverPlugins,
+  discoverPluginsInDirectory,
   parsePluginPathsEnv,
 } from './plugin-discovery';
+import {
+  canBootPlugin,
+  transitionPluginState,
+} from './plugin-lifecycle';
+import { PluginLoaderService } from './plugin-loader.service';
 import {
   PLUGIN_CONTRACT_VERSION,
   parsePluginManifest,
@@ -20,6 +29,7 @@ function pluginDir(
   root: string,
   id: string,
   dependsOn: string[] = [],
+  entry = 'dist/index.js',
 ): string {
   const dir = join(root, id);
   mkdirSync(dir, { recursive: true });
@@ -29,22 +39,57 @@ function pluginDir(
       id,
       version: '0.1.0',
       contractVersion: PLUGIN_CONTRACT_VERSION,
+      entry,
       dependsOn,
     }),
   );
   return dir;
 }
 
+function createLoader(configGet?: (key: string) => string | undefined) {
+  const eventBus = new EventBusService();
+  const contributions = new ContributionRegistry(eventBus);
+  const admin = new AdminExtensionRegistry();
+  const config = {
+    get: (key: string) => {
+      if (configGet) {
+        return configGet(key);
+      }
+      if (key === 'OPOHA_PLUGINS' || key === 'OPOHA_PLUGINS_PATH') {
+        return '';
+      }
+      return undefined;
+    },
+  };
+  const loader = new PluginLoaderService(
+    config as never,
+    contributions,
+    admin,
+  );
+  return { loader, contributions, admin, eventBus };
+}
+
 describe('parsePluginManifest', () => {
-  it('accepts a valid 0.1 contract manifest', () => {
+  it('accepts a valid 0.1 contract manifest with entry', () => {
     const manifest = parsePluginManifest({
       id: 'manual-payment',
       version: '0.1.0',
       contractVersion: '0.1',
+      entry: 'src/index.ts',
       dependsOn: ['storage-localfs'],
     });
     expect(manifest.id).toBe('manual-payment');
+    expect(manifest.entry).toBe('src/index.ts');
     expect(manifest.dependsOn).toEqual(['storage-localfs']);
+  });
+
+  it('defaults entry to dist/index.js', () => {
+    const manifest = parsePluginManifest({
+      id: 'x',
+      version: '1.0.0',
+      contractVersion: '0.1',
+    });
+    expect(manifest.entry).toBe('dist/index.js');
   });
 
   it('rejects incompatible contractVersion', () => {
@@ -67,6 +112,7 @@ describe('orderPluginsByDependency', () => {
         id,
         version: '0.1.0',
         contractVersion: '0.1',
+        entry: 'dist/index.js',
         dependsOn,
         required: false,
       },
@@ -127,5 +173,164 @@ describe('plugin discovery', () => {
     const discovered = discoverPlugins([b, a]);
     const ordered = orderPluginsByDependency(discovered);
     expect(ordered.map((p) => p.manifest.id)).toEqual(['alpha', 'beta']);
+  });
+
+  it('scans OPOHA_PLUGINS_PATH child directories', () => {
+    const root = mkdtempSync(join(tmpdir(), 'opoha-plugins-path-'));
+    pluginDir(root, 'storage-localfs');
+    pluginDir(root, 'manual-payment', ['storage-localfs']);
+    const discovered = discoverPluginsInDirectory(root);
+    const ordered = orderPluginsByDependency(discovered);
+    expect(ordered.map((p) => p.manifest.id)).toEqual([
+      'storage-localfs',
+      'manual-payment',
+    ]);
+  });
+});
+
+describe('PluginLoaderService.load stub', () => {
+  it('validates manifests without executing entry modules', () => {
+    const root = mkdtempSync(join(tmpdir(), 'opoha-load-'));
+    const a = pluginDir(root, 'alpha');
+    const b = pluginDir(root, 'beta', ['alpha']);
+
+    const { loader } = createLoader((key) => {
+      if (key === 'OPOHA_PLUGINS') {
+        return `${a},${b}`;
+      }
+      if (key === 'OPOHA_PLUGINS_PATH') {
+        return '';
+      }
+      return undefined;
+    });
+    const result = loader.load();
+    expect(result.ordered.map((p) => p.manifest.id)).toEqual(['alpha', 'beta']);
+    expect(result.validated).toHaveLength(2);
+    expect(result.validated[0]?.id).toBe('alpha');
+  });
+});
+
+describe('plugin lifecycle state machine', () => {
+  it('allows install → enable → disable → enable → uninstall', () => {
+    let state = transitionPluginState('discovered', 'install');
+    expect(state).toBe('installed');
+    state = transitionPluginState(state, 'enable');
+    expect(state).toBe('enabled');
+    state = transitionPluginState(state, 'disable');
+    expect(state).toBe('disabled');
+    state = transitionPluginState(state, 'enable');
+    expect(state).toBe('enabled');
+    state = transitionPluginState(state, 'uninstall');
+    expect(state).toBe('uninstalled');
+    expect(canBootPlugin('enabled')).toBe(true);
+    expect(canBootPlugin('discovered')).toBe(false);
+  });
+
+  it('rejects illegal transitions', () => {
+    expect(() => transitionPluginState('discovered', 'enable')).toThrow(
+      /cannot enable/,
+    );
+    expect(() => transitionPluginState('installed', 'disable')).toThrow(
+      /cannot disable/,
+    );
+  });
+});
+
+describe('PluginLoaderService lifecycle + registrations', () => {
+  it('installs, boots registrations inactive, enable activates listeners and admin', async () => {
+    const { loader, contributions, admin, eventBus } = createLoader();
+    let seen = 0;
+
+    loader.registerDefinition({
+      id: 'sample',
+      async boot(ctx) {
+        ctx.registerGraphQL({ name: 'samplePing', kind: 'query' });
+        ctx.registerProvider({
+          token: 'sample.service',
+          provider: { ping: () => 'ok' },
+        });
+        ctx.registerListener('auth.user.created', async () => {
+          seen += 1;
+        });
+        ctx.registerAdmin({
+          navigation: [
+            {
+              id: 'sample-nav',
+              label: 'Sample',
+              path: '/plugins/sample',
+              permission: 'plugin:sample:read',
+            },
+          ],
+          settings: [
+            {
+              id: 'sample-settings',
+              title: 'Sample settings',
+              path: '/plugins/sample/settings',
+            },
+          ],
+          permissions: ['plugin:sample:read'],
+        });
+      },
+    });
+
+    await loader.install('sample');
+    expect(loader.getState('sample')).toBe('installed');
+
+    await loader.boot('sample');
+    expect(contributions.listGraphQL()).toHaveLength(1);
+    expect(contributions.listGraphQL(true)).toHaveLength(0);
+    expect(admin.getManifest(true).plugins).toHaveLength(0);
+    expect(eventBus.listenerCount('auth.user.created')).toBe(0);
+
+    await loader.enable('sample');
+    expect(loader.getState('sample')).toBe('enabled');
+    expect(contributions.listGraphQL(true)).toHaveLength(1);
+    expect(
+      contributions.getProvider<{ ping: () => string }>('sample.service')?.ping(),
+    ).toBe('ok');
+    expect(admin.getManifest(true).plugins).toEqual([
+      expect.objectContaining({ pluginId: 'sample' }),
+    ]);
+    expect(eventBus.listenerCount('auth.user.created')).toBe(1);
+
+    await eventBus.publish({
+      eventName: 'auth.user.created',
+      data: { userId: 'u1' },
+    });
+    expect(seen).toBe(1);
+
+    await loader.disable('sample');
+    expect(contributions.listGraphQL(true)).toHaveLength(0);
+    expect(admin.getManifest(true).plugins).toHaveLength(0);
+    expect(eventBus.listenerCount('auth.user.created')).toBe(0);
+
+    await loader.enable('sample');
+    expect(eventBus.listenerCount('auth.user.created')).toBe(1);
+
+    await loader.uninstall('sample');
+    expect(loader.getState('sample')).toBe('uninstalled');
+    expect(contributions.listGraphQL()).toHaveLength(0);
+    expect(admin.getContribution('sample')).toBeUndefined();
+  });
+
+  it('detects GraphQL contribution conflicts across plugins', async () => {
+    const { loader, contributions } = createLoader();
+    loader.registerDefinition({
+      id: 'a',
+      boot(ctx) {
+        ctx.registerGraphQL({ name: 'shared', kind: 'query' });
+      },
+    });
+    loader.registerDefinition({
+      id: 'b',
+      boot(ctx) {
+        ctx.registerGraphQL({ name: 'shared', kind: 'query' });
+      },
+    });
+    await loader.install('a');
+    await loader.enable('a');
+    await loader.install('b');
+    await expect(loader.enable('b')).rejects.toThrow(/conflict/);
+    expect(contributions.listGraphQL().map((g) => g.pluginId)).toEqual(['a']);
   });
 });

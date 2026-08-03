@@ -27,10 +27,15 @@ export const envSchema = z
     /** Opaque refresh-token lifetime, e.g. `7d`. */
     JWT_REFRESH_EXPIRES_IN: z.string().min(1).default('7d'),
     /**
-     * Plugin roots for the loader — comma-separated paths or a JSON string array.
-     * Empty = no plugins discovered at boot.
+     * Explicit plugin roots — comma-separated paths or a JSON string array.
+     * Empty = no plugins from this list.
      */
     OPOHA_PLUGINS: z.string().optional().default(''),
+    /**
+     * Directory whose immediate child folders are scanned for plugin manifests
+     * (`opoha.plugin.json` or `package.json#opoha`). Combined with OPOHA_PLUGINS.
+     */
+    OPOHA_PLUGINS_PATH: z.string().optional().default(''),
   })
   .superRefine((data, ctx) => {
     if (data.NODE_ENV === 'production' && !data.JWT_SECRET) {

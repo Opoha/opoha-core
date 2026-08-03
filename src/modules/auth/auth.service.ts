@@ -1,6 +1,8 @@
 import { Injectable, UnauthorizedException } from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
 
+import { CoreEventName } from '../event-bus/event-catalog';
+import { EventBusService } from '../event-bus/event-bus.service';
 import { AuditAction } from './audit/audit-actions';
 import { AuditLogsService } from './audit/audit-logs.service';
 import type { AuthPayload } from './auth.types';
@@ -16,6 +18,7 @@ export class AuthService {
     private readonly jwtService: JwtService,
     private readonly refreshTokensService: RefreshTokensService,
     private readonly auditLogs: AuditLogsService,
+    private readonly eventBus: EventBusService,
   ) {}
 
   async login(email: string, password: string): Promise<AuthPayload> {
@@ -25,6 +28,16 @@ export class AuthService {
       await this.auditLogs.append({
         action: AuditAction.LOGIN_FAILURE,
         metadata: { email: normalized },
+      });
+      await this.eventBus.publish({
+        eventName: CoreEventName.LoginFailed,
+        aggregateType: 'user',
+        aggregateId: user?.id ?? normalized,
+        data: {
+          email: normalized,
+          reason: 'invalid_credentials' as const,
+          ...(user ? { userId: user.id } : {}),
+        },
       });
       throw new UnauthorizedException('Invalid email or password');
     }
@@ -36,6 +49,17 @@ export class AuthService {
         resourceId: user.id,
         metadata: { email: normalized, reason: 'inactive' },
       });
+      await this.eventBus.publish({
+        eventName: CoreEventName.LoginFailed,
+        aggregateType: 'user',
+        aggregateId: user.id,
+        data: {
+          email: normalized,
+          reason: 'inactive' as const,
+          userId: user.id,
+        },
+        metadata: { actorId: user.id },
+      });
       throw new UnauthorizedException('User account is inactive');
     }
     const tokens = await this.issueTokens(user);
@@ -45,6 +69,16 @@ export class AuthService {
       resourceType: 'user',
       resourceId: user.id,
       metadata: { email: user.email },
+    });
+    await this.eventBus.publish({
+      eventName: CoreEventName.LoginSucceeded,
+      aggregateType: 'user',
+      aggregateId: user.id,
+      data: {
+        userId: user.id,
+        email: user.email,
+      },
+      metadata: { actorId: user.id },
     });
     return tokens;
   }

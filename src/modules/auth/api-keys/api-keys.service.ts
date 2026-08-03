@@ -7,6 +7,8 @@ import {
 import { InjectRepository } from '@nestjs/typeorm';
 import { In, Repository } from 'typeorm';
 
+import { CoreEventName } from '../../event-bus/event-catalog';
+import { EventBusService } from '../../event-bus/event-bus.service';
 import { AuditAction } from '../audit/audit-actions';
 import { AuditLogsService } from '../audit/audit-logs.service';
 import { generateOpaqueToken, hashOpaqueToken } from '../crypto/token-hash';
@@ -32,6 +34,7 @@ export class ApiKeysService {
     private readonly apiKeyPermissions: Repository<ApiKeyPermissionEntity>,
     private readonly permissionsService: PermissionsService,
     private readonly auditLogs: AuditLogsService,
+    private readonly eventBus: EventBusService,
   ) {}
 
   async create(
@@ -112,6 +115,19 @@ export class ApiKeysService {
         permissionKeys: apiKey.permissionKeys,
       },
     });
+    await this.eventBus.publish({
+      eventName: CoreEventName.ApiKeyCreated,
+      aggregateType: 'api_key',
+      aggregateId: apiKey.id,
+      data: {
+        apiKeyId: apiKey.id,
+        ownerUserId,
+        name: apiKey.name,
+        keyPrefix: apiKey.keyPrefix,
+        permissionKeys: apiKey.permissionKeys,
+      },
+      metadata: { actorId: ownerUserId },
+    });
     return {
       apiKey,
       secret: raw,
@@ -151,6 +167,18 @@ export class ApiKeysService {
       resourceType: 'api_key',
       resourceId: apiKey.id,
       metadata: { name: apiKey.name, keyPrefix: apiKey.keyPrefix },
+    });
+    await this.eventBus.publish({
+      eventName: CoreEventName.ApiKeyRevoked,
+      aggregateType: 'api_key',
+      aggregateId: apiKey.id,
+      data: {
+        apiKeyId: apiKey.id,
+        ownerUserId: userId,
+        name: apiKey.name,
+        keyPrefix: apiKey.keyPrefix,
+      },
+      metadata: { actorId: userId },
     });
     return apiKey;
   }

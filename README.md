@@ -39,7 +39,7 @@ pnpm dev                # NestJS + GraphQL on :4000
 
 - `.env` loaded via `dotenv` + Zod (`src/modules/config/env.schema.ts`)
 - Typed `ConfigService` is global; invalid env fails boot
-- Documented keys: `PORT`, `DATABASE_URL`, `REDIS_URL`, `LOG_LEVEL`, `OTEL_ENABLED`, `JWT_SECRET`, `JWT_EXPIRES_IN`
+- Documented keys: `PORT`, `DATABASE_URL`, `REDIS_URL`, `LOG_LEVEL`, `OTEL_ENABLED`, `JWT_SECRET`, `JWT_EXPIRES_IN`, `OPOHA_PLUGINS`, `OPOHA_PLUGINS_PATH`
 
 ## Auth (C-01 … C-09)
 
@@ -106,6 +106,37 @@ query AuditLogs {
 ```
 
 Send `Authorization: Bearer <accessToken>` on protected operations.
+
+## Event bus (D-01 / D-02)
+
+In-process NestJS `EventBusService` (`EventBusModule` is global):
+
+- `publish` / `subscribe` with per-listener error isolation (default)
+- Zod payload schemas registered per event name before publish
+- Envelope: `eventId`, `eventName`, `occurredAt`, `aggregateType`, `aggregateId`, `payloadVersion`, `data`, optional `metadata.correlationId` / `actorId`
+
+Auth catalog (emitted from auth flows): `UserRegistered`, `UserUpdated`, `UserDeleted`, `LoginSucceeded`, `LoginFailed`, `ApiKeyCreated`, `ApiKeyRevoked`.
+
+## Plugin loader (D-03)
+
+Discovery + manifest parse + dependency order (lifecycle install/boot is D-04).
+
+| Env | Purpose |
+|-----|---------|
+| `OPOHA_PLUGINS` | Comma-separated plugin root paths, or a JSON string array |
+| `OPOHA_PLUGINS_PATH` | Parent directory; each child folder with `opoha.plugin.json` or `package.json#opoha` is discovered |
+
+Manifest fields: `id`, `version`, `contractVersion` (`0.1`), `entry` (default `dist/index.js`), `dependsOn`, optional engines/display metadata.
+
+```bash
+# Explicit package roots
+OPOHA_PLUGINS=../plugin-storage-localfs,../plugin-manual-payment
+
+# Or scan a plugins directory
+OPOHA_PLUGINS_PATH=/path/to/plugins
+```
+
+`PluginLoaderService.load()` validates manifests and topological order without executing plugin entry modules. Cycles and missing dependencies fail with a clear error.
 
 ## Logging (B-03)
 
