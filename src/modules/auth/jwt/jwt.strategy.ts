@@ -2,20 +2,22 @@ import { Injectable, UnauthorizedException } from '@nestjs/common';
 import { PassportStrategy } from '@nestjs/passport';
 import { ExtractJwt, Strategy } from 'passport-jwt';
 
-import { ConfigService } from '../../config/config.service';
+import { loadEnv } from '../../config/env.schema';
 import { UsersService } from '../users/users.service';
 import type { AuthUser, JwtPayload } from './auth-user';
 
+/**
+ * Passport JWT strategy. Secret is read via `loadEnv()` (not constructor-injected
+ * ConfigService) because `@nestjs/passport` Strategy base ctor breaks DI param order.
+ */
 @Injectable()
 export class JwtStrategy extends PassportStrategy(Strategy, 'jwt') {
-  constructor(
-    config: ConfigService,
-    private readonly usersService: UsersService,
-  ) {
+  constructor(private readonly usersService: UsersService) {
+    const { JWT_SECRET } = loadEnv();
     super({
       jwtFromRequest: ExtractJwt.fromAuthHeaderAsBearerToken(),
       ignoreExpiration: false,
-      secretOrKey: config.get('JWT_SECRET'),
+      secretOrKey: JWT_SECRET,
     });
   }
 

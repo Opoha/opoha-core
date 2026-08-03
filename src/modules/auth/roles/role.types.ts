@@ -5,13 +5,13 @@ export class PermissionType {
   @Field(() => ID)
   id!: string;
 
-  @Field()
+  @Field(() => String)
   key!: string;
 
-  @Field({ nullable: true })
+  @Field(() => String, { nullable: true })
   description?: string | null;
 
-  @Field()
+  @Field(() => Date)
   createdAt!: Date;
 }
 
@@ -20,19 +20,19 @@ export class RoleType {
   @Field(() => ID)
   id!: string;
 
-  @Field()
+  @Field(() => String)
   name!: string;
 
-  @Field({ nullable: true })
+  @Field(() => String, { nullable: true })
   description?: string | null;
 
-  @Field()
+  @Field(() => Date)
   createdAt!: Date;
 
-  @Field()
+  @Field(() => Date)
   updatedAt!: Date;
 
-  @Field(() => [PermissionType], { nullable: true })
+  @Field(() => [PermissionType], { nullable: 'itemsAndList' })
   permissions?: PermissionType[];
 }
 
