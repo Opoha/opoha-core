@@ -15,6 +15,7 @@ export const CoreEventName = {
   InventoryUpdated: 'InventoryUpdated',
   InventoryReservationCreated: 'InventoryReservationCreated',
   InventoryReservationReleased: 'InventoryReservationReleased',
+  WarehouseUpdated: 'WarehouseUpdated',
   CartCreated: 'CartCreated',
   OrderCreated: 'OrderCreated',
   OrderStatusChanged: 'OrderStatusChanged',
