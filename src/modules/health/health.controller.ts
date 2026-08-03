@@ -1,4 +1,9 @@
-import { Controller, Get, Inject } from '@nestjs/common';
+import {
+  Controller,
+  Get,
+  Inject,
+  ServiceUnavailableException,
+} from '@nestjs/common';
 
 import { HealthService } from './health.service';
 import type { LivenessResult, ReadinessResult } from './health.service';
@@ -13,7 +18,15 @@ export class HealthController {
   }
 
   @Get('ready')
-  ready(): ReadinessResult {
-    return this.health.readiness();
+  async ready(): Promise<ReadinessResult> {
+    const result = await this.health.readiness();
+    if (result.status !== 'ok') {
+      throw new ServiceUnavailableException({
+        status: result.status,
+        checks: result.checks,
+        message: 'One or more readiness checks failed',
+      });
+    }
+    return result;
   }
 }

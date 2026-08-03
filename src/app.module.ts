@@ -3,17 +3,24 @@ import { GraphQLModule } from '@nestjs/graphql';
 import { ApolloDriver, type ApolloDriverConfig } from '@nestjs/apollo';
 
 import { PrismaModule } from './infrastructure/prisma/prisma.module';
+import { RedisModule } from './infrastructure/redis/redis.module';
+import { ApiVersionMiddleware } from './modules/api-versioning/api-version.middleware';
+import { ApiVersioningModule } from './modules/api-versioning/api-versioning.module';
 import { ConfigModule } from './modules/config/config.module';
 import { ShellResolver } from './modules/graphql/shell.resolver';
 import { HealthModule } from './modules/health/health.module';
 import { CorrelationIdMiddleware } from './modules/logging/correlation-id.middleware';
 import { LoggingModule } from './modules/logging/logging.module';
+import { OpenTelemetryModule } from './modules/otel/otel.module';
 
 @Module({
   imports: [
     ConfigModule,
     LoggingModule,
+    OpenTelemetryModule,
     PrismaModule,
+    RedisModule,
+    ApiVersioningModule,
     GraphQLModule.forRoot<ApolloDriverConfig>({
       driver: ApolloDriver,
       autoSchemaFile: true,
@@ -27,6 +34,6 @@ import { LoggingModule } from './modules/logging/logging.module';
 })
 export class AppModule implements NestModule {
   configure(consumer: MiddlewareConsumer): void {
-    consumer.apply(CorrelationIdMiddleware).forRoutes('*');
+    consumer.apply(CorrelationIdMiddleware, ApiVersionMiddleware).forRoutes('*');
   }
 }

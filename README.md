@@ -32,7 +32,7 @@ pnpm dev                # NestJS + GraphQL on :4000
 | Endpoint | Purpose |
 |----------|---------|
 | `GET /health/live` | Liveness |
-| `GET /health/ready` | Readiness (stub until B-04) |
+| `GET /health/ready` | Readiness — pings Postgres + Redis (200 / 503) |
 | `POST/GET /graphql` | GraphQL (Apollo playground in dev) |
 
 ## Config (B-02)
@@ -45,6 +45,31 @@ pnpm dev                # NestJS + GraphQL on :4000
 
 - Structured JSON logs via `AppLogger`
 - `CorrelationIdMiddleware` sets/propagates `x-request-id` and `x-correlation-id` (UUID if missing)
+
+## Health / readiness (B-04)
+
+- `GET /health/live` — process up
+- `GET /health/ready` — `SELECT 1` via Prisma + Redis `PING`
+  - **200** `{ "status": "ok", "checks": { "postgres": "ok", "redis": "ok" } }`
+  - **503** when either check fails (JSON body includes per-check status)
+
+## OpenTelemetry (B-05)
+
+- Off by default (`OTEL_ENABLED=false`)
+- When `OTEL_ENABLED=true`, registers a `BasicTracerProvider` with console span exporter
+- Public hook: `import { getTracer } from '@opoha/core'` (no-op tracer when disabled)
+
+## API versioning (B-06)
+
+- Header: **`X-API-Version`**
+- Default when omitted: **`1`**
+- Also accepted: **`2026-08-03`** (MVP freeze-date alias → canonical `1`)
+- Unsupported values → **400** with a clear JSON error
+- Design note: `opoha-workspace/docs/architecture/api-versioning.md`
+
+```bash
+curl -H 'X-API-Version: 1' http://localhost:4000/graphql
+```
 
 ## Prisma (B-01)
 
