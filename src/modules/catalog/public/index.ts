@@ -24,7 +24,12 @@ export type {
   UpdateProductInput,
   ProductType,
   ProductVariantType,
+  ProductReviewAggregateType,
 } from '../products/product.types';
+export {
+  REVIEW_AGGREGATE_PROVIDER_TOKEN,
+  type ReviewAggregateProvider,
+} from '../products/products.resolver';
 export type {
   CreateCategoryInput,
   UpdateCategoryInput,

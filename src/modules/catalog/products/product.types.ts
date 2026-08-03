@@ -1,4 +1,4 @@
-import { Field, ID, InputType, ObjectType } from '@nestjs/graphql';
+import { Field, Float, ID, InputType, Int, ObjectType } from '@nestjs/graphql';
 
 @ObjectType({ description: 'Sellable product (catalog aggregate)' })
 export class ProductType {
@@ -25,6 +25,25 @@ export class ProductType {
 
   @Field(() => [ProductVariantType], { nullable: 'itemsAndList' })
   variants?: ProductVariantType[];
+
+  /**
+   * Populated by a field resolver hook (Phase 4 D-04) — null when no review
+   * plugin is installed/enabled. Never a DB column on this type.
+   */
+  @Field(() => ProductReviewAggregateType, { nullable: true })
+  reviewAggregate?: ProductReviewAggregateType | null;
+}
+
+@ObjectType({
+  description:
+    'Rating aggregate for a product, contributed by an optional review plugin (Phase 4 D-04)',
+})
+export class ProductReviewAggregateType {
+  @Field(() => Float)
+  averageRating!: number;
+
+  @Field(() => Int)
+  reviewCount!: number;
 }
 
 @ObjectType({ description: 'Product SKU / purchasable variant' })
