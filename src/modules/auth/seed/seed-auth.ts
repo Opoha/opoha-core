@@ -33,8 +33,8 @@ export type SeedAuthResult = {
   adminSkippedReason?: 'env_unset' | 'env_incomplete';
 };
 
-/** Minimal Prisma surface used by the seed (keeps unit tests DB-free). */
-export type SeedAuthPrisma = {
+/** Minimal persistence surface for seed (keeps unit tests DB-free). */
+export type SeedAuthStore = {
   role: {
     upsert: (args: {
       where: { name: string };
@@ -78,10 +78,10 @@ export type SeedAuthPrisma = {
  * When both `admin.email` and `admin.password` are provided, also ensure an admin user + role link.
  */
 export async function seedAuth(
-  prisma: SeedAuthPrisma,
+  store: SeedAuthStore,
   admin: SeedAdminOptions = {},
 ): Promise<SeedAuthResult> {
-  const role = await prisma.role.upsert({
+  const role = await store.role.upsert({
     where: { name: DEFAULT_ADMIN_ROLE_NAME },
     create: {
       name: DEFAULT_ADMIN_ROLE_NAME,
@@ -94,7 +94,7 @@ export async function seedAuth(
 
   const permissionKeys: string[] = [];
   for (const permission of DEFAULT_PERMISSIONS) {
-    const row = await prisma.permission.upsert({
+    const row = await store.permission.upsert({
       where: { key: permission.key },
       create: {
         key: permission.key,
@@ -105,7 +105,7 @@ export async function seedAuth(
       },
     });
     permissionKeys.push(row.key);
-    await prisma.rolePermission.upsert({
+    await store.rolePermission.upsert({
       where: {
         roleId_permissionId: { roleId: role.id, permissionId: row.id },
       },
@@ -135,13 +135,13 @@ export async function seedAuth(
     };
   }
 
-  const existing = await prisma.user.findUnique({ where: { email } });
+  const existing = await store.user.findUnique({ where: { email } });
   let userId: string;
   let adminUserCreated = false;
   if (existing) {
     userId = existing.id;
   } else {
-    const created = await prisma.user.create({
+    const created = await store.user.create({
       data: {
         email,
         passwordHash: hashPassword(password),
@@ -151,7 +151,7 @@ export async function seedAuth(
     adminUserCreated = true;
   }
 
-  await prisma.userRole.upsert({
+  await store.userRole.upsert({
     where: { userId_roleId: { userId, roleId: role.id } },
     create: { userId, roleId: role.id },
     update: {},

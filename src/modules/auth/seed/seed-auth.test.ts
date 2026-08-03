@@ -4,10 +4,10 @@ import {
   DEFAULT_ADMIN_ROLE_NAME,
   DEFAULT_PERMISSIONS,
   seedAuth,
-  type SeedAuthPrisma,
+  type SeedAuthStore,
 } from './seed-auth';
 
-function createMemoryPrisma(): SeedAuthPrisma & {
+function createMemoryStore(): SeedAuthStore & {
   snapshot: () => {
     roles: string[];
     permissions: string[];
@@ -99,17 +99,17 @@ function createMemoryPrisma(): SeedAuthPrisma & {
 
 describe('seedAuth', () => {
   it('seeds admin role and permissions idempotently', async () => {
-    const prisma = createMemoryPrisma();
+    const store = createMemoryStore();
 
-    const first = await seedAuth(prisma);
-    const second = await seedAuth(prisma);
+    const first = await seedAuth(store);
+    const second = await seedAuth(store);
 
     expect(first.roleName).toBe(DEFAULT_ADMIN_ROLE_NAME);
     expect(first.permissionKeys).toHaveLength(DEFAULT_PERMISSIONS.length);
     expect(first.adminSkippedReason).toBe('env_unset');
     expect(second.permissionKeys).toEqual(first.permissionKeys);
 
-    const snap = prisma.snapshot();
+    const snap = store.snapshot();
     expect(snap.roles).toEqual([DEFAULT_ADMIN_ROLE_NAME]);
     expect(snap.permissions).toHaveLength(DEFAULT_PERMISSIONS.length);
     expect(snap.rolePermissions).toBe(DEFAULT_PERMISSIONS.length);
@@ -117,26 +117,26 @@ describe('seedAuth', () => {
   });
 
   it('creates optional admin user once when email and password are set', async () => {
-    const prisma = createMemoryPrisma();
+    const store = createMemoryStore();
     const admin = { email: 'admin@example.com', password: 'local-only-secret' };
 
-    const first = await seedAuth(prisma, admin);
-    const second = await seedAuth(prisma, admin);
+    const first = await seedAuth(store, admin);
+    const second = await seedAuth(store, admin);
 
     expect(first.adminUserCreated).toBe(true);
     expect(first.adminUserLinked).toBe(true);
     expect(second.adminUserCreated).toBe(false);
     expect(second.adminUserLinked).toBe(true);
 
-    const snap = prisma.snapshot();
+    const snap = store.snapshot();
     expect(snap.users).toEqual(['admin@example.com']);
     expect(snap.userRoles).toBe(1);
   });
 
   it('skips admin user when only one of email/password is set', async () => {
-    const prisma = createMemoryPrisma();
-    const result = await seedAuth(prisma, { email: 'admin@example.com' });
+    const store = createMemoryStore();
+    const result = await seedAuth(store, { email: 'admin@example.com' });
     expect(result.adminSkippedReason).toBe('env_incomplete');
-    expect(prisma.snapshot().users).toHaveLength(0);
+    expect(store.snapshot().users).toHaveLength(0);
   });
 });

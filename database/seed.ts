@@ -1,23 +1,22 @@
 /**
- * Prisma seed entry — run via `pnpm db:seed` / `pnpm prisma:seed`.
- *
- * Seeds default admin role + permissions idempotently.
- * Optional admin user when both SEED_ADMIN_EMAIL and SEED_ADMIN_PASSWORD are set.
+ * TypeORM seed entry — run via `pnpm db:seed`.
  */
 import { config as loadDotenv } from 'dotenv';
-import { PrismaClient } from '@prisma/client';
 
 import {
   resolveSeedAdminFromEnv,
   seedAuth,
-} from '../../src/modules/auth/seed/seed-auth';
+} from '../src/modules/auth/seed/seed-auth';
+import { createTypeOrmSeedStore } from '../src/modules/auth/seed/typeorm-seed-store';
+import dataSource from './data-source';
 
 loadDotenv();
 
 async function main(): Promise<void> {
-  const prisma = new PrismaClient();
+  await dataSource.initialize();
   try {
-    const result = await seedAuth(prisma, resolveSeedAdminFromEnv());
+    const store = createTypeOrmSeedStore(dataSource);
+    const result = await seedAuth(store, resolveSeedAdminFromEnv());
     const perms = result.permissionKeys.length;
     process.stdout.write(
       `Seed complete: role="${result.roleName}" permissions=${perms}`,
@@ -35,7 +34,7 @@ async function main(): Promise<void> {
     }
     process.stdout.write('\n');
   } finally {
-    await prisma.$disconnect();
+    await dataSource.destroy();
   }
 }
 
