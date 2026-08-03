@@ -79,6 +79,10 @@ export class CouponEntity {
   @Column({ name: 'is_active', type: 'boolean', default: true })
   isActive!: boolean;
 
+  /**
+   * Opaque metadata. Phase 4 E-03: may include `segmentIds` / `segmentCodes`
+   * to restrict redemption to matching customer segments.
+   */
   @Column({ type: 'jsonb', nullable: true })
   metadata!: Record<string, unknown> | null;
 

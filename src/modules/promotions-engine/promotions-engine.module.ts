@@ -2,6 +2,7 @@ import { Global, Module } from '@nestjs/common';
 import { TypeOrmModule } from '@nestjs/typeorm';
 
 import { AuthModule } from '../auth/public';
+import { SegmentsModule } from '../segments/public';
 import { CouponsService } from './coupons.service';
 import { DiscountRulesService } from './discount-rules.service';
 import { CouponEntity } from './entities/coupon.entity';
@@ -16,6 +17,7 @@ import { TypeOrmPromotionProvider } from './typeorm-promotion.provider';
 @Module({
   imports: [
     AuthModule,
+    SegmentsModule,
     TypeOrmModule.forFeature([CouponEntity, DiscountRuleEntity]),
   ],
   providers: [

@@ -1,7 +1,15 @@
-import { BadRequestException, Injectable } from '@nestjs/common';
+import {
+  BadRequestException,
+  Injectable,
+  Optional,
+} from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 
+import {
+  SegmentsService,
+  type SegmentMembershipContext,
+} from '../segments/public';
 import {
   computeRuleDiscount,
   couponToDiscountable,
@@ -17,11 +25,17 @@ import type {
   PromotionApplyResult,
   PromotionRuleProvider,
 } from './promotion-rule';
+import {
+  extractSegmentRestriction,
+  membershipContextFromApplyInput,
+  type SegmentRestriction,
+} from './segment-eligibility';
 
 /**
- * Core TypeORM promotion provider (D-03).
+ * Core TypeORM promotion provider (D-03 + Phase 4 E-03).
  * Reads Coupon / DiscountRule entities and applies coupon + automatic discounts
- * into checkout totals. Plugins (D-04) may register additional providers.
+ * into checkout totals. Segment restrictions live on coupon.metadata /
+ * discount_rules.conditions (`segmentIds` / `segmentCodes`).
  */
 @Injectable()
 export class TypeOrmPromotionProvider implements PromotionRuleProvider {
@@ -33,14 +47,23 @@ export class TypeOrmPromotionProvider implements PromotionRuleProvider {
     private readonly coupons: Repository<CouponEntity>,
     @InjectRepository(DiscountRuleEntity)
     private readonly discountRules: Repository<DiscountRuleEntity>,
+    @Optional() private readonly segments?: SegmentsService,
   ) {}
 
   async apply(input: PromotionApplyInput): Promise<PromotionApplyResult> {
     const subtotal = BigInt(String(input.subtotalMinor ?? '0'));
     const parts = [];
+    const membership = membershipContextFromApplyInput(input);
 
     if (input.couponCode?.trim()) {
-      parts.push(await this.applyCoupon(input.couponCode.trim(), input, subtotal));
+      parts.push(
+        await this.applyCoupon(
+          input.couponCode.trim(),
+          input,
+          subtotal,
+          membership,
+        ),
+      );
     }
 
     const autoRules = await this.loadActiveAutomaticRules();
@@ -49,6 +72,11 @@ export class TypeOrmPromotionProvider implements PromotionRuleProvider {
     );
 
     for (const rule of selected) {
+      const restriction = extractSegmentRestriction(rule.conditions);
+      const eligible = await this.isSegmentEligible(restriction, membership);
+      if (!eligible) {
+        continue;
+      }
       parts.push(
         computeRuleDiscount(
           discountRuleToDiscountable(rule),
@@ -65,6 +93,7 @@ export class TypeOrmPromotionProvider implements PromotionRuleProvider {
     rawCode: string,
     input: PromotionApplyInput,
     subtotal: bigint,
+    membership: SegmentMembershipContext | null,
   ) {
     const code = rawCode.toUpperCase();
     const coupon = await this.coupons.findOne({
@@ -77,6 +106,14 @@ export class TypeOrmPromotionProvider implements PromotionRuleProvider {
 
     if (coupon.maxUses != null && coupon.usageCount >= coupon.maxUses) {
       throw new BadRequestException(`Coupon "${rawCode}" has reached its usage limit`);
+    }
+
+    const restriction = extractSegmentRestriction(coupon.metadata);
+    const eligible = await this.isSegmentEligible(restriction, membership);
+    if (!eligible) {
+      throw new BadRequestException(
+        `Coupon "${rawCode}" is not available for this customer segment`,
+      );
     }
 
     const computed = computeRuleDiscount(
@@ -106,6 +143,49 @@ export class TypeOrmPromotionProvider implements PromotionRuleProvider {
     }
 
     return computed;
+  }
+
+  /**
+   * Returns true when there is no restriction, or the customer matches any
+   * listed segment. Fail closed when a restriction is set but membership
+   * context or SegmentsService is missing.
+   */
+  private async isSegmentEligible(
+    restriction: SegmentRestriction | null,
+    membership: SegmentMembershipContext | null,
+  ): Promise<boolean> {
+    if (!restriction) {
+      return true;
+    }
+    if (!membership || !this.segments) {
+      return false;
+    }
+
+    for (const id of restriction.segmentIds) {
+      try {
+        if (await this.segments.customerMatchesSegment(id, membership)) {
+          return true;
+        }
+      } catch {
+        // Unknown / inactive segment id — try remaining entries.
+      }
+    }
+
+    for (const code of restriction.segmentCodes) {
+      try {
+        const segment = await this.segments.findByCode(code);
+        if (
+          segment.isActive &&
+          this.segments.evaluateRules(segment.rules, membership)
+        ) {
+          return true;
+        }
+      } catch {
+        // Unknown code — try remaining.
+      }
+    }
+
+    return false;
   }
 
   private async loadActiveAutomaticRules(): Promise<DiscountRuleEntity[]> {

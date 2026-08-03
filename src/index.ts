@@ -198,6 +198,12 @@ export {
   CustomerSegmentEntity,
   segmentEntities,
   evaluateSegmentRules,
+  SegmentsResolver,
+  CustomerSegmentGqlType,
+  CreateCustomerSegmentGqlInput,
+  UpdateCustomerSegmentGqlInput,
+  EvaluateSegmentMembershipInput,
+  SegmentMembershipResultType,
 } from './modules/segments/public';
 export type {
   SegmentRules,

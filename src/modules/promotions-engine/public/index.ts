@@ -21,3 +21,8 @@ export type {
   PromotionRuleProvider,
   RegisteredPromotionRuleProvider,
 } from '../promotion-rule';
+export {
+  extractSegmentRestriction,
+  membershipContextFromApplyInput,
+} from '../segment-eligibility';
+export type { SegmentRestriction } from '../segment-eligibility';

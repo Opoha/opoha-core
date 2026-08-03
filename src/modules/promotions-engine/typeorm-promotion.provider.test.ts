@@ -170,4 +170,154 @@ describe('TypeOrmPromotionProvider (D-03)', () => {
     expect(result.freeShipping).toBe(true);
     expect(result.discountMinor).toBe('0');
   });
+
+  it('rejects coupon when customer fails segment restriction (E-03)', async () => {
+    const coupon: CouponEntity = {
+      id: 'c1',
+      code: 'VIP10',
+      name: 'VIP 10%',
+      description: null,
+      kind: 'percentage',
+      valueBps: 1000,
+      amountMinor: null,
+      currencyCode: null,
+      minSubtotalMinor: null,
+      maxUses: null,
+      maxUsesPerCustomer: null,
+      usageCount: 0,
+      priority: 0,
+      startsAt: null,
+      endsAt: null,
+      isActive: true,
+      metadata: { segmentCodes: ['vip'] },
+      createdAt: new Date(),
+      updatedAt: new Date(),
+    };
+
+    const segments = {
+      customerMatchesSegment: vi.fn(),
+      findByCode: vi.fn(async () => ({
+        id: 'seg-1',
+        code: 'vip',
+        name: 'VIP',
+        description: null,
+        rules: { tags: { any: ['vip'] } },
+        isActive: true,
+        createdAt: new Date(),
+        updatedAt: new Date(),
+      })),
+      evaluateRules: vi.fn(() => false),
+    };
+
+    const provider = new TypeOrmPromotionProvider(
+      mockRepo([coupon]) as never,
+      mockRepo([]) as never,
+      segments as never,
+    );
+
+    await expect(
+      provider.apply({
+        ...sampleInput,
+        couponCode: 'VIP10',
+        customerId: 'cust-1',
+        metadata: { tags: ['regular'] },
+      }),
+    ).rejects.toThrow(/not available for this customer segment/);
+  });
+
+  it('applies coupon when customer matches segment restriction (E-03)', async () => {
+    const coupon: CouponEntity = {
+      id: 'c1',
+      code: 'VIP10',
+      name: 'VIP 10%',
+      description: null,
+      kind: 'percentage',
+      valueBps: 1000,
+      amountMinor: null,
+      currencyCode: null,
+      minSubtotalMinor: null,
+      maxUses: null,
+      maxUsesPerCustomer: null,
+      usageCount: 0,
+      priority: 0,
+      startsAt: null,
+      endsAt: null,
+      isActive: true,
+      metadata: { segmentCodes: ['vip'] },
+      createdAt: new Date(),
+      updatedAt: new Date(),
+    };
+
+    const segments = {
+      customerMatchesSegment: vi.fn(),
+      findByCode: vi.fn(async () => ({
+        id: 'seg-1',
+        code: 'vip',
+        name: 'VIP',
+        description: null,
+        rules: { tags: { any: ['vip'] } },
+        isActive: true,
+        createdAt: new Date(),
+        updatedAt: new Date(),
+      })),
+      evaluateRules: vi.fn(() => true),
+    };
+
+    const provider = new TypeOrmPromotionProvider(
+      mockRepo([coupon]) as never,
+      mockRepo([]) as never,
+      segments as never,
+    );
+
+    const result = await provider.apply({
+      ...sampleInput,
+      couponCode: 'VIP10',
+      customerId: 'cust-1',
+      metadata: { tags: ['vip'] },
+    });
+    expect(result.discountMinor).toBe('200');
+    expect(segments.evaluateRules).toHaveBeenCalled();
+  });
+
+  it('skips automatic discount when segment restriction fails (E-03)', async () => {
+    const auto: DiscountRuleEntity = {
+      id: 'd1',
+      code: 'VIPAUTO',
+      name: 'VIP auto',
+      description: null,
+      kind: 'percentage',
+      valueBps: 1000,
+      amountMinor: null,
+      currencyCode: null,
+      minSubtotalMinor: null,
+      priority: 1,
+      stackable: false,
+      startsAt: null,
+      endsAt: null,
+      isActive: true,
+      conditions: { segmentIds: ['seg-vip'] },
+      metadata: null,
+      createdAt: new Date(),
+      updatedAt: new Date(),
+    };
+
+    const segments = {
+      customerMatchesSegment: vi.fn(async () => false),
+      findByCode: vi.fn(),
+      evaluateRules: vi.fn(),
+    };
+
+    const provider = new TypeOrmPromotionProvider(
+      mockRepo([]) as never,
+      mockRepo([auto]) as never,
+      segments as never,
+    );
+
+    const result = await provider.apply({
+      ...sampleInput,
+      customerId: 'cust-1',
+    });
+    expect(result.discountMinor).toBe('0');
+    expect(result.applications).toHaveLength(0);
+  });
 });

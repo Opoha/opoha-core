@@ -1,8 +1,9 @@
 /**
- * Public segments module surface (Phase 4 E-01 / E-02).
+ * Public segments module surface (Phase 4 E-01 / E-02 / E-04).
  */
 export { SegmentsModule } from '../segments.module';
 export { SegmentsService } from '../segments.service';
+export { SegmentsResolver } from '../segments.resolver';
 export { CustomerSegmentEntity, segmentEntities } from '../entities';
 export {
   evaluateSegmentRules,
@@ -17,6 +18,13 @@ export type {
   CreateCustomerSegmentInput,
   UpdateCustomerSegmentInput,
 } from '../segments.types';
+export {
+  CustomerSegmentGqlType,
+  CreateCustomerSegmentGqlInput,
+  UpdateCustomerSegmentGqlInput,
+  EvaluateSegmentMembershipInput,
+  SegmentMembershipResultType,
+} from '../segments.gql.types';
 export {
   segmentEventSchemas,
   segmentUpdatedDataSchema,

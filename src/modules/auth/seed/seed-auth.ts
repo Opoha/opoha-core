@@ -177,6 +177,10 @@ export const DEFAULT_PERMISSIONS = [
   { key: 'loyalty:read', description: 'Read loyalty accounts and quote redeem' },
   { key: 'loyalty:accrue', description: 'Accrue / credit loyalty points' },
   { key: 'loyalty:redeem', description: 'Redeem loyalty points' },
+  { key: 'segment:read', description: 'Read customer segments and evaluate membership' },
+  { key: 'segment:create', description: 'Create customer segments' },
+  { key: 'segment:update', description: 'Update customer segments' },
+  { key: 'segment:delete', description: 'Delete customer segments' },
   {
     key: 'localization:read',
     description: 'Read deployment localization settings',

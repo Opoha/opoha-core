@@ -80,7 +80,9 @@ export class DiscountRuleEntity {
   isActive!: boolean;
 
   /**
-   * Rule conditions (e.g. BXGY buy/get SKUs, customer groups).
+   * Rule conditions (e.g. BXGY buy/get SKUs, customer segments).
+   * Phase 4 E-03: may include `segmentIds` / `segmentCodes` to restrict
+   * automatic discounts to matching customer segments.
    * Shape is provider-interpreted; core stores opaquely.
    */
   @Column({ type: 'jsonb', nullable: true })
