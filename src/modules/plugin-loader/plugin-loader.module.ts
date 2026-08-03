@@ -10,6 +10,7 @@ import { JobsModule } from '../jobs/public';
 import { NotificationsModule } from '../notifications/public';
 import { PaymentEngineModule } from '../payment-engine/public';
 import { PromotionsEngineModule } from '../promotions-engine/public';
+import { RulesModule } from '../rules/public';
 import { SearchEngineModule } from '../search-engine/public';
 import { ShippingEngineModule } from '../shipping-engine/public';
 import { TaxEngineModule } from '../tax-engine/public';
@@ -37,6 +38,7 @@ import { PluginsResolver } from './plugins.resolver';
     SearchEngineModule,
     CurrencyModule,
     JobsModule,
+    RulesModule,
     TypeOrmModule.forFeature([PluginStateEntity]),
   ],
   providers: [

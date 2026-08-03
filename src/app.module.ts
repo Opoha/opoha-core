@@ -24,6 +24,7 @@ import { FulfillmentModule } from './modules/fulfillment/public';
 import { GiftCardsModule } from './modules/gift-cards/public';
 import { JobsModule } from './modules/jobs/public';
 import { LoyaltyModule } from './modules/loyalty/public';
+import { RulesModule } from './modules/rules/public';
 import { ReturnsModule } from './modules/returns/public';
 import { SegmentsModule } from './modules/segments/public';
 import { StoresModule } from './modules/stores/public';
@@ -58,6 +59,7 @@ type GqlHttpRequest = {
     DatabaseModule,
     RedisModule,
     JobsModule,
+    RulesModule,
     ApiVersioningModule,
     AuthModule,
     FilesModule,

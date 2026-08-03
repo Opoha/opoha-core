@@ -12,6 +12,7 @@ import { digitalEntities } from '../src/modules/digital/entities';
 import { giftCardEntities } from '../src/modules/gift-cards/entities';
 import { subscriptionEntities } from '../src/modules/subscriptions/entities';
 import { jobEntities } from '../src/modules/jobs/entities';
+import { ruleEntities } from '../src/modules/rules/entities';
 import { inventoryEntities } from '../src/modules/inventory/entities';
 import { loyaltyEntities } from '../src/modules/loyalty/entities';
 import { returnEntities } from '../src/modules/returns/entities';
@@ -76,6 +77,7 @@ import { MarketplaceVendorsInit1722729100000 } from './migrations/1722729100000-
 import { DigitalFulfillmentInit1722730200000 } from './migrations/1722730200000-DigitalFulfillmentInit';
 import { SubscriptionsInit1722731300000 } from './migrations/1722731300000-SubscriptionsInit';
 import { JobsInit1722732400000 } from './migrations/1722732400000-JobsInit';
+import { RulesInit1722733500000 } from './migrations/1722733500000-RulesInit';
 
 loadDotenv();
 
@@ -99,6 +101,7 @@ export default new DataSource({
     ...digitalEntities,
     ...subscriptionEntities,
     ...jobEntities,
+    ...ruleEntities,
     ...loyaltyEntities,
     ...segmentEntities,
     ...storeEntities,
@@ -164,6 +167,7 @@ export default new DataSource({
     DigitalFulfillmentInit1722730200000,
     SubscriptionsInit1722731300000,
     JobsInit1722732400000,
+    RulesInit1722733500000,
   ],
   synchronize: false,
 });

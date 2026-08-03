@@ -12,6 +12,7 @@ import { AppLogger } from '../logging/app-logger';
 import { NotificationProviderRegistry } from '../notifications/public';
 import { PaymentProviderRegistry } from '../payment-engine/public';
 import { PromotionRuleRegistry } from '../promotions-engine/public';
+import { RuleActionRegistry } from '../rules/public';
 import { SearchProviderRegistry } from '../search-engine/public';
 import { ShippingMethodRegistry } from '../shipping-engine/public';
 import { TaxProviderRegistry } from '../tax-engine/public';
@@ -70,6 +71,7 @@ export class PluginLoaderService implements OnModuleInit {
     private readonly fxProviders: FXRateProviderRegistry,
     @Optional() private readonly jobsService?: JobsService,
     @Optional() private readonly scheduledJobs?: ScheduledJobRegistry,
+    @Optional() private readonly ruleActions?: RuleActionRegistry,
     @Optional() private readonly logger?: AppLogger,
   ) {}
 
@@ -248,6 +250,7 @@ export class PluginLoaderService implements OnModuleInit {
     this.searchProviders.activatePlugin(pluginId);
     this.fxProviders.activatePlugin(pluginId);
     this.scheduledJobs?.activatePlugin(pluginId);
+    this.ruleActions?.activatePlugin(pluginId);
     void this.jobsService?.setPluginJobsActive(pluginId, true);
     const ctx = this.contextFor(record, true);
     await record.definition?.enable?.(ctx);
@@ -269,6 +272,7 @@ export class PluginLoaderService implements OnModuleInit {
     this.searchProviders.deactivatePlugin(pluginId);
     this.fxProviders.deactivatePlugin(pluginId);
     this.scheduledJobs?.deactivatePlugin(pluginId);
+    this.ruleActions?.deactivatePlugin(pluginId);
     void this.jobsService?.setPluginJobsActive(pluginId, false);
     const ctx = this.contextFor(record, false);
     await record.definition?.disable?.(ctx);
@@ -292,6 +296,7 @@ export class PluginLoaderService implements OnModuleInit {
     this.searchProviders.removePlugin(pluginId);
     this.fxProviders.removePlugin(pluginId);
     void this.jobsService?.removePluginJobs(pluginId);
+    this.ruleActions?.removePlugin(pluginId);
     record.booted = false;
     this.logger?.log(`Plugin uninstalled: ${pluginId}`, 'PluginLoaderService');
     return record.state;
@@ -322,6 +327,7 @@ export class PluginLoaderService implements OnModuleInit {
         fx: this.fxProviders,
         jobs: this.jobsService,
         scheduledJobs: this.scheduledJobs,
+        ruleActions: this.ruleActions,
       },
     );
   }

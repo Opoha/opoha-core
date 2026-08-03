@@ -465,3 +465,29 @@ export type {
   RegisterScheduledJobInput,
   RegisteredScheduledJob,
 } from './modules/jobs/public';
+export {
+  RulesModule,
+  RulesService,
+  RulesEvaluatorService,
+  RuleActionRegistry,
+  RuleDefinitionEntity,
+  ruleEntities,
+  RULE_TRIGGER_EVENTS,
+  evaluateRuleConditions,
+  normalizeActionRefs,
+  customerTagStore,
+  notificationEmitStore,
+} from './modules/rules/public';
+export type {
+  RuleDefinitionType,
+  CreateRuleDefinitionInput,
+  UpdateRuleDefinitionInput,
+  RuleConditions,
+  RuleConditionEquals,
+  RuleActionRef,
+  RegisterRuleActionInput,
+  RegisteredRuleAction,
+  RuleActionContext,
+  RuleActionHandler,
+  EmittedNotificationStub,
+} from './modules/rules/public';

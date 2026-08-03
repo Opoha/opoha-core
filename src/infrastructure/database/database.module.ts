@@ -10,6 +10,7 @@ import { fulfillmentEntities } from '../../modules/fulfillment/entities';
 import { digitalEntities } from '../../modules/digital/entities';
 import { giftCardEntities } from '../../modules/gift-cards/entities';
 import { jobEntities } from '../../modules/jobs/entities';
+import { ruleEntities } from '../../modules/rules/entities';
 import { subscriptionEntities } from '../../modules/subscriptions/entities';
 import { inventoryEntities } from '../../modules/inventory/entities';
 import { loyaltyEntities } from '../../modules/loyalty/entities';
@@ -52,6 +53,7 @@ import { DatabaseHealthService } from './database-health.service';
           ...digitalEntities,
           ...subscriptionEntities,
           ...jobEntities,
+          ...ruleEntities,
           ...loyaltyEntities,
           ...segmentEntities,
           ...storeEntities,

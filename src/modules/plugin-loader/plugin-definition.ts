@@ -9,6 +9,10 @@ import type {
   ScheduledJobRegistry,
 } from '../jobs/public';
 import type {
+  RegisterRuleActionInput,
+  RuleActionRegistry,
+} from '../rules/public';
+import type {
   PaymentProvider,
   PaymentProviderRegistry,
 } from '../payment-engine/public';
@@ -77,6 +81,8 @@ export type PluginRegistrationContext = {
   registerFXProvider(provider: FXRateProvider): void;
   /** Register a cron-style scheduled job (Phase 8 A-01/A-03). */
   registerScheduledJob(input: RegisterScheduledJobInput): void;
+  /** Register a rule action handler (Phase 8 C-02/C-03). */
+  registerRuleAction(input: RegisterRuleActionInput): void;
 };
 
 /**
@@ -103,6 +109,7 @@ export type PluginEngineRegistries = {
   fx?: FXRateProviderRegistry;
   jobs?: JobsService;
   scheduledJobs?: ScheduledJobRegistry;
+  ruleActions?: RuleActionRegistry;
 };
 
 export function createPluginRegistrationContext(
@@ -208,6 +215,12 @@ export function createPluginRegistrationContext(
       }
       // Persist + queue upsert are async; boot hooks may not await.
       void engines.jobs.registerScheduledJob(pluginId, input, active);
+    },
+    registerRuleAction(input) {
+      if (!engines.ruleActions) {
+        throw new Error('Rule action registry is not available');
+      }
+      engines.ruleActions.register(pluginId, input, active);
     },
   };
 }
