@@ -167,6 +167,16 @@ export const DEFAULT_PERMISSIONS = [
     key: 'search:configure',
     description: 'Configure search providers and index settings',
   },
+  { key: 'giftcard:read', description: 'Read gift cards and quote redeem' },
+  { key: 'giftcard:issue', description: 'Issue gift cards (staff)' },
+  {
+    key: 'giftcard:purchase',
+    description: 'Purchase / issue gift cards linked to orders',
+  },
+  { key: 'giftcard:redeem', description: 'Redeem gift card balances' },
+  { key: 'loyalty:read', description: 'Read loyalty accounts and quote redeem' },
+  { key: 'loyalty:accrue', description: 'Accrue / credit loyalty points' },
+  { key: 'loyalty:redeem', description: 'Redeem loyalty points' },
   {
     key: 'localization:read',
     description: 'Read deployment localization settings',

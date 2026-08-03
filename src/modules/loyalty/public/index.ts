@@ -1,8 +1,9 @@
 /**
- * Public loyalty module surface (Phase 4 C-03 / C-05).
+ * Public loyalty module surface (Phase 4 C-03 / C-04 / C-05).
  */
 export { LoyaltyModule } from '../loyalty.module';
 export { LoyaltyService } from '../loyalty.service';
+export { LoyaltyResolver } from '../loyalty.resolver';
 export {
   LoyaltyAccountEntity,
   LoyaltyTransactionEntity,
@@ -17,13 +18,13 @@ export {
   computeAccrualPoints,
   computeRedemptionValueMinor,
 } from '../loyalty-status';
-export type {
+export {
   LoyaltyAccountType,
   LoyaltyLedgerEntryType,
+  QuoteLoyaltyRedeemResult,
   AccrueLoyaltyInput,
   RedeemLoyaltyInput,
   QuoteLoyaltyRedeemInput,
-  QuoteLoyaltyRedeemResult,
 } from '../loyalty.types';
 export {
   loyaltyEventSchemas,

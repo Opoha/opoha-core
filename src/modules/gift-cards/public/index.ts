@@ -1,8 +1,9 @@
 /**
- * Public gift-cards module surface (Phase 4 C-01/C-02).
+ * Public gift-cards module surface (Phase 4 C-01/C-02/C-04).
  */
 export { GiftCardsModule } from '../gift-cards.module';
 export { GiftCardService } from '../gift-cards.service';
+export { GiftCardsResolver } from '../gift-cards.resolver';
 export {
   GiftCardEntity,
   GiftCardTransactionEntity,
@@ -20,14 +21,14 @@ export type {
   GiftCardStatus,
   GiftCardTransactionType,
 } from '../gift-card-status';
-export type {
+export {
   GiftCardType,
   GiftCardLedgerEntryType,
+  QuoteGiftCardRedeemResult,
   IssueGiftCardInput,
   PurchaseGiftCardInput,
   RedeemGiftCardInput,
   QuoteGiftCardRedeemInput,
-  QuoteGiftCardRedeemResult,
 } from '../gift-cards.types';
 export {
   giftCardEventSchemas,

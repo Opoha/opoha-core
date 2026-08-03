@@ -150,6 +150,7 @@ export type {
 export {
   GiftCardsModule,
   GiftCardService,
+  GiftCardsResolver,
   GiftCardEntity,
   GiftCardTransactionEntity,
   giftCardEntities,
@@ -158,21 +159,22 @@ export {
   isGiftCardStatus,
   canTransitionGiftCardStatus,
   generateGiftCardCode,
-} from './modules/gift-cards/public';
-export type {
-  GiftCardStatus,
-  GiftCardTransactionType,
   GiftCardType,
   GiftCardLedgerEntryType,
+  QuoteGiftCardRedeemResult,
   IssueGiftCardInput,
   PurchaseGiftCardInput,
   RedeemGiftCardInput,
   QuoteGiftCardRedeemInput,
-  QuoteGiftCardRedeemResult,
+} from './modules/gift-cards/public';
+export type {
+  GiftCardStatus,
+  GiftCardTransactionType,
 } from './modules/gift-cards/public';
 export {
   LoyaltyModule,
   LoyaltyService,
+  LoyaltyResolver,
   LoyaltyAccountEntity,
   LoyaltyTransactionEntity,
   loyaltyEntities,
@@ -182,16 +184,14 @@ export {
   isLoyaltyTransactionType,
   computeAccrualPoints,
   computeRedemptionValueMinor,
-} from './modules/loyalty/public';
-export type {
-  LoyaltyTransactionType,
   LoyaltyAccountType,
   LoyaltyLedgerEntryType,
+  QuoteLoyaltyRedeemResult,
   AccrueLoyaltyInput,
   RedeemLoyaltyInput,
   QuoteLoyaltyRedeemInput,
-  QuoteLoyaltyRedeemResult,
 } from './modules/loyalty/public';
+export type { LoyaltyTransactionType } from './modules/loyalty/public';
 export {
   AdminOpsModule,
   ReportsService,
