@@ -3,8 +3,10 @@
  */
 export { CurrencyModule } from '../currency.module';
 export { StoreCurrencyConfigService } from '../store-currency-config.service';
+export { ExchangeRateService } from '../exchange-rate.service';
 export {
   StoreCurrencyConfigEntity,
+  ExchangeRateEntity,
   currencyEntities,
 } from '../entities';
 export {
@@ -15,7 +17,16 @@ export {
   StoreCurrencyConfigType,
   UpdateStoreCurrencyConfigInput,
 } from '../store-currency-config.types';
+export {
+  ExchangeRateType,
+  CreateExchangeRateInput,
+  UpdateExchangeRateInput,
+} from '../exchange-rate.types';
 export type {
   StoreCurrencyConfigUpdatedData,
   StoreCurrencyConfigUpdatedEvent,
 } from '../events/store-currency-config-events';
+export type {
+  ExchangeRateUpdatedData,
+  ExchangeRateUpdatedEvent,
+} from '../events/exchange-rate-events';

@@ -195,11 +195,13 @@ export const DEFAULT_PERMISSIONS = [
   },
   {
     key: 'currency:read',
-    description: 'Read store display/settlement currency configuration',
+    description:
+      'Read store display/settlement currency configuration and exchange rates',
   },
   {
     key: 'currency:update',
-    description: 'Update store display/settlement currency configuration',
+    description:
+      'Update store currency configuration and manual exchange rates',
   },
   {
     key: 'localization:read',

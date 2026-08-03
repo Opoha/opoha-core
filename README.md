@@ -253,7 +253,22 @@ Per-store display vs settlement currency owned by the currency module (`store_cu
 | Q | `storeCurrencyConfigList` | `currency:read` |
 | M | `updateStoreCurrencyConfig` | `currency:update` |
 
-Defaults are created on first read and when a store is created (`StoreCreated` listener). Exchange rates (D-02) and cart conversion (D-03) follow.
+Defaults are created on first read and when a store is created (`StoreCreated` listener). Cart conversion (D-03) follows.
+
+## Exchange rates (Phase 5 D-02)
+
+Global FX table `exchange_rates` (currency module). Rate semantics: **1 `fromCurrencyCode` = `rate` × `toCurrencyCode`**. Unique on `(from, to)`. Manual CRUD uses `source: manual`; FX plugins (D-04) may write other sources via core APIs.
+
+| Op | Name | Permission |
+|----|------|------------|
+| Q | `exchangeRates(fromCurrencyCode?, toCurrencyCode?)` | `currency:read` |
+| Q | `exchangeRate(id)` | `currency:read` |
+| M | `createExchangeRate` | `currency:update` |
+| M | `updateExchangeRate` | `currency:update` |
+| M | `upsertExchangeRate` | `currency:update` |
+| M | `deleteExchangeRate` | `currency:update` |
+
+Mutations publish `ExchangeRateUpdated` (delete sets `rate: null`, `deleted: true`). Same-currency `getRate` returns `1` without a row.
 
 ## Multi-store catalog filters (Phase 5 B-04)
 

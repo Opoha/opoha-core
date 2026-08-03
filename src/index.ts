@@ -269,16 +269,23 @@ export type {
 export {
   CurrencyModule,
   StoreCurrencyConfigService,
+  ExchangeRateService,
   StoreCurrencyConfigEntity,
+  ExchangeRateEntity,
   currencyEntities,
   DEFAULT_STORE_CURRENCY,
   defaultStoreCurrencyConfig,
   StoreCurrencyConfigType,
   UpdateStoreCurrencyConfigInput,
+  ExchangeRateType,
+  CreateExchangeRateInput,
+  UpdateExchangeRateInput,
 } from './modules/currency/public';
 export type {
   StoreCurrencyConfigUpdatedData,
   StoreCurrencyConfigUpdatedEvent,
+  ExchangeRateUpdatedData,
+  ExchangeRateUpdatedEvent,
 } from './modules/currency/public';
 export {
   AdminOpsModule,

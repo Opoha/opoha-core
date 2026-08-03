@@ -57,6 +57,7 @@ export const CoreEventName = {
   StoreUpdated: 'StoreUpdated',
   StoreChannelSettingsUpdated: 'StoreChannelSettingsUpdated',
   StoreCurrencyConfigUpdated: 'StoreCurrencyConfigUpdated',
+  ExchangeRateUpdated: 'ExchangeRateUpdated',
 } as const;
 
 export type CoreEventName =
