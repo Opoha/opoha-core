@@ -37,10 +37,15 @@ describe('CheckoutService (unit)', () => {
     quoteRedeem: ReturnType<typeof vi.fn>;
   };
   let eventBus: { publish: ReturnType<typeof vi.fn> };
+  let stores: {
+    findById: ReturnType<typeof vi.fn>;
+    findByCode: ReturnType<typeof vi.fn>;
+  };
   let service: CheckoutService;
 
   const baseCart = {
     id: 'cart-1',
+    storeId: 'store-a',
     customerId: null,
     status: 'open',
     currencyCode: 'USD',
@@ -158,6 +163,11 @@ describe('CheckoutService (unit)', () => {
 
     eventBus = { publish: vi.fn(async () => undefined) };
 
+    stores = {
+      findById: vi.fn(async (id: string) => ({ id, isActive: true })),
+      findByCode: vi.fn(),
+    };
+
     service = new CheckoutService(
       cartService as unknown as CartService,
       inventory as never,
@@ -167,7 +177,17 @@ describe('CheckoutService (unit)', () => {
       giftCards as never,
       loyalty as never,
       eventBus as never,
+      stores as never,
     );
+  });
+
+  it('rejects prepare when request store context mismatches cart', async () => {
+    await expect(
+      service.prepare('cart-1', {
+        storeId: 'store-other',
+        source: 'header',
+      }),
+    ).rejects.toThrow(BadRequestException);
   });
 
   it('reserves stock, calculates tax/promo (zero without provider), and locks cart', async () => {

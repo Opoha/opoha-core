@@ -7,6 +7,7 @@ import { ORDER_STATUSES } from '../entities/order-status';
 export const cartCreatedDataSchema = z
   .object({
     cartId: z.string().uuid(),
+    storeId: z.string().uuid().optional(),
     customerId: z.string().uuid().nullable(),
     currencyCode: z.string().min(1),
   })
@@ -51,6 +52,7 @@ export type CartLineRemovedEvent = DomainEvent<CartLineRemovedData>;
 export const checkoutPreparedDataSchema = z
   .object({
     cartId: z.string().uuid(),
+    storeId: z.string().uuid().optional(),
     customerId: z.string().uuid().nullable(),
     currencyCode: z.string().min(1),
     subtotalMinor: z.string().min(1),
@@ -71,6 +73,7 @@ export const orderCreatedDataSchema = z
   .object({
     orderId: z.string().uuid(),
     cartId: z.string().uuid().nullable(),
+    storeId: z.string().uuid().optional(),
     customerId: z.string().uuid().nullable(),
     status: orderStatusSchema,
     currencyCode: z.string().min(1),

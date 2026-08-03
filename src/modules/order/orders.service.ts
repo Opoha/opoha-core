@@ -12,6 +12,8 @@ import { CoreEventName } from '../event-bus/event-catalog';
 import { EventBusService } from '../event-bus/event-bus.service';
 import { LoyaltyService } from '../loyalty/public';
 import { PaymentEngine } from '../payment-engine/public';
+import type { StoreContextRef } from '../stores/public';
+import { StoreService } from '../stores/public';
 import { TaxEngine } from '../tax-engine/public';
 import { PromotionsEngine } from '../promotions-engine/public';
 import {
@@ -36,6 +38,11 @@ import type {
   PlaceOrderInput,
   UpdateOrderStatusInput,
 } from './order.types';
+import {
+  assertStoreContextMatchesCart,
+  requireActiveStore,
+  resolveContextStoreId,
+} from './store-scope';
 
 function lineTotalMinor(unitPriceMinor: string, quantity: number): string {
   return (BigInt(unitPriceMinor) * BigInt(quantity)).toString();
@@ -56,6 +63,7 @@ function toLineType(row: OrderLineEntity): OrderLineType {
 function toOrderType(row: OrderEntity, lines: OrderLineEntity[]): OrderType {
   return {
     id: row.id,
+    storeId: row.storeId,
     customerId: row.customerId,
     cartId: row.cartId,
     status: row.status,
@@ -113,10 +121,15 @@ export class OrdersService {
     private readonly promotions: PromotionsEngine,
     private readonly giftCards: GiftCardService,
     private readonly loyalty: LoyaltyService,
+    private readonly stores: StoreService,
   ) {}
 
-  async findAll(): Promise<OrderType[]> {
-    const rows = await this.orders.find({ order: { createdAt: 'ASC' } });
+  async findAll(storeId?: string | null): Promise<OrderType[]> {
+    const scope = storeId?.trim() || undefined;
+    const rows = await this.orders.find({
+      where: scope ? { storeId: scope } : undefined,
+      order: { createdAt: 'ASC' },
+    });
     return Promise.all(rows.map((row) => this.hydrate(row)));
   }
 
@@ -132,7 +145,10 @@ export class OrdersService {
    * Place order from a locked cart (Phase 2 A-04).
    * Authorizes via PaymentEngine; `zero` also captures immediately.
    */
-  async placeOrder(input: PlaceOrderInput): Promise<OrderType> {
+  async placeOrder(
+    input: PlaceOrderInput,
+    context?: StoreContextRef | null,
+  ): Promise<OrderType> {
     const paymentMethod = (input.paymentMethod ?? 'manual').trim();
     if (!paymentMethod) {
       throw new BadRequestException('paymentMethod is required');
@@ -151,6 +167,18 @@ export class OrdersService {
     if (lines.length === 0) {
       throw new BadRequestException(`Cart ${input.cartId} has no lines`);
     }
+    if (!cart.storeId) {
+      throw new BadRequestException(
+        `Cart ${input.cartId} has no storeId; recreate the cart with a store context`,
+      );
+    }
+
+    await requireActiveStore(this.stores, cart.storeId);
+    const contextStoreId = await resolveContextStoreId(this.stores, context);
+    assertStoreContextMatchesCart({
+      cartStoreId: cart.storeId,
+      contextStoreId,
+    });
 
     for (const line of lines) {
       if (!line.reservationId) {
@@ -225,6 +253,7 @@ export class OrdersService {
 
     const order = await this.orders.save(
       this.orders.create({
+        storeId: cart.storeId,
         customerId: cart.customerId,
         cartId: cart.id,
         status: 'pending',
@@ -359,6 +388,7 @@ export class OrdersService {
       data: {
         orderId: order.id,
         cartId: cart.id,
+        storeId: cart.storeId,
         customerId: cart.customerId,
         status: 'pending',
         currencyCode: cart.currencyCode,

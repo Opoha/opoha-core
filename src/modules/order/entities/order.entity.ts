@@ -2,6 +2,7 @@ import {
   Column,
   CreateDateColumn,
   Entity,
+  Index,
   OneToMany,
   PrimaryGeneratedColumn,
   UpdateDateColumn,
@@ -10,11 +11,24 @@ import {
 import type { OrderStatus } from './order-status';
 import { OrderLineEntity } from './order-line.entity';
 
-/** OWNER: order module — plugins must not alter this table. */
+/**
+ * OWNER: order module — plugins must not alter this table.
+ *
+ * Store scope (Phase 5 B-02): `storeId` is copied from the source cart at
+ * `placeOrder`.
+ */
 @Entity({ name: 'orders' })
+@Index('orders_store_id_idx', ['storeId'])
 export class OrderEntity {
   @PrimaryGeneratedColumn('uuid')
   id!: string;
+
+  /**
+   * Store channel copied from the cart at placement.
+   * FK to `stores.id` (cross-module ID reference only).
+   */
+  @Column({ name: 'store_id', type: 'uuid' })
+  storeId!: string;
 
   @Column({ name: 'customer_id', type: 'uuid', nullable: true })
   customerId!: string | null;

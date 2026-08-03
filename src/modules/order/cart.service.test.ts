@@ -9,6 +9,7 @@ import { CartService } from './cart.service';
 
 type CartRow = {
   id: string;
+  storeId: string;
   customerId: string | null;
   status: 'open' | 'locked' | 'converted' | 'abandoned';
   currencyCode: string;
@@ -46,6 +47,7 @@ type VariantRow = {
   id: string;
   priceMinor: string;
   isActive: boolean;
+  product?: { storeId: string | null };
 };
 
 describe('CartService (unit)', () => {
@@ -78,13 +80,28 @@ describe('CartService (unit)', () => {
   let shipping: {
     findQuotedRate: ReturnType<typeof vi.fn>;
   };
+  let stores: {
+    findById: ReturnType<typeof vi.fn>;
+    findByCode: ReturnType<typeof vi.fn>;
+    findDefault: ReturnType<typeof vi.fn>;
+  };
 
   beforeEach(() => {
     cartStore = [];
     lineStore = [];
     variantStore = [
-      { id: 'var-1', priceMinor: '1999', isActive: true },
-      { id: 'var-2', priceMinor: '500', isActive: false },
+      {
+        id: 'var-1',
+        priceMinor: '1999',
+        isActive: true,
+        product: { storeId: null },
+      },
+      {
+        id: 'var-2',
+        priceMinor: '500',
+        isActive: false,
+        product: { storeId: null },
+      },
     ];
     cartSeq = 0;
     lineSeq = 0;
@@ -96,6 +113,7 @@ describe('CartService (unit)', () => {
       }),
       create: vi.fn((data: Partial<CartRow>) => ({
         id: `cart-${++cartSeq}`,
+        storeId: 'store-default',
         customerId: null,
         status: 'open' as const,
         currencyCode: 'USD',
@@ -205,18 +223,32 @@ describe('CartService (unit)', () => {
       })),
     };
 
+    stores = {
+      findById: vi.fn(async (id: string) => ({
+        id,
+        isActive: true,
+      })),
+      findByCode: vi.fn(async () => ({ id: 'store-from-code', isActive: true })),
+      findDefault: vi.fn(async () => ({
+        id: 'store-default',
+        isActive: true,
+      })),
+    };
+
     service = new CartService(
       cartsRepo as never,
       linesRepo as never,
       variantsRepo as never,
       eventBus as never,
       shipping as never,
+      stores as never,
     );
   });
 
-  it('creates a cart and publishes CartCreated', async () => {
+  it('creates a cart bound to the default store and publishes CartCreated', async () => {
     const cart = await service.create({});
     expect(cart.id).toBe('cart-1');
+    expect(cart.storeId).toBe('store-default');
     expect(cart.status).toBe('open');
     expect(cart.shippingMinor).toBe('0');
     expect(cart.taxPricingMode).toBe('exclusive');
@@ -226,8 +258,27 @@ describe('CartService (unit)', () => {
       expect.objectContaining({
         eventName: CoreEventName.CartCreated,
         aggregateId: 'cart-1',
+        data: expect.objectContaining({ storeId: 'store-default' }),
       }),
     );
+  });
+
+  it('rejects addLine for a product owned by another store', async () => {
+    await service.create({ storeId: 'store-a' });
+    variantStore.push({
+      id: 'var-owned-b',
+      priceMinor: '100',
+      isActive: true,
+      product: { storeId: 'store-b' },
+    });
+
+    await expect(
+      service.addLine({
+        cartId: 'cart-1',
+        variantId: 'var-owned-b',
+        quantity: 1,
+      }),
+    ).rejects.toThrow(BadRequestException);
   });
 
   it('setTaxContext persists pricing mode and jurisdiction (C-03)', async () => {

@@ -1,11 +1,12 @@
 import { UseGuards } from '@nestjs/common';
-import { Args, ID, Mutation, Query, Resolver } from '@nestjs/graphql';
+import { Args, Context, ID, Mutation, Query, Resolver } from '@nestjs/graphql';
 
 import {
   GqlAuthGuard,
   PermissionsGuard,
   RequirePermission,
 } from '../auth/public';
+import type { StoreContextRef } from '../stores/public';
 import { CartService } from './cart.service';
 import {
   AddCartLineInput,
@@ -19,6 +20,10 @@ import {
   UpdateCartLineInput,
 } from './order.types';
 
+type GqlStoreContext = {
+  storeContext?: StoreContextRef;
+};
+
 @Resolver(() => CartType)
 @UseGuards(GqlAuthGuard, PermissionsGuard)
 export class CartResolver {
@@ -26,11 +31,14 @@ export class CartResolver {
 
   @Query(() => [CartType], {
     name: 'carts',
-    description: 'List shopping carts',
+    description:
+      'List shopping carts. Optional storeId filters to that store channel.',
   })
   @RequirePermission('cart:read')
-  carts(): Promise<CartType[]> {
-    return this.cartService.findAll();
+  carts(
+    @Args('storeId', { type: () => ID, nullable: true }) storeId?: string,
+  ): Promise<CartType[]> {
+    return this.cartService.findAll(storeId);
   }
 
   @Query(() => CartType, {
@@ -44,14 +52,16 @@ export class CartResolver {
 
   @Mutation(() => CartType, {
     name: 'createCart',
-    description: 'Create an empty shopping cart',
+    description:
+      'Create an empty shopping cart bound to a store (input, header, or default)',
   })
   @RequirePermission('cart:create')
   createCart(
     @Args('input', { type: () => CreateCartInput, nullable: true })
-    input?: CreateCartInput,
+    input: CreateCartInput | undefined,
+    @Context() ctx: GqlStoreContext,
   ): Promise<CartType> {
-    return this.cartService.create(input ?? {});
+    return this.cartService.create(input ?? {}, ctx.storeContext);
   }
 
   @Mutation(() => CartType, {

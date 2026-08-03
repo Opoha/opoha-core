@@ -2,6 +2,7 @@ import {
   Column,
   CreateDateColumn,
   Entity,
+  Index,
   OneToMany,
   PrimaryGeneratedColumn,
   UpdateDateColumn,
@@ -11,11 +12,23 @@ import { CartLineEntity } from './cart-line.entity';
 
 export type CartStatus = 'open' | 'locked' | 'converted' | 'abandoned';
 
-/** OWNER: order module — plugins must not alter this table. */
+/**
+ * OWNER: order module — plugins must not alter this table.
+ *
+ * Store scope (Phase 5 B-02): every cart is bound to a store channel.
+ * Line items must be products visible to that store (shared or owned).
+ */
 @Entity({ name: 'carts' })
+@Index('carts_store_id_idx', ['storeId'])
 export class CartEntity {
   @PrimaryGeneratedColumn('uuid')
   id!: string;
+
+  /**
+   * Owning store channel. FK to `stores.id` (cross-module ID reference only).
+   */
+  @Column({ name: 'store_id', type: 'uuid' })
+  storeId!: string;
 
   /** Optional buyer; null = anonymous / staff-managed cart. */
   @Column({ name: 'customer_id', type: 'uuid', nullable: true })

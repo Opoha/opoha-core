@@ -11,6 +11,8 @@ import { CoreEventName } from '../event-bus/event-catalog';
 import { EventBusService } from '../event-bus/event-bus.service';
 import { ShippingEngine } from '../shipping-engine/public';
 import type { ShippingQuoteInput } from '../shipping-engine/public';
+import type { StoreContextRef } from '../stores/public';
+import { StoreService } from '../stores/public';
 import { CartLineEntity } from './entities/cart-line.entity';
 import { CartEntity } from './entities/cart.entity';
 import type {
@@ -25,6 +27,11 @@ import type {
   SetCartTaxContextInput,
   UpdateCartLineInput,
 } from './order.types';
+import {
+  isProductVisibleInStore,
+  requireActiveStore,
+  resolveCartStoreId,
+} from './store-scope';
 
 function isForeignKeyViolation(error: unknown): boolean {
   return (
@@ -52,6 +59,7 @@ function toLineType(row: CartLineEntity): CartLineType {
 function toCartType(row: CartEntity, lines: CartLineEntity[]): CartType {
   return {
     id: row.id,
+    storeId: row.storeId,
     customerId: row.customerId,
     status: row.status,
     currencyCode: row.currencyCode,
@@ -87,10 +95,15 @@ export class CartService {
     private readonly variants: Repository<ProductVariantEntity>,
     private readonly eventBus: EventBusService,
     private readonly shipping: ShippingEngine,
+    private readonly stores: StoreService,
   ) {}
 
-  async findAll(): Promise<CartType[]> {
-    const rows = await this.carts.find({ order: { createdAt: 'ASC' } });
+  async findAll(storeId?: string | null): Promise<CartType[]> {
+    const scope = storeId?.trim() || undefined;
+    const rows = await this.carts.find({
+      where: scope ? { storeId: scope } : undefined,
+      order: { createdAt: 'ASC' },
+    });
     return Promise.all(rows.map((row) => this.hydrate(row)));
   }
 
@@ -118,7 +131,10 @@ export class CartService {
     return { cart, lines };
   }
 
-  async create(input: CreateCartInput): Promise<CartType> {
+  async create(
+    input: CreateCartInput,
+    context?: StoreContextRef | null,
+  ): Promise<CartType> {
     const currency =
       input.currencyCode?.trim().toUpperCase() || 'USD';
     if (!/^[A-Z]{3}$/.test(currency)) {
@@ -127,7 +143,15 @@ export class CartService {
       );
     }
 
+    const storeId = await resolveCartStoreId({
+      stores: this.stores,
+      inputStoreId: input.storeId,
+      context,
+    });
+    await requireActiveStore(this.stores, storeId);
+
     const cart = this.carts.create({
+      storeId,
       customerId: input.customerId ?? null,
       status: 'open',
       currencyCode: currency,
@@ -156,6 +180,7 @@ export class CartService {
         aggregateId: saved.id,
         data: {
           cartId: saved.id,
+          storeId: saved.storeId,
           customerId: saved.customerId,
           currencyCode: saved.currencyCode,
         },
@@ -164,7 +189,9 @@ export class CartService {
     } catch (error) {
       if (isForeignKeyViolation(error)) {
         throw new BadRequestException(
-          `Customer ${input.customerId} does not exist`,
+          input.customerId
+            ? `Customer ${input.customerId} does not exist`
+            : `Store ${storeId} does not exist`,
         );
       }
       throw error;
@@ -179,6 +206,7 @@ export class CartService {
     const cart = await this.requireOpenCart(input.cartId);
     const variant = await this.variants.findOne({
       where: { id: input.variantId },
+      relations: { product: true },
     });
     if (!variant) {
       throw new NotFoundException(
@@ -188,6 +216,13 @@ export class CartService {
     if (!variant.isActive) {
       throw new BadRequestException(
         `Product variant ${input.variantId} is not active`,
+      );
+    }
+    if (
+      !isProductVisibleInStore(variant.product?.storeId, cart.storeId)
+    ) {
+      throw new BadRequestException(
+        `Product variant ${input.variantId} is not available in store ${cart.storeId}`,
       );
     }
 

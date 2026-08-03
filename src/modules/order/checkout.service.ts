@@ -11,6 +11,8 @@ import { GiftCardService } from '../gift-cards/public';
 import { InventoryService } from '../inventory/public';
 import { LoyaltyService } from '../loyalty/public';
 import { PromotionsEngine } from '../promotions-engine/public';
+import type { StoreContextRef } from '../stores/public';
+import { StoreService } from '../stores/public';
 import { TaxEngine } from '../tax-engine/public';
 import {
   applyGiftCardToTotals,
@@ -23,6 +25,11 @@ import {
 import { CartLineEntity } from './entities/cart-line.entity';
 import { CartService } from './cart.service';
 import type { CheckoutPreviewType } from './order.types';
+import {
+  assertStoreContextMatchesCart,
+  requireActiveStore,
+  resolveContextStoreId,
+} from './store-scope';
 
 /**
  * Checkout prepare — reserve stock for cart lines and compute totals.
@@ -31,6 +38,7 @@ import type { CheckoutPreviewType } from './order.types';
  * gift cards via GiftCardService quote (Phase 4 C-02);
  * loyalty via LoyaltyService quote (Phase 4 C-03).
  * Publishes CheckoutPrepared for analytics sinks (Phase 4 F-02).
+ * Phase 5 B-02: validates cart storeId against request store context.
  */
 @Injectable()
 export class CheckoutService {
@@ -44,9 +52,13 @@ export class CheckoutService {
     private readonly giftCards: GiftCardService,
     private readonly loyalty: LoyaltyService,
     private readonly eventBus: EventBusService,
+    private readonly stores: StoreService,
   ) {}
 
-  async prepare(cartId: string): Promise<CheckoutPreviewType> {
+  async prepare(
+    cartId: string,
+    context?: StoreContextRef | null,
+  ): Promise<CheckoutPreviewType> {
     const { cart, lines } = await this.carts.getEntityWithLines(cartId);
 
     if (cart.status === 'converted' || cart.status === 'abandoned') {
@@ -57,6 +69,18 @@ export class CheckoutService {
     if (lines.length === 0) {
       throw new BadRequestException(`Cart ${cartId} has no lines`);
     }
+    if (!cart.storeId) {
+      throw new BadRequestException(
+        `Cart ${cartId} has no storeId; recreate the cart with a store context`,
+      );
+    }
+
+    await requireActiveStore(this.stores, cart.storeId);
+    const contextStoreId = await resolveContextStoreId(this.stores, context);
+    assertStoreContextMatchesCart({
+      cartStoreId: cart.storeId,
+      contextStoreId,
+    });
 
     // Release any prior active reservations on lines (re-prepare).
     for (const line of lines) {
@@ -159,6 +183,7 @@ export class CheckoutService {
       aggregateId: cartId,
       data: {
         cartId,
+        storeId: cart.storeId,
         customerId: cart.customerId,
         currencyCode: totals.currencyCode,
         subtotalMinor: totals.subtotalMinor,

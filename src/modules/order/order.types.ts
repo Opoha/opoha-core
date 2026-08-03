@@ -34,6 +34,11 @@ export class CartType {
   @Field(() => ID)
   id!: string;
 
+  @Field(() => ID, {
+    description: 'Store channel this cart belongs to (Phase 5 B-02)',
+  })
+  storeId!: string;
+
   @Field(() => ID, { nullable: true })
   customerId!: string | null;
 
@@ -133,6 +138,13 @@ export class CartType {
 
 @InputType()
 export class CreateCartInput {
+  @Field(() => ID, {
+    nullable: true,
+    description:
+      'Store id for this cart; falls back to x-opoha-store-id / default store',
+  })
+  storeId?: string;
+
   @Field(() => ID, { nullable: true })
   customerId?: string;
 
@@ -245,6 +257,11 @@ export class OrderLineType {
 export class OrderType {
   @Field(() => ID)
   id!: string;
+
+  @Field(() => ID, {
+    description: 'Store channel this order belongs to (Phase 5 B-02)',
+  })
+  storeId!: string;
 
   @Field(() => ID, { nullable: true })
   customerId!: string | null;

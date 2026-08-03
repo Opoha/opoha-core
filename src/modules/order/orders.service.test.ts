@@ -42,6 +42,7 @@ describe('OrdersService place + status (D-04 / D-05 / D-06 / A-04)', () => {
   let service: OrdersService;
   let orderRow: {
     id: string;
+    storeId: string;
     customerId: null;
     cartId: string;
     status: string;
@@ -61,10 +62,15 @@ describe('OrdersService place + status (D-04 / D-05 / D-06 / A-04)', () => {
     createdAt: Date;
     updatedAt: Date;
   };
+  let stores: {
+    findById: ReturnType<typeof vi.fn>;
+    findByCode: ReturnType<typeof vi.fn>;
+  };
 
   beforeEach(() => {
     orderRow = {
       id: orderId,
+      storeId: 'store-a',
       customerId: null,
       cartId,
       status: 'pending',
@@ -89,6 +95,7 @@ describe('OrdersService place + status (D-04 / D-05 / D-06 / A-04)', () => {
       getEntityWithLines: vi.fn(async () => ({
         cart: {
           id: cartId,
+          storeId: 'store-a',
           customerId: null,
           status: 'locked',
           currencyCode: 'USD',
@@ -239,6 +246,11 @@ describe('OrdersService place + status (D-04 / D-05 / D-06 / A-04)', () => {
       save: vi.fn(async (rows: unknown) => rows),
     };
 
+    stores = {
+      findById: vi.fn(async (id: string) => ({ id, isActive: true })),
+      findByCode: vi.fn(),
+    };
+
     service = new OrdersService(
       ordersRepo as never,
       linesRepo as never,
@@ -250,6 +262,7 @@ describe('OrdersService place + status (D-04 / D-05 / D-06 / A-04)', () => {
       promotions as never,
       giftCards as never,
       loyalty as never,
+      stores as never,
     );
   });
 
@@ -260,6 +273,7 @@ describe('OrdersService place + status (D-04 / D-05 / D-06 / A-04)', () => {
     });
 
     expect(order.status).toBe('confirmed');
+    expect(order.storeId).toBe('store-a');
     expect(order.totalMinor).toBe('2000');
     expect(payments.authorize).toHaveBeenCalledWith(
       expect.objectContaining({
@@ -300,6 +314,7 @@ describe('OrdersService place + status (D-04 / D-05 / D-06 / A-04)', () => {
     carts.getEntityWithLines.mockResolvedValueOnce({
       cart: {
         id: cartId,
+        storeId: 'store-a',
         customerId: null,
         status: 'locked',
         currencyCode: 'USD',
@@ -360,6 +375,7 @@ describe('OrdersService place + status (D-04 / D-05 / D-06 / A-04)', () => {
     carts.getEntityWithLines.mockResolvedValueOnce({
       cart: {
         id: cartId,
+        storeId: 'store-a',
         customerId: null,
         status: 'locked',
         currencyCode: 'USD',
@@ -454,6 +470,7 @@ describe('OrdersService place + status (D-04 / D-05 / D-06 / A-04)', () => {
     carts.getEntityWithLines.mockResolvedValueOnce({
       cart: {
         id: cartId,
+        storeId: 'store-a',
         customerId: null,
         status: 'locked',
         currencyCode: 'USD',
@@ -532,6 +549,7 @@ describe('OrdersService place + status (D-04 / D-05 / D-06 / A-04)', () => {
     carts.getEntityWithLines.mockResolvedValueOnce({
       cart: {
         id: cartId,
+        storeId: 'store-a',
         status: 'open',
         currencyCode: 'USD',
         shippingMethodCode: null,

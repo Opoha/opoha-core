@@ -9,6 +9,7 @@ import { GiftCardsModule } from '../gift-cards/public';
 import { LoyaltyModule } from '../loyalty/public';
 import { PaymentEngineModule } from '../payment-engine/public';
 import { ShippingEngineModule } from '../shipping-engine/public';
+import { StoresModule } from '../stores/public';
 import { TaxEngineModule } from '../tax-engine/public';
 import { PromotionsEngineModule } from '../promotions-engine/public';
 import { CartResolver } from './cart.resolver';
@@ -34,6 +35,7 @@ import { OrdersService } from './orders.service';
     PromotionsEngineModule,
     GiftCardsModule,
     LoyaltyModule,
+    StoresModule,
     TypeOrmModule.forFeature([...orderEntities, ProductVariantEntity]),
   ],
   providers: [

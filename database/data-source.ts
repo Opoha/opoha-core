@@ -52,6 +52,7 @@ import { CartLoyaltyOnCheckout1722710400000 } from './migrations/1722710400000-C
 import { SegmentsInit1722711500000 } from './migrations/1722711500000-SegmentsInit';
 import { StoresInit1722712600000 } from './migrations/1722712600000-StoresInit';
 import { CatalogStoreScope1722713700000 } from './migrations/1722713700000-CatalogStoreScope';
+import { OrderCartStoreScope1722714800000 } from './migrations/1722714800000-OrderCartStoreScope';
 
 loadDotenv();
 
@@ -116,6 +117,7 @@ export default new DataSource({
     SegmentsInit1722711500000,
     StoresInit1722712600000,
     CatalogStoreScope1722713700000,
+    OrderCartStoreScope1722714800000,
   ],
   synchronize: false,
 });
