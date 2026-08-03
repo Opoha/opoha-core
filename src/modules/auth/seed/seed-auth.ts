@@ -65,6 +65,14 @@ export const DEFAULT_PERMISSIONS = [
   { key: 'order:create', description: 'Create orders (place order)' },
   { key: 'order:read', description: 'Read orders' },
   { key: 'order:update', description: 'Update order status and details' },
+  {
+    key: 'localization:read',
+    description: 'Read deployment localization settings',
+  },
+  {
+    key: 'localization:update',
+    description: 'Update deployment localization settings',
+  },
 ] as const;
 
 export type SeedAdminOptions = {

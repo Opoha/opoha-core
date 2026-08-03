@@ -15,6 +15,7 @@ import { FilesModule } from './modules/files/public';
 import { ShellResolver } from './modules/graphql/shell.resolver';
 import { HealthModule } from './modules/health/health.module';
 import { InventoryModule } from './modules/inventory/public';
+import { LocalizationModule } from './modules/localization/public';
 import { CorrelationIdMiddleware } from './modules/logging/correlation-id.middleware';
 import { LoggingModule } from './modules/logging/logging.module';
 import { OpenTelemetryModule } from './modules/otel/otel.module';
@@ -38,6 +39,7 @@ import { ShippingEngineModule } from './modules/shipping-engine/public';
     InventoryModule,
     CustomerModule,
     OrderModule,
+    LocalizationModule,
     PaymentEngineModule,
     ShippingEngineModule,
     PluginLoaderModule,

@@ -187,8 +187,9 @@ If you previously applied Prisma migrations locally, reset the DB volume first (
 `pnpm db:seed` upserts:
 
 - Role `admin`
-- Baseline permissions (`user:*`, `role:*`, `permission:read`, `api-key:*`, `audit:read`)
+- Baseline permissions (`user:*`, `role:*`, `permission:read`, `api-key:*`, `audit:read`, catalog/inventory/customer/cart/order/localization keys)
 - Role↔permission links
+- Singleton localization settings (`US` / `USD` / `UTC` / `en-US`) when missing — does **not** overwrite operator changes
 
 Optional admin **user** (idempotent): set both in `.env` (see `.env.example` comments):
 
@@ -198,6 +199,24 @@ Optional admin **user** (idempotent): set both in `.env` (see `.env.example` com
 If either is missing, seed skips the user and only applies roles/permissions. Password hashing uses Node `scrypt` for seed-time only (Phase C may replace with argon2/bcrypt).
 
 CLI stubs (from a project checkout): `opoha migrate` / `opoha seed` → see `@opoha/cli`.
+
+## Localization (Phase 1 E)
+
+Single-country deployment foundation — **not** multi-store / multi-currency / multi-language (those land in Phase 5).
+
+| Field | Meaning | Default |
+|-------|---------|---------|
+| `countryCode` | ISO 3166-1 alpha-2 | `US` |
+| `currencyCode` | ISO 4217 (integer minor units elsewhere) | `USD` |
+| `timezone` | IANA zone | `UTC` |
+| `defaultLocale` | BCP 47 language foundation | `en-US` |
+
+| Op | Name | Permission |
+|----|------|------------|
+| Q | `localizationSettings` | `localization:read` |
+| M | `updateLocalizationSettings` | `localization:update` |
+
+Table `localization_settings` is a singleton (`key = 'default'`). Full i18n string catalogs and FX rates remain out of scope until Phase 5.
 
 ## Walking skeleton (H-01)
 
