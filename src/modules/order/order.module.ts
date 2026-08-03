@@ -3,6 +3,7 @@ import { TypeOrmModule } from '@nestjs/typeorm';
 
 import { AuthModule } from '../auth/public';
 import { ProductVariantEntity } from '../catalog/public';
+import { CustomerModule } from '../customer/public';
 import { InventoryModule } from '../inventory/public';
 import { PaymentEngineModule } from '../payment-engine/public';
 import { ShippingEngineModule } from '../shipping-engine/public';
@@ -14,12 +15,14 @@ import { CheckoutResolver } from './checkout.resolver';
 import { CheckoutService } from './checkout.service';
 import { orderEntities } from './entities';
 import { OrderEventsRegistrar } from './events/order-events.registrar';
+import { OrderNotificationsListener } from './events/order-notifications.listener';
 import { OrdersResolver } from './orders.resolver';
 import { OrdersService } from './orders.service';
 
 @Module({
   imports: [
     AuthModule,
+    CustomerModule,
     InventoryModule,
     PaymentEngineModule,
     ShippingEngineModule,
@@ -35,6 +38,7 @@ import { OrdersService } from './orders.service';
     OrdersService,
     OrdersResolver,
     OrderEventsRegistrar,
+    OrderNotificationsListener,
   ],
   exports: [CartService, CheckoutService, OrdersService, TypeOrmModule],
 })
