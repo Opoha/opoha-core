@@ -48,6 +48,18 @@ describe('cart/order RBAC (resolver metadata + PermissionsGuard deny)', () => {
         CartResolver.prototype.removeCartLine,
       ),
     ).toEqual(['cart:update']);
+    expect(
+      reflector.get(
+        REQUIRE_PERMISSION_KEY,
+        CartResolver.prototype.selectCartShipping,
+      ),
+    ).toEqual(['cart:update']);
+    expect(
+      reflector.get(
+        REQUIRE_PERMISSION_KEY,
+        CartResolver.prototype.setCartTaxContext,
+      ),
+    ).toEqual(['cart:update']);
   });
 
   it('CheckoutResolver declares cart:checkout', () => {

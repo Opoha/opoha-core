@@ -27,6 +27,7 @@ import { PaymentsInit1722693900000 } from './migrations/1722693900000-PaymentsIn
 import { PaymentWebhooksInit1722695000000 } from './migrations/1722695000000-PaymentWebhooksInit';
 import { ShippingSelectionOnCheckout1722696100000 } from './migrations/1722696100000-ShippingSelectionOnCheckout';
 import { TaxClassesRulesInit1722697200000 } from './migrations/1722697200000-TaxClassesRulesInit';
+import { CartTaxContextOnCheckout1722698300000 } from './migrations/1722698300000-CartTaxContextOnCheckout';
 
 loadDotenv();
 
@@ -66,6 +67,7 @@ export default new DataSource({
     PaymentWebhooksInit1722695000000,
     ShippingSelectionOnCheckout1722696100000,
     TaxClassesRulesInit1722697200000,
+    CartTaxContextOnCheckout1722698300000,
   ],
   synchronize: false,
 });

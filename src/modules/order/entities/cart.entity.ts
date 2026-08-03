@@ -39,6 +39,31 @@ export class CartEntity {
   @Column({ name: 'shipping_minor', type: 'bigint', default: '0' })
   shippingMinor!: string;
 
+  /**
+   * Whether catalog prices include tax (`inclusive`) or exclude it (`exclusive`).
+   * Phase 2 C-03 — drives TaxEngine.calculate + checkout totals.
+   */
+  @Column({ name: 'tax_pricing_mode', type: 'text', default: 'exclusive' })
+  taxPricingMode!: 'inclusive' | 'exclusive';
+
+  /** ISO 3166-1 alpha-2 destination for tax jurisdiction matching. */
+  @Column({ name: 'tax_country_code', type: 'text', nullable: true })
+  taxCountryCode!: string | null;
+
+  @Column({ name: 'tax_postal_code', type: 'text', nullable: true })
+  taxPostalCode!: string | null;
+
+  @Column({ name: 'tax_province', type: 'text', nullable: true })
+  taxProvince!: string | null;
+
+  /** Optional TaxProvider.code override when multiple providers are active. */
+  @Column({ name: 'tax_provider_code', type: 'text', nullable: true })
+  taxProviderCode!: string | null;
+
+  /** Last calculated tax amount in minor units (updated at prepareCheckout). */
+  @Column({ name: 'tax_minor', type: 'bigint', default: '0' })
+  taxMinor!: string;
+
   @CreateDateColumn({ name: 'created_at', type: 'timestamptz' })
   createdAt!: Date;
 

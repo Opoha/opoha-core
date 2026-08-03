@@ -175,6 +175,14 @@ describe('TaxEngine', () => {
     );
   });
 
+  it('calculateOrZero returns zero tax when no provider (C-03)', async () => {
+    const engine = new TaxEngine(new TaxProviderRegistry());
+    const result = await engine.calculateOrZero(sampleExclusiveInput);
+    expect(result.taxMinor).toBe('0');
+    expect(result.pricingMode).toBe('exclusive');
+    expect(result.lines).toEqual([]);
+  });
+
   it('rejects invalid calculate input', async () => {
     const engine = new TaxEngine(new TaxProviderRegistry());
     engine.register(stubProvider());

@@ -6,38 +6,19 @@ import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 
 import { InventoryService } from '../inventory/public';
+import { TaxEngine } from '../tax-engine/public';
+import {
+  buildTaxCalculateInput,
+  lineSubtotalMinor,
+  totalsWithTax,
+} from './checkout-tax';
 import { CartLineEntity } from './entities/cart-line.entity';
 import { CartService } from './cart.service';
-import type { CheckoutPreviewType, CheckoutTotalsType } from './order.types';
-
-function lineTotalMinor(unitPriceMinor: string, quantity: number): bigint {
-  return BigInt(unitPriceMinor) * BigInt(quantity);
-}
-
-function toTotals(
-  currencyCode: string,
-  lines: CartLineEntity[],
-  shippingMinor = '0',
-): CheckoutTotalsType {
-  let subtotal = 0n;
-  for (const line of lines) {
-    subtotal += lineTotalMinor(String(line.unitPriceMinor), line.quantity);
-  }
-  const shipping = BigInt(String(shippingMinor || '0'));
-  const tax = 0n;
-  return {
-    currencyCode,
-    subtotalMinor: subtotal.toString(),
-    taxMinor: tax.toString(),
-    shippingMinor: shipping.toString(),
-    totalMinor: (subtotal + tax + shipping).toString(),
-  };
-}
+import type { CheckoutPreviewType } from './order.types';
 
 /**
  * Checkout prepare — reserve stock for cart lines and compute totals.
- * Shipping uses the cart's selected rate amount (Phase 2 B-03); tax still stubbed.
- * Place-order consumes this preview.
+ * Shipping from cart selection (B-03); tax via TaxEngine (C-03).
  */
 @Injectable()
 export class CheckoutService {
@@ -46,6 +27,7 @@ export class CheckoutService {
     private readonly inventory: InventoryService,
     @InjectRepository(CartLineEntity)
     private readonly lines: Repository<CartLineEntity>,
+    private readonly tax: TaxEngine,
   ) {}
 
   async prepare(cartId: string): Promise<CheckoutPreviewType> {
@@ -102,14 +84,23 @@ export class CheckoutService {
     }
 
     await this.carts.attachReservations(attachments);
+
+    const taxInput = buildTaxCalculateInput(cart, lines);
+    const taxResult = await this.tax.calculateOrZero(
+      taxInput,
+      cart.taxProviderCode ?? undefined,
+    );
+
+    await this.carts.persistTaxResult(cartId, taxResult.taxMinor);
     await this.carts.setStatus(cartId, 'locked');
 
     const refreshed = await this.carts.findById(cartId);
-    const totals = toTotals(
-      cart.currencyCode,
-      lines,
-      String(cart.shippingMinor ?? '0'),
-    );
+    const totals = totalsWithTax({
+      currencyCode: cart.currencyCode,
+      subtotalMinor: lineSubtotalMinor(lines),
+      shippingMinor: BigInt(String(cart.shippingMinor ?? '0')),
+      tax: taxResult,
+    });
 
     return {
       cartId,

@@ -15,6 +15,12 @@ type CartRow = {
   shippingMethodCode: string | null;
   shippingRateCode: string | null;
   shippingMinor: string;
+  taxPricingMode: 'inclusive' | 'exclusive';
+  taxCountryCode: string | null;
+  taxPostalCode: string | null;
+  taxProvince: string | null;
+  taxProviderCode: string | null;
+  taxMinor: string;
   createdAt: Date;
   updatedAt: Date;
 };
@@ -90,6 +96,12 @@ describe('CartService (unit)', () => {
         shippingMethodCode: null,
         shippingRateCode: null,
         shippingMinor: '0',
+        taxPricingMode: 'exclusive' as const,
+        taxCountryCode: null,
+        taxPostalCode: null,
+        taxProvince: null,
+        taxProviderCode: null,
+        taxMinor: '0',
         createdAt: now,
         updatedAt: now,
         ...data,
@@ -195,6 +207,8 @@ describe('CartService (unit)', () => {
     expect(cart.id).toBe('cart-1');
     expect(cart.status).toBe('open');
     expect(cart.shippingMinor).toBe('0');
+    expect(cart.taxPricingMode).toBe('exclusive');
+    expect(cart.taxMinor).toBe('0');
     expect(cart.lines).toEqual([]);
     expect(eventBus.publish).toHaveBeenCalledWith(
       expect.objectContaining({
@@ -202,6 +216,21 @@ describe('CartService (unit)', () => {
         aggregateId: 'cart-1',
       }),
     );
+  });
+
+  it('setTaxContext persists pricing mode and jurisdiction (C-03)', async () => {
+    await service.create({});
+    const cart = await service.setTaxContext({
+      cartId: 'cart-1',
+      pricingMode: 'inclusive',
+      countryCode: 'th',
+      postalCode: '10110',
+      province: 'Bangkok',
+    });
+    expect(cart.taxPricingMode).toBe('inclusive');
+    expect(cart.taxCountryCode).toBe('TH');
+    expect(cart.taxPostalCode).toBe('10110');
+    expect(cart.taxProvince).toBe('Bangkok');
   });
 
   it('selectShipping persists method/rate from ShippingEngine (B-02)', async () => {

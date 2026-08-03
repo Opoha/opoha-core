@@ -12,6 +12,7 @@ import {
   CartType,
   CreateCartInput,
   SelectCartShippingInput,
+  SetCartTaxContextInput,
   UpdateCartLineInput,
 } from './order.types';
 
@@ -95,5 +96,18 @@ export class CartResolver {
     input: SelectCartShippingInput,
   ): Promise<CartType> {
     return this.cartService.selectShipping(input);
+  }
+
+  @Mutation(() => CartType, {
+    name: 'setCartTaxContext',
+    description:
+      'Set tax pricing mode and jurisdiction on a cart for TaxEngine checkout calc',
+  })
+  @RequirePermission('cart:update')
+  setCartTaxContext(
+    @Args('input', { type: () => SetCartTaxContextInput })
+    input: SetCartTaxContextInput,
+  ): Promise<CartType> {
+    return this.cartService.setTaxContext(input);
   }
 }

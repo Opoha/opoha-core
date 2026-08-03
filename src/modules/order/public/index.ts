@@ -28,6 +28,7 @@ export type {
   OrderType,
   PlaceOrderInput,
   SelectCartShippingInput,
+  SetCartTaxContextInput,
   UpdateCartLineInput,
   UpdateOrderStatusInput,
 } from '../order.types';

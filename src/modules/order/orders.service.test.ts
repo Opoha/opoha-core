@@ -25,6 +25,9 @@ describe('OrdersService place + status (D-04 / D-05 / D-06 / A-04)', () => {
     authorize: ReturnType<typeof vi.fn>;
     capture: ReturnType<typeof vi.fn>;
   };
+  let tax: {
+    calculateOrZero: ReturnType<typeof vi.fn>;
+  };
   let ordersRepo: {
     find: ReturnType<typeof vi.fn>;
     findOne: ReturnType<typeof vi.fn>;
@@ -80,6 +83,12 @@ describe('OrdersService place + status (D-04 / D-05 / D-06 / A-04)', () => {
           shippingMethodCode: null,
           shippingRateCode: null,
           shippingMinor: '0',
+          taxPricingMode: 'exclusive',
+          taxCountryCode: 'US',
+          taxPostalCode: null,
+          taxProvince: null,
+          taxProviderCode: null,
+          taxMinor: '0',
         },
         lines: [
           {
@@ -125,6 +134,15 @@ describe('OrdersService place + status (D-04 / D-05 / D-06 / A-04)', () => {
       })),
     };
 
+    tax = {
+      calculateOrZero: vi.fn(async (input: { pricingMode: string }) => ({
+        currencyCode: 'USD',
+        pricingMode: input.pricingMode,
+        taxMinor: '0',
+        lines: [],
+      })),
+    };
+
     ordersRepo = {
       find: vi.fn(async () => [orderRow]),
       findOne: vi.fn(async () => ({ ...orderRow })),
@@ -158,6 +176,7 @@ describe('OrdersService place + status (D-04 / D-05 / D-06 / A-04)', () => {
       inventory as never,
       eventBus as never,
       payments as never,
+      tax as never,
     );
   });
 
@@ -214,6 +233,12 @@ describe('OrdersService place + status (D-04 / D-05 / D-06 / A-04)', () => {
         shippingMethodCode: null,
         shippingRateCode: null,
         shippingMinor: '0',
+        taxPricingMode: 'exclusive',
+        taxCountryCode: 'US',
+        taxPostalCode: null,
+        taxProvince: null,
+        taxProviderCode: null,
+        taxMinor: '0',
       },
       lines: [
         {
@@ -268,6 +293,12 @@ describe('OrdersService place + status (D-04 / D-05 / D-06 / A-04)', () => {
         shippingMethodCode: 'flat-rate',
         shippingRateCode: 'flat-rate',
         shippingMinor: '500',
+        taxPricingMode: 'exclusive',
+        taxCountryCode: 'US',
+        taxPostalCode: null,
+        taxProvince: null,
+        taxProviderCode: null,
+        taxMinor: '0',
       },
       lines: [
         {
@@ -313,6 +344,90 @@ describe('OrdersService place + status (D-04 / D-05 / D-06 / A-04)', () => {
     expect(order.shippingRateCode).toBe('flat-rate');
   });
 
+  it('placeOrder adds exclusive tax to authorize amount (C-03)', async () => {
+    tax.calculateOrZero.mockResolvedValueOnce({
+      currencyCode: 'USD',
+      pricingMode: 'exclusive',
+      taxMinor: '200',
+      lines: [],
+    });
+    payments.authorize.mockResolvedValueOnce({
+      id: paymentId,
+      orderId,
+      providerCode: 'manual',
+      status: 'authorized',
+      amountMinor: '2200',
+      currencyCode: 'USD',
+      errorMessage: null,
+    });
+
+    await service.placeOrder({ cartId, paymentMethod: 'manual' });
+
+    expect(ordersRepo.create).toHaveBeenCalledWith(
+      expect.objectContaining({
+        subtotalMinor: '2000',
+        taxMinor: '200',
+        totalMinor: '2200',
+      }),
+    );
+    expect(payments.authorize).toHaveBeenCalledWith(
+      expect.objectContaining({
+        amount: { amountMinor: '2200', currencyCode: 'USD' },
+      }),
+    );
+  });
+
+  it('placeOrder inclusive tax does not inflate authorize amount (C-03)', async () => {
+    carts.getEntityWithLines.mockResolvedValueOnce({
+      cart: {
+        id: cartId,
+        customerId: null,
+        status: 'locked',
+        currencyCode: 'USD',
+        shippingMethodCode: null,
+        shippingRateCode: null,
+        shippingMinor: '0',
+        taxPricingMode: 'inclusive',
+        taxCountryCode: 'US',
+        taxPostalCode: null,
+        taxProvince: null,
+        taxProviderCode: null,
+        taxMinor: '0',
+      },
+      lines: [
+        {
+          id: lineId,
+          cartId,
+          variantId,
+          quantity: 2,
+          unitPriceMinor: '1000',
+          reservationId,
+        },
+      ],
+    });
+    tax.calculateOrZero.mockResolvedValueOnce({
+      currencyCode: 'USD',
+      pricingMode: 'inclusive',
+      taxMinor: '181',
+      lines: [],
+    });
+
+    await service.placeOrder({ cartId, paymentMethod: 'manual' });
+
+    expect(ordersRepo.create).toHaveBeenCalledWith(
+      expect.objectContaining({
+        subtotalMinor: '2000',
+        taxMinor: '181',
+        totalMinor: '2000',
+      }),
+    );
+    expect(payments.authorize).toHaveBeenCalledWith(
+      expect.objectContaining({
+        amount: { amountMinor: '2000', currencyCode: 'USD' },
+      }),
+    );
+  });
+
   it('rejects when payment provider is not registered', async () => {
     payments.get.mockReturnValueOnce(undefined);
     await expect(
@@ -349,6 +464,12 @@ describe('OrdersService place + status (D-04 / D-05 / D-06 / A-04)', () => {
         shippingMethodCode: null,
         shippingRateCode: null,
         shippingMinor: '0',
+        taxPricingMode: 'exclusive',
+        taxCountryCode: null,
+        taxPostalCode: null,
+        taxProvince: null,
+        taxProviderCode: null,
+        taxMinor: '0',
       },
       lines: [
         {

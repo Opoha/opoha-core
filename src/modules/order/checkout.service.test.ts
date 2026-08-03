@@ -3,12 +3,14 @@ import { beforeEach, describe, expect, it, vi } from 'vitest';
 
 import { CheckoutService } from './checkout.service';
 import type { CartService } from './cart.service';
+import type { TaxEngine } from '../tax-engine/public';
 
 describe('CheckoutService (unit)', () => {
   const now = new Date('2026-08-03T12:00:00Z');
   let cartService: {
     getEntityWithLines: ReturnType<typeof vi.fn>;
     attachReservations: ReturnType<typeof vi.fn>;
+    persistTaxResult: ReturnType<typeof vi.fn>;
     setStatus: ReturnType<typeof vi.fn>;
     findById: ReturnType<typeof vi.fn>;
   };
@@ -19,22 +21,33 @@ describe('CheckoutService (unit)', () => {
   let linesRepo: {
     save: ReturnType<typeof vi.fn>;
   };
+  let tax: {
+    calculateOrZero: ReturnType<typeof vi.fn>;
+  };
   let service: CheckoutService;
+
+  const baseCart = {
+    id: 'cart-1',
+    customerId: null,
+    status: 'open',
+    currencyCode: 'USD',
+    shippingMethodCode: null,
+    shippingRateCode: null,
+    shippingMinor: '0',
+    taxPricingMode: 'exclusive' as const,
+    taxCountryCode: 'US',
+    taxPostalCode: null,
+    taxProvince: null,
+    taxProviderCode: null,
+    taxMinor: '0',
+    createdAt: now,
+    updatedAt: now,
+  };
 
   beforeEach(() => {
     cartService = {
       getEntityWithLines: vi.fn(async () => ({
-        cart: {
-          id: 'cart-1',
-          customerId: null,
-          status: 'open',
-          currencyCode: 'USD',
-          shippingMethodCode: null,
-          shippingRateCode: null,
-          shippingMinor: '0',
-          createdAt: now,
-          updatedAt: now,
-        },
+        cart: { ...baseCart },
         lines: [
           {
             id: 'line-1',
@@ -59,18 +72,13 @@ describe('CheckoutService (unit)', () => {
         ],
       })),
       attachReservations: vi.fn(async () => undefined),
+      persistTaxResult: vi.fn(async () => undefined),
       setStatus: vi.fn(async () => undefined),
       findById: vi.fn(async () => ({
-        id: 'cart-1',
-        customerId: null,
+        ...baseCart,
         status: 'locked',
-        currencyCode: 'USD',
-        shippingMethodCode: null,
-        shippingRateCode: null,
-        shippingMinor: '0',
+        taxMinor: '0',
         lines: [],
-        createdAt: now,
-        updatedAt: now,
       })),
     };
 
@@ -86,14 +94,24 @@ describe('CheckoutService (unit)', () => {
       save: vi.fn(async (row: unknown) => row),
     };
 
+    tax = {
+      calculateOrZero: vi.fn(async (input: { pricingMode: string }) => ({
+        currencyCode: 'USD',
+        pricingMode: input.pricingMode,
+        taxMinor: '0',
+        lines: [],
+      })),
+    };
+
     service = new CheckoutService(
       cartService as unknown as CartService,
       inventory as never,
       linesRepo as never,
+      tax as unknown as TaxEngine,
     );
   });
 
-  it('reserves stock, stubs tax at zero, and locks cart', async () => {
+  it('reserves stock, calculates tax (zero without provider), and locks cart', async () => {
     const preview = await service.prepare('cart-1');
 
     expect(preview.totals.subtotalMinor).toBe('2500');
@@ -105,22 +123,19 @@ describe('CheckoutService (unit)', () => {
       { lineId: 'line-1', reservationId: 'res-1' },
       { lineId: 'line-2', reservationId: 'res-2' },
     ]);
+    expect(cartService.persistTaxResult).toHaveBeenCalledWith('cart-1', '0');
     expect(cartService.setStatus).toHaveBeenCalledWith('cart-1', 'locked');
     expect(inventory.reserve).toHaveBeenCalledTimes(2);
+    expect(tax.calculateOrZero).toHaveBeenCalled();
   });
 
   it('includes selected shippingMinor in prepareCheckout totals (B-03)', async () => {
     cartService.getEntityWithLines.mockResolvedValueOnce({
       cart: {
-        id: 'cart-1',
-        customerId: null,
-        status: 'open',
-        currencyCode: 'USD',
+        ...baseCart,
         shippingMethodCode: 'flat-rate',
         shippingRateCode: 'flat-rate',
         shippingMinor: '500',
-        createdAt: now,
-        updatedAt: now,
       },
       lines: [
         {
@@ -142,6 +157,80 @@ describe('CheckoutService (unit)', () => {
     expect(preview.totals.subtotalMinor).toBe('2000');
     expect(preview.totals.shippingMinor).toBe('500');
     expect(preview.totals.taxMinor).toBe('0');
+    expect(preview.totals.totalMinor).toBe('2500');
+  });
+
+  it('adds exclusive tax on top of subtotal + shipping (C-03)', async () => {
+    tax.calculateOrZero.mockResolvedValueOnce({
+      currencyCode: 'USD',
+      pricingMode: 'exclusive',
+      taxMinor: '250',
+      lines: [],
+    });
+    cartService.getEntityWithLines.mockResolvedValueOnce({
+      cart: {
+        ...baseCart,
+        taxPricingMode: 'exclusive',
+        shippingMinor: '500',
+      },
+      lines: [
+        {
+          id: 'line-1',
+          cartId: 'cart-1',
+          variantId: 'var-1',
+          quantity: 2,
+          unitPriceMinor: '1000',
+          reservationId: null,
+          createdAt: now,
+          updatedAt: now,
+        },
+      ],
+    });
+    inventory.reserve = vi.fn().mockResolvedValueOnce({ id: 'res-1' });
+
+    const preview = await service.prepare('cart-1');
+
+    expect(preview.totals.subtotalMinor).toBe('2000');
+    expect(preview.totals.taxMinor).toBe('250');
+    expect(preview.totals.shippingMinor).toBe('500');
+    expect(preview.totals.totalMinor).toBe('2750');
+    expect(cartService.persistTaxResult).toHaveBeenCalledWith('cart-1', '250');
+  });
+
+  it('does not double-count inclusive tax in total (C-03)', async () => {
+    tax.calculateOrZero.mockResolvedValueOnce({
+      currencyCode: 'USD',
+      pricingMode: 'inclusive',
+      taxMinor: '181',
+      lines: [],
+    });
+    cartService.getEntityWithLines.mockResolvedValueOnce({
+      cart: {
+        ...baseCart,
+        taxPricingMode: 'inclusive',
+        shippingMinor: '500',
+      },
+      lines: [
+        {
+          id: 'line-1',
+          cartId: 'cart-1',
+          variantId: 'var-1',
+          quantity: 2,
+          unitPriceMinor: '1000',
+          reservationId: null,
+          createdAt: now,
+          updatedAt: now,
+        },
+      ],
+    });
+    inventory.reserve = vi.fn().mockResolvedValueOnce({ id: 'res-1' });
+
+    const preview = await service.prepare('cart-1');
+
+    expect(preview.totals.subtotalMinor).toBe('2000');
+    expect(preview.totals.taxMinor).toBe('181');
+    expect(preview.totals.shippingMinor).toBe('500');
+    // inclusive: total = subtotal + shipping (tax embedded)
     expect(preview.totals.totalMinor).toBe('2500');
   });
 

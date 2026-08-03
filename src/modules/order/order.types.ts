@@ -60,6 +60,35 @@ export class CartType {
   })
   shippingMinor!: string;
 
+  @Field(() => String, {
+    description:
+      'Tax pricing mode: exclusive (tax added) or inclusive (tax embedded in prices)',
+  })
+  taxPricingMode!: string;
+
+  @Field(() => String, {
+    nullable: true,
+    description: 'ISO 3166-1 alpha-2 country for tax jurisdiction',
+  })
+  taxCountryCode!: string | null;
+
+  @Field(() => String, { nullable: true })
+  taxPostalCode!: string | null;
+
+  @Field(() => String, { nullable: true })
+  taxProvince!: string | null;
+
+  @Field(() => String, {
+    nullable: true,
+    description: 'Optional tax provider code when multiple are active',
+  })
+  taxProviderCode!: string | null;
+
+  @Field(() => String, {
+    description: 'Last calculated tax amount in minor units',
+  })
+  taxMinor!: string;
+
   @Field(() => [CartLineType])
   lines!: CartLineType[];
 
@@ -102,7 +131,7 @@ export class UpdateCartLineInput {
 
 @ObjectType({
   description:
-    'Checkout totals — shipping from cart selection (B-03); tax stub until Phase C',
+    'Checkout totals — shipping from cart selection; tax via TaxEngine (C-03)',
 })
 export class CheckoutTotalsType {
   @Field(() => String)
@@ -241,6 +270,38 @@ export class SelectCartShippingInput {
 
   @Field(() => String, { nullable: true })
   destinationPostalCode?: string;
+}
+
+@InputType({
+  description:
+    'Set tax pricing mode and jurisdiction on a cart before prepareCheckout (C-03)',
+})
+export class SetCartTaxContextInput {
+  @Field(() => ID)
+  cartId!: string;
+
+  @Field(() => String, {
+    description: 'inclusive | exclusive',
+    defaultValue: 'exclusive',
+  })
+  pricingMode?: string;
+
+  @Field(() => String, {
+    description: 'Destination country (ISO 3166-1 alpha-2)',
+  })
+  countryCode!: string;
+
+  @Field(() => String, { nullable: true })
+  postalCode?: string;
+
+  @Field(() => String, { nullable: true })
+  province?: string;
+
+  @Field(() => String, {
+    nullable: true,
+    description: 'TaxProvider.code when multiple providers are active',
+  })
+  providerCode?: string;
 }
 
 @InputType({

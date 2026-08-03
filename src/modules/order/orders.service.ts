@@ -10,6 +10,12 @@ import { InventoryService } from '../inventory/public';
 import { CoreEventName } from '../event-bus/event-catalog';
 import { EventBusService } from '../event-bus/event-bus.service';
 import { PaymentEngine } from '../payment-engine/public';
+import { TaxEngine } from '../tax-engine/public';
+import {
+  buildTaxCalculateInput,
+  lineSubtotalMinor,
+  totalsWithTax,
+} from './checkout-tax';
 import { CartService } from './cart.service';
 import {
   canTransitionOrderStatus,
@@ -91,6 +97,7 @@ export class OrdersService {
     private readonly inventory: InventoryService,
     private readonly eventBus: EventBusService,
     private readonly payments: PaymentEngine,
+    private readonly tax: TaxEngine,
   ) {}
 
   async findAll(): Promise<OrderType[]> {
@@ -138,13 +145,22 @@ export class OrdersService {
       }
     }
 
-    let subtotal = 0n;
-    for (const line of lines) {
-      subtotal += BigInt(lineTotalMinor(String(line.unitPriceMinor), line.quantity));
-    }
-    const taxMinor = 0n;
+    const subtotal = lineSubtotalMinor(lines);
     const shippingMinor = BigInt(String(cart.shippingMinor ?? '0'));
-    const totalMinor = subtotal + taxMinor + shippingMinor;
+
+    const taxInput = buildTaxCalculateInput(cart, lines);
+    const taxResult = await this.tax.calculateOrZero(
+      taxInput,
+      cart.taxProviderCode ?? undefined,
+    );
+    const totals = totalsWithTax({
+      currencyCode: cart.currencyCode,
+      subtotalMinor: subtotal,
+      shippingMinor,
+      tax: taxResult,
+    });
+    const taxMinor = BigInt(totals.taxMinor);
+    const totalMinor = BigInt(totals.totalMinor);
 
     if (methodLabel === 'zero' && totalMinor !== 0n) {
       throw new BadRequestException(

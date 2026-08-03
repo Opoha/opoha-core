@@ -19,6 +19,7 @@ import type {
   CartType,
   CreateCartInput,
   SelectCartShippingInput,
+  SetCartTaxContextInput,
   UpdateCartLineInput,
 } from './order.types';
 
@@ -54,6 +55,12 @@ function toCartType(row: CartEntity, lines: CartLineEntity[]): CartType {
     shippingMethodCode: row.shippingMethodCode ?? null,
     shippingRateCode: row.shippingRateCode ?? null,
     shippingMinor: String(row.shippingMinor ?? '0'),
+    taxPricingMode: row.taxPricingMode ?? 'exclusive',
+    taxCountryCode: row.taxCountryCode ?? null,
+    taxPostalCode: row.taxPostalCode ?? null,
+    taxProvince: row.taxProvince ?? null,
+    taxProviderCode: row.taxProviderCode ?? null,
+    taxMinor: String(row.taxMinor ?? '0'),
     lines: lines.map(toLineType),
     createdAt: row.createdAt,
     updatedAt: row.updatedAt,
@@ -118,6 +125,12 @@ export class CartService {
       shippingMethodCode: null,
       shippingRateCode: null,
       shippingMinor: '0',
+      taxPricingMode: 'exclusive',
+      taxCountryCode: null,
+      taxPostalCode: null,
+      taxProvince: null,
+      taxProviderCode: null,
+      taxMinor: '0',
     });
 
     try {
@@ -274,6 +287,41 @@ export class CartService {
     cart.shippingMinor = '0';
     await this.carts.save(cart);
     return this.hydrate(cart);
+  }
+
+  /**
+   * Persist tax pricing mode + jurisdiction on the cart (C-03).
+   * Allowed on open or locked carts (checkout may set after prepare).
+   */
+  async setTaxContext(input: SetCartTaxContextInput): Promise<CartType> {
+    const cart = await this.requireSelectableCart(input.cartId);
+    const mode = (input.pricingMode ?? 'exclusive').trim().toLowerCase();
+    if (mode !== 'inclusive' && mode !== 'exclusive') {
+      throw new BadRequestException(
+        'pricingMode must be "inclusive" or "exclusive"',
+      );
+    }
+    const country = input.countryCode.trim().toUpperCase();
+    if (!/^[A-Z]{2}$/.test(country)) {
+      throw new BadRequestException(
+        'countryCode must be a 2-letter ISO 3166-1 alpha-2 code',
+      );
+    }
+
+    cart.taxPricingMode = mode;
+    cart.taxCountryCode = country;
+    cart.taxPostalCode = input.postalCode?.trim() || null;
+    cart.taxProvince = input.province?.trim() || null;
+    cart.taxProviderCode = input.providerCode?.trim() || null;
+    // Invalidate prior tax snapshot until prepareCheckout recalculates.
+    cart.taxMinor = '0';
+    await this.carts.save(cart);
+    return this.hydrate(cart);
+  }
+
+  /** Persist taxMinor after prepareCheckout calculation. */
+  async persistTaxResult(cartId: string, taxMinor: string): Promise<void> {
+    await this.carts.update({ id: cartId }, { taxMinor: String(taxMinor) });
   }
 
   /** Persist reservation ids on lines after checkout prepare. */

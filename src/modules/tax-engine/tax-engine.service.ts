@@ -8,8 +8,8 @@ import type {
 } from './tax-provider';
 
 /**
- * Tax engine — register / get / list providers + calculate orchestration (C-01).
- * TaxClass / TaxRule persistence lands in C-02; checkout wiring in C-03.
+ * Tax engine — register / get / list providers + calculate orchestration.
+ * Checkout wiring uses {@link TaxEngine.calculateOrZero} (C-03).
  */
 @Injectable()
 export class TaxEngine {
@@ -25,6 +25,11 @@ export class TaxEngine {
 
   list(): readonly TaxProvider[] {
     return this.registry.list(true).map((e) => e.provider);
+  }
+
+  /** True when at least one tax provider is active. */
+  hasActiveProvider(): boolean {
+    return this.registry.list(true).length > 0;
   }
 
   /**
@@ -61,6 +66,26 @@ export class TaxEngine {
     }
 
     return result;
+  }
+
+  /**
+   * Checkout helper (C-03): when no provider is registered, tax is zero so
+   * prepareCheckout / placeOrder still succeed until a plugin registers.
+   */
+  async calculateOrZero(
+    input: TaxCalculateInput,
+    providerCode?: string,
+  ): Promise<TaxCalculateResult> {
+    this.requireCalculateInput(input);
+    if (!this.hasActiveProvider()) {
+      return {
+        currencyCode: input.currencyCode,
+        pricingMode: input.pricingMode,
+        taxMinor: '0',
+        lines: [],
+      };
+    }
+    return this.calculate(input, providerCode);
   }
 
   private resolveProvider(providerCode?: string): TaxProvider {
