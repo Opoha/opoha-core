@@ -25,7 +25,7 @@ import {
   type ShippingAddress,
   type ShippingLabelResult,
 } from '../shipping-engine/public';
-import { WarehouseEntity } from '../warehouses/public';
+import { WarehouseEntity, StoreWarehouseService } from '../warehouses/public';
 import { FulfillmentLineEntity } from './entities/fulfillment-line.entity';
 import { FulfillmentPackageEntity } from './entities/fulfillment-package.entity';
 import {
@@ -113,6 +113,7 @@ export class FulfillmentService {
     private readonly orderLines: Repository<OrderLineEntity>,
     private readonly ordersService: OrdersService,
     private readonly shippingMethods: ShippingMethodRegistry,
+    private readonly storeWarehouses: StoreWarehouseService,
     private readonly dataSource: DataSource,
     private readonly eventBus: EventBusService,
   ) {}
@@ -182,6 +183,15 @@ export class FulfillmentService {
         `Order ${input.orderId} is ${order.status}, expected confirmed`,
       );
     }
+    if (!order.storeId) {
+      throw new BadRequestException(
+        `Order ${input.orderId} has no storeId; cannot allocate warehouse`,
+      );
+    }
+    await this.storeWarehouses.assertWarehouseAllowedForStore(
+      order.storeId,
+      input.warehouseId,
+    );
 
     const allOrderLines = await this.orderLines.find({
       where: { orderId: input.orderId },

@@ -58,7 +58,13 @@ describe('StoreWarehouseService (unit)', () => {
     linksRepo = {
       find: vi.fn(async ({ where }: { where: Partial<LinkRow> }) =>
         links
-          .filter((r) => !where.storeId || r.storeId === where.storeId)
+          .filter((r) => {
+            if (where.storeId && r.storeId !== where.storeId) return false;
+            if (where.warehouseId && r.warehouseId !== where.warehouseId) {
+              return false;
+            }
+            return true;
+          })
           .sort((a, b) => {
             if (a.isPrimary !== b.isPrimary) {
               return a.isPrimary ? -1 : 1;
@@ -236,6 +242,50 @@ describe('StoreWarehouseService (unit)', () => {
     await expect(service.resolvePrimaryWarehouseId('store-1')).resolves.toBe(
       'wh-1',
     );
+  });
+
+  it('assertTransferAllowed rejects warehouses with no shared store', async () => {
+    links = [
+      {
+        storeId: 'store-1',
+        warehouseId: 'wh-1',
+        isPrimary: true,
+        createdAt: now,
+        updatedAt: now,
+      },
+      {
+        storeId: 'store-2',
+        warehouseId: 'wh-2',
+        isPrimary: true,
+        createdAt: now,
+        updatedAt: now,
+      },
+    ];
+    await expect(
+      service.assertTransferAllowed('wh-1', 'wh-2'),
+    ).rejects.toBeInstanceOf(BadRequestException);
+  });
+
+  it('assertTransferAllowed accepts when storeId scopes both warehouses', async () => {
+    links = [
+      {
+        storeId: 'store-1',
+        warehouseId: 'wh-1',
+        isPrimary: true,
+        createdAt: now,
+        updatedAt: now,
+      },
+      {
+        storeId: 'store-1',
+        warehouseId: 'wh-2',
+        isPrimary: false,
+        createdAt: now,
+        updatedAt: now,
+      },
+    ];
+    await expect(
+      service.assertTransferAllowed('wh-1', 'wh-2', 'store-1'),
+    ).resolves.toBeUndefined();
   });
 
   it('rejects unknown warehouse on link', async () => {

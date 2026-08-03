@@ -57,6 +57,7 @@ type PackageRow = {
 
 type OrderRow = {
   id: string;
+  storeId: string;
   status: string;
   customerId: string | null;
   currencyCode: string;
@@ -88,6 +89,7 @@ describe('FulfillmentService (unit)', () => {
   const now = new Date('2026-08-03T18:00:00Z');
   const orderId = '11111111-1111-1111-1111-111111111111';
   const warehouseId = '22222222-2222-2222-2222-222222222222';
+  const storeId = 'aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa';
   const orderLineA = '33333333-3333-3333-3333-333333333333';
   const orderLineB = '44444444-4444-4444-4444-444444444444';
   const variantA = '55555555-5555-5555-5555-555555555555';
@@ -111,6 +113,9 @@ describe('FulfillmentService (unit)', () => {
   let orderLinesRepo: { find: ReturnType<typeof vi.fn> };
   let ordersService: { updateStatus: ReturnType<typeof vi.fn> };
   let shippingMethods: { get: ReturnType<typeof vi.fn> };
+  let storeWarehouses: {
+    assertWarehouseAllowedForStore: ReturnType<typeof vi.fn>;
+  };
   let dataSource: { transaction: ReturnType<typeof vi.fn> };
   let eventBus: { publish: ReturnType<typeof vi.fn> };
   let createLabel: ReturnType<typeof vi.fn>;
@@ -138,6 +143,7 @@ describe('FulfillmentService (unit)', () => {
     orderStore = [
       {
         id: orderId,
+        storeId,
         status: 'confirmed',
         customerId,
         currencyCode: 'USD',
@@ -471,6 +477,10 @@ describe('FulfillmentService (unit)', () => {
       }),
     };
 
+    storeWarehouses = {
+      assertWarehouseAllowedForStore: vi.fn(async () => undefined),
+    };
+
     service = new FulfillmentService(
       fulfillmentRepo as never,
       warehousesRepo as never,
@@ -478,6 +488,7 @@ describe('FulfillmentService (unit)', () => {
       orderLinesRepo as never,
       ordersService as never,
       shippingMethods as never,
+      storeWarehouses as never,
       dataSource as never,
       eventBus as never,
     );
@@ -697,6 +708,23 @@ describe('FulfillmentService (unit)', () => {
     await service.pack(created.id);
     await expect(service.ship(created.id)).rejects.toBeInstanceOf(
       BadRequestException,
+    );
+  });
+
+  it('create rejects warehouse not linked to the order store (E-03)', async () => {
+    storeWarehouses.assertWarehouseAllowedForStore = vi
+      .fn()
+      .mockRejectedValue(
+        new BadRequestException(
+          `Warehouse ${warehouseId} is not associated with store ${storeId}`,
+        ),
+      );
+    await expect(createFullOrderFulfillment()).rejects.toBeInstanceOf(
+      BadRequestException,
+    );
+    expect(storeWarehouses.assertWarehouseAllowedForStore).toHaveBeenCalledWith(
+      storeId,
+      warehouseId,
     );
   });
 });

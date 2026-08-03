@@ -267,9 +267,14 @@ describe('StockTransferService (unit)', () => {
 
     eventBus = { publish: vi.fn(async () => undefined) };
 
+    const storeWarehouses = {
+      assertTransferAllowed: vi.fn(async () => undefined),
+    };
+
     service = new StockTransferService(
       transfersRepo as never,
       warehousesRepo as never,
+      storeWarehouses as never,
       dataSource as never,
       eventBus as never,
     );
@@ -398,5 +403,31 @@ describe('StockTransferService (unit)', () => {
     await expect(service.findById('missing')).rejects.toBeInstanceOf(
       NotFoundException,
     );
+  });
+
+  it('create rejects when store warehouse guard fails (E-03)', async () => {
+    const storeWarehouses = {
+      assertTransferAllowed: vi
+        .fn()
+        .mockRejectedValue(
+          new BadRequestException(
+            `Warehouses ${fromWh} and ${toWh} do not share a store association`,
+          ),
+        ),
+    };
+    const guarded = new StockTransferService(
+      transfersRepo as never,
+      warehousesRepo as never,
+      storeWarehouses as never,
+      dataSource as never,
+      eventBus as never,
+    );
+    await expect(
+      guarded.create({
+        fromWarehouseId: fromWh,
+        toWarehouseId: toWh,
+        lines: [{ variantId, quantity: 1 }],
+      }),
+    ).rejects.toBeInstanceOf(BadRequestException);
   });
 });

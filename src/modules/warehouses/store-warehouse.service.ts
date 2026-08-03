@@ -114,6 +114,39 @@ export class StoreWarehouseService {
     return link != null;
   }
 
+  /**
+   * Transfer guard (E-03): optional store scope, else require shared store when both warehouses are linked.
+   */
+  async assertTransferAllowed(
+    fromWarehouseId: string,
+    toWarehouseId: string,
+    storeId?: string | null,
+  ): Promise<void> {
+    if (storeId) {
+      await this.assertWarehouseAllowedForStore(storeId, fromWarehouseId);
+      await this.assertWarehouseAllowedForStore(storeId, toWarehouseId);
+      return;
+    }
+
+    const fromLinks = await this.links.find({
+      where: { warehouseId: fromWarehouseId },
+      select: ['storeId'],
+    });
+    const toLinks = await this.links.find({
+      where: { warehouseId: toWarehouseId },
+      select: ['storeId'],
+    });
+    if (fromLinks.length === 0 || toLinks.length === 0) {
+      return;
+    }
+    const toStores = new Set(toLinks.map((r) => r.storeId));
+    if (!fromLinks.some((r) => toStores.has(r.storeId))) {
+      throw new BadRequestException(
+        `Warehouses ${fromWarehouseId} and ${toWarehouseId} do not share a store association`,
+      );
+    }
+  }
+
   async link(
     storeId: string,
     warehouseId: string,

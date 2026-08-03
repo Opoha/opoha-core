@@ -4,6 +4,7 @@ import { join, resolve } from 'node:path';
 
 import { describe, expect, it } from 'vitest';
 
+import { FXRateProviderRegistry } from '../currency/public';
 import { EventBusService } from '../event-bus/event-bus.service';
 import { StorageAdapterRegistry } from '../files/public';
 import { NotificationProviderRegistry } from '../notifications/public';
@@ -40,6 +41,7 @@ function createLoader(pluginPath: string) {
   const notifications = new NotificationProviderRegistry();
   const storage = new StorageAdapterRegistry();
   const search = new SearchProviderRegistry();
+  const fx = new FXRateProviderRegistry();
   const config = {
     get: (key: string) => {
       if (key === 'OPOHA_PLUGINS') {
@@ -62,6 +64,7 @@ function createLoader(pluginPath: string) {
     notifications,
     storage,
     search,
+    fx,
   );
   return { loader, contributions, admin, eventBus };
 }

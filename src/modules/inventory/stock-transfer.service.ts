@@ -10,6 +10,7 @@ import { DataSource, QueryFailedError, Repository } from 'typeorm';
 import { CoreEventName } from '../event-bus/event-catalog';
 import { EventBusService } from '../event-bus/event-bus.service';
 import { WarehouseEntity } from '../warehouses/entities/warehouse.entity';
+import { StoreWarehouseService } from '../warehouses/public';
 import { InventoryAdjustmentEntity } from './entities/inventory-adjustment.entity';
 import { InventoryItemEntity } from './entities/inventory-item.entity';
 import { StockTransferLineEntity } from './entities/stock-transfer-line.entity';
@@ -66,6 +67,7 @@ export class StockTransferService {
     private readonly transfers: Repository<StockTransferEntity>,
     @InjectRepository(WarehouseEntity)
     private readonly warehouses: Repository<WarehouseEntity>,
+    private readonly storeWarehouses: StoreWarehouseService,
     private readonly dataSource: DataSource,
     private readonly eventBus: EventBusService,
   ) {}
@@ -120,6 +122,11 @@ export class StockTransferService {
 
     await this.requireActiveWarehouse(input.fromWarehouseId);
     await this.requireActiveWarehouse(input.toWarehouseId);
+    await this.storeWarehouses.assertTransferAllowed(
+      input.fromWarehouseId,
+      input.toWarehouseId,
+      input.storeId,
+    );
 
     let saved: StockTransferEntity;
     try {

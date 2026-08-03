@@ -111,6 +111,10 @@ describeDb('InventoryService concurrent reservations (no oversell)', () => {
       dataSource.getRepository(InventoryReservationEntity),
       dataSource.getRepository(InventoryAdjustmentEntity),
       dataSource.getRepository(WarehouseEntity),
+      {
+        listWarehouseIdsForStore: async () => [warehouseId],
+        assertWarehouseAllowedForStore: async () => undefined,
+      } as never,
       dataSource,
       new EventBusService(),
     );

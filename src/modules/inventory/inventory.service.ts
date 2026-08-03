@@ -10,6 +10,7 @@ import { DataSource, QueryFailedError, Repository } from 'typeorm';
 import { CoreEventName } from '../event-bus/event-catalog';
 import { EventBusService } from '../event-bus/event-bus.service';
 import { WarehouseEntity } from '../warehouses/entities/warehouse.entity';
+import { StoreWarehouseService } from '../warehouses/public';
 import { InventoryAdjustmentEntity } from './entities/inventory-adjustment.entity';
 import { InventoryItemEntity } from './entities/inventory-item.entity';
 import { InventoryReservationEntity } from './entities/inventory-reservation.entity';
@@ -20,6 +21,7 @@ import type {
   InventoryItemType,
   InventoryReservationType,
   ReserveInventoryInput,
+  ReserveInventoryForStoreInput,
 } from './inventory.types';
 
 function isUniqueViolation(error: unknown): boolean {
@@ -93,6 +95,7 @@ export class InventoryService {
     private readonly adjustments: Repository<InventoryAdjustmentEntity>,
     @InjectRepository(WarehouseEntity)
     private readonly warehouses: Repository<WarehouseEntity>,
+    private readonly storeWarehouses: StoreWarehouseService,
     private readonly dataSource: DataSource,
     private readonly eventBus: EventBusService,
   ) {}
@@ -283,8 +286,72 @@ export class InventoryService {
   }
 
   /**
+   * Reserve stock preferring warehouses linked to the store (Phase 5 E-02).
+   * Tries allow-list in primary-first order; never allocates outside the store.
+   */
+  async reserveForStore(
+    input: ReserveInventoryForStoreInput,
+  ): Promise<InventoryReservationType> {
+    if (!Number.isInteger(input.quantity) || input.quantity <= 0) {
+      throw new BadRequestException('quantity must be a positive integer');
+    }
+
+    const allowed = await this.storeWarehouses.listWarehouseIdsForStore(
+      input.storeId,
+    );
+    if (allowed.length === 0) {
+      throw new BadRequestException(
+        `Store ${input.storeId} has no associated warehouses; link a warehouse before checkout`,
+      );
+    }
+
+    if (input.warehouseId) {
+      await this.storeWarehouses.assertWarehouseAllowedForStore(
+        input.storeId,
+        input.warehouseId,
+      );
+      return this.reserve({
+        variantId: input.variantId,
+        quantity: input.quantity,
+        warehouseId: input.warehouseId,
+        reference: input.reference,
+      });
+    }
+
+    let lastConflict: ConflictException | null = null;
+    for (const warehouseId of allowed) {
+      const item = await this.items.findOne({
+        where: { variantId: input.variantId, warehouseId },
+      });
+      if (!item) {
+        continue;
+      }
+      const available = item.quantityOnHand - item.quantityReserved;
+      if (available < input.quantity) {
+        lastConflict = new ConflictException(
+          `Insufficient stock for variant ${input.variantId} at warehouse ${warehouseId} (available=${available}, requested=${input.quantity})`,
+        );
+        continue;
+      }
+      return this.reserve({
+        variantId: input.variantId,
+        quantity: input.quantity,
+        warehouseId,
+        reference: input.reference,
+      });
+    }
+
+    throw (
+      lastConflict ??
+      new ConflictException(
+        `Insufficient stock for variant ${input.variantId} across warehouses allowed for store ${input.storeId}`,
+      )
+    );
+  }
+
+  /**
    * Reserve stock for a variant at a warehouse; fails if available qty is insufficient.
-   * Omitting warehouseId uses the default warehouse (checkout/order path).
+   * Omitting warehouseId uses the default warehouse (admin / explicit path).
    */
   async reserve(
     input: ReserveInventoryInput,

@@ -18,7 +18,7 @@ describe('CheckoutService (unit)', () => {
     findById: ReturnType<typeof vi.fn>;
   };
   let inventory: {
-    reserve: ReturnType<typeof vi.fn>;
+    reserveForStore: ReturnType<typeof vi.fn>;
     release: ReturnType<typeof vi.fn>;
   };
   let linesRepo: {
@@ -116,7 +116,7 @@ describe('CheckoutService (unit)', () => {
     };
 
     inventory = {
-      reserve: vi
+      reserveForStore: vi
         .fn()
         .mockResolvedValueOnce({ id: 'res-1' })
         .mockResolvedValueOnce({ id: 'res-2' }),
@@ -244,7 +244,14 @@ describe('CheckoutService (unit)', () => {
       '0',
     );
     expect(cartService.setStatus).toHaveBeenCalledWith('cart-1', 'locked');
-    expect(inventory.reserve).toHaveBeenCalledTimes(2);
+    expect(inventory.reserveForStore).toHaveBeenCalledTimes(2);
+    expect(inventory.reserveForStore).toHaveBeenCalledWith(
+      expect.objectContaining({
+        variantId: 'var-1',
+        storeId: 'store-a',
+        quantity: 2,
+      }),
+    );
     expect(tax.calculateOrZero).toHaveBeenCalled();
     expect(promotions.applyOrZero).toHaveBeenCalled();
   });
@@ -270,7 +277,7 @@ describe('CheckoutService (unit)', () => {
         },
       ],
     });
-    inventory.reserve = vi.fn().mockResolvedValueOnce({ id: 'res-1' });
+    inventory.reserveForStore = vi.fn().mockResolvedValueOnce({ id: 'res-1' });
 
     const preview = await service.prepare('cart-1');
 
@@ -306,7 +313,7 @@ describe('CheckoutService (unit)', () => {
         },
       ],
     });
-    inventory.reserve = vi.fn().mockResolvedValueOnce({ id: 'res-1' });
+    inventory.reserveForStore = vi.fn().mockResolvedValueOnce({ id: 'res-1' });
 
     const preview = await service.prepare('cart-1');
 
@@ -345,7 +352,7 @@ describe('CheckoutService (unit)', () => {
         },
       ],
     });
-    inventory.reserve = vi.fn().mockResolvedValueOnce({ id: 'res-1' });
+    inventory.reserveForStore = vi.fn().mockResolvedValueOnce({ id: 'res-1' });
 
     const preview = await service.prepare('cart-1');
 
@@ -385,7 +392,7 @@ describe('CheckoutService (unit)', () => {
         },
       ],
     });
-    inventory.reserve = vi.fn().mockResolvedValueOnce({ id: 'res-1' });
+    inventory.reserveForStore = vi.fn().mockResolvedValueOnce({ id: 'res-1' });
 
     const preview = await service.prepare('cart-1');
 
@@ -411,7 +418,7 @@ describe('CheckoutService (unit)', () => {
   });
 
   it('rolls back reservations when a later reserve fails', async () => {
-    inventory.reserve = vi
+    inventory.reserveForStore = vi
       .fn()
       .mockResolvedValueOnce({ id: 'res-1' })
       .mockRejectedValueOnce(new ConflictException('Insufficient stock'));

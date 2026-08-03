@@ -19,6 +19,7 @@ export type {
   InventoryItemType,
   InventoryReservationType,
   ReserveInventoryInput,
+  ReserveInventoryForStoreInput,
 } from '../inventory.types';
 export type {
   CreateStockTransferInput,

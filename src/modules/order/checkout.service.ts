@@ -8,8 +8,8 @@ import { Repository } from 'typeorm';
 import { CurrencyConversionService } from '../currency/public';
 import { CoreEventName } from '../event-bus/event-catalog';
 import { EventBusService } from '../event-bus/event-bus.service';
-import { GiftCardService } from '../gift-cards/public';
 import { InventoryService } from '../inventory/public';
+import { GiftCardService } from '../gift-cards/public';
 import { LoyaltyService } from '../loyalty/public';
 import { PromotionsEngine } from '../promotions-engine/public';
 import type { StoreContextRef } from '../stores/public';
@@ -41,6 +41,7 @@ import {
  * Publishes CheckoutPrepared for analytics sinks (Phase 4 F-02).
  * Phase 5 B-02: validates cart storeId against request store context.
  * Phase 5 D-03: converts settlement totals to display currency via rates.
+ * Phase 5 E-02: reservations prefer warehouses linked to the cart store.
  */
 @Injectable()
 export class CheckoutService {
@@ -104,8 +105,9 @@ export class CheckoutService {
 
     try {
       for (const line of lines) {
-        const reservation = await this.inventory.reserve({
+        const reservation = await this.inventory.reserveForStore({
           variantId: line.variantId,
+          storeId: cart.storeId,
           quantity: line.quantity,
           reference: `cart_line:${line.id}`,
         });

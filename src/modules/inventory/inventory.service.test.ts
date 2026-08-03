@@ -60,6 +60,10 @@ describe('InventoryService (unit)', () => {
   };
   let dataSource: { transaction: ReturnType<typeof vi.fn> };
   let eventBus: { publish: ReturnType<typeof vi.fn> };
+  let storeWarehouses: {
+    listWarehouseIdsForStore: ReturnType<typeof vi.fn>;
+    assertWarehouseAllowedForStore: ReturnType<typeof vi.fn>;
+  };
 
   beforeEach(() => {
     warehouseStore = [
@@ -283,11 +287,20 @@ describe('InventoryService (unit)', () => {
       publish: vi.fn(async () => ({ listenerCount: 0, failures: [] })),
     };
 
+    storeWarehouses = {
+      listWarehouseIdsForStore: vi.fn(async () => [
+        defaultWarehouseId,
+        secondaryWarehouseId,
+      ]),
+      assertWarehouseAllowedForStore: vi.fn(async () => undefined),
+    };
+
     service = new InventoryService(
       itemsRepo as never,
       reservationsRepo as never,
       adjustmentsRepo as never,
       warehousesRepo as never,
+      storeWarehouses as never,
       dataSource as never,
       eventBus as never,
     );
@@ -471,5 +484,68 @@ describe('InventoryService (unit)', () => {
     expect(created.warehouseId).toBe(secondaryWarehouseId);
     expect(created.variantId).toBe('var-2');
     expect(created.quantityOnHand).toBe(4);
+  });
+
+  it('reserveForStore prefers primary warehouse when stock is available', async () => {
+    const reservation = await service.reserveForStore({
+      variantId: 'var-1',
+      storeId: 'store-a',
+      quantity: 2,
+    });
+    expect(reservation.status).toBe('active');
+    const item = await service.findByVariantId('var-1');
+    expect(item.quantityReserved).toBe(4);
+    expect(storeWarehouses.listWarehouseIdsForStore).toHaveBeenCalledWith(
+      'store-a',
+    );
+  });
+
+  it('reserveForStore falls back to next allowed warehouse when primary lacks stock', async () => {
+    storeWarehouses.listWarehouseIdsForStore = vi.fn(async () => [
+      defaultWarehouseId,
+      secondaryWarehouseId,
+    ]);
+    // Exhaust default available (onHand 10, reserved 2 → available 8)
+    const defaultItem = itemStore.find(
+      (r) =>
+        r.variantId === 'var-1' && r.warehouseId === defaultWarehouseId,
+    )!;
+    defaultItem.quantityReserved = 10;
+
+    const reservation = await service.reserveForStore({
+      variantId: 'var-1',
+      storeId: 'store-a',
+      quantity: 2,
+    });
+    expect(reservation.status).toBe('active');
+    const nyc = await service.findByVariantId('var-1', secondaryWarehouseId);
+    expect(nyc.quantityReserved).toBe(2);
+  });
+
+  it('reserveForStore rejects when store has no warehouses', async () => {
+    storeWarehouses.listWarehouseIdsForStore = vi.fn(async () => []);
+    await expect(
+      service.reserveForStore({
+        variantId: 'var-1',
+        storeId: 'store-empty',
+        quantity: 1,
+      }),
+    ).rejects.toBeInstanceOf(BadRequestException);
+  });
+
+  it('reserveForStore does not use warehouses outside the allow-list', async () => {
+    storeWarehouses.listWarehouseIdsForStore = vi.fn(async () => [
+      secondaryWarehouseId,
+    ]);
+    const reservation = await service.reserveForStore({
+      variantId: 'var-1',
+      storeId: 'store-nyc-only',
+      quantity: 1,
+    });
+    expect(reservation.status).toBe('active');
+    const defaultItem = await service.findByVariantId('var-1');
+    const nyc = await service.findByVariantId('var-1', secondaryWarehouseId);
+    expect(defaultItem.quantityReserved).toBe(2);
+    expect(nyc.quantityReserved).toBe(1);
   });
 });

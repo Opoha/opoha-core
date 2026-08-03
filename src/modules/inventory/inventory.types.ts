@@ -127,3 +127,12 @@ export class ReserveInventoryInput {
   @Field(() => String, { nullable: true })
   reference?: string;
 }
+
+/** Internal checkout reservation scoped to a store’s warehouse allow-list (E-02). */
+export type ReserveInventoryForStoreInput = {
+  variantId: string;
+  storeId: string;
+  quantity: number;
+  warehouseId?: string | null;
+  reference?: string;
+};
