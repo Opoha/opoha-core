@@ -4,6 +4,8 @@
 export { AuthModule } from '../auth.module';
 export { AuthService } from '../auth.service';
 export { ApiKeysService } from '../api-keys/api-keys.service';
+export { AuditLogsService } from '../audit/audit-logs.service';
+export { AuditAction } from '../audit/audit-actions';
 export { GqlAuthGuard } from '../jwt/gql-auth.guard';
 export { CurrentUser } from '../jwt/current-user.decorator';
 export type { AuthUser, JwtPayload } from '../jwt/auth-user';
