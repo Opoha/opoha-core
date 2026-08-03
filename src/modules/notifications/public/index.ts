@@ -3,6 +3,7 @@
  */
 export { NotificationsModule } from '../notifications.module';
 export { NotificationsService } from '../notifications.service';
+export { NotificationsResolver } from '../notifications.resolver';
 export { NotificationProviderRegistry } from '../notification-provider.registry';
 export { NotificationTemplateRegistry } from '../notification-template.registry';
 export {
@@ -22,3 +23,7 @@ export type {
   NotificationProvider,
   RegisteredNotificationProvider,
 } from '../notification-provider';
+export {
+  NotificationProviderType,
+  NotificationTemplateType,
+} from '../notification.types';

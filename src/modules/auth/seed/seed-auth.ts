@@ -97,6 +97,10 @@ export const DEFAULT_PERMISSIONS = [
     description: 'Delete coupons and discount rules',
   },
   {
+    key: 'notification:read',
+    description: 'Read notification providers and transactional templates',
+  },
+  {
     key: 'localization:read',
     description: 'Read deployment localization settings',
   },
