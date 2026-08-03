@@ -384,7 +384,8 @@ async function main() {
           createProduct(input: $input) {
             id
             slug
-            variants { id sku priceMinor }
+            fulfillmentMode
+            variants { id sku priceMinor fulfillmentMode }
           }
         }`,
         {
@@ -392,12 +393,14 @@ async function main() {
             name: `Walking Skeleton ${stamp}`,
             slug,
             description: 'G-02 commerce smoke product',
+            fulfillmentMode: 'physical',
             variants: [
               {
                 sku,
                 name: 'Default',
                 priceMinor: '1500',
                 currencyCode: 'USD',
+                fulfillmentMode: 'physical',
               },
             ],
           },
@@ -408,7 +411,63 @@ async function main() {
       if (!variantId) {
         fail('commerce', 'createProduct returned no variant id');
       }
+      if (productData.createProduct.fulfillmentMode !== 'physical') {
+        fail(
+          'commerce',
+          `expected fulfillmentMode=physical, got ${productData.createProduct.fulfillmentMode}`,
+        );
+      }
+      if (
+        productData.createProduct.variants?.[0]?.fulfillmentMode !== 'physical'
+      ) {
+        fail(
+          'commerce',
+          `expected variant fulfillmentMode=physical, got ${productData.createProduct.variants?.[0]?.fulfillmentMode}`,
+        );
+      }
       log('commerce', `product ${productData.createProduct.id} variant ${variantId}`);
+
+      // Phase 7 A-04: digital mode create (no checkout) — foundations smoke.
+      log('omnichannel', 'createProduct fulfillmentMode=digital (A-04)');
+      const digSlug = `ws-digital-${stamp}`;
+      const dig = await gql(
+        `mutation($input: CreateProductInput!) {
+          createProduct(input: $input) {
+            id
+            fulfillmentMode
+            variants { id fulfillmentMode }
+          }
+        }`,
+        {
+          input: {
+            name: `WS Digital ${stamp}`,
+            slug: digSlug,
+            fulfillmentMode: 'digital',
+            variants: [
+              {
+                sku: `WS-DIG-${stamp}`,
+                name: 'Download',
+                priceMinor: '500',
+                currencyCode: 'USD',
+              },
+            ],
+          },
+        },
+        token,
+      );
+      if (dig.createProduct?.fulfillmentMode !== 'digital') {
+        fail(
+          'omnichannel',
+          `expected digital product, got ${JSON.stringify(dig.createProduct)}`,
+        );
+      }
+      if (dig.createProduct.variants?.[0]?.fulfillmentMode !== 'digital') {
+        fail(
+          'omnichannel',
+          `expected inherited digital variant mode, got ${JSON.stringify(dig.createProduct.variants)}`,
+        );
+      }
+      log('omnichannel', `digital product ${dig.createProduct.id}`);
 
       let defaultWarehouseId = null;
       let eastWarehouseId = null;
@@ -747,6 +806,7 @@ async function main() {
             id
             status
             cartId
+            orderSource
             totalMinor
             shippingMinor
             taxMinor
@@ -754,7 +814,13 @@ async function main() {
             lines { id variantId quantity }
           }
         }`,
-        { input: { cartId, paymentMethod: 'manual' } },
+        {
+          input: {
+            cartId,
+            paymentMethod: 'manual',
+            orderSource: 'web',
+          },
+        },
         token,
       );
       const order = orderData.placeOrder;
@@ -762,6 +828,13 @@ async function main() {
       if (order.status !== 'confirmed') {
         fail('commerce', `expected confirmed order, got ${order.status}`);
       }
+      if (order.orderSource !== 'web') {
+        fail(
+          'omnichannel',
+          `expected orderSource=web, got ${order.orderSource}`,
+        );
+      }
+      log('omnichannel', `placeOrder orderSource=${order.orderSource} (A-04)`);
       if (wantOps && hasFlatRate) {
         if (order.shippingMinor !== OPS_FLAT_RATE_AMOUNT) {
           fail(

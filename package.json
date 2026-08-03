@@ -17,6 +17,7 @@
     "test": "vitest run",
     "test:watch": "vitest",
     "test:boundary": "vitest run src/boundary.test.ts",
+    "foundations-smoke": "vitest run src/modules/omnichannel/omnichannel-foundations.smoke.test.ts src/modules/catalog/entities/fulfillment-mode.test.ts src/modules/order/entities/order-source.test.ts src/boundary.test.ts",
     "walking-skeleton": "node ./scripts/walking-skeleton.mjs",
     "lint": "eslint .",
     "format": "prettier --write .",
