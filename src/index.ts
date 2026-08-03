@@ -88,6 +88,22 @@ export type {
   ShippingMethodProvider,
 } from './modules/shipping-engine/public';
 export {
+  TaxEngineModule,
+  TaxEngine,
+  TaxProviderRegistry,
+} from './modules/tax-engine/public';
+export type {
+  MoneyAmount as TaxMoneyAmount,
+  TaxPricingMode,
+  TaxAddress,
+  TaxCalculateLineItem,
+  TaxCalculateInput,
+  TaxLineResult,
+  TaxCalculateResult,
+  TaxProvider,
+  RegisteredTaxProvider,
+} from './modules/tax-engine/public';
+export {
   FilesModule,
   FilesService,
   StorageAdapterRegistry,

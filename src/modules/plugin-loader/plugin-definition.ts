@@ -8,6 +8,10 @@ import type {
   ShippingMethodRegistry,
 } from '../shipping-engine/public';
 import type {
+  TaxProvider,
+  TaxProviderRegistry,
+} from '../tax-engine/public';
+import type {
   StorageAdapter,
   StorageAdapterRegistry,
 } from '../files/public';
@@ -43,6 +47,7 @@ export type PluginRegistrationContext = {
   }): void;
   registerPaymentProvider(provider: PaymentProvider): void;
   registerShippingMethod(method: ShippingMethodProvider): void;
+  registerTaxProvider(provider: TaxProvider): void;
   registerStorageAdapter(adapter: StorageAdapter): void;
 };
 
@@ -62,6 +67,7 @@ export type PluginDefinition = {
 export type PluginEngineRegistries = {
   payment?: PaymentProviderRegistry;
   shipping?: ShippingMethodRegistry;
+  tax?: TaxProviderRegistry;
   storage?: StorageAdapterRegistry;
 };
 
@@ -125,6 +131,12 @@ export function createPluginRegistrationContext(
         throw new Error('Shipping engine registry is not available');
       }
       engines.shipping.register(pluginId, method, active);
+    },
+    registerTaxProvider(provider) {
+      if (!engines.tax) {
+        throw new Error('Tax engine registry is not available');
+      }
+      engines.tax.register(pluginId, provider, active);
     },
     registerStorageAdapter(adapter) {
       if (!engines.storage) {

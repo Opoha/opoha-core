@@ -7,6 +7,7 @@ import { EventBusModule } from '../event-bus/event-bus.module';
 import { FilesModule } from '../files/public';
 import { PaymentEngineModule } from '../payment-engine/public';
 import { ShippingEngineModule } from '../shipping-engine/public';
+import { TaxEngineModule } from '../tax-engine/public';
 import { AdminExtensionRegistry } from './admin-extension-registry';
 import { AdminExtensionsResolver } from './admin-extensions.resolver';
 import { ContributionRegistry } from './contribution-registry';
@@ -22,6 +23,7 @@ import { PluginsResolver } from './plugins.resolver';
     AuthModule,
     PaymentEngineModule,
     ShippingEngineModule,
+    TaxEngineModule,
     FilesModule,
     TypeOrmModule.forFeature([PluginStateEntity]),
   ],

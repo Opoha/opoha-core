@@ -8,6 +8,7 @@ import { EventBusService } from '../event-bus/event-bus.service';
 import { StorageAdapterRegistry } from '../files/public';
 import { PaymentProviderRegistry } from '../payment-engine/public';
 import { ShippingMethodRegistry } from '../shipping-engine/public';
+import { TaxProviderRegistry } from '../tax-engine/public';
 import { AdminExtensionRegistry } from './admin-extension-registry';
 import { ContributionRegistry } from './contribution-registry';
 import { PluginLoaderService } from './plugin-loader.service';
@@ -31,6 +32,7 @@ function createLoader(pluginPath: string) {
   const admin = new AdminExtensionRegistry();
   const payment = new PaymentProviderRegistry();
   const shipping = new ShippingMethodRegistry();
+  const tax = new TaxProviderRegistry();
   const storage = new StorageAdapterRegistry();
   const config = {
     get: (key: string) => {
@@ -49,6 +51,7 @@ function createLoader(pluginPath: string) {
     admin,
     payment,
     shipping,
+    tax,
     storage,
   );
   return { loader, contributions, admin, eventBus };

@@ -23,6 +23,7 @@ import { OrderModule } from './modules/order/public';
 import { PaymentEngineModule } from './modules/payment-engine/public';
 import { PluginLoaderModule } from './modules/plugin-loader/plugin-loader.module';
 import { ShippingEngineModule } from './modules/shipping-engine/public';
+import { TaxEngineModule } from './modules/tax-engine/public';
 
 @Module({
   imports: [
@@ -42,6 +43,7 @@ import { ShippingEngineModule } from './modules/shipping-engine/public';
     LocalizationModule,
     PaymentEngineModule,
     ShippingEngineModule,
+    TaxEngineModule,
     PluginLoaderModule,
     GraphQLModule.forRoot<ApolloDriverConfig>({
       driver: ApolloDriver,

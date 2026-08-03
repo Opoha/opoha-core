@@ -8,6 +8,7 @@ import { EventBusService } from '../event-bus/event-bus.service';
 import { StorageAdapterRegistry } from '../files/public';
 import { PaymentProviderRegistry } from '../payment-engine/public';
 import { ShippingMethodRegistry } from '../shipping-engine/public';
+import { TaxProviderRegistry } from '../tax-engine/public';
 import { AdminExtensionRegistry } from './admin-extension-registry';
 import { ContributionRegistry } from './contribution-registry';
 import { orderPluginsByDependency } from './dependency-order';
@@ -55,6 +56,7 @@ function createLoader(configGet?: (key: string) => string | undefined) {
   const admin = new AdminExtensionRegistry();
   const payment = new PaymentProviderRegistry();
   const shipping = new ShippingMethodRegistry();
+  const tax = new TaxProviderRegistry();
   const storage = new StorageAdapterRegistry();
   const config = {
     get: (key: string) => {
@@ -73,9 +75,10 @@ function createLoader(configGet?: (key: string) => string | undefined) {
     admin,
     payment,
     shipping,
+    tax,
     storage,
   );
-  return { loader, contributions, admin, eventBus, payment, shipping, storage };
+  return { loader, contributions, admin, eventBus, payment, shipping, tax, storage };
 }
 
 describe('parsePluginManifest', () => {
@@ -324,8 +327,8 @@ describe('PluginLoaderService lifecycle + registrations', () => {
     expect(admin.getContribution('sample')).toBeUndefined();
   });
 
-  it('registers payment, shipping, and storage engines via context', async () => {
-    const { loader, payment, shipping, storage } = createLoader();
+  it('registers payment, shipping, tax, and storage engines via context', async () => {
+    const { loader, payment, shipping, tax, storage } = createLoader();
     loader.registerDefinition({
       id: 'engines-demo',
       boot(ctx) {
@@ -349,6 +352,18 @@ describe('PluginLoaderService lifecycle + registrations', () => {
             return [];
           },
         });
+        ctx.registerTaxProvider({
+          code: 'standard',
+          displayName: 'Standard tax',
+          async calculateTax(input) {
+            return {
+              currencyCode: input.currencyCode,
+              pricingMode: input.pricingMode,
+              taxMinor: '0',
+              lines: [],
+            };
+          },
+        });
         ctx.registerStorageAdapter({
           code: 'localfs',
           async put({ key, body }) {
@@ -366,16 +381,19 @@ describe('PluginLoaderService lifecycle + registrations', () => {
     await loader.boot('engines-demo');
     expect(payment.get('manual')).toBeUndefined();
     expect(shipping.get('flat-rate')).toBeUndefined();
+    expect(tax.get('standard')).toBeUndefined();
     expect(storage.get('localfs')).toBeUndefined();
 
     await loader.enable('engines-demo');
     expect(payment.get('manual')?.displayName).toBe('Manual');
     expect(shipping.get('flat-rate')?.displayName).toBe('Flat rate');
+    expect(tax.get('standard')?.displayName).toBe('Standard tax');
     expect(storage.get('localfs')?.code).toBe('localfs');
 
     await loader.disable('engines-demo');
     expect(payment.get('manual')).toBeUndefined();
     expect(shipping.get('flat-rate')).toBeUndefined();
+    expect(tax.get('standard')).toBeUndefined();
     expect(storage.get('localfs')).toBeUndefined();
   });
 
