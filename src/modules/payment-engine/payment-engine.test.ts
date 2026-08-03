@@ -25,6 +25,19 @@ type PaymentRow = {
   updatedAt: Date;
 };
 
+type WebhookEventRow = {
+  id: string;
+  providerCode: string;
+  externalEventId: string;
+  paymentId: string | null;
+  status: 'received' | 'processed' | 'ignored' | 'failed';
+  action: string | null;
+  payload: unknown | null;
+  errorMessage: string | null;
+  createdAt: Date;
+  processedAt: Date | null;
+};
+
 function stubManualProvider(
   overrides?: Partial<PaymentProvider>,
 ): PaymentProvider {
@@ -47,9 +60,15 @@ function stubManualProvider(
 describe('PaymentEngine', () => {
   const now = new Date('2026-08-03T12:00:00Z');
   let store: PaymentRow[];
+  let webhookStore: WebhookEventRow[];
   let paymentsRepo: {
     findOne: ReturnType<typeof vi.fn>;
     find: ReturnType<typeof vi.fn>;
+    create: ReturnType<typeof vi.fn>;
+    save: ReturnType<typeof vi.fn>;
+  };
+  let webhookEventsRepo: {
+    findOne: ReturnType<typeof vi.fn>;
     create: ReturnType<typeof vi.fn>;
     save: ReturnType<typeof vi.fn>;
   };
@@ -58,7 +77,9 @@ describe('PaymentEngine', () => {
 
   beforeEach(() => {
     store = [];
+    webhookStore = [];
     let seq = 0;
+    let whSeq = 0;
     paymentsRepo = {
       findOne: vi.fn(async ({ where }: { where: Partial<PaymentRow> }) => {
         if (where.id) {
@@ -67,6 +88,15 @@ describe('PaymentEngine', () => {
         if (where.idempotencyKey) {
           return (
             store.find((r) => r.idempotencyKey === where.idempotencyKey) ?? null
+          );
+        }
+        if (where.providerCode && where.externalId) {
+          return (
+            store.find(
+              (r) =>
+                r.providerCode === where.providerCode &&
+                r.externalId === where.externalId,
+            ) ?? null
           );
         }
         return null;
@@ -100,13 +130,42 @@ describe('PaymentEngine', () => {
       }),
     };
 
+    webhookEventsRepo = {
+      findOne: vi.fn(
+        async ({
+          where,
+        }: {
+          where: { providerCode: string; externalEventId: string };
+        }) =>
+          webhookStore.find(
+            (r) =>
+              r.providerCode === where.providerCode &&
+              r.externalEventId === where.externalEventId,
+          ) ?? null,
+      ),
+      create: vi.fn((data: Partial<WebhookEventRow>) => ({
+        id: `wh-${++whSeq}`,
+        paymentId: null,
+        status: 'received' as const,
+        action: null,
+        payload: null,
+        errorMessage: null,
+        createdAt: now,
+        processedAt: null,
+        ...data,
+      })),
+      save: vi.fn(async (row: WebhookEventRow) => {
+        webhookStore.push({ ...row });
+        return row;
+      }),
+    };
+
     registry = new PaymentProviderRegistry();
     registry.register('manual-payment', stubManualProvider());
     engine = new PaymentEngine(
       registry,
-      paymentsRepo as unknown as ConstructorParameters<
-        typeof PaymentEngine
-      >[1],
+      paymentsRepo as never,
+      webhookEventsRepo as never,
     );
   });
 
@@ -240,5 +299,47 @@ describe('PaymentEngine', () => {
       body: {},
     });
     expect(result).toEqual({ handled: false, action: 'ignore' });
+  });
+
+  it('processWebhook is idempotent by externalEventId', async () => {
+    registry.removePlugin('manual-payment');
+    registry.register(
+      'manual-payment',
+      stubManualProvider({
+        async handleWebhook() {
+          return {
+            handled: true,
+            externalEventId: 'evt-1',
+            paymentExternalId: 'manual-auth-1',
+            action: 'capture',
+          };
+        },
+      }),
+    );
+
+    const authorized = await engine.authorize({
+      providerCode: 'manual',
+      orderId: 'order-wh',
+      amount: { amountMinor: '500', currencyCode: 'USD' },
+    });
+    expect(authorized.externalId).toBe('manual-auth-1');
+
+    const first = await engine.processWebhook('manual', {
+      headers: {},
+      body: { id: 'evt-1' },
+    });
+    expect(first.duplicate).toBe(false);
+    expect(first.ok).toBe(true);
+    expect(webhookStore).toHaveLength(1);
+
+    const payment = await engine.findById(authorized.id);
+    expect(payment.status).toBe('captured');
+
+    const second = await engine.processWebhook('manual', {
+      headers: {},
+      body: { id: 'evt-1' },
+    });
+    expect(second.duplicate).toBe(true);
+    expect(webhookStore).toHaveLength(1);
   });
 });

@@ -23,6 +23,7 @@ import { CustomersInit1722690600000 } from './migrations/1722690600000-Customers
 import { OrdersInit1722691700000 } from './migrations/1722691700000-OrdersInit';
 import { LocalizationInit1722692800000 } from './migrations/1722692800000-LocalizationInit';
 import { PaymentsInit1722693900000 } from './migrations/1722693900000-PaymentsInit';
+import { PaymentWebhooksInit1722695000000 } from './migrations/1722695000000-PaymentWebhooksInit';
 
 loadDotenv();
 
@@ -58,6 +59,7 @@ export default new DataSource({
     OrdersInit1722691700000,
     LocalizationInit1722692800000,
     PaymentsInit1722693900000,
+    PaymentWebhooksInit1722695000000,
   ],
   synchronize: false,
 });

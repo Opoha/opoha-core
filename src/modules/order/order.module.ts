@@ -4,6 +4,7 @@ import { TypeOrmModule } from '@nestjs/typeorm';
 import { AuthModule } from '../auth/public';
 import { ProductVariantEntity } from '../catalog/public';
 import { InventoryModule } from '../inventory/public';
+import { PaymentEngineModule } from '../payment-engine/public';
 import { CartResolver } from './cart.resolver';
 import { CartService } from './cart.service';
 import { CheckoutResolver } from './checkout.resolver';
@@ -17,6 +18,7 @@ import { OrdersService } from './orders.service';
   imports: [
     AuthModule,
     InventoryModule,
+    PaymentEngineModule,
     TypeOrmModule.forFeature([...orderEntities, ProductVariantEntity]),
   ],
   providers: [

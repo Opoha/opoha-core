@@ -187,17 +187,18 @@ export class OrderType {
 
 @InputType({
   description:
-    'Place order from a locked checkout cart (manual or zero payment)',
+    'Place order from a locked checkout cart via PaymentEngine',
 })
 export class PlaceOrderInput {
   @Field(() => ID)
   cartId!: string;
 
   @Field(() => String, {
-    description: 'Payment path: manual (no capture) or zero (total must be 0)',
+    description:
+      'Payment provider code (e.g. "manual"), or "zero" for free checkout (total must be 0; uses manual + capture)',
     defaultValue: 'manual',
   })
-  paymentMethod?: 'manual' | 'zero';
+  paymentMethod?: string;
 }
 
 @InputType({ description: 'Transition an order to a new status' })

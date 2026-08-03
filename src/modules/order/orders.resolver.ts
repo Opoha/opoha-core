@@ -39,7 +39,7 @@ export class OrdersResolver {
   @Mutation(() => OrderType, {
     name: 'placeOrder',
     description:
-      'Place order from a locked cart (manual or zero payment; no capture)',
+      'Place order from a locked cart through PaymentEngine (authorize; zero also captures)',
   })
   @RequirePermission('order:create')
   placeOrder(

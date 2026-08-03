@@ -8,9 +8,11 @@ export type {
   CapturePaymentInput,
   RefundPaymentInput,
   PaymentRecord,
+  ProcessWebhookResult,
 } from '../payment-engine.service';
 export { PaymentProviderRegistry } from '../payment-provider.registry';
 export { PaymentEntity } from '../entities/payment.entity';
+export { PaymentWebhookEventEntity } from '../entities/payment-webhook-event.entity';
 export { paymentEntities } from '../entities';
 export type { PaymentStatus } from '../entities/payment.entity';
 export type {

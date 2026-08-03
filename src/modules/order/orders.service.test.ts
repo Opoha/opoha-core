@@ -5,13 +5,14 @@ import { CoreEventName } from '../event-bus/event-catalog';
 import { OrdersService } from './orders.service';
 import type { CartService } from './cart.service';
 
-describe('OrdersService place + status (D-04 / D-05 / D-06)', () => {
+describe('OrdersService place + status (D-04 / D-05 / D-06 / A-04)', () => {
   const now = new Date('2026-08-03T12:00:00Z');
   const orderId = '11111111-1111-1111-1111-111111111111';
   const cartId = '22222222-2222-2222-2222-222222222222';
   const lineId = '33333333-3333-3333-3333-333333333333';
   const variantId = '44444444-4444-4444-4444-444444444444';
   const reservationId = '55555555-5555-5555-5555-555555555555';
+  const paymentId = '66666666-6666-6666-6666-666666666666';
 
   let carts: {
     getEntityWithLines: ReturnType<typeof vi.fn>;
@@ -19,6 +20,11 @@ describe('OrdersService place + status (D-04 / D-05 / D-06)', () => {
   };
   let inventory: { commit: ReturnType<typeof vi.fn> };
   let eventBus: { publish: ReturnType<typeof vi.fn> };
+  let payments: {
+    get: ReturnType<typeof vi.fn>;
+    authorize: ReturnType<typeof vi.fn>;
+    capture: ReturnType<typeof vi.fn>;
+  };
   let ordersRepo: {
     find: ReturnType<typeof vi.fn>;
     findOne: ReturnType<typeof vi.fn>;
@@ -90,6 +96,28 @@ describe('OrdersService place + status (D-04 / D-05 / D-06)', () => {
       publish: vi.fn(async () => ({ ok: true })),
     };
 
+    payments = {
+      get: vi.fn(() => ({ code: 'manual', displayName: 'Manual' })),
+      authorize: vi.fn(async () => ({
+        id: paymentId,
+        orderId,
+        providerCode: 'manual',
+        status: 'authorized',
+        amountMinor: '2000',
+        currencyCode: 'USD',
+        errorMessage: null,
+      })),
+      capture: vi.fn(async () => ({
+        id: paymentId,
+        orderId,
+        providerCode: 'manual',
+        status: 'captured',
+        amountMinor: '0',
+        currencyCode: 'USD',
+        errorMessage: null,
+      })),
+    };
+
     ordersRepo = {
       find: vi.fn(async () => [orderRow]),
       findOne: vi.fn(async () => ({ ...orderRow })),
@@ -122,10 +150,11 @@ describe('OrdersService place + status (D-04 / D-05 / D-06)', () => {
       carts as unknown as CartService,
       inventory as never,
       eventBus as never,
+      payments as never,
     );
   });
 
-  it('happy path: locked cart → placeOrder (manual) → confirmed + timeline', async () => {
+  it('happy path: locked cart → placeOrder (manual) → PaymentEngine authorize → confirmed', async () => {
     const order = await service.placeOrder({
       cartId,
       paymentMethod: 'manual',
@@ -133,6 +162,15 @@ describe('OrdersService place + status (D-04 / D-05 / D-06)', () => {
 
     expect(order.status).toBe('confirmed');
     expect(order.totalMinor).toBe('2000');
+    expect(payments.authorize).toHaveBeenCalledWith(
+      expect.objectContaining({
+        providerCode: 'manual',
+        orderId,
+        amount: { amountMinor: '2000', currencyCode: 'USD' },
+        idempotencyKey: `place-order:${orderId}`,
+      }),
+    );
+    expect(payments.capture).not.toHaveBeenCalled();
     expect(inventory.commit).toHaveBeenCalledWith(reservationId);
     expect(carts.setStatus).toHaveBeenCalledWith(cartId, 'converted');
 
@@ -156,9 +194,10 @@ describe('OrdersService place + status (D-04 / D-05 / D-06)', () => {
       service.placeOrder({ cartId, paymentMethod: 'zero' }),
     ).rejects.toBeInstanceOf(BadRequestException);
     expect(inventory.commit).not.toHaveBeenCalled();
+    expect(payments.authorize).not.toHaveBeenCalled();
   });
 
-  it('zero payment accepts zero-total cart', async () => {
+  it('zero payment authorizes + captures via manual provider', async () => {
     carts.getEntityWithLines.mockResolvedValueOnce({
       cart: {
         id: cartId,
@@ -185,12 +224,55 @@ describe('OrdersService place + status (D-04 / D-05 / D-06)', () => {
     }));
     orderRow.totalMinor = '0';
     orderRow.subtotalMinor = '0';
+    payments.authorize.mockResolvedValueOnce({
+      id: paymentId,
+      orderId,
+      providerCode: 'manual',
+      status: 'authorized',
+      amountMinor: '0',
+      currencyCode: 'USD',
+      errorMessage: null,
+    });
 
     const order = await service.placeOrder({
       cartId,
       paymentMethod: 'zero',
     });
     expect(order.status).toBe('confirmed');
+    expect(payments.authorize).toHaveBeenCalled();
+    expect(payments.capture).toHaveBeenCalledWith(
+      expect.objectContaining({
+        paymentId,
+        idempotencyKey: `place-order-capture:${orderId}`,
+      }),
+    );
+  });
+
+  it('rejects when payment provider is not registered', async () => {
+    payments.get.mockReturnValueOnce(undefined);
+    await expect(
+      service.placeOrder({ cartId, paymentMethod: 'manual' }),
+    ).rejects.toBeInstanceOf(BadRequestException);
+    expect(payments.authorize).not.toHaveBeenCalled();
+    expect(inventory.commit).not.toHaveBeenCalled();
+  });
+
+  it('cancels order when authorization fails', async () => {
+    payments.authorize.mockResolvedValueOnce({
+      id: paymentId,
+      orderId,
+      providerCode: 'manual',
+      status: 'failed',
+      amountMinor: '2000',
+      currencyCode: 'USD',
+      errorMessage: 'declined',
+    });
+
+    await expect(
+      service.placeOrder({ cartId, paymentMethod: 'manual' }),
+    ).rejects.toBeInstanceOf(BadRequestException);
+    expect(inventory.commit).not.toHaveBeenCalled();
+    expect(orderRow.status).toBe('cancelled');
   });
 
   it('rejects placeOrder when cart is not locked', async () => {

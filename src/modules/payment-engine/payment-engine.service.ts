@@ -10,6 +10,7 @@ import {
   PaymentEntity,
   type PaymentStatus,
 } from './entities/payment.entity';
+import { PaymentWebhookEventEntity } from './entities/payment-webhook-event.entity';
 import { PaymentProviderRegistry } from './payment-provider.registry';
 import type {
   MoneyAmount,
@@ -17,6 +18,12 @@ import type {
   PaymentWebhookInput,
   PaymentWebhookResult,
 } from './payment-provider';
+
+export type ProcessWebhookResult = {
+  ok: boolean;
+  duplicate: boolean;
+  result: PaymentWebhookResult;
+};
 
 export type AuthorizePaymentInput = {
   providerCode: string;
@@ -50,6 +57,8 @@ export class PaymentEngine {
     private readonly registry: PaymentProviderRegistry,
     @InjectRepository(PaymentEntity)
     private readonly payments: Repository<PaymentEntity>,
+    @InjectRepository(PaymentWebhookEventEntity)
+    private readonly webhookEvents: Repository<PaymentWebhookEventEntity>,
   ) {}
 
   /** Register a provider (pluginId defaults to `core` for in-process stubs). */
@@ -234,7 +243,7 @@ export class PaymentEngine {
     return this.payments.save(row);
   }
 
-  /** Delegate webhook payload to the named provider (idempotency in A-05). */
+  /** Delegate webhook payload to the named provider (no persistence). */
   async handleWebhook(
     providerCode: string,
     input: PaymentWebhookInput,
@@ -244,6 +253,145 @@ export class PaymentEngine {
       return { handled: false, action: 'ignore' };
     }
     return provider.handleWebhook(input);
+  }
+
+  /**
+   * Ingress entrypoint: provider parse + idempotent apply by external event id.
+   * Duplicate (providerCode, externalEventId) returns prior result without re-applying.
+   */
+  async processWebhook(
+    providerCode: string,
+    input: PaymentWebhookInput,
+  ): Promise<ProcessWebhookResult> {
+    const provider = this.requireProvider(providerCode);
+    if (!provider.handleWebhook) {
+      return {
+        ok: true,
+        duplicate: false,
+        result: { handled: false, action: 'ignore' },
+      };
+    }
+
+    const result = await provider.handleWebhook(input);
+    const externalEventId = result.externalEventId?.trim();
+
+    if (!externalEventId) {
+      await this.applyWebhookAction(providerCode, result);
+      return { ok: true, duplicate: false, result };
+    }
+
+    const existing = await this.webhookEvents.findOne({
+      where: { providerCode, externalEventId },
+    });
+    if (existing) {
+      return {
+        ok: true,
+        duplicate: true,
+        result: {
+          handled: existing.status === 'processed' || existing.status === 'ignored',
+          externalEventId,
+          paymentExternalId: result.paymentExternalId,
+          action: (existing.action as PaymentWebhookResult['action']) ?? 'ignore',
+        },
+      };
+    }
+
+    let paymentId: string | null = null;
+    let status: PaymentWebhookEventEntity['status'] = 'processed';
+    let errorMessage: string | null = null;
+
+    try {
+      paymentId = await this.applyWebhookAction(providerCode, result);
+      if (!result.handled || result.action === 'ignore') {
+        status = 'ignored';
+      }
+    } catch (err) {
+      status = 'failed';
+      errorMessage = err instanceof Error ? err.message : 'Webhook apply failed';
+    }
+
+    try {
+      await this.webhookEvents.save(
+        this.webhookEvents.create({
+          providerCode,
+          externalEventId,
+          paymentId,
+          status,
+          action: result.action ?? null,
+          payload: input.body ?? null,
+          errorMessage,
+          processedAt: new Date(),
+        }),
+      );
+    } catch {
+      // Concurrent insert raced on unique (provider, event) — treat as duplicate.
+      const raced = await this.webhookEvents.findOne({
+        where: { providerCode, externalEventId },
+      });
+      if (raced) {
+        return {
+          ok: true,
+          duplicate: true,
+          result: {
+            handled:
+              raced.status === 'processed' || raced.status === 'ignored',
+            externalEventId,
+            paymentExternalId: result.paymentExternalId,
+            action:
+              (raced.action as PaymentWebhookResult['action']) ?? 'ignore',
+          },
+        };
+      }
+      throw new BadRequestException('Failed to persist webhook event');
+    }
+
+    return {
+      ok: status !== 'failed',
+      duplicate: false,
+      result,
+    };
+  }
+
+  /** Apply provider-reported webhook action onto a matching payment row. */
+  private async applyWebhookAction(
+    providerCode: string,
+    result: PaymentWebhookResult,
+  ): Promise<string | null> {
+    if (!result.handled || !result.action || result.action === 'ignore') {
+      return null;
+    }
+
+    const externalId = result.paymentExternalId;
+    if (!externalId) {
+      return null;
+    }
+
+    const payment = await this.payments.findOne({
+      where: { providerCode, externalId },
+    });
+    if (!payment) {
+      return null;
+    }
+
+    if (result.action === 'capture' && payment.status !== 'captured') {
+      await this.capture({ paymentId: payment.id });
+    } else if (result.action === 'refund' && payment.status === 'captured') {
+      await this.refund({ paymentId: payment.id });
+    } else if (result.action === 'fail' && payment.status !== 'failed') {
+      payment.status = 'failed';
+      payment.failedAt = new Date();
+      payment.errorMessage = 'Failed via provider webhook';
+      await this.payments.save(payment);
+    } else if (
+      result.action === 'authorize' &&
+      payment.status === 'pending'
+    ) {
+      payment.status = 'authorized';
+      payment.authorizedAt = new Date();
+      await this.payments.save(payment);
+    }
+
+    return payment.id;
   }
 
   private requireProvider(code: string): PaymentProvider {

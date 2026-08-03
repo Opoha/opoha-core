@@ -25,7 +25,7 @@ export const orderCreatedDataSchema = z
     status: orderStatusSchema,
     currencyCode: z.string().min(1),
     totalMinor: z.string().min(1),
-    paymentMethod: z.enum(['manual', 'zero']),
+    paymentMethod: z.string().min(1),
   })
   .strict();
 
@@ -51,7 +51,7 @@ export const orderTimelineDataSchema = z
     type: z.enum(['created', 'status_changed', 'payment_recorded']),
     fromStatus: orderStatusSchema.nullable(),
     toStatus: orderStatusSchema,
-    paymentMethod: z.enum(['manual', 'zero']).nullable(),
+    paymentMethod: z.string().min(1).nullable(),
     note: z.string().nullable(),
   })
   .strict();

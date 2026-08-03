@@ -9,6 +9,7 @@ import { Repository } from 'typeorm';
 import { InventoryService } from '../inventory/public';
 import { CoreEventName } from '../event-bus/event-catalog';
 import { EventBusService } from '../event-bus/event-bus.service';
+import { PaymentEngine } from '../payment-engine/public';
 import { CartService } from './cart.service';
 import {
   canTransitionOrderStatus,
@@ -57,6 +58,26 @@ function toOrderType(row: OrderEntity, lines: OrderLineEntity[]): OrderType {
   };
 }
 
+/** Resolve GraphQL paymentMethod alias → provider code + capture policy. */
+function resolvePaymentPath(paymentMethod: string): {
+  providerCode: string;
+  captureImmediately: boolean;
+  methodLabel: string;
+} {
+  if (paymentMethod === 'zero') {
+    return {
+      providerCode: 'manual',
+      captureImmediately: true,
+      methodLabel: 'zero',
+    };
+  }
+  return {
+    providerCode: paymentMethod,
+    captureImmediately: false,
+    methodLabel: paymentMethod,
+  };
+}
+
 @Injectable()
 export class OrdersService {
   constructor(
@@ -67,6 +88,7 @@ export class OrdersService {
     private readonly carts: CartService,
     private readonly inventory: InventoryService,
     private readonly eventBus: EventBusService,
+    private readonly payments: PaymentEngine,
   ) {}
 
   async findAll(): Promise<OrderType[]> {
@@ -83,16 +105,17 @@ export class OrdersService {
   }
 
   /**
-   * Place order from a locked cart (D-04).
-   * Manual/zero payment — no payment capture; inventory reservations are committed.
+   * Place order from a locked cart (Phase 2 A-04).
+   * Authorizes via PaymentEngine; `zero` also captures immediately.
    */
   async placeOrder(input: PlaceOrderInput): Promise<OrderType> {
-    const paymentMethod = input.paymentMethod ?? 'manual';
-    if (paymentMethod !== 'manual' && paymentMethod !== 'zero') {
-      throw new BadRequestException(
-        'paymentMethod must be "manual" or "zero"',
-      );
+    const paymentMethod = (input.paymentMethod ?? 'manual').trim();
+    if (!paymentMethod) {
+      throw new BadRequestException('paymentMethod is required');
     }
+
+    const { providerCode, captureImmediately, methodLabel } =
+      resolvePaymentPath(paymentMethod);
 
     const { cart, lines } = await this.carts.getEntityWithLines(input.cartId);
 
@@ -121,9 +144,15 @@ export class OrdersService {
     const shippingMinor = 0n;
     const totalMinor = subtotal + taxMinor + shippingMinor;
 
-    if (paymentMethod === 'zero' && totalMinor !== 0n) {
+    if (methodLabel === 'zero' && totalMinor !== 0n) {
       throw new BadRequestException(
         `Zero payment requires a zero total (got ${totalMinor.toString()})`,
+      );
+    }
+
+    if (!this.payments.get(providerCode)) {
+      throw new BadRequestException(
+        `Payment provider "${providerCode}" is not registered or inactive`,
       );
     }
 
@@ -155,6 +184,51 @@ export class OrdersService {
       ),
     );
 
+    let payment;
+    try {
+      payment = await this.payments.authorize({
+        providerCode,
+        orderId: order.id,
+        amount: {
+          amountMinor: totalMinor.toString(),
+          currencyCode: cart.currencyCode,
+        },
+        idempotencyKey: `place-order:${order.id}`,
+        metadata: {
+          cartId: cart.id,
+          paymentMethod: methodLabel,
+        },
+      });
+
+      if (payment.status === 'failed') {
+        throw new BadRequestException(
+          payment.errorMessage ?? 'Payment authorization failed',
+        );
+      }
+
+      if (captureImmediately && payment.status !== 'captured') {
+        payment = await this.payments.capture({
+          paymentId: payment.id,
+          idempotencyKey: `place-order-capture:${order.id}`,
+        });
+        if (payment.status === 'failed') {
+          throw new BadRequestException(
+            payment.errorMessage ?? 'Payment capture failed',
+          );
+        }
+      }
+    } catch (err) {
+      await this.transitionStatus(order.id, 'cancelled', {
+        note: `Payment failed during placeOrder (${methodLabel})`,
+      });
+      if (err instanceof BadRequestException) {
+        throw err;
+      }
+      throw new BadRequestException(
+        err instanceof Error ? err.message : 'Payment processing failed',
+      );
+    }
+
     for (const line of lines) {
       await this.inventory.commit(line.reservationId!);
     }
@@ -172,7 +246,7 @@ export class OrdersService {
         status: 'pending',
         currencyCode: cart.currencyCode,
         totalMinor: totalMinor.toString(),
-        paymentMethod,
+        paymentMethod: methodLabel,
       },
     });
 
@@ -181,25 +255,26 @@ export class OrdersService {
       type: 'created',
       fromStatus: null,
       toStatus: 'pending',
-      paymentMethod,
-      note: `Order placed via ${paymentMethod} payment`,
+      paymentMethod: methodLabel,
+      note: `Order placed via ${methodLabel} payment`,
     });
+
+    const paymentNote =
+      methodLabel === 'zero'
+        ? `Zero-total order; payment ${payment.id} captured via PaymentEngine`
+        : `Payment ${payment.id} ${payment.status} via ${providerCode}`;
 
     await this.publishTimeline({
       orderId: order.id,
       type: 'payment_recorded',
       fromStatus: 'pending',
       toStatus: 'pending',
-      paymentMethod,
-      note:
-        paymentMethod === 'zero'
-          ? 'Zero-total order; no payment capture'
-          : 'Manual payment accepted without capture',
+      paymentMethod: methodLabel,
+      note: paymentNote,
     });
 
-    // Manual/zero path: accept order immediately (no gateway).
     return this.transitionStatus(order.id, 'confirmed', {
-      note: `Auto-confirmed after ${paymentMethod} payment path`,
+      note: `Auto-confirmed after ${methodLabel} payment path (${payment.status})`,
     });
   }
 
@@ -279,7 +354,7 @@ export class OrdersService {
     type: 'created' | 'status_changed' | 'payment_recorded';
     fromStatus: OrderStatus | null;
     toStatus: OrderStatus;
-    paymentMethod: 'manual' | 'zero' | null;
+    paymentMethod: string | null;
     note: string | null;
   }): Promise<void> {
     await this.eventBus.publish({
