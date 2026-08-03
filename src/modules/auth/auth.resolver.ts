@@ -6,6 +6,7 @@ import { AuthPayload } from './auth.types';
 import type { AuthUser } from './jwt/auth-user';
 import { CurrentUser } from './jwt/current-user.decorator';
 import { GqlAuthGuard } from './jwt/gql-auth.guard';
+import { PermissionsService } from './permissions/permissions.service';
 import { UserType } from './users/user.types';
 import { UsersService } from './users/users.service';
 
@@ -14,6 +15,7 @@ export class AuthResolver {
   constructor(
     private readonly authService: AuthService,
     private readonly usersService: UsersService,
+    private readonly permissionsService: PermissionsService,
   ) {}
 
   @Mutation(() => AuthPayload, {
@@ -56,5 +58,18 @@ export class AuthResolver {
   @UseGuards(GqlAuthGuard)
   me(@CurrentUser() user: AuthUser): Promise<UserType> {
     return this.usersService.findById(user.userId);
+  }
+
+  @Query(() => [String], {
+    name: 'myPermissions',
+    description:
+      'Permission keys for the current staff user (role-derived or API-key scoped)',
+  })
+  @UseGuards(GqlAuthGuard)
+  myPermissions(@CurrentUser() user: AuthUser): Promise<string[]> {
+    if (user.permissions?.length) {
+      return Promise.resolve([...user.permissions].sort());
+    }
+    return this.permissionsService.listKeysForUser(user.userId);
   }
 }
