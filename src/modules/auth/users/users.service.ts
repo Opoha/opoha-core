@@ -6,6 +6,8 @@ import {
 import { InjectRepository } from '@nestjs/typeorm';
 import { QueryFailedError, Repository } from 'typeorm';
 
+import { CoreEventName } from '../../event-bus/event-catalog';
+import { EventBusService } from '../../event-bus/event-bus.service';
 import { AuditAction } from '../audit/audit-actions';
 import { AuditLogsService } from '../audit/audit-logs.service';
 import { UserEntity } from '../entities/user.entity';
@@ -48,6 +50,7 @@ export class UsersService {
     @InjectRepository(UserEntity)
     private readonly users: Repository<UserEntity>,
     private readonly auditLogs: AuditLogsService,
+    private readonly eventBus: EventBusService,
   ) {}
 
   async findAll(): Promise<UserType[]> {
@@ -103,6 +106,17 @@ export class UsersService {
         resourceId: created.id,
         metadata: { email: created.email },
       });
+      await this.eventBus.publish({
+        eventName: CoreEventName.UserRegistered,
+        aggregateType: 'user',
+        aggregateId: created.id,
+        data: {
+          userId: created.id,
+          email: created.email,
+          isActive: created.isActive,
+        },
+        metadata: actorUserId ? { actorId: actorUserId } : undefined,
+      });
       return created;
     } catch (error: unknown) {
       if (isUniqueViolation(error)) {
@@ -131,6 +145,9 @@ export class UsersService {
     try {
       await this.users.update(id, patch);
       const updated = await this.findById(id);
+      const changedFields = Object.keys(input).filter(
+        (k) => input[k as keyof UpdateUserInput] !== undefined,
+      );
       await this.auditLogs.append({
         action: AuditAction.USER_UPDATE,
         actorUserId: actorUserId ?? null,
@@ -138,10 +155,20 @@ export class UsersService {
         resourceId: id,
         metadata: {
           email: updated.email,
-          fields: Object.keys(input).filter(
-            (k) => input[k as keyof UpdateUserInput] !== undefined,
-          ),
+          fields: changedFields,
         },
+      });
+      await this.eventBus.publish({
+        eventName: CoreEventName.UserUpdated,
+        aggregateType: 'user',
+        aggregateId: id,
+        data: {
+          userId: id,
+          email: updated.email,
+          isActive: updated.isActive,
+          changedFields,
+        },
+        metadata: actorUserId ? { actorId: actorUserId } : undefined,
       });
       return updated;
     } catch (error: unknown) {
@@ -161,6 +188,16 @@ export class UsersService {
       resourceType: 'user',
       resourceId: id,
       metadata: { email: row.email },
+    });
+    await this.eventBus.publish({
+      eventName: CoreEventName.UserDeleted,
+      aggregateType: 'user',
+      aggregateId: id,
+      data: {
+        userId: id,
+        email: row.email,
+      },
+      metadata: actorUserId ? { actorId: actorUserId } : undefined,
     });
     return row;
   }

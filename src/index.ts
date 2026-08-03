@@ -25,3 +25,22 @@ export {
   verifyPassword,
 } from './modules/auth/public';
 export type { AuthUser, JwtPayload } from './modules/auth/public';
+export {
+  EventBusModule,
+  EventBusService,
+  CoreEventName,
+  createDomainEvent,
+} from './modules/event-bus/public';
+export type { DomainEvent, EventListener } from './modules/event-bus/public';
+export {
+  PluginLoaderModule,
+  PluginLoaderService,
+  PLUGIN_CONTRACT_VERSION,
+  parsePluginManifest,
+  orderPluginsByDependency,
+  discoverPlugins,
+} from './modules/plugin-loader/public';
+export type {
+  DiscoveredPlugin,
+  PluginManifest,
+} from './modules/plugin-loader/public';

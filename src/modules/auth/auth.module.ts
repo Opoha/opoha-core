@@ -5,6 +5,7 @@ import { TypeOrmModule } from '@nestjs/typeorm';
 
 import { ConfigModule } from '../config/config.module';
 import { ConfigService } from '../config/config.service';
+import { EventBusModule } from '../event-bus/event-bus.module';
 import { ApiKeysResolver } from './api-keys/api-keys.resolver';
 import { ApiKeysService } from './api-keys/api-keys.service';
 import { AuditLogsResolver } from './audit/audit-logs.resolver';
@@ -12,6 +13,7 @@ import { AuditLogsService } from './audit/audit-logs.service';
 import { AuthResolver } from './auth.resolver';
 import { AuthService } from './auth.service';
 import { authEntities } from './entities';
+import { AuthEventsRegistrar } from './events/auth-events.registrar';
 import { GqlAuthGuard } from './jwt/gql-auth.guard';
 import { JwtStrategy } from './jwt/jwt.strategy';
 import { PermissionsGuard } from './permissions/permissions.guard';
@@ -26,6 +28,7 @@ import { UsersService } from './users/users.service';
 @Module({
   imports: [
     ConfigModule,
+    EventBusModule,
     TypeOrmModule.forFeature([...authEntities]),
     PassportModule.register({ defaultStrategy: 'jwt' }),
     JwtModule.registerAsync({
@@ -56,6 +59,7 @@ import { UsersService } from './users/users.service';
     ApiKeysResolver,
     AuditLogsService,
     AuditLogsResolver,
+    AuthEventsRegistrar,
     JwtStrategy,
     GqlAuthGuard,
   ],

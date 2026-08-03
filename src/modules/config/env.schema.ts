@@ -26,6 +26,11 @@ export const envSchema = z
     JWT_EXPIRES_IN: z.string().min(1).default('1h'),
     /** Opaque refresh-token lifetime, e.g. `7d`. */
     JWT_REFRESH_EXPIRES_IN: z.string().min(1).default('7d'),
+    /**
+     * Plugin roots for the loader — comma-separated paths or a JSON string array.
+     * Empty = no plugins discovered at boot.
+     */
+    OPOHA_PLUGINS: z.string().optional().default(''),
   })
   .superRefine((data, ctx) => {
     if (data.NODE_ENV === 'production' && !data.JWT_SECRET) {
