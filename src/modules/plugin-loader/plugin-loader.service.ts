@@ -22,6 +22,7 @@ import { ContributionRegistry } from './contribution-registry';
 import { orderPluginsByDependency } from './dependency-order';
 import {
   discoverPlugins,
+  discoverPluginsFromAppConfig,
   discoverPluginsInDirectory,
   parsePluginPathsEnv,
 } from './plugin-discovery';
@@ -96,7 +97,7 @@ export class PluginLoaderService implements OnModuleInit {
     if (discovered.length === 0) {
       this.ordered = [];
       this.logger?.log(
-        'No plugins configured (OPOHA_PLUGINS / OPOHA_PLUGINS_PATH empty)',
+        'No plugins configured (opoha.config.json plugins / OPOHA_PLUGINS empty)',
         'PluginLoaderService',
       );
       return this.ordered;
@@ -337,20 +338,26 @@ export class PluginLoaderService implements OnModuleInit {
     );
   }
 
+  /**
+   * Config-first discovery: `opoha.config.json` plugins, then optional env overrides.
+   * Env (`OPOHA_PLUGINS` / `OPOHA_PLUGINS_PATH`) wins on duplicate plugin ids (CI/advanced).
+   */
   private discoverConfigured(): DiscoveredPlugin[] {
-    const paths = parsePluginPathsEnv(this.config.get('OPOHA_PLUGINS'));
-    const fromList = discoverPlugins(paths);
+    const startDir = process.cwd();
+    const fromConfig = discoverPluginsFromAppConfig(startDir);
+
+    const envPaths = parsePluginPathsEnv(this.config.get('OPOHA_PLUGINS'));
+    const fromEnvList = discoverPlugins(envPaths);
     const pluginsPath = this.config.get('OPOHA_PLUGINS_PATH')?.trim();
-    const fromDir =
+    const fromEnvDir =
       pluginsPath && pluginsPath.length > 0 ? discoverPluginsInDirectory(pluginsPath) : [];
 
     const byId = new Map<string, DiscoveredPlugin>();
-    for (const plugin of [...fromList, ...fromDir]) {
-      if (byId.has(plugin.manifest.id)) {
-        throw new Error(
-          `Duplicate plugin id "${plugin.manifest.id}" across OPOHA_PLUGINS / OPOHA_PLUGINS_PATH`,
-        );
-      }
+    for (const plugin of fromConfig) {
+      byId.set(plugin.manifest.id, plugin);
+    }
+    for (const plugin of [...fromEnvList, ...fromEnvDir]) {
+      // Env overrides config for the same id (documented secondary path).
       byId.set(plugin.manifest.id, plugin);
     }
     return [...byId.values()];

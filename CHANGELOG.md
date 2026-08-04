@@ -4,6 +4,16 @@ All notable changes to `@opoha/core` are documented in this file.
 
 The format is based on [Keep a Changelog](https://keepachangelog.com/), and this project adheres to [Semantic Versioning](https://semver.org/).
 
+## [1.0.2] — 2026-08-04
+
+### Changed
+
+- **Config-first plugin loading:** discover plugins from `opoha.config.json` `"plugins"` (package names or paths). `OPOHA_PLUGINS` / `OPOHA_PLUGINS_PATH` remain optional overrides (same id wins over config) for CI/advanced use.
+
+### Added
+
+- Helpers: `findOpohaAppConfig`, `discoverPluginsFromAppConfig`, `resolvePluginSpecifier`.
+
 ## [1.0.1] — 2026-08-04
 
 ### Fixed

@@ -1,6 +1,12 @@
 import { existsSync, readdirSync, readFileSync, statSync } from 'node:fs';
 import { isAbsolute, join, resolve } from 'node:path';
 
+import {
+  findOpohaAppConfig,
+  isPluginRootDirectory,
+  parsePluginsField,
+  resolvePluginSpecifier,
+} from './opoha-app-config';
 import { type DiscoveredPlugin, parsePluginManifest } from './plugin-manifest';
 
 function readJsonFile(path: string): unknown {
@@ -88,6 +94,7 @@ export function discoverPluginsInDirectory(directoryPath: string): DiscoveredPlu
 
 /**
  * Parse `OPOHA_PLUGINS` env: comma-separated paths or JSON string array.
+ * Secondary to `opoha.config.json` — use for CI / advanced overrides.
  */
 export function parsePluginPathsEnv(raw: string | undefined): string[] {
   if (raw === undefined || raw.trim() === '') {
@@ -102,7 +109,44 @@ export function parsePluginPathsEnv(raw: string | undefined): string[] {
     return parsed;
   }
   return trimmed
-.split(',')
-.map((p) => p.trim())
-.filter((p) => p.length > 0);
+    .split(',')
+    .map((p) => p.trim())
+    .filter((p) => p.length > 0);
+}
+
+/**
+ * Discover plugins listed in `opoha.config.json` (package names, roots, or directories).
+ * Walks up from `startDir` to find the config file.
+ */
+export function discoverPluginsFromAppConfig(startDir: string): DiscoveredPlugin[] {
+  const found = findOpohaAppConfig(startDir);
+  if (!found) {
+    return [];
+  }
+  const specs = parsePluginsField(found.config.plugins);
+  return discoverPluginsFromSpecs(specs, found.root);
+}
+
+/**
+ * Resolve plugin specs relative to `fromDir` into discovered plugins.
+ * A spec may be a single plugin root or a directory of plugin children.
+ */
+export function discoverPluginsFromSpecs(
+  specs: string[],
+  fromDir: string,
+): DiscoveredPlugin[] {
+  const discovered: DiscoveredPlugin[] = [];
+  for (const spec of specs) {
+    const resolved = resolvePluginSpecifier(spec, fromDir);
+    if (isPluginRootDirectory(resolved)) {
+      discovered.push(discoverPluginAt(resolved));
+      continue;
+    }
+    if (statSync(resolved).isDirectory()) {
+      discovered.push(...discoverPluginsInDirectory(resolved));
+      continue;
+    }
+    throw new Error(`Plugin specifier is not a plugin root or directory: ${spec} → ${resolved}`);
+  }
+  return discovered;
 }

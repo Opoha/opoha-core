@@ -19,9 +19,11 @@ import { orderPluginsByDependency } from './dependency-order';
 import {
   discoverPluginAt,
   discoverPlugins,
+  discoverPluginsFromAppConfig,
   discoverPluginsInDirectory,
   parsePluginPathsEnv,
 } from './plugin-discovery';
+import { findOpohaAppConfig, parsePluginsField, resolvePluginSpecifier } from './opoha-app-config';
 import { canBootPlugin, transitionPluginState } from './plugin-lifecycle';
 import { PluginLoaderService } from './plugin-loader.service';
 import { PLUGIN_CONTRACT_VERSION, parsePluginManifest } from './plugin-manifest';
@@ -207,6 +209,97 @@ describe('plugin discovery', () => {
     const discovered = discoverPluginsInDirectory(root);
     const ordered = orderPluginsByDependency(discovered);
     expect(ordered.map((p) => p.manifest.id)).toEqual(['storage-localfs', 'manual-payment']);
+  });
+
+  it('loads plugins from opoha.config.json (config-first)', () => {
+    const app = mkdtempSync(join(tmpdir(), 'opoha-config-plugins-'));
+    const plugs = join(app, 'plugins');
+    const alpha = pluginDir(plugs, 'alpha');
+    const beta = pluginDir(plugs, 'beta', ['alpha']);
+    writeFileSync(
+      join(app, 'opoha.config.json'),
+      JSON.stringify({
+        name: 'test-app',
+        plugins: [alpha, './plugins/beta'],
+      }),
+    );
+
+    const cwd = process.cwd();
+    try {
+      process.chdir(app);
+      const discovered = discoverPluginsFromAppConfig(app);
+      expect(discovered.map((p) => p.manifest.id).sort()).toEqual(['alpha', 'beta']);
+
+      const { loader } = createLoader((key) => {
+        if (key === 'OPOHA_PLUGINS' || key === 'OPOHA_PLUGINS_PATH') {
+          return '';
+        }
+        return undefined;
+      });
+      const ordered = loader.reload();
+      expect(ordered.map((p) => p.manifest.id)).toEqual(['alpha', 'beta']);
+    } finally {
+      process.chdir(cwd);
+    }
+  });
+
+  it('env OPOHA_PLUGINS overrides same id from config', () => {
+    const app = mkdtempSync(join(tmpdir(), 'opoha-env-override-'));
+    const configPlugin = pluginDir(app, 'from-config');
+    const envPluginRoot = mkdtempSync(join(tmpdir(), 'opoha-env-plug-'));
+    const envPlugin = pluginDir(envPluginRoot, 'from-config');
+    // Give env copy a different version so we can tell which won
+    writeFileSync(
+      join(envPlugin, 'opoha.plugin.json'),
+      JSON.stringify({
+        id: 'from-config',
+        version: '9.9.9',
+        contractVersion: PLUGIN_CONTRACT_VERSION,
+        entry: 'dist/index.js',
+        dependsOn: [],
+      }),
+    );
+    writeFileSync(
+      join(app, 'opoha.config.json'),
+      JSON.stringify({ plugins: [configPlugin] }),
+    );
+
+    const cwd = process.cwd();
+    try {
+      process.chdir(app);
+      const { loader } = createLoader((key) => {
+        if (key === 'OPOHA_PLUGINS') {
+          return envPlugin;
+        }
+        if (key === 'OPOHA_PLUGINS_PATH') {
+          return '';
+        }
+        return undefined;
+      });
+      const ordered = loader.reload();
+      expect(ordered).toHaveLength(1);
+      expect(ordered[0]?.manifest.version).toBe('9.9.9');
+      expect(ordered[0]?.rootPath).toBe(envPlugin);
+    } finally {
+      process.chdir(cwd);
+    }
+  });
+
+  it('parsePluginsField + resolvePluginSpecifier helpers', () => {
+    expect(parsePluginsField(['@opoha/plugin-x', '  ./local  ', 1, null])).toEqual([
+      '@opoha/plugin-x',
+      './local',
+    ]);
+    expect(parsePluginsField([{ path: '../plugin-a' }, { package: '@opoha/plugin-b' }])).toEqual([
+      '../plugin-a',
+      '@opoha/plugin-b',
+    ]);
+
+    const root = mkdtempSync(join(tmpdir(), 'opoha-resolve-'));
+    const plug = pluginDir(root, 'local-plug');
+    expect(resolvePluginSpecifier(plug, root)).toBe(plug);
+    expect(resolvePluginSpecifier('./local-plug', root)).toBe(plug);
+    expect(findOpohaAppConfig(root)).toBeNull();
   });
 });
 

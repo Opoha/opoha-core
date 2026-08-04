@@ -22,9 +22,18 @@ export { orderPluginsByDependency } from '../dependency-order';
 export {
   discoverPluginAt,
   discoverPlugins,
+  discoverPluginsFromAppConfig,
+  discoverPluginsFromSpecs,
   discoverPluginsInDirectory,
   parsePluginPathsEnv,
 } from '../plugin-discovery';
+export {
+  findOpohaAppConfig,
+  parsePluginsField,
+  resolvePluginSpecifier,
+  isPluginRootDirectory,
+} from '../opoha-app-config';
+export type { OpohaAppConfigFile, FoundOpohaAppConfig } from '../opoha-app-config';
 export { transitionPluginState, canBootPlugin, PLUGIN_LIFECYCLE_STATES } from '../plugin-lifecycle';
 export type { PluginLifecycleState, PluginLifecycleAction } from '../plugin-lifecycle';
 export type { PluginDefinition, PluginRegistrationContext } from '../plugin-definition';
