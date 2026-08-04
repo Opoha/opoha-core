@@ -1,8 +1,4 @@
-import {
-  BadRequestException,
-  ConflictException,
-  NotFoundException,
-} from '@nestjs/common';
+import { BadRequestException, ConflictException, NotFoundException } from '@nestjs/common';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 
 import { CoreEventName } from '../event-bus/event-catalog';
@@ -192,13 +188,9 @@ describe('FulfillmentService (unit)', () => {
         const where = opts.where;
         let rows = [...fulfillmentStore];
         if (Array.isArray(where)) {
-          const statuses = new Set(
-            where.map((w: { status?: string }) => w.status),
-          );
+          const statuses = new Set(where.map((w: { status?: string }) => w.status));
           const oid = (where[0] as { orderId?: string })?.orderId;
-          rows = rows.filter(
-            (f) => f.orderId === oid && statuses.has(f.status),
-          );
+          rows = rows.filter((f) => f.orderId === oid && statuses.has(f.status));
         } else if (where && typeof where === 'object') {
           const w = where as {
             status?: string;
@@ -228,28 +220,18 @@ describe('FulfillmentService (unit)', () => {
     };
 
     orderLinesRepo = {
-      find: vi.fn(
-        async ({
-          where,
-        }: {
-          where: { orderId: string; id?: unknown };
-        }) => {
-          let rows = orderLineStore.filter((l) => l.orderId === where.orderId);
-          if (where.id && typeof where.id === 'object' && '_value' in where.id) {
-            const ids = (where.id as { _value: string[] })._value;
-            rows = rows.filter((l) => ids.includes(l.id));
-          } else if (
-            where.id &&
-            typeof where.id === 'object' &&
-            'value' in (where.id as object)
-          ) {
-            // TypeORM In() operator
-            const ids = Object.values(where.id as Record<string, string[]>).flat();
-            rows = rows.filter((l) => ids.includes(l.id));
-          }
-          return rows;
-        },
-      ),
+      find: vi.fn(async ({ where }: { where: { orderId: string; id?: unknown } }) => {
+        let rows = orderLineStore.filter((l) => l.orderId === where.orderId);
+        if (where.id && typeof where.id === 'object' && '_value' in where.id) {
+          const ids = (where.id as { _value: string[] })._value;
+          rows = rows.filter((l) => ids.includes(l.id));
+        } else if (where.id && typeof where.id === 'object' && 'value' in (where.id as object)) {
+          // TypeORM In() operator
+          const ids = Object.values(where.id as Record<string, string[]>).flat();
+          rows = rows.filter((l) => ids.includes(l.id));
+        }
+        return rows;
+      }),
     };
 
     ordersService = {
@@ -268,48 +250,40 @@ describe('FulfillmentService (unit)', () => {
           }),
           save: async (entityOrEntities: unknown) => {
             if (Array.isArray(entityOrEntities)) {
-              return (entityOrEntities as Array<Record<string, unknown>>).map(
-                (row) => {
-                  if ('orderLineId' in row && 'fulfillmentId' in row) {
-                    const line: LineRow = {
-                      id: (row.id as string) ?? `fline-${lineStore.length + 1}`,
-                      fulfillmentId: row.fulfillmentId as string,
-                      orderLineId: row.orderLineId as string,
-                      variantId: row.variantId as string,
-                      quantity: row.quantity as number,
-                      createdAt: now,
-                      updatedAt: now,
-                    };
-                    lineStore.push(line);
-                    return line;
-                  }
-                  if ('fulfillmentId' in row && !('orderLineId' in row)) {
-                    const pkg: PackageRow = {
-                      id: (row.id as string) ?? `pkg-${packageStore.length + 1}`,
-                      fulfillmentId: row.fulfillmentId as string,
-                      trackingNumber: (row.trackingNumber as string | null) ?? null,
-                      carrierCode: (row.carrierCode as string | null) ?? null,
-                      labelUrl: (row.labelUrl as string | null) ?? null,
-                      weightGrams: (row.weightGrams as number | null) ?? null,
-                      createdAt: now,
-                      updatedAt: now,
-                    };
-                    packageStore.push(pkg);
-                    return pkg;
-                  }
-                  return row;
-                },
-              );
+              return (entityOrEntities as Array<Record<string, unknown>>).map((row) => {
+                if ('orderLineId' in row && 'fulfillmentId' in row) {
+                  const line: LineRow = {
+                    id: (row.id as string) ?? `fline-${lineStore.length + 1}`,
+                    fulfillmentId: row.fulfillmentId as string,
+                    orderLineId: row.orderLineId as string,
+                    variantId: row.variantId as string,
+                    quantity: row.quantity as number,
+                    createdAt: now,
+                    updatedAt: now,
+                  };
+                  lineStore.push(line);
+                  return line;
+                }
+                if ('fulfillmentId' in row && !('orderLineId' in row)) {
+                  const pkg: PackageRow = {
+                    id: (row.id as string) ?? `pkg-${packageStore.length + 1}`,
+                    fulfillmentId: row.fulfillmentId as string,
+                    trackingNumber: (row.trackingNumber as string | null) ?? null,
+                    carrierCode: (row.carrierCode as string | null) ?? null,
+                    labelUrl: (row.labelUrl as string | null) ?? null,
+                    weightGrams: (row.weightGrams as number | null) ?? null,
+                    createdAt: now,
+                    updatedAt: now,
+                  };
+                  packageStore.push(pkg);
+                  return pkg;
+                }
+                return row;
+              });
             }
             const row = entityOrEntities as Record<string, unknown>;
-            if (
-              'fulfillmentId' in row &&
-              !('orderLineId' in row) &&
-              !('orderId' in row)
-            ) {
-              const existingIdx = packageStore.findIndex(
-                (p) => p.id === (row.id as string),
-              );
+            if ('fulfillmentId' in row && !('orderLineId' in row) && !('orderId' in row)) {
+              const existingIdx = packageStore.findIndex((p) => p.id === (row.id as string));
               if (existingIdx >= 0) {
                 const updated: PackageRow = {
                   ...packageStore[existingIdx]!,
@@ -317,14 +291,10 @@ describe('FulfillmentService (unit)', () => {
                     (row.trackingNumber as string | null) ??
                     packageStore[existingIdx]!.trackingNumber,
                   carrierCode:
-                    (row.carrierCode as string | null) ??
-                    packageStore[existingIdx]!.carrierCode,
-                  labelUrl:
-                    (row.labelUrl as string | null) ??
-                    packageStore[existingIdx]!.labelUrl,
+                    (row.carrierCode as string | null) ?? packageStore[existingIdx]!.carrierCode,
+                  labelUrl: (row.labelUrl as string | null) ?? packageStore[existingIdx]!.labelUrl,
                   weightGrams:
-                    (row.weightGrams as number | null) ??
-                    packageStore[existingIdx]!.weightGrams,
+                    (row.weightGrams as number | null) ?? packageStore[existingIdx]!.weightGrams,
                   updatedAt: now,
                 };
                 packageStore[existingIdx] = updated;
@@ -367,26 +337,16 @@ describe('FulfillmentService (unit)', () => {
             }
             return row;
           },
-          find: async (
-            Entity: { name: string },
-            opts: { where: { fulfillmentId: string } },
-          ) => {
+          find: async (Entity: { name: string }, opts: { where: { fulfillmentId: string } }) => {
             if (Entity.name === 'FulfillmentLineEntity') {
-              return lineStore.filter(
-                (l) => l.fulfillmentId === opts.where.fulfillmentId,
-              );
+              return lineStore.filter((l) => l.fulfillmentId === opts.where.fulfillmentId);
             }
             if (Entity.name === 'FulfillmentPackageEntity') {
-              return packageStore.filter(
-                (p) => p.fulfillmentId === opts.where.fulfillmentId,
-              );
+              return packageStore.filter((p) => p.fulfillmentId === opts.where.fulfillmentId);
             }
             return [];
           },
-          findOne: async (
-            Entity: { name: string },
-            opts: { where: { id: string } },
-          ) => {
+          findOne: async (Entity: { name: string }, opts: { where: { id: string } }) => {
             if (Entity.name === 'OrderEntity') {
               return orderStore.find((o) => o.id === opts.where.id) ?? null;
             }
@@ -405,9 +365,7 @@ describe('FulfillmentService (unit)', () => {
                     },
                     getOne: async () => {
                       if (!state.id) return null;
-                      return (
-                        fulfillmentStore.find((f) => f.id === state.id) ?? null
-                      );
+                      return fulfillmentStore.find((f) => f.id === state.id) ?? null;
                     },
                   };
                   return qb;
@@ -607,9 +565,7 @@ describe('FulfillmentService (unit)', () => {
     const created = await createFullOrderFulfillment();
     await service.pick(created.id);
     await service.pack(created.id);
-    await expect(service.ship(created.id)).rejects.toBeInstanceOf(
-      ConflictException,
-    );
+    await expect(service.ship(created.id)).rejects.toBeInstanceOf(ConflictException);
   });
 
   it('cancel only from pending/picked', async () => {
@@ -624,15 +580,11 @@ describe('FulfillmentService (unit)', () => {
     });
     await service.pick(again.id);
     await service.pack(again.id);
-    await expect(service.cancel(again.id)).rejects.toBeInstanceOf(
-      BadRequestException,
-    );
+    await expect(service.cancel(again.id)).rejects.toBeInstanceOf(BadRequestException);
   });
 
   it('findById throws when missing', async () => {
-    await expect(service.findById('missing')).rejects.toBeInstanceOf(
-      NotFoundException,
-    );
+    await expect(service.findById('missing')).rejects.toBeInstanceOf(NotFoundException);
   });
 
   it('ship calls createLabel when method supports it and persists tracking', async () => {
@@ -662,9 +614,7 @@ describe('FulfillmentService (unit)', () => {
     );
     expect(shipped.trackingNumber).toBe('JDSTUB111111111111');
     expect(shipped.packages).toHaveLength(1);
-    expect(shipped.packages[0]!.labelUrl).toBe(
-      'https://example.invalid/dhl/labels/JDSTUB.pdf',
-    );
+    expect(shipped.packages[0]!.labelUrl).toBe('https://example.invalid/dhl/labels/JDSTUB.pdf');
     expect(shipped.packages[0]!.carrierCode).toBe('dhl');
   });
 
@@ -706,22 +656,16 @@ describe('FulfillmentService (unit)', () => {
     const created = await createFullOrderFulfillment();
     await service.pick(created.id);
     await service.pack(created.id);
-    await expect(service.ship(created.id)).rejects.toBeInstanceOf(
-      BadRequestException,
-    );
+    await expect(service.ship(created.id)).rejects.toBeInstanceOf(BadRequestException);
   });
 
   it('create rejects warehouse not linked to the order store (E-03)', async () => {
     storeWarehouses.assertWarehouseAllowedForStore = vi
       .fn()
       .mockRejectedValue(
-        new BadRequestException(
-          `Warehouse ${warehouseId} is not associated with store ${storeId}`,
-        ),
+        new BadRequestException(`Warehouse ${warehouseId} is not associated with store ${storeId}`),
       );
-    await expect(createFullOrderFulfillment()).rejects.toBeInstanceOf(
-      BadRequestException,
-    );
+    await expect(createFullOrderFulfillment()).rejects.toBeInstanceOf(BadRequestException);
     expect(storeWarehouses.assertWarehouseAllowedForStore).toHaveBeenCalledWith(
       storeId,
       warehouseId,

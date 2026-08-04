@@ -28,12 +28,7 @@ export type PromotionApplyInput = {
 };
 
 /** Kind of promotion application (plugins may use custom strings). */
-export type PromotionApplicationKind =
-  | 'coupon'
-  | 'automatic'
-  | 'bxgy'
-  | 'free_shipping'
-  | string;
+export type PromotionApplicationKind = 'coupon' | 'automatic' | 'bxgy' | 'free_shipping' | string;
 
 /** One applied promotion / discount line from a provider. */
 export type PromotionApplication = {

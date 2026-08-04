@@ -1,45 +1,14 @@
 import type { EventListener, SubscribeOptions } from '../event-bus/domain-event';
-import type {
-  FXRateProvider,
-  FXRateProviderRegistry,
-} from '../currency/public';
-import type {
-  JobsService,
-  RegisterScheduledJobInput,
-  ScheduledJobRegistry,
-} from '../jobs/public';
-import type {
-  RegisterRuleActionInput,
-  RuleActionRegistry,
-} from '../rules/public';
-import type {
-  PaymentProvider,
-  PaymentProviderRegistry,
-} from '../payment-engine/public';
-import type {
-  PromotionRuleProvider,
-  PromotionRuleRegistry,
-} from '../promotions-engine/public';
-import type {
-  ShippingMethodProvider,
-  ShippingMethodRegistry,
-} from '../shipping-engine/public';
-import type {
-  TaxProvider,
-  TaxProviderRegistry,
-} from '../tax-engine/public';
-import type {
-  StorageAdapter,
-  StorageAdapterRegistry,
-} from '../files/public';
-import type {
-  NotificationProvider,
-  NotificationProviderRegistry,
-} from '../notifications/public';
-import type {
-  SearchProvider,
-  SearchProviderRegistry,
-} from '../search-engine/public';
+import type { FXRateProvider, FXRateProviderRegistry } from '../currency/public';
+import type { JobsService, RegisterScheduledJobInput, ScheduledJobRegistry } from '../jobs/public';
+import type { RegisterRuleActionInput, RuleActionRegistry } from '../rules/public';
+import type { PaymentProvider, PaymentProviderRegistry } from '../payment-engine/public';
+import type { PromotionRuleProvider, PromotionRuleRegistry } from '../promotions-engine/public';
+import type { ShippingMethodProvider, ShippingMethodRegistry } from '../shipping-engine/public';
+import type { TaxProvider, TaxProviderRegistry } from '../tax-engine/public';
+import type { StorageAdapter, StorageAdapterRegistry } from '../files/public';
+import type { NotificationProvider, NotificationProviderRegistry } from '../notifications/public';
+import type { SearchProvider, SearchProviderRegistry } from '../search-engine/public';
 
 import type { AdminContribution } from './admin-extension-registry';
 import type { AdminExtensionRegistry } from './admin-extension-registry';
@@ -57,11 +26,7 @@ export type PluginRegistrationContext = {
     descriptor?: unknown;
   }): void;
   registerProvider(input: { token: string; provider: unknown }): void;
-  registerListener(
-    eventName: string,
-    handler: EventListener,
-    options?: SubscribeOptions,
-  ): void;
+  registerListener(eventName: string, handler: EventListener, options?: SubscribeOptions): void;
   registerAdmin(contribution: {
     navigation?: AdminContribution['navigation'];
     pages?: AdminContribution['pages'];
@@ -139,13 +104,7 @@ export function createPluginRegistrationContext(
       });
     },
     registerListener(eventName, handler, options) {
-      contributions.registerListener(
-        pluginId,
-        eventName,
-        handler,
-        options,
-        active,
-      );
+      contributions.registerListener(pluginId, eventName, handler, options, active);
     },
     registerAdmin(contribution) {
       admin.register(

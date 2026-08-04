@@ -22,11 +22,6 @@ import { CustomerEventsRegistrar } from './events/customer-events.registrar';
     CustomerGroupsResolver,
     CustomerEventsRegistrar,
   ],
-  exports: [
-    CustomersService,
-    CustomerAddressesService,
-    CustomerGroupsService,
-    TypeOrmModule,
-  ],
+  exports: [CustomersService, CustomerAddressesService, CustomerGroupsService, TypeOrmModule],
 })
 export class CustomerModule {}

@@ -10,11 +10,7 @@ import { DataSource, QueryFailedError, Repository } from 'typeorm';
 import { CoreEventName } from '../event-bus/event-catalog';
 import { EventBusService } from '../event-bus/event-bus.service';
 import { StoreEntity } from './entities/store.entity';
-import type {
-  CreateStoreInput,
-  StoreType,
-  UpdateStoreInput,
-} from './store.types';
+import type { CreateStoreInput, StoreType, UpdateStoreInput } from './store.types';
 
 const CURRENCY_RE = /^[A-Z]{3}$/;
 const LOCALE_RE = /^[a-z]{2}(-[A-Za-z0-9]+)*$/;
@@ -44,9 +40,7 @@ function toStoreType(row: StoreEntity): StoreType {
   };
 }
 
-function normalizeOptionalText(
-  value: string | null | undefined,
-): string | null | undefined {
+function normalizeOptionalText(value: string | null | undefined): string | null | undefined {
   if (value === undefined) {
     return undefined;
   }
@@ -60,9 +54,7 @@ function normalizeOptionalText(
 function assertCurrencyCode(value: string): string {
   const normalized = value.trim().toUpperCase();
   if (!CURRENCY_RE.test(normalized)) {
-    throw new BadRequestException(
-      `Invalid defaultCurrencyCode "${value}" (expected ISO 4217)`,
-    );
+    throw new BadRequestException(`Invalid defaultCurrencyCode "${value}" (expected ISO 4217)`);
   }
   return normalized;
 }
@@ -202,9 +194,7 @@ export class StoreService {
       existing.isActive = input.isActive;
     }
     if (input.defaultCurrencyCode !== undefined) {
-      existing.defaultCurrencyCode = assertCurrencyCode(
-        input.defaultCurrencyCode,
-      );
+      existing.defaultCurrencyCode = assertCurrencyCode(input.defaultCurrencyCode);
     }
     if (input.defaultLocale !== undefined) {
       existing.defaultLocale = assertLocale(input.defaultLocale);
@@ -235,9 +225,7 @@ export class StoreService {
       return toStoreType(saved);
     } catch (error) {
       if (isUniqueViolation(error)) {
-        throw new ConflictException(
-          `Store code "${existing.code}" already exists`,
-        );
+        throw new ConflictException(`Store code "${existing.code}" already exists`);
       }
       throw error;
     }

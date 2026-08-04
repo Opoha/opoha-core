@@ -4,11 +4,7 @@
 export { ReturnsModule } from '../returns.module';
 export { ReturnsService } from '../returns.service';
 export { ReturnsResolver } from '../returns.resolver';
-export {
-  ReturnEntity,
-  ReturnLineEntity,
-  returnEntities,
-} from '../entities';
+export { ReturnEntity, ReturnLineEntity, returnEntities } from '../entities';
 export type { ReturnStatus, ReturnResolution } from '../entities';
 export {
   RETURN_STATUSES,

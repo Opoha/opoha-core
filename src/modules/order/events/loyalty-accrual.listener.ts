@@ -28,9 +28,7 @@ export class LoyaltyAccrualListener implements OnModuleInit {
     );
   }
 
-  private async onPaymentCaptured(
-    event: DomainEvent<PaymentCapturedData>,
-  ): Promise<void> {
+  private async onPaymentCaptured(event: DomainEvent<PaymentCapturedData>): Promise<void> {
     const orderId = event.data.orderId;
     const order = await this.orders.findOne({ where: { id: orderId } });
     if (!order?.customerId) {

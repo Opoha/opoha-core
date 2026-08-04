@@ -1,11 +1,7 @@
 import { BadRequestException, UseGuards } from '@nestjs/common';
 import { Args, ID, Mutation, Query, Resolver } from '@nestjs/graphql';
 
-import {
-  GqlAuthGuard,
-  PermissionsGuard,
-  RequirePermission,
-} from '../auth/public';
+import { GqlAuthGuard, PermissionsGuard, RequirePermission } from '../auth/public';
 import { CouponsService } from './coupons.service';
 import { DiscountRulesService } from './discount-rules.service';
 import type { PromotionApplyResult } from './promotion-rule';
@@ -22,9 +18,7 @@ import {
   UpdateDiscountRuleInput,
 } from './promotion.types';
 
-function parseMetadataJson(
-  metadataJson: string | undefined,
-): Record<string, unknown> | undefined {
+function parseMetadataJson(metadataJson: string | undefined): Record<string, unknown> | undefined {
   if (!metadataJson) {
     return undefined;
   }
@@ -39,9 +33,7 @@ function parseMetadataJson(
   }
 }
 
-function toApplyResultType(
-  result: PromotionApplyResult,
-): PromotionApplyResultType {
+function toApplyResultType(result: PromotionApplyResult): PromotionApplyResultType {
   return {
     currencyCode: result.currencyCode,
     discountMinor: result.discountMinor,
@@ -126,9 +118,7 @@ export class PromotionsResolver {
     description: 'Delete a coupon',
   })
   @RequirePermission('promotion:delete')
-  deleteCoupon(
-    @Args('id', { type: () => ID }) id: string,
-  ): Promise<CouponType> {
+  deleteCoupon(@Args('id', { type: () => ID }) id: string): Promise<CouponType> {
     return this.coupons.remove(id);
   }
 
@@ -146,9 +136,7 @@ export class PromotionsResolver {
     description: 'Get discount rule by id',
   })
   @RequirePermission('promotion:read')
-  discountRule(
-    @Args('id', { type: () => ID }) id: string,
-  ): Promise<DiscountRuleType> {
+  discountRule(@Args('id', { type: () => ID }) id: string): Promise<DiscountRuleType> {
     return this.discountRules.findById(id);
   }
 
@@ -182,16 +170,13 @@ export class PromotionsResolver {
     description: 'Delete an automatic discount rule',
   })
   @RequirePermission('promotion:delete')
-  deleteDiscountRule(
-    @Args('id', { type: () => ID }) id: string,
-  ): Promise<DiscountRuleType> {
+  deleteDiscountRule(@Args('id', { type: () => ID }) id: string): Promise<DiscountRuleType> {
     return this.discountRules.remove(id);
   }
 
   @Query(() => PromotionApplyResultType, {
     name: 'applyPromotions',
-    description:
-      'Admin preview: apply coupon + automatic discounts via PromotionsEngine',
+    description: 'Admin preview: apply coupon + automatic discounts via PromotionsEngine',
   })
   @RequirePermission('promotion:read')
   async applyPromotions(

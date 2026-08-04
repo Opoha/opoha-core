@@ -53,10 +53,7 @@ export class AuditLogsService {
    */
   async list(input: ListAuditLogsInput = {}): Promise<AuditLogType[]> {
     const take = Math.min(Math.max(input.limit ?? 50, 1), 200);
-    const qb = this.auditLogs
-      .createQueryBuilder('a')
-      .orderBy('a.createdAt', 'DESC')
-      .take(take);
+    const qb = this.auditLogs.createQueryBuilder('a').orderBy('a.createdAt', 'DESC').take(take);
 
     if (input.actionPrefix) {
       qb.andWhere('a.action LIKE :actionPrefix', {

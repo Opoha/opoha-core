@@ -1,16 +1,9 @@
 import { UseGuards } from '@nestjs/common';
 import { Args, Mutation, Query, Resolver } from '@nestjs/graphql';
 
-import {
-  GqlAuthGuard,
-  PermissionsGuard,
-  RequirePermission,
-} from '../auth/public';
+import { GqlAuthGuard, PermissionsGuard, RequirePermission } from '../auth/public';
 import { LocalizationService } from './localization.service';
-import {
-  LocalizationSettingsType,
-  UpdateLocalizationSettingsInput,
-} from './localization.types';
+import { LocalizationSettingsType, UpdateLocalizationSettingsInput } from './localization.types';
 
 @Resolver(() => LocalizationSettingsType)
 export class LocalizationResolver {
@@ -18,8 +11,7 @@ export class LocalizationResolver {
 
   @Query(() => LocalizationSettingsType, {
     name: 'localizationSettings',
-    description:
-      'Read deployment localization settings (country, currency, timezone, locale)',
+    description: 'Read deployment localization settings (country, currency, timezone, locale)',
   })
   @UseGuards(GqlAuthGuard, PermissionsGuard)
   @RequirePermission('localization:read')

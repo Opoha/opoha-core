@@ -14,8 +14,7 @@ import { CustomerGroupsResolver } from './customer-groups.resolver';
 describe('customer RBAC (resolver metadata + PermissionsGuard deny)', () => {
   function gqlContext(
     req: { user?: unknown },
-    handler: (...args: never[]) => unknown = CustomersResolver.prototype
-      .createCustomer,
+    handler: (...args: never[]) => unknown = CustomersResolver.prototype.createCustomer,
     resolverClass: new (...args: never[]) => unknown = CustomersResolver,
   ) {
     return {
@@ -28,33 +27,21 @@ describe('customer RBAC (resolver metadata + PermissionsGuard deny)', () => {
 
   it('CustomersResolver declares customer:* permission keys', () => {
     const reflector = new Reflector();
+    expect(reflector.get(REQUIRE_PERMISSION_KEY, CustomersResolver.prototype.customers)).toEqual([
+      'customer:read',
+    ]);
     expect(
-      reflector.get(
-        REQUIRE_PERMISSION_KEY,
-        CustomersResolver.prototype.customers,
-      ),
-    ).toEqual(['customer:read']);
-    expect(
-      reflector.get(
-        REQUIRE_PERMISSION_KEY,
-        CustomersResolver.prototype.createCustomer,
-      ),
+      reflector.get(REQUIRE_PERMISSION_KEY, CustomersResolver.prototype.createCustomer),
     ).toEqual(['customer:create']);
     expect(
-      reflector.get(
-        REQUIRE_PERMISSION_KEY,
-        CustomersResolver.prototype.updateCustomer,
-      ),
+      reflector.get(REQUIRE_PERMISSION_KEY, CustomersResolver.prototype.updateCustomer),
     ).toEqual(['customer:update']);
   });
 
   it('CustomerAddressesResolver declares customer:* permission keys', () => {
     const reflector = new Reflector();
     expect(
-      reflector.get(
-        REQUIRE_PERMISSION_KEY,
-        CustomerAddressesResolver.prototype.customerAddresses,
-      ),
+      reflector.get(REQUIRE_PERMISSION_KEY, CustomerAddressesResolver.prototype.customerAddresses),
     ).toEqual(['customer:read']);
     expect(
       reflector.get(
@@ -79,22 +66,13 @@ describe('customer RBAC (resolver metadata + PermissionsGuard deny)', () => {
   it('CustomerGroupsResolver declares customer-group:* permission keys', () => {
     const reflector = new Reflector();
     expect(
-      reflector.get(
-        REQUIRE_PERMISSION_KEY,
-        CustomerGroupsResolver.prototype.customerGroups,
-      ),
+      reflector.get(REQUIRE_PERMISSION_KEY, CustomerGroupsResolver.prototype.customerGroups),
     ).toEqual(['customer-group:read']);
     expect(
-      reflector.get(
-        REQUIRE_PERMISSION_KEY,
-        CustomerGroupsResolver.prototype.createCustomerGroup,
-      ),
+      reflector.get(REQUIRE_PERMISSION_KEY, CustomerGroupsResolver.prototype.createCustomerGroup),
     ).toEqual(['customer-group:create']);
     expect(
-      reflector.get(
-        REQUIRE_PERMISSION_KEY,
-        CustomerGroupsResolver.prototype.addCustomerToGroup,
-      ),
+      reflector.get(REQUIRE_PERMISSION_KEY, CustomerGroupsResolver.prototype.addCustomerToGroup),
     ).toEqual(['customer-group:update']);
   });
 
@@ -117,9 +95,9 @@ describe('customer RBAC (resolver metadata + PermissionsGuard deny)', () => {
       { listKeysForUser: vi.fn() } as never,
     );
 
-    await expect(
-      permissionsGuard.canActivate(gqlContext(req) as never),
-    ).rejects.toBeInstanceOf(ForbiddenException);
+    await expect(permissionsGuard.canActivate(gqlContext(req) as never)).rejects.toBeInstanceOf(
+      ForbiddenException,
+    );
   });
 
   it('PermissionsGuard allows createCustomer when customer:create is granted', async () => {
@@ -139,9 +117,7 @@ describe('customer RBAC (resolver metadata + PermissionsGuard deny)', () => {
       { listKeysForUser: vi.fn() } as never,
     );
 
-    await expect(
-      permissionsGuard.canActivate(gqlContext(req) as never),
-    ).resolves.toBe(true);
+    await expect(permissionsGuard.canActivate(gqlContext(req) as never)).resolves.toBe(true);
   });
 
   it('PermissionsGuard denies createCustomerAddress without customer:update', async () => {

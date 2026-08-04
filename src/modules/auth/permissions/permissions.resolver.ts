@@ -26,9 +26,7 @@ export class PermissionsResolver {
     description: 'Get permission by id',
   })
   @RequirePermission('permission:read')
-  permission(
-    @Args('id', { type: () => ID }) id: string,
-  ): Promise<PermissionType> {
+  permission(@Args('id', { type: () => ID }) id: string): Promise<PermissionType> {
     return this.permissionsService.findById(id);
   }
 }

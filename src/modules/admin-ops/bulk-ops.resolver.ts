@@ -2,12 +2,7 @@ import { UseGuards } from '@nestjs/common';
 import { Args, Mutation, Resolver } from '@nestjs/graphql';
 
 import type { AuthUser } from '../auth/public';
-import {
-  CurrentUser,
-  GqlAuthGuard,
-  PermissionsGuard,
-  RequirePermission,
-} from '../auth/public';
+import { CurrentUser, GqlAuthGuard, PermissionsGuard, RequirePermission } from '../auth/public';
 import {
   BulkAdjustInventoryItemInput,
   BulkAdjustInventoryResult,
@@ -23,8 +18,7 @@ export class BulkOpsResolver {
 
   @Mutation(() => BulkUpdateProductsResult, {
     name: 'bulkUpdateProducts',
-    description:
-      'Batch-update catalog products (continues on per-item errors; max 100)',
+    description: 'Batch-update catalog products (continues on per-item errors; max 100)',
   })
   @RequirePermission('bulk:product')
   bulkUpdateProducts(
@@ -37,8 +31,7 @@ export class BulkOpsResolver {
 
   @Mutation(() => BulkAdjustInventoryResult, {
     name: 'bulkAdjustInventory',
-    description:
-      'Batch stock adjustments (continues on per-item errors; max 100)',
+    description: 'Batch stock adjustments (continues on per-item errors; max 100)',
   })
   @RequirePermission('bulk:inventory')
   bulkAdjustInventory(

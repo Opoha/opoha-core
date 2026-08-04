@@ -17,9 +17,7 @@ export const subscriptionRenewedDataSchema = z
   })
   .strict();
 
-export type SubscriptionRenewedData = z.infer<
-  typeof subscriptionRenewedDataSchema
->;
+export type SubscriptionRenewedData = z.infer<typeof subscriptionRenewedDataSchema>;
 export type SubscriptionRenewedEvent = DomainEvent<SubscriptionRenewedData>;
 
 /** Register subscription event payload schemas on the bus (call once at module init). */

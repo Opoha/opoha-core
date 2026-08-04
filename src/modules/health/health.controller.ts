@@ -1,9 +1,4 @@
-import {
-  Controller,
-  Get,
-  Inject,
-  ServiceUnavailableException,
-} from '@nestjs/common';
+import { Controller, Get, Inject, ServiceUnavailableException } from '@nestjs/common';
 
 import { HealthService } from './health.service';
 import type { LivenessResult, ReadinessResult } from './health.service';

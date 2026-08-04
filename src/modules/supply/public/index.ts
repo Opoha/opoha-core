@@ -11,11 +11,7 @@ export {
   supplyEntities,
 } from '../entities';
 export type { PurchaseOrderStatus } from '../entities';
-export type {
-  CreateSupplierInput,
-  UpdateSupplierInput,
-  SupplierType,
-} from '../supplier.types';
+export type { CreateSupplierInput, UpdateSupplierInput, SupplierType } from '../supplier.types';
 export type {
   CreatePurchaseOrderInput,
   PurchaseOrderLineType,

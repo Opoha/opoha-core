@@ -1,11 +1,4 @@
-import {
-  Field,
-  ID,
-  InputType,
-  Int,
-  ObjectType,
-  registerEnumType,
-} from '@nestjs/graphql';
+import { Field, ID, InputType, Int, ObjectType, registerEnumType } from '@nestjs/graphql';
 
 import type { CouponKind } from './entities/coupon.entity';
 import type { DiscountRuleKind } from './entities/discount-rule.entity';

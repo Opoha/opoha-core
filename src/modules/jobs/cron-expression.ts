@@ -29,11 +29,7 @@ export function assertCronExpression(expression: string): string {
  * Whether a validated 5-field cron expression matches `at` in the given IANA
  * timezone (default UTC). Used by the memory queue `runDueAt` smoke path.
  */
-export function cronMatchesAt(
-  expression: string,
-  at: Date,
-  timezone = 'UTC',
-): boolean {
+export function cronMatchesAt(expression: string, at: Date, timezone = 'UTC'): boolean {
   const cron = assertCronExpression(expression);
   const parts = cron.split(/\s+/);
   const [minuteF, hourF, domF, monthF, dowF] = parts;
@@ -91,12 +87,7 @@ function getZonedParts(at: Date, timezone: string): ZonedParts {
   };
 }
 
-function fieldMatches(
-  field: string,
-  value: number,
-  min: number,
-  max: number,
-): boolean {
+function fieldMatches(field: string, value: number, min: number, max: number): boolean {
   if (field === '*') {
     return true;
   }
@@ -108,12 +99,7 @@ function fieldMatches(
   return false;
 }
 
-function tokenIncludes(
-  token: string,
-  value: number,
-  min: number,
-  max: number,
-): boolean {
+function tokenIncludes(token: string, value: number, min: number, max: number): boolean {
   if (token.startsWith('*/')) {
     const step = Number(token.slice(2));
     if (!Number.isFinite(step) || step <= 0) {
@@ -138,11 +124,7 @@ function tokenIncludes(
   return value >= lo && value <= hi;
 }
 
-function parseRange(
-  token: string,
-  min: number,
-  max: number,
-): [number, number] {
+function parseRange(token: string, min: number, max: number): [number, number] {
   if (token === '*') {
     return [min, max];
   }

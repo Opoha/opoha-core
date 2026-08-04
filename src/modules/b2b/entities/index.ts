@@ -26,8 +26,5 @@ export {
   isCompanyBuyerRole,
 };
 export type { CompanyBuyerRole } from './company-membership.entity';
-export {
-  B2B_QUOTE_STATUSES,
-  isB2bQuoteStatus,
-} from './b2b-quote.entity';
+export { B2B_QUOTE_STATUSES, isB2bQuoteStatus } from './b2b-quote.entity';
 export type { B2bQuoteStatus } from './b2b-quote.entity';

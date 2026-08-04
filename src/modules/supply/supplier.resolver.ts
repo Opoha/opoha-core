@@ -1,17 +1,9 @@
 import { UseGuards } from '@nestjs/common';
 import { Args, ID, Mutation, Query, Resolver } from '@nestjs/graphql';
 
-import {
-  GqlAuthGuard,
-  PermissionsGuard,
-  RequirePermission,
-} from '../auth/public';
+import { GqlAuthGuard, PermissionsGuard, RequirePermission } from '../auth/public';
 import { SupplierService } from './supplier.service';
-import {
-  CreateSupplierInput,
-  SupplierType,
-  UpdateSupplierInput,
-} from './supplier.types';
+import { CreateSupplierInput, SupplierType, UpdateSupplierInput } from './supplier.types';
 
 @Resolver(() => SupplierType)
 @UseGuards(GqlAuthGuard, PermissionsGuard)
@@ -32,9 +24,7 @@ export class SupplierResolver {
     description: 'Get supplier by id',
   })
   @RequirePermission('supplier:read')
-  supplier(
-    @Args('id', { type: () => ID }) id: string,
-  ): Promise<SupplierType> {
+  supplier(@Args('id', { type: () => ID }) id: string): Promise<SupplierType> {
     return this.supplierService.findById(id);
   }
 
@@ -43,9 +33,7 @@ export class SupplierResolver {
     description: 'Get supplier by stable code',
   })
   @RequirePermission('supplier:read')
-  supplierByCode(
-    @Args('code', { type: () => String }) code: string,
-  ): Promise<SupplierType> {
+  supplierByCode(@Args('code', { type: () => String }) code: string): Promise<SupplierType> {
     return this.supplierService.findByCode(code);
   }
 
@@ -79,9 +67,7 @@ export class SupplierResolver {
     description: 'Delete a supplier / vendor',
   })
   @RequirePermission('supplier:delete')
-  deleteSupplier(
-    @Args('id', { type: () => ID }) id: string,
-  ): Promise<SupplierType> {
+  deleteSupplier(@Args('id', { type: () => ID }) id: string): Promise<SupplierType> {
     return this.supplierService.remove(id);
   }
 }

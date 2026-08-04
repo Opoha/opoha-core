@@ -39,9 +39,7 @@ type WebhookEventRow = {
   processedAt: Date | null;
 };
 
-function stubManualProvider(
-  overrides?: Partial<PaymentProvider>,
-): PaymentProvider {
+function stubManualProvider(overrides?: Partial<PaymentProvider>): PaymentProvider {
   return {
     code: 'manual',
     displayName: 'Manual',
@@ -89,16 +87,12 @@ describe('PaymentEngine', () => {
           return store.find((r) => r.id === where.id) ?? null;
         }
         if (where.idempotencyKey) {
-          return (
-            store.find((r) => r.idempotencyKey === where.idempotencyKey) ?? null
-          );
+          return store.find((r) => r.idempotencyKey === where.idempotencyKey) ?? null;
         }
         if (where.providerCode && where.externalId) {
           return (
             store.find(
-              (r) =>
-                r.providerCode === where.providerCode &&
-                r.externalId === where.externalId,
+              (r) => r.providerCode === where.providerCode && r.externalId === where.externalId,
             ) ?? null
           );
         }
@@ -135,15 +129,10 @@ describe('PaymentEngine', () => {
 
     webhookEventsRepo = {
       findOne: vi.fn(
-        async ({
-          where,
-        }: {
-          where: { providerCode: string; externalEventId: string };
-        }) =>
+        async ({ where }: { where: { providerCode: string; externalEventId: string } }) =>
           webhookStore.find(
             (r) =>
-              r.providerCode === where.providerCode &&
-              r.externalEventId === where.externalEventId,
+              r.providerCode === where.providerCode && r.externalEventId === where.externalEventId,
           ) ?? null,
       ),
       create: vi.fn((data: Partial<WebhookEventRow>) => ({
@@ -179,9 +168,9 @@ describe('PaymentEngine', () => {
   });
 
   it('rejects duplicate codes from different plugins', () => {
-    expect(() =>
-      registry.register('other', stubManualProvider({ displayName: 'B' })),
-    ).toThrow(/conflict/);
+    expect(() => registry.register('other', stubManualProvider({ displayName: 'B' }))).toThrow(
+      /conflict/,
+    );
   });
 
   it('deactivates and removes by plugin', () => {
@@ -347,9 +336,9 @@ describe('PaymentEngine', () => {
       updatedAt: now,
     });
 
-    await expect(
-      engine.capture({ paymentId: 'pay-fail' }),
-    ).rejects.toBeInstanceOf(BadRequestException);
+    await expect(engine.capture({ paymentId: 'pay-fail' })).rejects.toBeInstanceOf(
+      BadRequestException,
+    );
   });
 
   it('handleWebhook returns ignore when provider has no handler', async () => {

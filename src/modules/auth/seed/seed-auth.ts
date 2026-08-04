@@ -207,13 +207,11 @@ export const DEFAULT_PERMISSIONS = [
   },
   {
     key: 'currency:read',
-    description:
-      'Read store display/settlement currency configuration and exchange rates',
+    description: 'Read store display/settlement currency configuration and exchange rates',
   },
   {
     key: 'currency:update',
-    description:
-      'Update store currency configuration and manual exchange rates',
+    description: 'Update store currency configuration and manual exchange rates',
   },
   {
     key: 'localization:read',
@@ -241,8 +239,7 @@ export const DEFAULT_PERMISSIONS = [
   },
   {
     key: 'b2b:update',
-    description:
-      'Update B2B companies, memberships, price lists, and quote status',
+    description: 'Update B2B companies, memberships, price lists, and quote status',
   },
   {
     key: 'b2b:delete',
@@ -425,9 +422,7 @@ export async function seedAuth(
  * Resolve optional admin credentials from process env.
  * Both `SEED_ADMIN_EMAIL` and `SEED_ADMIN_PASSWORD` must be set to create a user.
  */
-export function resolveSeedAdminFromEnv(
-  env: NodeJS.ProcessEnv = process.env,
-): SeedAdminOptions {
+export function resolveSeedAdminFromEnv(env: NodeJS.ProcessEnv = process.env): SeedAdminOptions {
   return {
     email: env.SEED_ADMIN_EMAIL,
     password: env.SEED_ADMIN_PASSWORD,

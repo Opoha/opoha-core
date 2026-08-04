@@ -1,21 +1,9 @@
-import {
-  BadRequestException,
-  NotFoundException,
-  UseGuards,
-} from '@nestjs/common';
+import { BadRequestException, NotFoundException, UseGuards } from '@nestjs/common';
 import { Args, ID, Mutation, Query, Resolver } from '@nestjs/graphql';
 
-import {
-  GqlAuthGuard,
-  PermissionsGuard,
-  RequirePermission,
-} from '../auth/public';
+import { GqlAuthGuard, PermissionsGuard, RequirePermission } from '../auth/public';
 import { ContributionRegistry } from './contribution-registry';
-import {
-  CmsPageType,
-  CreateCmsPageInput,
-  UpdateCmsPageInput,
-} from './cms-host.types';
+import { CmsPageType, CreateCmsPageInput, UpdateCmsPageInput } from './cms-host.types';
 
 /**
  * Documented contract for the optional `cms.content` provider
@@ -102,9 +90,7 @@ export class CmsHostResolver {
   constructor(private readonly contributions: ContributionRegistry) {}
 
   private requireProvider(): CmsContentProvider {
-    const provider = this.contributions.getProvider<CmsContentProvider>(
-      CMS_CONTENT_PROVIDER_TOKEN,
-    );
+    const provider = this.contributions.getProvider<CmsContentProvider>(CMS_CONTENT_PROVIDER_TOKEN);
     if (!provider) {
       throw new BadRequestException(
         'CMS provider "cms.content" is not registered or inactive — enable plugin-cms',
@@ -118,12 +104,8 @@ export class CmsHostResolver {
     description: 'List CMS pages (requires enabled plugin-cms)',
   })
   @RequirePermission('plugin:read')
-  cmsPages(
-    @Args('status', { type: () => String, nullable: true }) status?: string,
-  ): CmsPageType[] {
-    return this.requireProvider()
-      .listPages(status)
-      .map(toPageType);
+  cmsPages(@Args('status', { type: () => String, nullable: true }) status?: string): CmsPageType[] {
+    return this.requireProvider().listPages(status).map(toPageType);
   }
 
   @Query(() => CmsPageType, {
@@ -149,9 +131,7 @@ export class CmsHostResolver {
     description: 'Public published CMS page by slug',
   })
   @RequirePermission('plugin:read')
-  cmsPageBySlug(
-    @Args('slug', { type: () => String }) slug: string,
-  ): CmsPageType | null {
+  cmsPageBySlug(@Args('slug', { type: () => String }) slug: string): CmsPageType | null {
     const page = this.requireProvider().getPublishedBySlug(slug);
     return page ? toPageType(page) : null;
   }
@@ -167,9 +147,7 @@ export class CmsHostResolver {
     try {
       return toPageType(this.requireProvider().createPage(input));
     } catch (err) {
-      throw new BadRequestException(
-        err instanceof Error ? err.message : 'createCmsPage failed',
-      );
+      throw new BadRequestException(err instanceof Error ? err.message : 'createCmsPage failed');
     }
   }
 

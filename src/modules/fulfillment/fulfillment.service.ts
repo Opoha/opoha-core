@@ -5,21 +5,12 @@ import {
   NotFoundException,
 } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import {
-  DataSource,
-  type EntityManager,
-  QueryFailedError,
-  Repository,
-} from 'typeorm';
+import { DataSource, type EntityManager, QueryFailedError, Repository } from 'typeorm';
 
 import { CoreEventName } from '../event-bus/event-catalog';
 import { EventBusService } from '../event-bus/event-bus.service';
 import { InventoryItemEntity } from '../inventory/public';
-import {
-  OrderEntity,
-  OrderLineEntity,
-  OrdersService,
-} from '../order/public';
+import { OrderEntity, OrderLineEntity, OrdersService } from '../order/public';
 import {
   ShippingMethodRegistry,
   type ShippingAddress,
@@ -28,10 +19,7 @@ import {
 import { WarehouseEntity, StoreWarehouseService } from '../warehouses/public';
 import { FulfillmentLineEntity } from './entities/fulfillment-line.entity';
 import { FulfillmentPackageEntity } from './entities/fulfillment-package.entity';
-import {
-  FulfillmentEntity,
-  type FulfillmentStatus,
-} from './entities/fulfillment.entity';
+import { FulfillmentEntity, type FulfillmentStatus } from './entities/fulfillment.entity';
 import type {
   CreateFulfillmentInput,
   FulfillmentLineType,
@@ -160,9 +148,7 @@ export class FulfillmentService {
     const orderLineIds = new Set<string>();
     for (const line of input.lines) {
       if (!Number.isInteger(line.quantity) || line.quantity <= 0) {
-        throw new BadRequestException(
-          'Each line quantity must be a positive integer',
-        );
+        throw new BadRequestException('Each line quantity must be a positive integer');
       }
       if (orderLineIds.has(line.orderLineId)) {
         throw new BadRequestException(
@@ -188,10 +174,7 @@ export class FulfillmentService {
         `Order ${input.orderId} has no storeId; cannot allocate warehouse`,
       );
     }
-    await this.storeWarehouses.assertWarehouseAllowedForStore(
-      order.storeId,
-      input.warehouseId,
-    );
+    await this.storeWarehouses.assertWarehouseAllowedForStore(order.storeId, input.warehouseId);
 
     const allOrderLines = await this.orderLines.find({
       where: { orderId: input.orderId },
@@ -207,15 +190,12 @@ export class FulfillmentService {
 
     const alreadyShipped = await this.shippedQuantityByOrderLine(input.orderId);
     // Include non-cancelled open fulfillments so we don't over-allocate.
-    const allocatedOpen = await this.openAllocatedQuantityByOrderLine(
-      input.orderId,
-    );
+    const allocatedOpen = await this.openAllocatedQuantityByOrderLine(input.orderId);
 
     for (const line of input.lines) {
       const orderLine = orderLineById.get(line.orderLineId)!;
       const used =
-        (alreadyShipped.get(line.orderLineId) ?? 0) +
-        (allocatedOpen.get(line.orderLineId) ?? 0);
+        (alreadyShipped.get(line.orderLineId) ?? 0) + (allocatedOpen.get(line.orderLineId) ?? 0);
       const remaining = orderLine.quantity - used;
       if (line.quantity > remaining) {
         throw new ConflictException(
@@ -253,9 +233,7 @@ export class FulfillmentService {
       });
     } catch (error) {
       if (isForeignKeyViolation(error)) {
-        throw new BadRequestException(
-          'Invalid order, warehouse, or order line reference',
-        );
+        throw new BadRequestException('Invalid order, warehouse, or order line reference');
       }
       throw error;
     }
@@ -284,10 +262,7 @@ export class FulfillmentService {
   /**
    * Mark picked fulfillment as packed; optionally create packages.
    */
-  async pack(
-    id: string,
-    input: PackFulfillmentInput = {},
-  ): Promise<FulfillmentType> {
+  async pack(id: string, input: PackFulfillmentInput = {}): Promise<FulfillmentType> {
     await this.dataSource.transaction(async (manager) => {
       const fulfillment = await this.lockFulfillment(manager, id);
       if (fulfillment.status !== 'picked') {
@@ -334,10 +309,7 @@ export class FulfillmentService {
    * Publishes ShipmentCreated; marks the order fulfilled when all qty is shipped.
    * Stock on-hand was already deducted at placeOrder (reservation commit).
    */
-  async ship(
-    id: string,
-    input: ShipFulfillmentInput = {},
-  ): Promise<FulfillmentType> {
+  async ship(id: string, input: ShipFulfillmentInput = {}): Promise<FulfillmentType> {
     const preview = await this.fulfillments.findOne({
       where: { id },
       relations: { lines: true, packages: true },
@@ -346,9 +318,7 @@ export class FulfillmentService {
       throw new NotFoundException(`Fulfillment ${id} not found`);
     }
     if (preview.status !== 'packed') {
-      throw new BadRequestException(
-        `Fulfillment ${id} is ${preview.status}, expected packed`,
-      );
+      throw new BadRequestException(`Fulfillment ${id} is ${preview.status}, expected packed`);
     }
 
     const label = await this.orchestrateLabel(preview, input);
@@ -374,13 +344,10 @@ export class FulfillmentService {
           .getRepository(InventoryItemEntity)
           .createQueryBuilder('item')
           .setLock('pessimistic_write')
-          .where(
-            'item.variantId = :variantId AND item.warehouseId = :warehouseId',
-            {
-              variantId: line.variantId,
-              warehouseId: fulfillment.warehouseId,
-            },
-          )
+          .where('item.variantId = :variantId AND item.warehouseId = :warehouseId', {
+            variantId: line.variantId,
+            warehouseId: fulfillment.warehouseId,
+          })
           .getOne();
 
         if (!item) {
@@ -567,8 +534,7 @@ export class FulfillmentService {
 
     if (result.status === 'failed') {
       throw new BadRequestException(
-        result.errorMessage?.trim() ||
-          `createLabel failed for shipping method "${methodCode}"`,
+        result.errorMessage?.trim() || `createLabel failed for shipping method "${methodCode}"`,
       );
     }
 
@@ -624,9 +590,7 @@ export class FulfillmentService {
     const orderLines = await this.orderLines.find({ where: { orderId } });
     const shipped = await this.shippedQuantityByOrderLine(orderId);
 
-    const fullyShipped = orderLines.every(
-      (line) => (shipped.get(line.id) ?? 0) >= line.quantity,
-    );
+    const fullyShipped = orderLines.every((line) => (shipped.get(line.id) ?? 0) >= line.quantity);
     if (!fullyShipped) {
       return;
     }
@@ -637,9 +601,7 @@ export class FulfillmentService {
     });
   }
 
-  private async shippedQuantityByOrderLine(
-    orderId: string,
-  ): Promise<Map<string, number>> {
+  private async shippedQuantityByOrderLine(orderId: string): Promise<Map<string, number>> {
     const rows = await this.fulfillments.find({
       where: { orderId, status: 'shipped' },
       relations: { lines: true },
@@ -647,19 +609,14 @@ export class FulfillmentService {
     const qty = new Map<string, number>();
     for (const f of rows) {
       for (const line of f.lines ?? []) {
-        qty.set(
-          line.orderLineId,
-          (qty.get(line.orderLineId) ?? 0) + line.quantity,
-        );
+        qty.set(line.orderLineId, (qty.get(line.orderLineId) ?? 0) + line.quantity);
       }
     }
     return qty;
   }
 
   /** Qty allocated on pending/picked/packed (not yet shipped or cancelled). */
-  private async openAllocatedQuantityByOrderLine(
-    orderId: string,
-  ): Promise<Map<string, number>> {
+  private async openAllocatedQuantityByOrderLine(orderId: string): Promise<Map<string, number>> {
     const rows = await this.fulfillments.find({
       where: [
         { orderId, status: 'pending' },
@@ -671,19 +628,13 @@ export class FulfillmentService {
     const qty = new Map<string, number>();
     for (const f of rows) {
       for (const line of f.lines ?? []) {
-        qty.set(
-          line.orderLineId,
-          (qty.get(line.orderLineId) ?? 0) + line.quantity,
-        );
+        qty.set(line.orderLineId, (qty.get(line.orderLineId) ?? 0) + line.quantity);
       }
     }
     return qty;
   }
 
-  private async lockFulfillment(
-    manager: EntityManager,
-    id: string,
-  ): Promise<FulfillmentEntity> {
+  private async lockFulfillment(manager: EntityManager, id: string): Promise<FulfillmentEntity> {
     const fulfillment = await manager
       .getRepository(FulfillmentEntity)
       .createQueryBuilder('f')

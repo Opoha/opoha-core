@@ -3,9 +3,7 @@ import type { MigrationInterface, QueryRunner } from 'typeorm';
 /**
  * Catalog attribute definitions/values + product media links (Phase 1 A-06/A-07).
  */
-export class CatalogAttributesMediaInit1722688400000
-  implements MigrationInterface
-{
+export class CatalogAttributesMediaInit1722688400000 implements MigrationInterface {
   name = 'CatalogAttributesMediaInit1722688400000';
 
   public async up(queryRunner: QueryRunner): Promise<void> {

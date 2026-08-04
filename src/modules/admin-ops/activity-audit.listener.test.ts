@@ -7,29 +7,14 @@ describe('ActivityAuditListener', () => {
   it('registers warehouse / shipment / return audit bridges', async () => {
     const subscribe = vi.fn();
     const append = vi.fn().mockResolvedValue({});
-    const listener = new ActivityAuditListener(
-      { subscribe } as never,
-      { append } as never,
-    );
+    const listener = new ActivityAuditListener({ subscribe } as never, { append } as never);
 
     listener.onModuleInit();
 
-    expect(subscribe).toHaveBeenCalledWith(
-      CoreEventName.WarehouseUpdated,
-      expect.any(Function),
-    );
-    expect(subscribe).toHaveBeenCalledWith(
-      CoreEventName.ShipmentCreated,
-      expect.any(Function),
-    );
-    expect(subscribe).toHaveBeenCalledWith(
-      CoreEventName.ReturnRequested,
-      expect.any(Function),
-    );
-    expect(subscribe).toHaveBeenCalledWith(
-      CoreEventName.RefundCompleted,
-      expect.any(Function),
-    );
+    expect(subscribe).toHaveBeenCalledWith(CoreEventName.WarehouseUpdated, expect.any(Function));
+    expect(subscribe).toHaveBeenCalledWith(CoreEventName.ShipmentCreated, expect.any(Function));
+    expect(subscribe).toHaveBeenCalledWith(CoreEventName.ReturnRequested, expect.any(Function));
+    expect(subscribe).toHaveBeenCalledWith(CoreEventName.RefundCompleted, expect.any(Function));
 
     const warehouseHandler = subscribe.mock.calls.find(
       (call) => call[0] === CoreEventName.WarehouseUpdated,

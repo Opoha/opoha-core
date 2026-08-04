@@ -1,14 +1,7 @@
-import {
-  BadRequestException,
-  UseGuards,
-} from '@nestjs/common';
+import { BadRequestException, UseGuards } from '@nestjs/common';
 import { Args, ID, Mutation, Query, Resolver } from '@nestjs/graphql';
 
-import {
-  GqlAuthGuard,
-  PermissionsGuard,
-  RequirePermission,
-} from '../auth/public';
+import { GqlAuthGuard, PermissionsGuard, RequirePermission } from '../auth/public';
 import type { SegmentRules } from './segment-rules';
 import { SegmentsService } from './segments.service';
 import type { CustomerSegmentType } from './segments.types';

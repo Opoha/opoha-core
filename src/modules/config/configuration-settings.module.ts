@@ -14,11 +14,7 @@ import { StoreCreatedChannelSettingsListener } from './store-created-channel-set
  * Separate from env ConfigModule to avoid DatabaseModule circular imports.
  */
 @Module({
-  imports: [
-    AuthModule,
-    StoresModule,
-    TypeOrmModule.forFeature([...configurationEntities]),
-  ],
+  imports: [AuthModule, StoresModule, TypeOrmModule.forFeature([...configurationEntities])],
   providers: [
     StoreChannelSettingsService,
     StoreChannelSettingsResolver,

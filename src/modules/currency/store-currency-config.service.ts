@@ -17,9 +17,7 @@ const CURRENCY_RE = /^[A-Z]{3}$/;
 function assertCurrencyCode(value: string, field: string): string {
   const normalized = value.trim().toUpperCase();
   if (!CURRENCY_RE.test(normalized)) {
-    throw new BadRequestException(
-      `Invalid ${field} "${value}" (expected ISO 4217)`,
-    );
+    throw new BadRequestException(`Invalid ${field} "${value}" (expected ISO 4217)`);
   }
   return normalized;
 }
@@ -32,10 +30,7 @@ function assertCurrencyList(values: string[], field: string): string[] {
 /**
  * Ensure primary display is always present in the enabled list.
  */
-function withPrimaryDisplay(
-  primary: string,
-  enabled: string[],
-): string[] {
+function withPrimaryDisplay(primary: string, enabled: string[]): string[] {
   return [...new Set([primary, ...enabled])].sort();
 }
 
@@ -129,10 +124,7 @@ export class StoreCurrencyConfigService {
    * Ensure a defaults row exists for a store (idempotent).
    * Used by GraphQL reads and StoreCreated listener.
    */
-  async ensureForStore(
-    storeId: string,
-    currencyHint?: string,
-  ): Promise<StoreCurrencyConfigType> {
+  async ensureForStore(storeId: string, currencyHint?: string): Promise<StoreCurrencyConfigType> {
     let hint = currencyHint;
     if (!hint) {
       const store = await this.stores.findById(storeId);
@@ -145,16 +137,10 @@ export class StoreCurrencyConfigService {
   /**
    * Whether `currencyCode` is allowed for customer display on this store.
    */
-  async isDisplayCurrencyAllowed(
-    storeId: string,
-    currencyCode: string,
-  ): Promise<boolean> {
+  async isDisplayCurrencyAllowed(storeId: string, currencyCode: string): Promise<boolean> {
     const config = await this.getForStore(storeId);
     const code = assertCurrencyCode(currencyCode, 'currencyCode');
-    return (
-      code === config.displayCurrencyCode ||
-      config.enabledDisplayCurrencies.includes(code)
-    );
+    return code === config.displayCurrencyCode || config.enabledDisplayCurrencies.includes(code);
   }
 
   private async ensureRow(

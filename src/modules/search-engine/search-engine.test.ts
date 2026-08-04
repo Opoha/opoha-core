@@ -5,8 +5,7 @@ import { SearchProviderRegistry } from './search-provider.registry';
 import type { SearchProvider, SearchQueryInput } from './search-provider';
 
 function stubProvider(
-  overrides: Partial<SearchProvider> &
-    Pick<SearchProvider, 'code' | 'displayName'> = {
+  overrides: Partial<SearchProvider> & Pick<SearchProvider, 'code' | 'displayName'> = {
     code: 'memory',
     displayName: 'In-memory search',
   },
@@ -36,15 +35,9 @@ describe('SearchEngine', () => {
 
   it('rejects duplicate codes from different plugins', () => {
     const registry = new SearchProviderRegistry();
-    registry.register(
-      'a',
-      stubProvider({ code: 'memory', displayName: 'A' }),
-    );
+    registry.register('a', stubProvider({ code: 'memory', displayName: 'A' }));
     expect(() =>
-      registry.register(
-        'b',
-        stubProvider({ code: 'memory', displayName: 'B' }),
-      ),
+      registry.register('b', stubProvider({ code: 'memory', displayName: 'B' })),
     ).toThrow(/conflict/);
   });
 

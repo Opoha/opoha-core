@@ -10,9 +10,7 @@ describe('InMemoryJobQueueAdapter (A-03)', () => {
   });
 
   it('throws when triggering an unregistered job code', async () => {
-    await expect(adapter.trigger('unknown')).rejects.toThrow(
-      /Unknown scheduled job/,
-    );
+    await expect(adapter.trigger('unknown')).rejects.toThrow(/Unknown scheduled job/);
   });
 
   it('calls the registered handler directly when no execute hook is set', async () => {
@@ -62,9 +60,7 @@ describe('InMemoryJobQueueAdapter (A-03)', () => {
     });
     await adapter.removeCronJob('core:cleanup');
 
-    await expect(adapter.trigger('core:cleanup')).rejects.toThrow(
-      /Unknown scheduled job/,
-    );
+    await expect(adapter.trigger('core:cleanup')).rejects.toThrow(/Unknown scheduled job/);
   });
 
   it('listCodes returns registered codes sorted', async () => {

@@ -203,9 +203,9 @@ describe('B2bQuoteService (F-05)', () => {
       updatedAt: now,
     });
 
-    await expect(
-      service.requireAcceptedForConvert('quote-1'),
-    ).rejects.toBeInstanceOf(BadRequestException);
+    await expect(service.requireAcceptedForConvert('quote-1')).rejects.toBeInstanceOf(
+      BadRequestException,
+    );
   });
 
   it('cancel rejects terminal converted quotes', async () => {
@@ -224,14 +224,10 @@ describe('B2bQuoteService (F-05)', () => {
       updatedAt: now,
     });
 
-    await expect(service.cancel('quote-1')).rejects.toBeInstanceOf(
-      BadRequestException,
-    );
+    await expect(service.cancel('quote-1')).rejects.toBeInstanceOf(BadRequestException);
   });
 
   it('findById 404', async () => {
-    await expect(service.findById('missing')).rejects.toBeInstanceOf(
-      NotFoundException,
-    );
+    await expect(service.findById('missing')).rejects.toBeInstanceOf(NotFoundException);
   });
 });

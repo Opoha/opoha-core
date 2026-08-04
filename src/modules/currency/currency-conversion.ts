@@ -38,10 +38,7 @@ export function roundHalfUpToMinor(value: number): bigint {
  * Rate is quantized to 12 decimal places before multiply so half-up
  * boundaries are stable under IEEE-754 (e.g. 100 × 1.005 → 101).
  */
-export function convertMinorWithRate(
-  amountMinor: string | number | bigint,
-  rate: number,
-): string {
+export function convertMinorWithRate(amountMinor: string | number | bigint, rate: number): string {
   if (!Number.isFinite(rate) || rate <= 0) {
     throw new Error('rate must be a finite number greater than 0');
   }

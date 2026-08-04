@@ -29,9 +29,7 @@ export class PluginBootstrapService implements OnApplicationBootstrap {
       return;
     }
 
-    this.logger.log(
-      `Loaded plugin definitions: ${result.loaded.map((p) => p.id).join(',')}`,
-    );
+    this.logger.log(`Loaded plugin definitions: ${result.loaded.map((p) => p.id).join(',')}`);
 
     const rows = await this.states.find();
     const byId = new Map(rows.map((row) => [row.pluginId, row]));

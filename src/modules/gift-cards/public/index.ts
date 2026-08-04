@@ -4,11 +4,7 @@
 export { GiftCardsModule } from '../gift-cards.module';
 export { GiftCardService } from '../gift-cards.service';
 export { GiftCardsResolver } from '../gift-cards.resolver';
-export {
-  GiftCardEntity,
-  GiftCardTransactionEntity,
-  giftCardEntities,
-} from '../entities';
+export { GiftCardEntity, GiftCardTransactionEntity, giftCardEntities } from '../entities';
 export {
   GIFT_CARD_STATUSES,
   GIFT_CARD_TRANSACTION_TYPES,
@@ -17,10 +13,7 @@ export {
   canTransitionGiftCardStatus,
   generateGiftCardCode,
 } from '../gift-card-status';
-export type {
-  GiftCardStatus,
-  GiftCardTransactionType,
-} from '../gift-card-status';
+export type { GiftCardStatus, GiftCardTransactionType } from '../gift-card-status';
 export {
   GiftCardType,
   GiftCardLedgerEntryType,
@@ -30,11 +23,5 @@ export {
   RedeemGiftCardInput,
   QuoteGiftCardRedeemInput,
 } from '../gift-cards.types';
-export {
-  giftCardEventSchemas,
-  giftCardRedeemedDataSchema,
-} from '../events/gift-card-events';
-export type {
-  GiftCardRedeemedData,
-  GiftCardRedeemedEvent,
-} from '../events/gift-card-events';
+export { giftCardEventSchemas, giftCardRedeemedDataSchema } from '../events/gift-card-events';
+export type { GiftCardRedeemedData, GiftCardRedeemedEvent } from '../events/gift-card-events';

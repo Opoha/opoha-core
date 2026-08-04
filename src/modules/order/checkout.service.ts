@@ -70,9 +70,7 @@ export class CheckoutService {
     const { cart, lines } = await this.carts.getEntityWithLines(cartId);
 
     if (cart.status === 'converted' || cart.status === 'abandoned') {
-      throw new BadRequestException(
-        `Cart ${cartId} is ${cart.status} and cannot be checked out`,
-      );
+      throw new BadRequestException(`Cart ${cartId} is ${cart.status} and cannot be checked out`);
     }
     if (lines.length === 0) {
       throw new BadRequestException(`Cart ${cartId} has no lines`);
@@ -156,10 +154,7 @@ export class CheckoutService {
     const promoResult = await this.promotions.applyOrZero(promoInput);
 
     const taxInput = buildTaxCalculateInput(cart, pricedLines);
-    const taxResult = await this.tax.calculateOrZero(
-      taxInput,
-      cart.taxProviderCode ?? undefined,
-    );
+    const taxResult = await this.tax.calculateOrZero(taxInput, cart.taxProviderCode ?? undefined);
 
     await this.carts.persistTaxResult(cartId, taxResult.taxMinor);
     await this.carts.persistDiscountResult(cartId, promoResult.discountMinor);
@@ -246,9 +241,7 @@ export class CheckoutService {
     };
   }
 
-  private async resolveFulfillmentModes(
-    variantIds: string[],
-  ): Promise<Map<string, string>> {
+  private async resolveFulfillmentModes(variantIds: string[]): Promise<Map<string, string>> {
     const unique = [...new Set(variantIds.filter(Boolean))];
     const result = new Map<string, string>();
     if (unique.length === 0) {

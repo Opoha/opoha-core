@@ -1,9 +1,6 @@
 import { Injectable } from '@nestjs/common';
 
-import type {
-  PaymentProvider,
-  RegisteredPaymentProvider,
-} from './payment-provider';
+import type { PaymentProvider, RegisteredPaymentProvider } from './payment-provider';
 
 /**
  * Registry for payment providers (MVP D-08 / Phase 2 A-01).
@@ -13,11 +10,7 @@ import type {
 export class PaymentProviderRegistry {
   private readonly entries: RegisteredPaymentProvider[] = [];
 
-  register(
-    pluginId: string,
-    provider: PaymentProvider,
-    active = true,
-  ): void {
+  register(pluginId: string, provider: PaymentProvider, active = true): void {
     if (!provider.code || provider.code.trim().length === 0) {
       throw new Error('Payment provider code is required');
     }
@@ -36,14 +29,11 @@ export class PaymentProviderRegistry {
   }
 
   get(id: string): PaymentProvider | undefined {
-    return this.entries.find((e) => e.provider.code === id && e.active)
-      ?.provider;
+    return this.entries.find((e) => e.provider.code === id && e.active)?.provider;
   }
 
   list(activeOnly = false): readonly RegisteredPaymentProvider[] {
-    return activeOnly
-      ? this.entries.filter((e) => e.active)
-      : [...this.entries];
+    return activeOnly ? this.entries.filter((e) => e.active) : [...this.entries];
   }
 
   activatePlugin(pluginId: string): void {

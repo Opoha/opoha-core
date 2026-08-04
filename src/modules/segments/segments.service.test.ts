@@ -1,8 +1,4 @@
-import {
-  BadRequestException,
-  ConflictException,
-  NotFoundException,
-} from '@nestjs/common';
+import { BadRequestException, ConflictException, NotFoundException } from '@nestjs/common';
 import { QueryFailedError } from 'typeorm';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 
@@ -66,9 +62,7 @@ describe('SegmentsService (unit)', () => {
       ),
       findOne: vi.fn(async ({ where }: { where: Partial<SegmentRow> }) => {
         const row = store.find(
-          (r) =>
-            (where.id && r.id === where.id) ||
-            (where.code && r.code === where.code),
+          (r) => (where.id && r.id === where.id) || (where.code && r.code === where.code),
         );
         return row ? Object.assign(new CustomerSegmentEntity(), row) : null;
       }),
@@ -132,12 +126,12 @@ describe('SegmentsService (unit)', () => {
 
   it('rejects duplicate codes and invalid code shape', async () => {
     await service.create({ code: 'vip', name: 'VIP' });
-    await expect(
-      service.create({ code: 'VIP', name: 'Again' }),
-    ).rejects.toBeInstanceOf(ConflictException);
-    await expect(
-      service.create({ code: 'Bad Code!', name: 'x' }),
-    ).rejects.toBeInstanceOf(BadRequestException);
+    await expect(service.create({ code: 'VIP', name: 'Again' })).rejects.toBeInstanceOf(
+      ConflictException,
+    );
+    await expect(service.create({ code: 'Bad Code!', name: 'x' })).rejects.toBeInstanceOf(
+      BadRequestException,
+    );
   });
 
   it('evaluates membership against stored rules (E-02)', async () => {
@@ -164,10 +158,7 @@ describe('SegmentsService (unit)', () => {
     expect(matches.map((s) => s.code)).toEqual(['vip']);
 
     await expect(
-      service.customerMatchesSegment(
-        '99999999-9999-4999-8999-999999999999',
-        ctx,
-      ),
+      service.customerMatchesSegment('99999999-9999-4999-8999-999999999999', ctx),
     ).rejects.toBeInstanceOf(NotFoundException);
   });
 

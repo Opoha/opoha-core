@@ -20,10 +20,7 @@ describe('LoyaltyResolver RBAC (resolver metadata + PermissionsGuard)', () => {
   };
   let resolver: LoyaltyResolver;
 
-  function gqlContext(
-    req: { user?: unknown },
-    handler: (...args: never[]) => unknown,
-  ) {
+  function gqlContext(req: { user?: unknown }, handler: (...args: never[]) => unknown) {
     return {
       getType: () => 'graphql',
       getArgs: () => [{}, {}, { req }, {}],
@@ -54,35 +51,20 @@ describe('LoyaltyResolver RBAC (resolver metadata + PermissionsGuard)', () => {
 
   it('declares loyalty:* permission keys', () => {
     const reflector = new Reflector();
+    expect(reflector.get(REQUIRE_PERMISSION_KEY, LoyaltyResolver.prototype.loyaltyAccount)).toEqual(
+      ['loyalty:read'],
+    );
     expect(
-      reflector.get(
-        REQUIRE_PERMISSION_KEY,
-        LoyaltyResolver.prototype.loyaltyAccount,
-      ),
+      reflector.get(REQUIRE_PERMISSION_KEY, LoyaltyResolver.prototype.loyaltyTransactions),
     ).toEqual(['loyalty:read']);
     expect(
-      reflector.get(
-        REQUIRE_PERMISSION_KEY,
-        LoyaltyResolver.prototype.loyaltyTransactions,
-      ),
+      reflector.get(REQUIRE_PERMISSION_KEY, LoyaltyResolver.prototype.quoteLoyaltyRedeem),
     ).toEqual(['loyalty:read']);
     expect(
-      reflector.get(
-        REQUIRE_PERMISSION_KEY,
-        LoyaltyResolver.prototype.quoteLoyaltyRedeem,
-      ),
-    ).toEqual(['loyalty:read']);
-    expect(
-      reflector.get(
-        REQUIRE_PERMISSION_KEY,
-        LoyaltyResolver.prototype.accrueLoyaltyPoints,
-      ),
+      reflector.get(REQUIRE_PERMISSION_KEY, LoyaltyResolver.prototype.accrueLoyaltyPoints),
     ).toEqual(['loyalty:accrue']);
     expect(
-      reflector.get(
-        REQUIRE_PERMISSION_KEY,
-        LoyaltyResolver.prototype.redeemLoyaltyPoints,
-      ),
+      reflector.get(REQUIRE_PERMISSION_KEY, LoyaltyResolver.prototype.redeemLoyaltyPoints),
     ).toEqual(['loyalty:redeem']);
   });
 

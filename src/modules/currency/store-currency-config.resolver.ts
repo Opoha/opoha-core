@@ -1,11 +1,7 @@
 import { UseGuards } from '@nestjs/common';
 import { Args, ID, Mutation, Query, Resolver } from '@nestjs/graphql';
 
-import {
-  GqlAuthGuard,
-  PermissionsGuard,
-  RequirePermission,
-} from '../auth/public';
+import { GqlAuthGuard, PermissionsGuard, RequirePermission } from '../auth/public';
 import { StoreCurrencyConfigService } from './store-currency-config.service';
 import {
   StoreCurrencyConfigType,
@@ -15,9 +11,7 @@ import {
 @Resolver(() => StoreCurrencyConfigType)
 @UseGuards(GqlAuthGuard, PermissionsGuard)
 export class StoreCurrencyConfigResolver {
-  constructor(
-    private readonly currencyConfig: StoreCurrencyConfigService,
-  ) {}
+  constructor(private readonly currencyConfig: StoreCurrencyConfigService) {}
 
   @Query(() => [StoreCurrencyConfigType], {
     name: 'storeCurrencyConfigList',

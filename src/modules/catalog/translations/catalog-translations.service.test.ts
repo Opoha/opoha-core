@@ -4,10 +4,7 @@ import { beforeEach, describe, expect, it, vi } from 'vitest';
 import type { CategoryTranslationEntity } from '../entities/category-translation.entity';
 import type { ProductTranslationEntity } from '../entities/product-translation.entity';
 import { CatalogTranslationsService } from './catalog-translations.service';
-import {
-  parseAcceptLanguageHeader,
-  resolveLocalePreference,
-} from './locale';
+import { parseAcceptLanguageHeader, resolveLocalePreference } from './locale';
 
 const PRODUCT_ID = '11111111-1111-4111-8111-111111111111';
 const CATEGORY_ID = '22222222-2222-4222-8222-222222222222';
@@ -36,9 +33,7 @@ describe('locale helpers', () => {
   });
 
   it('rejects invalid locale arg', () => {
-    expect(() =>
-      resolveLocalePreference({ localeArg: 'ENGLISH' }),
-    ).toThrow(BadRequestException);
+    expect(() => resolveLocalePreference({ localeArg: 'ENGLISH' })).toThrow(BadRequestException);
   });
 });
 
@@ -84,20 +79,12 @@ describe('CatalogTranslationsService (unit)', () => {
           return true;
         });
       }),
-      findOne: vi.fn(
-        async ({
-          where,
-        }: {
-          where: { productId: string; locale: string };
-        }) => {
-          return (
-            productRows.find(
-              (r) =>
-                r.productId === where.productId && r.locale === where.locale,
-            ) ?? null
-          );
-        },
-      ),
+      findOne: vi.fn(async ({ where }: { where: { productId: string; locale: string } }) => {
+        return (
+          productRows.find((r) => r.productId === where.productId && r.locale === where.locale) ??
+          null
+        );
+      }),
       create: vi.fn((data: Partial<ProductTranslationEntity>) => ({
         id: '',
         createdAt: now,
@@ -119,21 +106,13 @@ describe('CatalogTranslationsService (unit)', () => {
         }
         return saved;
       }),
-      delete: vi.fn(
-        async ({
-          productId,
-          locale,
-        }: {
-          productId: string;
-          locale: string;
-        }) => {
-          const before = productRows.length;
-          productRows = productRows.filter(
-            (r) => !(r.productId === productId && r.locale === locale),
-          );
-          return { affected: before - productRows.length };
-        },
-      ),
+      delete: vi.fn(async ({ productId, locale }: { productId: string; locale: string }) => {
+        const before = productRows.length;
+        productRows = productRows.filter(
+          (r) => !(r.productId === productId && r.locale === locale),
+        );
+        return { affected: before - productRows.length };
+      }),
     };
     categoryTranslations = {
       find: vi.fn(async ({ where }: { where: { categoryId?: unknown; locale?: string } }) => {
@@ -144,20 +123,13 @@ describe('CatalogTranslationsService (unit)', () => {
           return true;
         });
       }),
-      findOne: vi.fn(
-        async ({
-          where,
-        }: {
-          where: { categoryId: string; locale: string };
-        }) => {
-          return (
-            categoryRows.find(
-              (r) =>
-                r.categoryId === where.categoryId && r.locale === where.locale,
-            ) ?? null
-          );
-        },
-      ),
+      findOne: vi.fn(async ({ where }: { where: { categoryId: string; locale: string } }) => {
+        return (
+          categoryRows.find(
+            (r) => r.categoryId === where.categoryId && r.locale === where.locale,
+          ) ?? null
+        );
+      }),
       create: vi.fn((data: Partial<CategoryTranslationEntity>) => ({
         id: '',
         createdAt: now,
@@ -179,21 +151,13 @@ describe('CatalogTranslationsService (unit)', () => {
         }
         return saved;
       }),
-      delete: vi.fn(
-        async ({
-          categoryId,
-          locale,
-        }: {
-          categoryId: string;
-          locale: string;
-        }) => {
-          const before = categoryRows.length;
-          categoryRows = categoryRows.filter(
-            (r) => !(r.categoryId === categoryId && r.locale === locale),
-          );
-          return { affected: before - categoryRows.length };
-        },
-      ),
+      delete: vi.fn(async ({ categoryId, locale }: { categoryId: string; locale: string }) => {
+        const before = categoryRows.length;
+        categoryRows = categoryRows.filter(
+          (r) => !(r.categoryId === categoryId && r.locale === locale),
+        );
+        return { affected: before - categoryRows.length };
+      }),
     };
     products = {
       findOne: vi.fn(async ({ where }: { where: { id: string } }) => {
@@ -332,11 +296,7 @@ describe('CatalogTranslationsService (unit)', () => {
       locale: 'th-TH',
       name: 'x',
     });
-    expect(await service.deleteProductTranslation(PRODUCT_ID, 'th-TH')).toBe(
-      true,
-    );
-    expect(await service.deleteProductTranslation(PRODUCT_ID, 'th-TH')).toBe(
-      false,
-    );
+    expect(await service.deleteProductTranslation(PRODUCT_ID, 'th-TH')).toBe(true);
+    expect(await service.deleteProductTranslation(PRODUCT_ID, 'th-TH')).toBe(false);
   });
 });

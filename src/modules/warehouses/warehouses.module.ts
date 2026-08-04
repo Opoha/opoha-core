@@ -12,11 +12,7 @@ import { WarehouseResolver } from './warehouse.resolver';
 import { WarehouseService } from './warehouse.service';
 
 @Module({
-  imports: [
-    AuthModule,
-    StoresModule,
-    TypeOrmModule.forFeature([...warehouseEntities]),
-  ],
+  imports: [AuthModule, StoresModule, TypeOrmModule.forFeature([...warehouseEntities])],
   providers: [
     WarehouseService,
     WarehouseResolver,

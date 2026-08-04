@@ -1,10 +1,4 @@
-import {
-  Field,
-  ID,
-  InputType,
-  ObjectType,
-  registerEnumType,
-} from '@nestjs/graphql';
+import { Field, ID, InputType, ObjectType, registerEnumType } from '@nestjs/graphql';
 
 import type { StoreCatalogMode } from './entities';
 
@@ -15,8 +9,7 @@ export enum StoreCatalogModeGql {
 
 registerEnumType(StoreCatalogModeGql, {
   name: 'StoreCatalogMode',
-  description:
-    'Catalog visibility preference for a store channel (shared vs isolated)',
+  description: 'Catalog visibility preference for a store channel (shared vs isolated)',
 });
 
 @ObjectType('StoreChannelSettings', {

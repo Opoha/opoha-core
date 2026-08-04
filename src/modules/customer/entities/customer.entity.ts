@@ -43,9 +43,6 @@ export class CustomerEntity {
   @OneToMany(() => CustomerAddressEntity, (address) => address.customer)
   addresses!: CustomerAddressEntity[];
 
-  @OneToMany(
-    () => CustomerGroupMembershipEntity,
-    (membership) => membership.customer,
-  )
+  @OneToMany(() => CustomerGroupMembershipEntity, (membership) => membership.customer)
   groupMemberships!: CustomerGroupMembershipEntity[];
 }

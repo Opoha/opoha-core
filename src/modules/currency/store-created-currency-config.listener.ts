@@ -26,9 +26,6 @@ export class StoreCreatedCurrencyConfigListener implements OnModuleInit {
     if (!storeId) {
       return;
     }
-    await this.currencyConfig.ensureForStore(
-      storeId,
-      event.data.defaultCurrencyCode,
-    );
+    await this.currencyConfig.ensureForStore(storeId, event.data.defaultCurrencyCode);
   }
 }

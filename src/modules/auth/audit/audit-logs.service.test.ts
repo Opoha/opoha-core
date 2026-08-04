@@ -86,14 +86,12 @@ describe('AuditLogsService', () => {
       since: now,
     });
 
-    expect(qb.andWhere).toHaveBeenCalledWith(
-      'a.action LIKE :actionPrefix',
-      { actionPrefix: 'warehouse.%' },
-    );
-    expect(qb.andWhere).toHaveBeenCalledWith(
-      'a.resourceType = :resourceType',
-      { resourceType: 'warehouse' },
-    );
+    expect(qb.andWhere).toHaveBeenCalledWith('a.action LIKE :actionPrefix', {
+      actionPrefix: 'warehouse.%',
+    });
+    expect(qb.andWhere).toHaveBeenCalledWith('a.resourceType = :resourceType', {
+      resourceType: 'warehouse',
+    });
     expect(qb.andWhere).toHaveBeenCalledWith('a.createdAt >= :since', {
       since: now,
     });

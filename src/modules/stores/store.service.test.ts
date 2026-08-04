@@ -1,8 +1,4 @@
-import {
-  BadRequestException,
-  ConflictException,
-  NotFoundException,
-} from '@nestjs/common';
+import { BadRequestException, ConflictException, NotFoundException } from '@nestjs/common';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 
 import { CoreEventName } from '../event-bus/event-catalog';
@@ -111,11 +107,7 @@ describe('StoreService (unit)', () => {
       publish: vi.fn(async () => undefined),
     };
 
-    service = new StoreService(
-      storesRepo as never,
-      dataSource as never,
-      eventBus as never,
-    );
+    service = new StoreService(storesRepo as never, dataSource as never, eventBus as never);
   });
 
   it('lists stores ordered by code', async () => {
@@ -195,15 +187,13 @@ describe('StoreService (unit)', () => {
   });
 
   it('cannot delete the default store', async () => {
-    await expect(service.remove(store[0]!.id)).rejects.toBeInstanceOf(
-      BadRequestException,
-    );
+    await expect(service.remove(store[0]!.id)).rejects.toBeInstanceOf(BadRequestException);
   });
 
   it('returns not found for missing id', async () => {
-    await expect(
-      service.findById('99999999-9999-4999-8999-999999999999'),
-    ).rejects.toBeInstanceOf(NotFoundException);
+    await expect(service.findById('99999999-9999-4999-8999-999999999999')).rejects.toBeInstanceOf(
+      NotFoundException,
+    );
   });
 
   it('surfaces unique code conflicts', async () => {

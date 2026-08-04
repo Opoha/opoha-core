@@ -24,11 +24,8 @@ export const companyMembershipUpdatedDataSchema = z
   })
   .strict();
 
-export type CompanyMembershipUpdatedData = z.infer<
-  typeof companyMembershipUpdatedDataSchema
->;
-export type CompanyMembershipUpdatedEvent =
-  DomainEvent<CompanyMembershipUpdatedData>;
+export type CompanyMembershipUpdatedData = z.infer<typeof companyMembershipUpdatedDataSchema>;
+export type CompanyMembershipUpdatedEvent = DomainEvent<CompanyMembershipUpdatedData>;
 
 /** Register b2b event payload schemas on the bus. */
 export function companyEventSchemas(): Array<{

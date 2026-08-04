@@ -17,9 +17,7 @@ describe('ProductMediaService', () => {
     );
 
     const mediaRepo = {
-      create: vi.fn((data: Partial<ProductMediaEntity>) =>
-        ({ ...data }) as ProductMediaEntity,
-      ),
+      create: vi.fn((data: Partial<ProductMediaEntity>) => ({ ...data }) as ProductMediaEntity),
       save: vi.fn(async (row: ProductMediaEntity) => {
         if (!row.id) {
           row.id = `media-${media.size + 1}`;
@@ -34,9 +32,7 @@ describe('ProductMediaService', () => {
           .filter((m) => m.productId === where.productId)
           .sort((a, b) => a.sortOrder - b.sortOrder),
       ),
-      findOne: vi.fn(async ({ where }: { where: { id: string } }) =>
-        media.get(where.id) ?? null,
-      ),
+      findOne: vi.fn(async ({ where }: { where: { id: string } }) => media.get(where.id) ?? null),
       delete: vi.fn(async ({ id }: { id: string }) => {
         media.delete(id);
         return { affected: 1 };
@@ -83,11 +79,11 @@ describe('ProductMediaService', () => {
   });
 
   it('rejects unknown products and files', async () => {
-    await expect(
-      service.attach({ productId: 'missing', fileId: 'file-1' }),
-    ).rejects.toThrow(/Product/);
-    await expect(
-      service.attach({ productId: 'prod-1', fileId: 'missing' }),
-    ).rejects.toThrow(/File/);
+    await expect(service.attach({ productId: 'missing', fileId: 'file-1' })).rejects.toThrow(
+      /Product/,
+    );
+    await expect(service.attach({ productId: 'prod-1', fileId: 'missing' })).rejects.toThrow(
+      /File/,
+    );
   });
 });

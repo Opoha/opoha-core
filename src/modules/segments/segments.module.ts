@@ -9,11 +9,7 @@ import { SegmentsResolver } from './segments.resolver';
 import { SegmentsService } from './segments.service';
 
 @Module({
-  imports: [
-    AuthModule,
-    EventBusModule,
-    TypeOrmModule.forFeature([...segmentEntities]),
-  ],
+  imports: [AuthModule, EventBusModule, TypeOrmModule.forFeature([...segmentEntities])],
   providers: [SegmentsService, SegmentsResolver, SegmentEventsRegistrar],
   exports: [SegmentsService, TypeOrmModule],
 })

@@ -46,12 +46,7 @@ describe('WebhookDispatcherService (D-03)', () => {
     };
 
     const bus = new EventBusService();
-    dispatcher = new WebhookDispatcherService(
-      webhooks,
-      worker,
-      bus,
-      attemptRepo as never,
-    );
+    dispatcher = new WebhookDispatcherService(webhooks, worker, bus, attemptRepo as never);
   });
 
   it('enqueues a delivery for matching endpoints', async () => {
@@ -66,9 +61,7 @@ describe('WebhookDispatcherService (D-03)', () => {
     expect(attempts).toHaveLength(1);
     expect(attempts[0]!.eventName).toBe('OrderPaid');
     expect(attempts[0]!.status).toBe('pending');
-    expect((attempts[0]!.payload as { data: { orderId: string } }).data.orderId).toBe(
-      'o-1',
-    );
+    expect((attempts[0]!.payload as { data: { orderId: string } }).data.orderId).toBe('o-1');
   });
 
   it('auto-delivers when enabled', async () => {

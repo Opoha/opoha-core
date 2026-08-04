@@ -100,25 +100,16 @@ describe('LoyaltyService (unit)', () => {
     const dataSource = {
       transaction: vi.fn(async (fn: (manager: unknown) => Promise<unknown>) => {
         const manager = {
-          findOne: async (
-            entity: unknown,
-            opts: { where: Record<string, unknown> },
-          ) => {
+          findOne: async (entity: unknown, opts: { where: Record<string, unknown> }) => {
             if (entity === LoyaltyTransactionEntity) {
               const row = txStore.find(
-                (t) =>
-                  t.orderId === opts.where.orderId &&
-                  t.type === opts.where.type,
+                (t) => t.orderId === opts.where.orderId && t.type === opts.where.type,
               );
-              return row
-                ? Object.assign(new LoyaltyTransactionEntity(), row)
-                : null;
+              return row ? Object.assign(new LoyaltyTransactionEntity(), row) : null;
             }
             if (entity === LoyaltyAccountEntity) {
               const row = accountStore.find((a) => a.id === opts.where.id);
-              return row
-                ? Object.assign(new LoyaltyAccountEntity(), row)
-                : null;
+              return row ? Object.assign(new LoyaltyAccountEntity(), row) : null;
             }
             return null;
           },
@@ -137,9 +128,7 @@ describe('LoyaltyService (unit)', () => {
                 customerId: String(row.customerId),
                 pointsBalance: Number(row.pointsBalance ?? 0),
                 lifetimePointsEarned: Number(row.lifetimePointsEarned ?? 0),
-                lifetimePointsRedeemed: Number(
-                  row.lifetimePointsRedeemed ?? 0,
-                ),
+                lifetimePointsRedeemed: Number(row.lifetimePointsRedeemed ?? 0),
                 createdAt: now,
                 updatedAt: now,
               };
@@ -165,16 +154,13 @@ describe('LoyaltyService (unit)', () => {
               const qb = {
                 setLock: () => qb,
                 where: (_sql: string, params: { customerId: string }) => {
-                  (qb as { _customerId?: string })._customerId =
-                    params.customerId;
+                  (qb as { _customerId?: string })._customerId = params.customerId;
                   return qb;
                 },
                 getOne: async () => {
                   const id = (qb as { _customerId?: string })._customerId;
                   const row = accountStore.find((a) => a.customerId === id);
-                  return row
-                    ? Object.assign(new LoyaltyAccountEntity(), row)
-                    : null;
+                  return row ? Object.assign(new LoyaltyAccountEntity(), row) : null;
                 },
               };
               return qb;
@@ -264,8 +250,8 @@ describe('LoyaltyService (unit)', () => {
 
   it('rejects redeem above balance', async () => {
     await service.accrue({ customerId, points: 10, orderId });
-    await expect(
-      service.redeem({ customerId, points: 11 }),
-    ).rejects.toBeInstanceOf(BadRequestException);
+    await expect(service.redeem({ customerId, points: 11 })).rejects.toBeInstanceOf(
+      BadRequestException,
+    );
   });
 });

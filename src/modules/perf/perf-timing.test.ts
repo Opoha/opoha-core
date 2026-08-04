@@ -1,10 +1,6 @@
 import { describe, expect, it } from 'vitest';
 
-import {
-  evaluateScenario,
-  measureAsync,
-  summarizeSamples,
-} from './perf-timing';
+import { evaluateScenario, measureAsync, summarizeSamples } from './perf-timing';
 
 describe('perf-timing helpers (C-02)', () => {
   it('computes p50/p95 from samples', () => {
@@ -16,17 +12,9 @@ describe('perf-timing helpers (C-02)', () => {
   });
 
   it('evaluateScenario marks pass/fail against target', () => {
-    const pass = evaluateScenario(
-      'PERF-CATALOG-LIST',
-      summarizeSamples([1, 2, 3]),
-      10,
-    );
+    const pass = evaluateScenario('PERF-CATALOG-LIST', summarizeSamples([1, 2, 3]), 10);
     expect(pass.pass).toBe(true);
-    const fail = evaluateScenario(
-      'PERF-CATALOG-LIST',
-      summarizeSamples([1, 2, 50]),
-      10,
-    );
+    const fail = evaluateScenario('PERF-CATALOG-LIST', summarizeSamples([1, 2, 50]), 10);
     expect(fail.pass).toBe(false);
   });
 

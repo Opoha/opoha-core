@@ -10,11 +10,7 @@ export type {
   RenewSubscriptionOptions,
 } from '../subscription.service';
 export { SubscriptionResolver } from '../subscription.resolver';
-export {
-  SubscriptionPlanEntity,
-  SubscriptionEntity,
-  subscriptionEntities,
-} from '../entities';
+export { SubscriptionPlanEntity, SubscriptionEntity, subscriptionEntities } from '../entities';
 export {
   SUBSCRIPTION_STATUSES,
   BILLING_INTERVAL_UNITS,
@@ -22,10 +18,7 @@ export {
   isBillingIntervalUnit,
   addBillingInterval,
 } from '../subscription-status';
-export type {
-  SubscriptionStatus,
-  BillingIntervalUnit,
-} from '../subscription-status';
+export type { SubscriptionStatus, BillingIntervalUnit } from '../subscription-status';
 export {
   SubscriptionPlanType,
   SubscriptionType,

@@ -14,9 +14,7 @@ export const loyaltyPointsAccruedDataSchema = z
   })
   .strict();
 
-export type LoyaltyPointsAccruedData = z.infer<
-  typeof loyaltyPointsAccruedDataSchema
->;
+export type LoyaltyPointsAccruedData = z.infer<typeof loyaltyPointsAccruedDataSchema>;
 export type LoyaltyPointsAccruedEvent = DomainEvent<LoyaltyPointsAccruedData>;
 
 export const loyaltyPointsRedeemedDataSchema = z
@@ -31,11 +29,8 @@ export const loyaltyPointsRedeemedDataSchema = z
   })
   .strict();
 
-export type LoyaltyPointsRedeemedData = z.infer<
-  typeof loyaltyPointsRedeemedDataSchema
->;
-export type LoyaltyPointsRedeemedEvent =
-  DomainEvent<LoyaltyPointsRedeemedData>;
+export type LoyaltyPointsRedeemedData = z.infer<typeof loyaltyPointsRedeemedDataSchema>;
+export type LoyaltyPointsRedeemedEvent = DomainEvent<LoyaltyPointsRedeemedData>;
 
 /** Register loyalty event payload schemas on the bus (call once at module init). */
 export function loyaltyEventSchemas(): Array<{

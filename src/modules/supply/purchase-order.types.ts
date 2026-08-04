@@ -1,10 +1,4 @@
-import {
-  Field,
-  ID,
-  InputType,
-  Int,
-  ObjectType,
-} from '@nestjs/graphql';
+import { Field, ID, InputType, Int, ObjectType } from '@nestjs/graphql';
 
 @ObjectType({ description: 'Line item on a purchase order' })
 export class PurchaseOrderLineType {

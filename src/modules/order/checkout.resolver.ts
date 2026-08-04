@@ -1,11 +1,7 @@
 import { UseGuards } from '@nestjs/common';
 import { Args, Context, ID, Mutation, Resolver } from '@nestjs/graphql';
 
-import {
-  GqlAuthGuard,
-  PermissionsGuard,
-  RequirePermission,
-} from '../auth/public';
+import { GqlAuthGuard, PermissionsGuard, RequirePermission } from '../auth/public';
 import type { StoreContextRef } from '../stores/public';
 import { CheckoutService } from './checkout.service';
 import { CheckoutPreviewType } from './order.types';
@@ -32,16 +28,11 @@ export class CheckoutResolver {
     @Args('displayCurrencyCode', {
       type: () => String,
       nullable: true,
-      description:
-        'Optional display currency (ISO 4217); defaults to store displayCurrencyCode',
+      description: 'Optional display currency (ISO 4217); defaults to store displayCurrencyCode',
     })
     displayCurrencyCode: string | undefined,
     @Context() ctx: GqlStoreContext,
   ): Promise<CheckoutPreviewType> {
-    return this.checkoutService.prepare(
-      cartId,
-      ctx.storeContext,
-      displayCurrencyCode,
-    );
+    return this.checkoutService.prepare(cartId, ctx.storeContext, displayCurrencyCode);
   }
 }

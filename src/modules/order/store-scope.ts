@@ -6,9 +6,7 @@ import type { StoreService } from '../stores/public';
 /**
  * Normalize optional store UUID input (empty → undefined).
  */
-export function normalizeStoreId(
-  value: string | null | undefined,
-): string | undefined {
+export function normalizeStoreId(value: string | null | undefined): string | undefined {
   if (value === undefined || value === null) {
     return undefined;
   }
@@ -48,10 +46,7 @@ export async function resolveCartStoreId(input: {
   if (fromInput) {
     return fromInput;
   }
-  const fromContext = await resolveContextStoreId(
-    input.stores,
-    input.context,
-  );
+  const fromContext = await resolveContextStoreId(input.stores, input.context);
   if (fromContext) {
     return fromContext;
   }
@@ -98,10 +93,7 @@ export function isProductVisibleInStore(
 /**
  * Load store and reject inactive channels.
  */
-export async function requireActiveStore(
-  stores: StoreService,
-  storeId: string,
-): Promise<void> {
+export async function requireActiveStore(stores: StoreService, storeId: string): Promise<void> {
   const store = await stores.findById(storeId);
   if (!store.isActive) {
     throw new BadRequestException(`Store ${storeId} is not active`);

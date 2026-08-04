@@ -1,8 +1,4 @@
-import {
-  BadRequestException,
-  Injectable,
-  NotFoundException,
-} from '@nestjs/common';
+import { BadRequestException, Injectable, NotFoundException } from '@nestjs/common';
 
 import {
   CURRENCY_ROUNDING_MODE,
@@ -17,9 +13,7 @@ const CURRENCY_RE = /^[A-Z]{3}$/;
 function assertCurrencyCode(value: string, field: string): string {
   const normalized = value.trim().toUpperCase();
   if (!CURRENCY_RE.test(normalized)) {
-    throw new BadRequestException(
-      `Invalid ${field} "${value}" (expected ISO 4217)`,
-    );
+    throw new BadRequestException(`Invalid ${field} "${value}" (expected ISO 4217)`);
   }
   return normalized;
 }
@@ -76,14 +70,9 @@ export class CurrencyConversionService {
       return config.displayCurrencyCode;
     }
     const code = assertCurrencyCode(displayCurrencyCode, 'displayCurrencyCode');
-    const allowed = await this.storeCurrency.isDisplayCurrencyAllowed(
-      storeId,
-      code,
-    );
+    const allowed = await this.storeCurrency.isDisplayCurrencyAllowed(storeId, code);
     if (!allowed) {
-      throw new BadRequestException(
-        `Display currency ${code} is not enabled for store ${storeId}`,
-      );
+      throw new BadRequestException(`Display currency ${code} is not enabled for store ${storeId}`);
     }
     return code;
   }
@@ -119,14 +108,8 @@ export class CurrencyConversionService {
     totals: DisplayTotalsInput,
     displayCurrencyCode?: string | null,
   ): Promise<DisplayTotalsResult> {
-    const settlement = assertCurrencyCode(
-      totals.currencyCode,
-      'currencyCode',
-    );
-    const display = await this.resolveDisplayCurrency(
-      storeId,
-      displayCurrencyCode,
-    );
+    const settlement = assertCurrencyCode(totals.currencyCode, 'currencyCode');
+    const display = await this.resolveDisplayCurrency(storeId, displayCurrencyCode);
 
     if (settlement === display) {
       return {

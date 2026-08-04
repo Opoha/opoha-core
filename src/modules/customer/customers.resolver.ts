@@ -1,11 +1,7 @@
 import { UseGuards } from '@nestjs/common';
 import { Args, ID, Mutation, Query, Resolver } from '@nestjs/graphql';
 
-import {
-  GqlAuthGuard,
-  PermissionsGuard,
-  RequirePermission,
-} from '../auth/public';
+import { GqlAuthGuard, PermissionsGuard, RequirePermission } from '../auth/public';
 import { CustomersService } from './customers.service';
 import {
   CreateCustomerInput,
@@ -46,9 +42,7 @@ export class CustomersResolver {
   })
   @UseGuards(GqlAuthGuard, PermissionsGuard)
   @RequirePermission('customer:read')
-  customer(
-    @Args('id', { type: () => ID }) id: string,
-  ): Promise<CustomerType> {
+  customer(@Args('id', { type: () => ID }) id: string): Promise<CustomerType> {
     return this.customersService.findById(id);
   }
 

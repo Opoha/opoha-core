@@ -1,7 +1,4 @@
-import {
-  BadRequestException,
-  NotFoundException,
-} from '@nestjs/common';
+import { BadRequestException, NotFoundException } from '@nestjs/common';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 
 import { GiftCardTransactionEntity } from './entities/gift-card-transaction.entity';
@@ -57,9 +54,7 @@ describe('GiftCardService (unit)', () => {
     cardsRepo = {
       findOne: vi.fn(async ({ where }: { where: { id?: string; code?: string } }) => {
         const row = cardStore.find(
-          (c) =>
-            (where.id && c.id === where.id) ||
-            (where.code && c.code === where.code),
+          (c) => (where.id && c.id === where.id) || (where.code && c.code === where.code),
         );
         return row ? Object.assign(new GiftCardEntity(), row) : null;
       }),
@@ -75,27 +70,19 @@ describe('GiftCardService (unit)', () => {
           .filter((t) => t.giftCardId === where.giftCardId)
           .map((t) => Object.assign(new GiftCardTransactionEntity(), t)),
       ),
-      update: vi.fn(
-        async (
-          where: { giftCardId: string; type: string },
-          patch: Partial<TxRow>,
-        ) => {
-          for (const t of txStore) {
-            if (t.giftCardId === where.giftCardId && t.type === where.type) {
-              Object.assign(t, patch);
-            }
+      update: vi.fn(async (where: { giftCardId: string; type: string }, patch: Partial<TxRow>) => {
+        for (const t of txStore) {
+          if (t.giftCardId === where.giftCardId && t.type === where.type) {
+            Object.assign(t, patch);
           }
-        },
-      ),
+        }
+      }),
     };
 
     const dataSource = {
       transaction: vi.fn(async (fn: (manager: unknown) => Promise<unknown>) => {
         const manager = {
-          findOne: async (
-            _entity: unknown,
-            opts: { where: { code: string } },
-          ) => {
+          findOne: async (_entity: unknown, opts: { where: { code: string } }) => {
             const row = cardStore.find((c) => c.code === opts.where.code);
             return row ? Object.assign(new GiftCardEntity(), row) : null;
           },
@@ -114,12 +101,9 @@ describe('GiftCardService (unit)', () => {
                 initialBalanceMinor: String(row.initialBalanceMinor),
                 balanceMinor: String(row.balanceMinor),
                 status: (row.status as GiftCardStatus) ?? 'active',
-                issuedToCustomerId:
-                  (row.issuedToCustomerId as string | null) ?? null,
-                purchasedByCustomerId:
-                  (row.purchasedByCustomerId as string | null) ?? null,
-                purchaseOrderId:
-                  (row.purchaseOrderId as string | null) ?? null,
+                issuedToCustomerId: (row.issuedToCustomerId as string | null) ?? null,
+                purchasedByCustomerId: (row.purchasedByCustomerId as string | null) ?? null,
+                purchaseOrderId: (row.purchaseOrderId as string | null) ?? null,
                 expiresAt: (row.expiresAt as Date | null) ?? null,
                 note: (row.note as string | null) ?? null,
                 createdAt: now,
@@ -163,11 +147,7 @@ describe('GiftCardService (unit)', () => {
       }),
     };
 
-    service = new GiftCardService(
-      cardsRepo as never,
-      txRepo as never,
-      dataSource as never,
-    );
+    service = new GiftCardService(cardsRepo as never, txRepo as never, dataSource as never);
   });
 
   it('issues a gift card with ledger credit', async () => {
@@ -279,13 +259,11 @@ describe('GiftCardService (unit)', () => {
       updatedAt: now,
     });
 
-    await expect(
-      service.redeem({ code: 'gc-1', amountMinor: '200' }),
-    ).rejects.toBeInstanceOf(BadRequestException);
-
-    await expect(service.findByCode('missing')).rejects.toBeInstanceOf(
-      NotFoundException,
+    await expect(service.redeem({ code: 'gc-1', amountMinor: '200' })).rejects.toBeInstanceOf(
+      BadRequestException,
     );
+
+    await expect(service.findByCode('missing')).rejects.toBeInstanceOf(NotFoundException);
   });
 
   it('rejects currency mismatch on quote', async () => {

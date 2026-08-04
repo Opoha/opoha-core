@@ -27,67 +27,49 @@ describe('cart/order RBAC (resolver metadata + PermissionsGuard deny)', () => {
 
   it('CartResolver declares cart:* permission keys', () => {
     const reflector = new Reflector();
+    expect(reflector.get(REQUIRE_PERMISSION_KEY, CartResolver.prototype.carts)).toEqual([
+      'cart:read',
+    ]);
+    expect(reflector.get(REQUIRE_PERMISSION_KEY, CartResolver.prototype.createCart)).toEqual([
+      'cart:create',
+    ]);
+    expect(reflector.get(REQUIRE_PERMISSION_KEY, CartResolver.prototype.addCartLine)).toEqual([
+      'cart:update',
+    ]);
+    expect(reflector.get(REQUIRE_PERMISSION_KEY, CartResolver.prototype.updateCartLine)).toEqual([
+      'cart:update',
+    ]);
+    expect(reflector.get(REQUIRE_PERMISSION_KEY, CartResolver.prototype.removeCartLine)).toEqual([
+      'cart:update',
+    ]);
     expect(
-      reflector.get(REQUIRE_PERMISSION_KEY, CartResolver.prototype.carts),
-    ).toEqual(['cart:read']);
-    expect(
-      reflector.get(REQUIRE_PERMISSION_KEY, CartResolver.prototype.createCart),
-    ).toEqual(['cart:create']);
-    expect(
-      reflector.get(REQUIRE_PERMISSION_KEY, CartResolver.prototype.addCartLine),
+      reflector.get(REQUIRE_PERMISSION_KEY, CartResolver.prototype.selectCartShipping),
     ).toEqual(['cart:update']);
-    expect(
-      reflector.get(
-        REQUIRE_PERMISSION_KEY,
-        CartResolver.prototype.updateCartLine,
-      ),
-    ).toEqual(['cart:update']);
-    expect(
-      reflector.get(
-        REQUIRE_PERMISSION_KEY,
-        CartResolver.prototype.removeCartLine,
-      ),
-    ).toEqual(['cart:update']);
-    expect(
-      reflector.get(
-        REQUIRE_PERMISSION_KEY,
-        CartResolver.prototype.selectCartShipping,
-      ),
-    ).toEqual(['cart:update']);
-    expect(
-      reflector.get(
-        REQUIRE_PERMISSION_KEY,
-        CartResolver.prototype.setCartTaxContext,
-      ),
-    ).toEqual(['cart:update']);
+    expect(reflector.get(REQUIRE_PERMISSION_KEY, CartResolver.prototype.setCartTaxContext)).toEqual(
+      ['cart:update'],
+    );
   });
 
   it('CheckoutResolver declares cart:checkout', () => {
     const reflector = new Reflector();
     expect(
-      reflector.get(
-        REQUIRE_PERMISSION_KEY,
-        CheckoutResolver.prototype.prepareCheckout,
-      ),
+      reflector.get(REQUIRE_PERMISSION_KEY, CheckoutResolver.prototype.prepareCheckout),
     ).toEqual(['cart:checkout']);
   });
 
   it('OrdersResolver declares order:read/create/update', () => {
     const reflector = new Reflector();
+    expect(reflector.get(REQUIRE_PERMISSION_KEY, OrdersResolver.prototype.orders)).toEqual([
+      'order:read',
+    ]);
+    expect(reflector.get(REQUIRE_PERMISSION_KEY, OrdersResolver.prototype.order)).toEqual([
+      'order:read',
+    ]);
+    expect(reflector.get(REQUIRE_PERMISSION_KEY, OrdersResolver.prototype.placeOrder)).toEqual([
+      'order:create',
+    ]);
     expect(
-      reflector.get(REQUIRE_PERMISSION_KEY, OrdersResolver.prototype.orders),
-    ).toEqual(['order:read']);
-    expect(
-      reflector.get(REQUIRE_PERMISSION_KEY, OrdersResolver.prototype.order),
-    ).toEqual(['order:read']);
-    expect(
-      reflector.get(REQUIRE_PERMISSION_KEY, OrdersResolver.prototype.placeOrder),
-    ).toEqual(['order:create']);
-    expect(
-      reflector.get(
-        REQUIRE_PERMISSION_KEY,
-        OrdersResolver.prototype.updateOrderStatus,
-      ),
+      reflector.get(REQUIRE_PERMISSION_KEY, OrdersResolver.prototype.updateOrderStatus),
     ).toEqual(['order:update']);
   });
 

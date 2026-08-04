@@ -22,15 +22,9 @@ import {
   discoverPluginsInDirectory,
   parsePluginPathsEnv,
 } from './plugin-discovery';
-import {
-  canBootPlugin,
-  transitionPluginState,
-} from './plugin-lifecycle';
+import { canBootPlugin, transitionPluginState } from './plugin-lifecycle';
 import { PluginLoaderService } from './plugin-loader.service';
-import {
-  PLUGIN_CONTRACT_VERSION,
-  parsePluginManifest,
-} from './plugin-manifest';
+import { PLUGIN_CONTRACT_VERSION, parsePluginManifest } from './plugin-manifest';
 import type { DiscoveredPlugin } from './plugin-manifest';
 
 function pluginDir(
@@ -157,24 +151,18 @@ describe('orderPluginsByDependency', () => {
   }
 
   it('orders dependencies before dependents', () => {
-    const ordered = orderPluginsByDependency([
-      stub('b', ['a']),
-      stub('a'),
-      stub('c', ['b']),
-    ]);
+    const ordered = orderPluginsByDependency([stub('b', ['a']), stub('a'), stub('c', ['b'])]);
     expect(ordered.map((p) => p.manifest.id)).toEqual(['a', 'b', 'c']);
   });
 
   it('detects cycles', () => {
-    expect(() =>
-      orderPluginsByDependency([stub('a', ['b']), stub('b', ['a'])]),
-    ).toThrow(/Circular/);
+    expect(() => orderPluginsByDependency([stub('a', ['b']), stub('b', ['a'])])).toThrow(
+      /Circular/,
+    );
   });
 
   it('detects missing dependencies', () => {
-    expect(() => orderPluginsByDependency([stub('a', ['missing'])])).toThrow(
-      /missing plugin/,
-    );
+    expect(() => orderPluginsByDependency([stub('a', ['missing'])])).toThrow(/missing plugin/);
   });
 });
 
@@ -218,10 +206,7 @@ describe('plugin discovery', () => {
     pluginDir(root, 'manual-payment', ['storage-localfs']);
     const discovered = discoverPluginsInDirectory(root);
     const ordered = orderPluginsByDependency(discovered);
-    expect(ordered.map((p) => p.manifest.id)).toEqual([
-      'storage-localfs',
-      'manual-payment',
-    ]);
+    expect(ordered.map((p) => p.manifest.id)).toEqual(['storage-localfs', 'manual-payment']);
   });
 });
 
@@ -264,12 +249,8 @@ describe('plugin lifecycle state machine', () => {
   });
 
   it('rejects illegal transitions', () => {
-    expect(() => transitionPluginState('discovered', 'enable')).toThrow(
-      /cannot enable/,
-    );
-    expect(() => transitionPluginState('installed', 'disable')).toThrow(
-      /cannot disable/,
-    );
+    expect(() => transitionPluginState('discovered', 'enable')).toThrow(/cannot enable/);
+    expect(() => transitionPluginState('installed', 'disable')).toThrow(/cannot disable/);
   });
 });
 
@@ -322,9 +303,7 @@ describe('PluginLoaderService lifecycle + registrations', () => {
     await loader.enable('sample');
     expect(loader.getState('sample')).toBe('enabled');
     expect(contributions.listGraphQL(true)).toHaveLength(1);
-    expect(
-      contributions.getProvider<{ ping: () => string }>('sample.service')?.ping(),
-    ).toBe('ok');
+    expect(contributions.getProvider<{ ping: () => string }>('sample.service')?.ping()).toBe('ok');
     expect(admin.getManifest(true).plugins).toEqual([
       expect.objectContaining({ pluginId: 'sample' }),
     ]);
@@ -353,17 +332,8 @@ describe('PluginLoaderService lifecycle + registrations', () => {
   });
 
   it('registers payment, shipping, tax, promotions, notifications, storage, search, and fx engines via context', async () => {
-    const {
-      loader,
-      payment,
-      shipping,
-      tax,
-      promotions,
-      notifications,
-      storage,
-      search,
-      fx,
-    } = createLoader();
+    const { loader, payment, shipping, tax, promotions, notifications, storage, search, fx } =
+      createLoader();
     loader.registerDefinition({
       id: 'engines-demo',
       boot(ctx) {
@@ -470,9 +440,7 @@ describe('PluginLoaderService lifecycle + registrations', () => {
     expect(notifications.get('smtp')?.displayName).toBe('SMTP');
     expect(storage.get('localfs')?.code).toBe('localfs');
     expect(search.get('meilisearch')?.displayName).toBe('Meilisearch');
-    expect(fx.get('openexchangerates')?.displayName).toBe(
-      'Open Exchange Rates',
-    );
+    expect(fx.get('openexchangerates')?.displayName).toBe('Open Exchange Rates');
 
     await loader.disable('engines-demo');
     expect(payment.get('manual')).toBeUndefined();
@@ -502,9 +470,7 @@ describe('PluginLoaderService lifecycle + registrations', () => {
     await loader.install('a');
     await loader.install('b');
     await loader.enable('a');
-    await expect(loader.enable('b')).rejects.toThrow(
-      /GraphQL contribution conflict/,
-    );
+    await expect(loader.enable('b')).rejects.toThrow(/GraphQL contribution conflict/);
     expect(contributions.listGraphQL(true)).toHaveLength(1);
   });
 
@@ -544,9 +510,7 @@ describe('AdminExtensionRegistry', () => {
       },
       false,
     );
-    expect(admin.getManifest(true).plugins.map((p) => p.pluginId)).toEqual([
-      'on',
-    ]);
+    expect(admin.getManifest(true).plugins.map((p) => p.pluginId)).toEqual(['on']);
     expect(admin.getManifest(false).plugins).toHaveLength(2);
   });
 });

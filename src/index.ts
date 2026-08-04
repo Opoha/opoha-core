@@ -99,11 +99,7 @@ export type {
   ShippingVoidLabelResult,
   ShippingMethodProvider,
 } from './modules/shipping-engine/public';
-export {
-  TaxEngineModule,
-  TaxEngine,
-  TaxProviderRegistry,
-} from './modules/tax-engine/public';
+export { TaxEngineModule, TaxEngine, TaxProviderRegistry } from './modules/tax-engine/public';
 export type {
   MoneyAmount as TaxMoneyAmount,
   TaxPricingMode,
@@ -135,10 +131,7 @@ export {
   StorageAdapterRegistry,
   FileEntity,
 } from './modules/files/public';
-export type {
-  CreateFileMetadataInput,
-  StorageAdapter,
-} from './modules/files/public';
+export type { CreateFileMetadataInput, StorageAdapter } from './modules/files/public';
 export {
   ReturnsModule,
   ReturnsService,
@@ -155,10 +148,7 @@ export {
   ReturnType,
   ReturnLineType,
 } from './modules/returns/public';
-export type {
-  ReturnStatus,
-  ReturnResolution,
-} from './modules/returns/public';
+export type { ReturnStatus, ReturnResolution } from './modules/returns/public';
 export {
   GiftCardsModule,
   GiftCardService,
@@ -179,10 +169,7 @@ export {
   RedeemGiftCardInput,
   QuoteGiftCardRedeemInput,
 } from './modules/gift-cards/public';
-export type {
-  GiftCardStatus,
-  GiftCardTransactionType,
-} from './modules/gift-cards/public';
+export type { GiftCardStatus, GiftCardTransactionType } from './modules/gift-cards/public';
 export {
   DigitalModule,
   DigitalFulfillmentService,
@@ -397,11 +384,7 @@ export type {
   B2bQuoteConvertedData,
   B2bQuoteConvertedEvent,
 } from './modules/b2b/public';
-export {
-  AdminOpsModule,
-  ReportsService,
-  BulkOpsService,
-} from './modules/admin-ops/public';
+export { AdminOpsModule, ReportsService, BulkOpsService } from './modules/admin-ops/public';
 export {
   NotificationsModule,
   NotificationsService,

@@ -3,10 +3,7 @@ import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { createDomainEvent } from '../event-bus/domain-event';
 import { CoreEventName } from '../event-bus/event-catalog';
 import { EventBusService } from '../event-bus/event-bus.service';
-import {
-  customerTagStore,
-  notificationEmitStore,
-} from './action-stores';
+import { customerTagStore, notificationEmitStore } from './action-stores';
 import { RuleActionRegistry } from './rule-action.registry';
 import { RulesEvaluatorService } from './rules-evaluator.service';
 import type { RulesService } from './rules.service';
@@ -24,24 +21,20 @@ describe('RulesEvaluatorService (C-02/C-03)', () => {
     notificationEmitStore.clear();
     rulesByEvent = new Map();
     rulesService = {
-      findEnabledByEventName: vi.fn(async (eventName: string) =>
-        rulesByEvent.get(eventName) ?? [],
-      ),
+      findEnabledByEventName: vi.fn(async (eventName: string) => rulesByEvent.get(eventName) ?? []),
     } as never;
     registry = new RuleActionRegistry();
     eventBus = new EventBusService();
-    evaluator = new RulesEvaluatorService(
-      rulesService,
-      registry,
-      eventBus,
-    );
+    evaluator = new RulesEvaluatorService(rulesService, registry, eventBus);
     evaluator.onModuleInit();
   });
 
-  function putRule(partial: Partial<RuleDefinitionType> & {
-    code: string;
-    eventName: string;
-  }): void {
+  function putRule(
+    partial: Partial<RuleDefinitionType> & {
+      code: string;
+      eventName: string;
+    },
+  ): void {
     const rule: RuleDefinitionType = {
       id: `id-${partial.code}`,
       name: partial.name ?? partial.code,
@@ -99,10 +92,7 @@ describe('RulesEvaluatorService (C-02/C-03)', () => {
 
     const result = await evaluator.evaluate(event);
     expect(result.matchedRuleCodes).toEqual(['tag-usd']);
-    expect(result.actionsInvoked).toEqual([
-      'customer.tag',
-      'notification.emit',
-    ]);
+    expect(result.actionsInvoked).toEqual(['customer.tag', 'notification.emit']);
     expect(customerTagStore.list(customerId)).toEqual(['vip']);
     expect(notificationEmitStore.list()).toHaveLength(1);
     expect(notificationEmitStore.list()[0]?.template).toBe('vip-welcome');
@@ -135,18 +125,14 @@ describe('RulesEvaluatorService (C-02/C-03)', () => {
 
     const result = await evaluator.evaluate(event);
     expect(result.matchedRuleCodes).toEqual([]);
-    expect(customerTagStore.list('11111111-1111-1111-1111-111111111111')).toEqual(
-      [],
-    );
+    expect(customerTagStore.list('11111111-1111-1111-1111-111111111111')).toEqual([]);
   });
 
   it('runs via event bus subscription', async () => {
     putRule({
       code: 'on-customer',
       eventName: CoreEventName.CustomerCreated,
-      actionRefs: [
-        { action: 'customer.tag', params: { tag: 'new' } },
-      ],
+      actionRefs: [{ action: 'customer.tag', params: { tag: 'new' } }],
     });
 
     await eventBus.publish({
@@ -159,8 +145,6 @@ describe('RulesEvaluatorService (C-02/C-03)', () => {
       },
     });
 
-    expect(
-      customerTagStore.list('33333333-3333-3333-3333-333333333333'),
-    ).toEqual(['new']);
+    expect(customerTagStore.list('33333333-3333-3333-3333-333333333333')).toEqual(['new']);
   });
 });

@@ -89,11 +89,11 @@ describe('LocalizationService (unit)', () => {
     await expect(service.update({ currencyCode: 'US' })).rejects.toBeInstanceOf(
       BadRequestException,
     );
-    await expect(
-      service.update({ timezone: 'Not/AZone' }),
-    ).rejects.toBeInstanceOf(BadRequestException);
-    await expect(
-      service.update({ defaultLocale: 'ENGLISH' }),
-    ).rejects.toBeInstanceOf(BadRequestException);
+    await expect(service.update({ timezone: 'Not/AZone' })).rejects.toBeInstanceOf(
+      BadRequestException,
+    );
+    await expect(service.update({ defaultLocale: 'ENGLISH' })).rejects.toBeInstanceOf(
+      BadRequestException,
+    );
   });
 });

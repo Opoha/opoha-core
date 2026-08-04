@@ -12,17 +12,9 @@ import { PaymentWebhookController } from './payment-webhook.controller';
 
 @Global()
 @Module({
-  imports: [
-    AuthModule,
-    TypeOrmModule.forFeature([PaymentEntity, PaymentWebhookEventEntity]),
-  ],
+  imports: [AuthModule, TypeOrmModule.forFeature([PaymentEntity, PaymentWebhookEventEntity])],
   controllers: [PaymentWebhookController],
-  providers: [
-    PaymentProviderRegistry,
-    PaymentEngine,
-    PaymentResolver,
-    PaymentEventsRegistrar,
-  ],
+  providers: [PaymentProviderRegistry, PaymentEngine, PaymentResolver, PaymentEventsRegistrar],
   exports: [PaymentProviderRegistry, PaymentEngine, TypeOrmModule],
 })
 export class PaymentEngineModule {}

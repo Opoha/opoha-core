@@ -18,10 +18,7 @@ import {
   isBillingIntervalUnit,
   type BillingIntervalUnit,
 } from './subscription-status';
-import type {
-  CreateSubscriptionPlanInput,
-  SubscribeToPlanInput,
-} from './subscription.types';
+import type { CreateSubscriptionPlanInput, SubscribeToPlanInput } from './subscription.types';
 
 export type RenewSubscriptionOptions = {
   /**
@@ -139,9 +136,7 @@ export class SubscriptionService {
     private readonly eventBus: EventBusService,
   ) {}
 
-  async createPlan(
-    input: CreateSubscriptionPlanInput,
-  ): Promise<SubscriptionPlanRecord> {
+  async createPlan(input: CreateSubscriptionPlanInput): Promise<SubscriptionPlanRecord> {
     const code = input.code.trim();
     if (!code) {
       throw new BadRequestException('code is required');
@@ -152,18 +147,11 @@ export class SubscriptionService {
     }
     const billingIntervalUnit = input.billingIntervalUnit ?? 'month';
     if (!isBillingIntervalUnit(billingIntervalUnit)) {
-      throw new BadRequestException(
-        `billingIntervalUnit must be one of day, week, month, year`,
-      );
+      throw new BadRequestException(`billingIntervalUnit must be one of day, week, month, year`);
     }
     const billingIntervalCount = input.billingIntervalCount ?? 1;
-    if (
-      !Number.isInteger(billingIntervalCount) ||
-      billingIntervalCount < 1
-    ) {
-      throw new BadRequestException(
-        'billingIntervalCount must be a positive integer',
-      );
+    if (!Number.isInteger(billingIntervalCount) || billingIntervalCount < 1) {
+      throw new BadRequestException('billingIntervalCount must be a positive integer');
     }
 
     try {
@@ -229,9 +217,7 @@ export class SubscriptionService {
   }
 
   /** Create an active subscription for a customer against a plan (E-02). */
-  async subscribe(
-    input: SubscribeToPlanInput,
-  ): Promise<SubscriptionRecord> {
+  async subscribe(input: SubscribeToPlanInput): Promise<SubscriptionRecord> {
     const customerId = input.customerId?.trim();
     if (!customerId) {
       throw new BadRequestException('customerId is required');
@@ -309,9 +295,7 @@ export class SubscriptionService {
       throw new NotFoundException(`Subscription ${id} not found`);
     }
     if (row.status === 'canceled' || row.status === 'expired') {
-      throw new BadRequestException(
-        `Cannot renew subscription in status "${row.status}"`,
-      );
+      throw new BadRequestException(`Cannot renew subscription in status "${row.status}"`);
     }
 
     const plan = await this.plans.findOne({ where: { id: row.planId } });

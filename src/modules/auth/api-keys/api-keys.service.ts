@@ -17,11 +17,7 @@ import { ApiKeyPermissionEntity } from '../entities/api-key-permission.entity';
 import { PermissionEntity } from '../entities/permission.entity';
 import type { AuthUser } from '../jwt/auth-user';
 import { PermissionsService } from '../permissions/permissions.service';
-import type {
-  ApiKeyCreatedPayload,
-  ApiKeyType,
-  CreateApiKeyInput,
-} from './api-key.types';
+import type { ApiKeyCreatedPayload, ApiKeyType, CreateApiKeyInput } from './api-key.types';
 
 @Injectable()
 export class ApiKeysService {
@@ -37,26 +33,18 @@ export class ApiKeysService {
     private readonly eventBus: EventBusService,
   ) {}
 
-  async create(
-    ownerUserId: string,
-    input: CreateApiKeyInput,
-  ): Promise<ApiKeyCreatedPayload> {
+  async create(ownerUserId: string, input: CreateApiKeyInput): Promise<ApiKeyCreatedPayload> {
     const name = input.name.trim();
     if (!name) {
       throw new BadRequestException('API key name is required');
     }
-    const permissionKeys = [
-      ...new Set(input.permissionKeys.map((k) => k.trim())),
-    ];
+    const permissionKeys = [...new Set(input.permissionKeys.map((k) => k.trim()))];
     if (permissionKeys.length === 0) {
       throw new BadRequestException('At least one permission key is required');
     }
 
-    const ownerPerms =
-      await this.permissionsService.listKeysForUser(ownerUserId);
-    const unauthorized = permissionKeys.filter(
-      (key) => !ownerPerms.includes(key),
-    );
+    const ownerPerms = await this.permissionsService.listKeysForUser(ownerUserId);
+    const unauthorized = permissionKeys.filter((key) => !ownerPerms.includes(key));
     if (unauthorized.length > 0) {
       throw new BadRequestException(
         `Cannot scope API key beyond owner permissions: ${unauthorized.join(', ')}`,
@@ -70,9 +58,7 @@ export class ApiKeysService {
     if (permissionRows.length !== permissionKeys.length) {
       const found = new Set(permissionRows.map((p) => p.key));
       const missing = permissionKeys.filter((k) => !found.has(k));
-      throw new BadRequestException(
-        `Unknown permission key(s): ${missing.join(', ')}`,
-      );
+      throw new BadRequestException(`Unknown permission key(s): ${missing.join(', ')}`);
     }
 
     const raw = generateOpaqueToken('opk_');
@@ -211,9 +197,7 @@ export class ApiKeysService {
       id: row.id,
       name: row.name,
       keyPrefix: row.keyPrefix,
-      permissionKeys: (row.apiKeyPermissions ?? [])
-        .map((p) => p.permission.key)
-        .sort(),
+      permissionKeys: (row.apiKeyPermissions ?? []).map((p) => p.permission.key).sort(),
       lastUsedAt: row.lastUsedAt,
       revokedAt: row.revokedAt,
       createdAt: row.createdAt,

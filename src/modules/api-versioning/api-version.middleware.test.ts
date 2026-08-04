@@ -15,7 +15,11 @@ function mockRes(): Response & {
   body: unknown;
   headers: Record<string, string>;
 } {
-  const state = { statusCode: 200, body: undefined as unknown, headers: {} as Record<string, string> };
+  const state = {
+    statusCode: 200,
+    body: undefined as unknown,
+    headers: {} as Record<string, string>,
+  };
   return {
     get statusCode() {
       return state.statusCode;

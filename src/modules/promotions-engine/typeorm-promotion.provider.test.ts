@@ -17,9 +17,7 @@ function mockRepo<T>(rows: T[] = []) {
     findOne: vi.fn(async ({ where }: { where: Partial<T> }) => {
       return (
         rows.find((row) =>
-          Object.entries(where).every(
-            ([k, v]) => (row as Record<string, unknown>)[k] === v,
-          ),
+          Object.entries(where).every(([k, v]) => (row as Record<string, unknown>)[k] === v),
         ) ?? null
       );
     }),
@@ -74,10 +72,7 @@ describe('TypeOrmPromotionProvider (D-03)', () => {
 
     const coupons = mockRepo([coupon]);
     const rules = mockRepo([auto]);
-    const provider = new TypeOrmPromotionProvider(
-      coupons as never,
-      rules as never,
-    );
+    const provider = new TypeOrmPromotionProvider(coupons as never, rules as never);
 
     const result = await provider.apply({
       ...sampleInput,
@@ -85,21 +80,15 @@ describe('TypeOrmPromotionProvider (D-03)', () => {
     });
 
     expect(result.discountMinor).toBe('300');
-    expect(result.applications.map((a) => a.code).sort()).toEqual([
-      'AUTO100',
-      'SAVE10',
-    ]);
+    expect(result.applications.map((a) => a.code).sort()).toEqual(['AUTO100', 'SAVE10']);
     expect(coupons.findOne).toHaveBeenCalled();
   });
 
   it('throws on unknown coupon code', async () => {
-    const provider = new TypeOrmPromotionProvider(
-      mockRepo([]) as never,
-      mockRepo([]) as never,
+    const provider = new TypeOrmPromotionProvider(mockRepo([]) as never, mockRepo([]) as never);
+    await expect(provider.apply({ ...sampleInput, couponCode: 'NOPE' })).rejects.toThrow(
+      /not valid/,
     );
-    await expect(
-      provider.apply({ ...sampleInput, couponCode: 'NOPE' }),
-    ).rejects.toThrow(/not valid/);
   });
 
   it('applies automatic-only when no coupon', async () => {
@@ -124,10 +113,7 @@ describe('TypeOrmPromotionProvider (D-03)', () => {
       updatedAt: new Date(),
     };
 
-    const provider = new TypeOrmPromotionProvider(
-      mockRepo([]) as never,
-      mockRepo([auto]) as never,
-    );
+    const provider = new TypeOrmPromotionProvider(mockRepo([]) as never, mockRepo([auto]) as never);
 
     const result = await provider.apply(sampleInput);
     expect(result.discountMinor).toBe('200');

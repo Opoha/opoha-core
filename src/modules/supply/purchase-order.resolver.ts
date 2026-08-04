@@ -1,16 +1,9 @@
 import { UseGuards } from '@nestjs/common';
 import { Args, ID, Mutation, Query, Resolver } from '@nestjs/graphql';
 
-import {
-  GqlAuthGuard,
-  PermissionsGuard,
-  RequirePermission,
-} from '../auth/public';
+import { GqlAuthGuard, PermissionsGuard, RequirePermission } from '../auth/public';
 import { PurchaseOrderService } from './purchase-order.service';
-import {
-  CreatePurchaseOrderInput,
-  PurchaseOrderType,
-} from './purchase-order.types';
+import { CreatePurchaseOrderInput, PurchaseOrderType } from './purchase-order.types';
 
 @Resolver(() => PurchaseOrderType)
 @UseGuards(GqlAuthGuard, PermissionsGuard)
@@ -36,9 +29,7 @@ export class PurchaseOrderResolver {
     description: 'Get a purchase order by id',
   })
   @RequirePermission('purchase-order:read')
-  purchaseOrder(
-    @Args('id', { type: () => ID }) id: string,
-  ): Promise<PurchaseOrderType> {
+  purchaseOrder(@Args('id', { type: () => ID }) id: string): Promise<PurchaseOrderType> {
     return this.purchaseOrderService.findById(id);
   }
 
@@ -59,9 +50,7 @@ export class PurchaseOrderResolver {
     description: 'Receive a draft PO into warehouse stock',
   })
   @RequirePermission('purchase-order:receive')
-  receivePurchaseOrder(
-    @Args('id', { type: () => ID }) id: string,
-  ): Promise<PurchaseOrderType> {
+  receivePurchaseOrder(@Args('id', { type: () => ID }) id: string): Promise<PurchaseOrderType> {
     return this.purchaseOrderService.receive(id);
   }
 
@@ -70,9 +59,7 @@ export class PurchaseOrderResolver {
     description: 'Cancel a draft purchase order (no stock movement)',
   })
   @RequirePermission('purchase-order:cancel')
-  cancelPurchaseOrder(
-    @Args('id', { type: () => ID }) id: string,
-  ): Promise<PurchaseOrderType> {
+  cancelPurchaseOrder(@Args('id', { type: () => ID }) id: string): Promise<PurchaseOrderType> {
     return this.purchaseOrderService.cancel(id);
   }
 }

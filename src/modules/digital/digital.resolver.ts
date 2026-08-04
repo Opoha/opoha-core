@@ -1,16 +1,9 @@
 import { UseGuards } from '@nestjs/common';
 import { Args, ID, Query, Resolver } from '@nestjs/graphql';
 
-import {
-  GqlAuthGuard,
-  PermissionsGuard,
-  RequirePermission,
-} from '../auth/public';
+import { GqlAuthGuard, PermissionsGuard, RequirePermission } from '../auth/public';
 import { DigitalFulfillmentService } from './digital-fulfillment.service';
-import {
-  DigitalDownloadTokenType,
-  DigitalLicenseKeyType,
-} from './digital.types';
+import { DigitalDownloadTokenType, DigitalLicenseKeyType } from './digital.types';
 
 @Resolver()
 @UseGuards(GqlAuthGuard, PermissionsGuard)
@@ -66,9 +59,7 @@ export class DigitalResolver {
     description: 'Get a digital license key by id',
   })
   @RequirePermission('digital:read')
-  digitalLicenseKey(
-    @Args('id', { type: () => ID }) id: string,
-  ): Promise<DigitalLicenseKeyType> {
+  digitalLicenseKey(@Args('id', { type: () => ID }) id: string): Promise<DigitalLicenseKeyType> {
     return this.digital.findLicenseKeyById(id);
   }
 

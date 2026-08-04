@@ -1,17 +1,10 @@
-import {
-  BadRequestException,
-  Injectable,
-  NotFoundException,
-} from '@nestjs/common';
+import { BadRequestException, Injectable, NotFoundException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { QueryFailedError, Repository } from 'typeorm';
 
 import { CompanyService } from '../b2b/public';
 import { ProductVariantEntity } from '../catalog/public';
-import {
-  CurrencyConversionService,
-  StoreCurrencyConfigService,
-} from '../currency/public';
+import { CurrencyConversionService, StoreCurrencyConfigService } from '../currency/public';
 import { CoreEventName } from '../event-bus/event-catalog';
 import { EventBusService } from '../event-bus/event-bus.service';
 import { ShippingEngine } from '../shipping-engine/public';
@@ -33,11 +26,7 @@ import type {
   UpdateCartLineInput,
 } from './order.types';
 import type { DisplayTotalsResult } from '../currency/public';
-import {
-  isProductVisibleInStore,
-  requireActiveStore,
-  resolveCartStoreId,
-} from './store-scope';
+import { isProductVisibleInStore, requireActiveStore, resolveCartStoreId } from './store-scope';
 
 function isForeignKeyViolation(error: unknown): boolean {
   return (
@@ -140,8 +129,7 @@ export class CartService {
     const lines = await this.lines.find({ where: { cartId } });
     let subtotal = 0n;
     for (const line of lines) {
-      subtotal +=
-        BigInt(String(line.unitPriceMinor)) * BigInt(line.quantity);
+      subtotal += BigInt(String(line.unitPriceMinor)) * BigInt(line.quantity);
     }
     return this.currencyConversion.convertTotals(
       cart.storeId,
@@ -182,10 +170,7 @@ export class CartService {
     return { cart, lines };
   }
 
-  async create(
-    input: CreateCartInput,
-    context?: StoreContextRef | null,
-  ): Promise<CartType> {
+  async create(input: CreateCartInput, context?: StoreContextRef | null): Promise<CartType> {
     const storeId = await resolveCartStoreId({
       stores: this.stores,
       inputStoreId: input.storeId,
@@ -199,9 +184,7 @@ export class CartService {
     if (input.currencyCode?.trim()) {
       currency = input.currencyCode.trim().toUpperCase();
       if (!/^[A-Z]{3}$/.test(currency)) {
-        throw new BadRequestException(
-          'currencyCode must be a 3-letter ISO code',
-        );
+        throw new BadRequestException('currencyCode must be a 3-letter ISO code');
       }
     } else {
       const config = await this.storeCurrency.getForStore(storeId);
@@ -268,18 +251,12 @@ export class CartService {
       relations: { product: true },
     });
     if (!variant) {
-      throw new NotFoundException(
-        `Product variant ${input.variantId} not found`,
-      );
+      throw new NotFoundException(`Product variant ${input.variantId} not found`);
     }
     if (!variant.isActive) {
-      throw new BadRequestException(
-        `Product variant ${input.variantId} is not active`,
-      );
+      throw new BadRequestException(`Product variant ${input.variantId} is not active`);
     }
-    if (
-      !isProductVisibleInStore(variant.product?.storeId, cart.storeId)
-    ) {
+    if (!isProductVisibleInStore(variant.product?.storeId, cart.storeId)) {
       throw new BadRequestException(
         `Product variant ${input.variantId} is not available in store ${cart.storeId}`,
       );
@@ -432,11 +409,7 @@ export class CartService {
       subtotalMinor: subtotal.toString(),
     };
 
-    const rate = await this.shipping.findQuotedRate(
-      quoteInput,
-      input.methodCode,
-      input.rateCode,
-    );
+    const rate = await this.shipping.findQuotedRate(quoteInput, input.methodCode, input.rateCode);
 
     cart.shippingMethodCode = rate.methodCode;
     cart.shippingRateCode = rate.code;
@@ -469,9 +442,7 @@ export class CartService {
       return;
     }
     if (cart.status === 'converted' || cart.status === 'abandoned') {
-      throw new BadRequestException(
-        `Cart ${cartId} is ${cart.status} and cannot be repriced`,
-      );
+      throw new BadRequestException(`Cart ${cartId} is ${cart.status} and cannot be repriced`);
     }
 
     const lines = await this.lines.find({ where: { cartId } });
@@ -502,15 +473,11 @@ export class CartService {
     const cart = await this.requireSelectableCart(input.cartId);
     const mode = (input.pricingMode ?? 'exclusive').trim().toLowerCase();
     if (mode !== 'inclusive' && mode !== 'exclusive') {
-      throw new BadRequestException(
-        'pricingMode must be "inclusive" or "exclusive"',
-      );
+      throw new BadRequestException('pricingMode must be "inclusive" or "exclusive"');
     }
     const country = input.countryCode.trim().toUpperCase();
     if (!/^[A-Z]{2}$/.test(country)) {
-      throw new BadRequestException(
-        'countryCode must be a 2-letter ISO 3166-1 alpha-2 code',
-      );
+      throw new BadRequestException('countryCode must be a 2-letter ISO 3166-1 alpha-2 code');
     }
 
     cart.taxPricingMode = mode;
@@ -569,36 +536,18 @@ export class CartService {
   }
 
   /** Persist discountMinor after prepareCheckout PromotionsEngine apply. */
-  async persistDiscountResult(
-    cartId: string,
-    discountMinor: string,
-  ): Promise<void> {
-    await this.carts.update(
-      { id: cartId },
-      { discountMinor: String(discountMinor) },
-    );
+  async persistDiscountResult(cartId: string, discountMinor: string): Promise<void> {
+    await this.carts.update({ id: cartId }, { discountMinor: String(discountMinor) });
   }
 
   /** Persist giftCardMinor after prepareCheckout GiftCardService quote. */
-  async persistGiftCardResult(
-    cartId: string,
-    giftCardMinor: string,
-  ): Promise<void> {
-    await this.carts.update(
-      { id: cartId },
-      { giftCardMinor: String(giftCardMinor) },
-    );
+  async persistGiftCardResult(cartId: string, giftCardMinor: string): Promise<void> {
+    await this.carts.update({ id: cartId }, { giftCardMinor: String(giftCardMinor) });
   }
 
   /** Persist loyaltyMinor after prepareCheckout LoyaltyService quote. */
-  async persistLoyaltyResult(
-    cartId: string,
-    loyaltyMinor: string,
-  ): Promise<void> {
-    await this.carts.update(
-      { id: cartId },
-      { loyaltyMinor: String(loyaltyMinor) },
-    );
+  async persistLoyaltyResult(cartId: string, loyaltyMinor: string): Promise<void> {
+    await this.carts.update({ id: cartId }, { loyaltyMinor: String(loyaltyMinor) });
   }
 
   /** Persist reservation ids on lines after checkout prepare. */
@@ -606,17 +555,11 @@ export class CartService {
     updates: Array<{ lineId: string; reservationId: string }>,
   ): Promise<void> {
     for (const update of updates) {
-      await this.lines.update(
-        { id: update.lineId },
-        { reservationId: update.reservationId },
-      );
+      await this.lines.update({ id: update.lineId }, { reservationId: update.reservationId });
     }
   }
 
-  async setStatus(
-    cartId: string,
-    status: CartEntity['status'],
-  ): Promise<void> {
+  async setStatus(cartId: string, status: CartEntity['status']): Promise<void> {
     await this.carts.update({ id: cartId }, { status });
   }
 
@@ -634,9 +577,7 @@ export class CartService {
       throw new NotFoundException(`Cart ${cartId} not found`);
     }
     if (cart.status !== 'open' && cart.status !== 'locked') {
-      throw new BadRequestException(
-        `Cart ${cartId} is ${cart.status} and cannot select shipping`,
-      );
+      throw new BadRequestException(`Cart ${cartId} is ${cart.status} and cannot select shipping`);
     }
     return cart;
   }
@@ -647,9 +588,7 @@ export class CartService {
       throw new NotFoundException(`Cart ${cartId} not found`);
     }
     if (cart.status !== 'open' && cart.status !== 'locked') {
-      throw new BadRequestException(
-        `Cart ${cartId} is ${cart.status} and cannot be modified`,
-      );
+      throw new BadRequestException(`Cart ${cartId} is ${cart.status} and cannot be modified`);
     }
     if (cart.status === 'locked') {
       throw new BadRequestException(

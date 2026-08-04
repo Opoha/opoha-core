@@ -6,5 +6,4 @@ export const DEFAULT_LOCALIZATION_SETTINGS = {
   defaultLocale: 'en-US',
 } as const;
 
-export type DefaultLocalizationSettings =
-  typeof DEFAULT_LOCALIZATION_SETTINGS;
+export type DefaultLocalizationSettings = typeof DEFAULT_LOCALIZATION_SETTINGS;

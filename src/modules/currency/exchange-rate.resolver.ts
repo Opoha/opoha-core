@@ -1,11 +1,7 @@
 import { UseGuards } from '@nestjs/common';
 import { Args, ID, Mutation, Query, Resolver } from '@nestjs/graphql';
 
-import {
-  GqlAuthGuard,
-  PermissionsGuard,
-  RequirePermission,
-} from '../auth/public';
+import { GqlAuthGuard, PermissionsGuard, RequirePermission } from '../auth/public';
 import { ExchangeRateService } from './exchange-rate.service';
 import {
   CreateExchangeRateInput,
@@ -38,9 +34,7 @@ export class ExchangeRateResolver {
     description: 'Get an exchange rate by id',
   })
   @RequirePermission('currency:read')
-  exchangeRate(
-    @Args('id', { type: () => ID }) id: string,
-  ): Promise<ExchangeRateType> {
+  exchangeRate(@Args('id', { type: () => ID }) id: string): Promise<ExchangeRateType> {
     return this.rates.findById(id);
   }
 
@@ -71,8 +65,7 @@ export class ExchangeRateResolver {
 
   @Mutation(() => ExchangeRateType, {
     name: 'upsertExchangeRate',
-    description:
-      'Create or update an exchange rate by currency pair (manual / provider)',
+    description: 'Create or update an exchange rate by currency pair (manual / provider)',
   })
   @RequirePermission('currency:update')
   upsertExchangeRate(
@@ -87,9 +80,7 @@ export class ExchangeRateResolver {
     description: 'Delete an exchange rate; publishes ExchangeRateUpdated(deleted)',
   })
   @RequirePermission('currency:update')
-  deleteExchangeRate(
-    @Args('id', { type: () => ID }) id: string,
-  ): Promise<ExchangeRateType> {
+  deleteExchangeRate(@Args('id', { type: () => ID }) id: string): Promise<ExchangeRateType> {
     return this.rates.remove(id);
   }
 

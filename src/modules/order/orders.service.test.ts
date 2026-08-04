@@ -326,7 +326,9 @@ describe('OrdersService place + status (D-04 / D-05 / D-06 / A-04)', () => {
       tax as never,
       promotions as never,
       giftCards as never,
-      { issueForOrder: vi.fn(async () => ({ orderId, downloadTokens: [], licenseKeys: [] })) } as never,
+      {
+        issueForOrder: vi.fn(async () => ({ orderId, downloadTokens: [], licenseKeys: [] })),
+      } as never,
       loyalty as never,
       stores as never,
       companies as never,
@@ -356,9 +358,7 @@ describe('OrdersService place + status (D-04 / D-05 / D-06 / A-04)', () => {
     expect(inventory.commit).toHaveBeenCalledWith(reservationId);
     expect(carts.setStatus).toHaveBeenCalledWith(cartId, 'converted');
 
-    const eventNames = eventBus.publish.mock.calls.map(
-      (call) => call[0].eventName,
-    );
+    const eventNames = eventBus.publish.mock.calls.map((call) => call[0].eventName);
     expect(eventNames).toContain(CoreEventName.OrderCreated);
     expect(eventNames).toContain(CoreEventName.OrderTimeline);
     expect(eventNames).toContain(CoreEventName.OrderStatusChanged);
@@ -454,13 +454,12 @@ describe('OrdersService place + status (D-04 / D-05 / D-06 / A-04)', () => {
       markConverted: vi.fn(),
     };
 
-    linesRepo.save.mockImplementation(
-      async (rows: Array<Record<string, unknown>>) =>
-        rows.map((row, i) => ({
-          id: `ol-${i + 1}`,
-          createdAt: now,
-          ...row,
-        })),
+    linesRepo.save.mockImplementation(async (rows: Array<Record<string, unknown>>) =>
+      rows.map((row, i) => ({
+        id: `ol-${i + 1}`,
+        createdAt: now,
+        ...row,
+      })),
     );
 
     service = new OrdersService(
@@ -479,7 +478,9 @@ describe('OrdersService place + status (D-04 / D-05 / D-06 / A-04)', () => {
       tax as never,
       promotions as never,
       giftCards as never,
-      { issueForOrder: vi.fn(async () => ({ orderId, downloadTokens: [], licenseKeys: [] })) } as never,
+      {
+        issueForOrder: vi.fn(async () => ({ orderId, downloadTokens: [], licenseKeys: [] })),
+      } as never,
       loyalty as never,
       stores as never,
       companies as never,
@@ -530,9 +531,9 @@ describe('OrdersService place + status (D-04 / D-05 / D-06 / A-04)', () => {
   });
 
   it('zero payment rejects non-zero totals', async () => {
-    await expect(
-      service.placeOrder({ cartId, paymentMethod: 'zero' }),
-    ).rejects.toBeInstanceOf(BadRequestException);
+    await expect(service.placeOrder({ cartId, paymentMethod: 'zero' })).rejects.toBeInstanceOf(
+      BadRequestException,
+    );
     expect(inventory.commit).not.toHaveBeenCalled();
     expect(payments.authorize).not.toHaveBeenCalled();
   });
@@ -747,9 +748,9 @@ describe('OrdersService place + status (D-04 / D-05 / D-06 / A-04)', () => {
 
   it('rejects when payment provider is not registered', async () => {
     payments.get.mockReturnValueOnce(undefined);
-    await expect(
-      service.placeOrder({ cartId, paymentMethod: 'manual' }),
-    ).rejects.toBeInstanceOf(BadRequestException);
+    await expect(service.placeOrder({ cartId, paymentMethod: 'manual' })).rejects.toBeInstanceOf(
+      BadRequestException,
+    );
     expect(payments.authorize).not.toHaveBeenCalled();
     expect(inventory.commit).not.toHaveBeenCalled();
   });
@@ -765,9 +766,9 @@ describe('OrdersService place + status (D-04 / D-05 / D-06 / A-04)', () => {
       errorMessage: 'declined',
     });
 
-    await expect(
-      service.placeOrder({ cartId, paymentMethod: 'manual' }),
-    ).rejects.toBeInstanceOf(BadRequestException);
+    await expect(service.placeOrder({ cartId, paymentMethod: 'manual' })).rejects.toBeInstanceOf(
+      BadRequestException,
+    );
     expect(inventory.commit).not.toHaveBeenCalled();
     expect(orderRow.status).toBe('cancelled');
   });
@@ -799,9 +800,9 @@ describe('OrdersService place + status (D-04 / D-05 / D-06 / A-04)', () => {
         },
       ],
     });
-    await expect(
-      service.placeOrder({ cartId, paymentMethod: 'manual' }),
-    ).rejects.toBeInstanceOf(BadRequestException);
+    await expect(service.placeOrder({ cartId, paymentMethod: 'manual' })).rejects.toBeInstanceOf(
+      BadRequestException,
+    );
   });
 
   it('updateStatus fulfilled after confirmed', async () => {
@@ -828,9 +829,9 @@ describe('OrdersService place + status (D-04 / D-05 / D-06 / A-04)', () => {
     orderRow.status = 'fulfilled';
     ordersRepo.findOne.mockResolvedValue({ ...orderRow });
 
-    await expect(
-      service.updateStatus({ id: orderId, status: 'pending' }),
-    ).rejects.toBeInstanceOf(BadRequestException);
+    await expect(service.updateStatus({ id: orderId, status: 'pending' })).rejects.toBeInstanceOf(
+      BadRequestException,
+    );
   });
 
   it('updateStatus publishes OrderCancelled when cancelling', async () => {
@@ -851,9 +852,7 @@ describe('OrdersService place + status (D-04 / D-05 / D-06 / A-04)', () => {
 
   it('findById throws when missing', async () => {
     ordersRepo.findOne.mockResolvedValueOnce(null);
-    await expect(service.findById('missing')).rejects.toBeInstanceOf(
-      NotFoundException,
-    );
+    await expect(service.findById('missing')).rejects.toBeInstanceOf(NotFoundException);
   });
 
   it('B2B placeOrder creates draft without payment (F-03)', async () => {
@@ -908,10 +907,7 @@ describe('OrdersService place + status (D-04 / D-05 / D-06 / A-04)', () => {
     expect(order.status).toBe('draft');
     expect(order.companyId).toBe(companyId);
     expect(companies.assertCanBuy).toHaveBeenCalledWith(companyId, customerId);
-    expect(companies.assertWithinCreditLimit).toHaveBeenCalledWith(
-      companyId,
-      '2000',
-    );
+    expect(companies.assertWithinCreditLimit).toHaveBeenCalledWith(companyId, '2000');
     expect(payments.authorize).not.toHaveBeenCalled();
     expect(inventory.commit).toHaveBeenCalledWith(reservationId);
     expect(carts.setStatus).toHaveBeenCalledWith(cartId, 'converted');
@@ -930,10 +926,7 @@ describe('OrdersService place + status (D-04 / D-05 / D-06 / A-04)', () => {
       approverCustomerId: approverId,
     });
     expect(approved.status).toBe('approved');
-    expect(companies.assertCanApprove).toHaveBeenCalledWith(
-      companyId,
-      approverId,
-    );
+    expect(companies.assertCanApprove).toHaveBeenCalledWith(companyId, approverId);
 
     orderRow.status = 'approved';
     ordersRepo.findOne.mockResolvedValue({ ...orderRow });
@@ -970,10 +963,7 @@ describe('OrdersService place + status (D-04 / D-05 / D-06 / A-04)', () => {
     expect(order.companyId).toBe(companyId);
     expect(order.totalMinor).toBe('2000');
     expect(companies.assertCanBuy).toHaveBeenCalledWith(companyId, customerId);
-    expect(companies.assertWithinCreditLimit).toHaveBeenCalledWith(
-      companyId,
-      '2000',
-    );
+    expect(companies.assertWithinCreditLimit).toHaveBeenCalledWith(companyId, '2000');
     expect(eventBus.publish).toHaveBeenCalledWith(
       expect.objectContaining({
         eventName: CoreEventName.OrderCreated,

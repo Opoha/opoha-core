@@ -1,19 +1,7 @@
 import { UseGuards } from '@nestjs/common';
-import {
-  Args,
-  Field,
-  ID,
-  Mutation,
-  ObjectType,
-  Query,
-  Resolver,
-} from '@nestjs/graphql';
+import { Args, Field, ID, Mutation, ObjectType, Query, Resolver } from '@nestjs/graphql';
 
-import {
-  GqlAuthGuard,
-  PermissionsGuard,
-  RequirePermission,
-} from '../auth/public';
+import { GqlAuthGuard, PermissionsGuard, RequirePermission } from '../auth/public';
 import { VendorService } from './vendor.service';
 import {
   AssignProductVendorInput,
@@ -52,9 +40,7 @@ export class VendorResolver {
     description: 'Get marketplace vendor by id',
   })
   @RequirePermission('vendor:read')
-  marketplaceVendor(
-    @Args('id', { type: () => ID }) id: string,
-  ): Promise<VendorType> {
+  marketplaceVendor(@Args('id', { type: () => ID }) id: string): Promise<VendorType> {
     return this.vendorService.findById(id);
   }
 
@@ -63,9 +49,7 @@ export class VendorResolver {
     description: 'Get marketplace vendor by stable code',
   })
   @RequirePermission('vendor:read')
-  marketplaceVendorByCode(
-    @Args('code', { type: () => String }) code: string,
-  ): Promise<VendorType> {
+  marketplaceVendorByCode(@Args('code', { type: () => String }) code: string): Promise<VendorType> {
     return this.vendorService.findByCode(code);
   }
 
@@ -99,9 +83,7 @@ export class VendorResolver {
     description: 'Delete a marketplace seller account',
   })
   @RequirePermission('vendor:delete')
-  deleteMarketplaceVendor(
-    @Args('id', { type: () => ID }) id: string,
-  ): Promise<VendorType> {
+  deleteMarketplaceVendor(@Args('id', { type: () => ID }) id: string): Promise<VendorType> {
     return this.vendorService.remove(id);
   }
 

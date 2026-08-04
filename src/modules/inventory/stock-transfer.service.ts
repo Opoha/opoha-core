@@ -14,10 +14,7 @@ import { StoreWarehouseService } from '../warehouses/public';
 import { InventoryAdjustmentEntity } from './entities/inventory-adjustment.entity';
 import { InventoryItemEntity } from './entities/inventory-item.entity';
 import { StockTransferLineEntity } from './entities/stock-transfer-line.entity';
-import {
-  StockTransferEntity,
-  type StockTransferStatus,
-} from './entities/stock-transfer.entity';
+import { StockTransferEntity, type StockTransferStatus } from './entities/stock-transfer.entity';
 import type {
   CreateStockTransferInput,
   StockTransferLineType,
@@ -97,9 +94,7 @@ export class StockTransferService {
    */
   async create(input: CreateStockTransferInput): Promise<StockTransferType> {
     if (input.fromWarehouseId === input.toWarehouseId) {
-      throw new BadRequestException(
-        'fromWarehouseId and toWarehouseId must differ',
-      );
+      throw new BadRequestException('fromWarehouseId and toWarehouseId must differ');
     }
     if (!input.lines?.length) {
       throw new BadRequestException('At least one transfer line is required');
@@ -108,14 +103,10 @@ export class StockTransferService {
     const variantIds = new Set<string>();
     for (const line of input.lines) {
       if (!Number.isInteger(line.quantity) || line.quantity <= 0) {
-        throw new BadRequestException(
-          'Each line quantity must be a positive integer',
-        );
+        throw new BadRequestException('Each line quantity must be a positive integer');
       }
       if (variantIds.has(line.variantId)) {
-        throw new BadRequestException(
-          `Duplicate variantId ${line.variantId} in transfer lines`,
-        );
+        throw new BadRequestException(`Duplicate variantId ${line.variantId} in transfer lines`);
       }
       variantIds.add(line.variantId);
     }
@@ -153,9 +144,7 @@ export class StockTransferService {
       });
     } catch (error) {
       if (isForeignKeyViolation(error)) {
-        throw new BadRequestException(
-          'Invalid warehouse or product variant reference',
-        );
+        throw new BadRequestException('Invalid warehouse or product variant reference');
       }
       throw error;
     }
@@ -202,9 +191,7 @@ export class StockTransferService {
         throw new NotFoundException(`Stock transfer ${id} not found`);
       }
       if (transfer.status !== 'draft') {
-        throw new BadRequestException(
-          `Stock transfer ${id} is ${transfer.status}, expected draft`,
-        );
+        throw new BadRequestException(`Stock transfer ${id} is ${transfer.status}, expected draft`);
       }
 
       const lines = await manager.find(StockTransferLineEntity, {
@@ -220,13 +207,10 @@ export class StockTransferService {
           .getRepository(InventoryItemEntity)
           .createQueryBuilder('item')
           .setLock('pessimistic_write')
-          .where(
-            'item.variantId = :variantId AND item.warehouseId = :warehouseId',
-            {
-              variantId: line.variantId,
-              warehouseId: transfer.fromWarehouseId,
-            },
-          )
+          .where('item.variantId = :variantId AND item.warehouseId = :warehouseId', {
+            variantId: line.variantId,
+            warehouseId: transfer.fromWarehouseId,
+          })
           .getOne();
 
         if (!item) {
@@ -338,13 +322,10 @@ export class StockTransferService {
           .getRepository(InventoryItemEntity)
           .createQueryBuilder('item')
           .setLock('pessimistic_write')
-          .where(
-            'item.variantId = :variantId AND item.warehouseId = :warehouseId',
-            {
-              variantId: line.variantId,
-              warehouseId: transfer.toWarehouseId,
-            },
-          )
+          .where('item.variantId = :variantId AND item.warehouseId = :warehouseId', {
+            variantId: line.variantId,
+            warehouseId: transfer.toWarehouseId,
+          })
           .getOne();
 
         if (!item) {

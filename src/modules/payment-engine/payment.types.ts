@@ -1,10 +1,4 @@
-import {
-  Field,
-  GraphQLISODateTime,
-  ID,
-  InputType,
-  ObjectType,
-} from '@nestjs/graphql';
+import { Field, GraphQLISODateTime, ID, InputType, ObjectType } from '@nestjs/graphql';
 
 @ObjectType('Payment', { description: 'Persisted payment record' })
 export class PaymentType {

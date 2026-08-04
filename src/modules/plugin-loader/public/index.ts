@@ -3,24 +3,15 @@
  */
 export { PluginLoaderModule } from '../plugin-loader.module';
 export { PluginLoaderService } from '../plugin-loader.service';
-export type {
-  PluginRuntimeRecord,
-  PluginLoadResult,
-} from '../plugin-loader.service';
+export type { PluginRuntimeRecord, PluginLoadResult } from '../plugin-loader.service';
 export { ContributionRegistry } from '../contribution-registry';
 export type {
   GraphQLContribution,
   ProviderContribution,
   ListenerContribution,
 } from '../contribution-registry';
-export {
-  AdminExtensionRegistry,
-  adminContributionSchema,
-} from '../admin-extension-registry';
-export type {
-  AdminContribution,
-  AdminExtensionManifest,
-} from '../admin-extension-registry';
+export { AdminExtensionRegistry, adminContributionSchema } from '../admin-extension-registry';
+export type { AdminContribution, AdminExtensionManifest } from '../admin-extension-registry';
 export {
   PLUGIN_CONTRACT_VERSION,
   parsePluginManifest,
@@ -34,17 +25,7 @@ export {
   discoverPluginsInDirectory,
   parsePluginPathsEnv,
 } from '../plugin-discovery';
-export {
-  transitionPluginState,
-  canBootPlugin,
-  PLUGIN_LIFECYCLE_STATES,
-} from '../plugin-lifecycle';
-export type {
-  PluginLifecycleState,
-  PluginLifecycleAction,
-} from '../plugin-lifecycle';
-export type {
-  PluginDefinition,
-  PluginRegistrationContext,
-} from '../plugin-definition';
+export { transitionPluginState, canBootPlugin, PLUGIN_LIFECYCLE_STATES } from '../plugin-lifecycle';
+export type { PluginLifecycleState, PluginLifecycleAction } from '../plugin-lifecycle';
+export type { PluginDefinition, PluginRegistrationContext } from '../plugin-definition';
 export { createPluginRegistrationContext } from '../plugin-definition';

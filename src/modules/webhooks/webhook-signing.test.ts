@@ -1,9 +1,6 @@
 import { describe, expect, it } from 'vitest';
 
-import {
-  signWebhookPayload,
-  verifyWebhookSignature,
-} from './webhook-signing';
+import { signWebhookPayload, verifyWebhookSignature } from './webhook-signing';
 
 describe('webhook-signing (D-02)', () => {
   it('signs payload deterministically and verifies', () => {
@@ -17,8 +14,6 @@ describe('webhook-signing (D-02)', () => {
   it('rejects truncated signatures without throwing', () => {
     const body = '{}';
     const sig = signWebhookPayload('abcdefgh', body);
-    expect(verifyWebhookSignature('abcdefgh', body, sig.slice(0, 10))).toBe(
-      false,
-    );
+    expect(verifyWebhookSignature('abcdefgh', body, sig.slice(0, 10))).toBe(false);
   });
 });

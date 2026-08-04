@@ -1,10 +1,7 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 
 import { AttributesService } from './attributes.service';
-import {
-  AttributeAppliesToEnum,
-  AttributeValueTypeEnum,
-} from './attribute.types';
+import { AttributeAppliesToEnum, AttributeValueTypeEnum } from './attribute.types';
 import type { AttributeDefinitionEntity } from '../entities/attribute-definition.entity';
 import type { AttributeValueEntity } from '../entities/attribute-value.entity';
 
@@ -22,8 +19,8 @@ describe('AttributesService', () => {
     variants = new Set(['var-1']);
 
     const defRepo = {
-      create: vi.fn((data: Partial<AttributeDefinitionEntity>) =>
-        ({ ...data }) as AttributeDefinitionEntity,
+      create: vi.fn(
+        (data: Partial<AttributeDefinitionEntity>) => ({ ...data }) as AttributeDefinitionEntity,
       ),
       save: vi.fn(async (row: AttributeDefinitionEntity) => {
         if (!row.id) {
@@ -35,8 +32,8 @@ describe('AttributesService', () => {
         return definitions.get(row.id)!;
       }),
       find: vi.fn(async () => [...definitions.values()]),
-      findOne: vi.fn(async ({ where }: { where: { id: string } }) =>
-        definitions.get(where.id) ?? null,
+      findOne: vi.fn(
+        async ({ where }: { where: { id: string } }) => definitions.get(where.id) ?? null,
       ),
       delete: vi.fn(async ({ id }: { id: string }) => {
         definitions.delete(id);
@@ -45,9 +42,7 @@ describe('AttributesService', () => {
     };
 
     const valueRepo = {
-      create: vi.fn((data: Partial<AttributeValueEntity>) =>
-        ({ ...data }) as AttributeValueEntity,
-      ),
+      create: vi.fn((data: Partial<AttributeValueEntity>) => ({ ...data }) as AttributeValueEntity),
       save: vi.fn(async (row: AttributeValueEntity) => {
         if (!row.id) {
           row.id = `val-${values.size + 1}`;

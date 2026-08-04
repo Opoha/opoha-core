@@ -7,11 +7,7 @@ describe('AuthResolver (G-05 myPermissions)', () => {
     const permissionsService = {
       listKeysForUser: vi.fn(),
     };
-    const resolver = new AuthResolver(
-      {} as never,
-      {} as never,
-      permissionsService as never,
-    );
+    const resolver = new AuthResolver({} as never, {} as never, permissionsService as never);
 
     await expect(
       resolver.myPermissions({
@@ -27,11 +23,7 @@ describe('AuthResolver (G-05 myPermissions)', () => {
     const permissionsService = {
       listKeysForUser: vi.fn().mockResolvedValue(['segment:read', 'loyalty:read']),
     };
-    const resolver = new AuthResolver(
-      {} as never,
-      {} as never,
-      permissionsService as never,
-    );
+    const resolver = new AuthResolver({} as never, {} as never, permissionsService as never);
 
     await expect(
       resolver.myPermissions({

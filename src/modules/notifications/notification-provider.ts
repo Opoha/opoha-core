@@ -34,11 +34,7 @@ export type NotificationSendInput = {
   metadata?: Record<string, unknown>;
 };
 
-export type NotificationSendStatus =
-  | 'queued'
-  | 'sent'
-  | 'failed'
-  | 'skipped';
+export type NotificationSendStatus = 'queued' | 'sent' | 'failed' | 'skipped';
 
 export type NotificationSendResult = {
   /** Provider-assigned message id when available. */

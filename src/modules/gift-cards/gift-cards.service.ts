@@ -1,24 +1,12 @@
-import {
-  BadRequestException,
-  Injectable,
-  NotFoundException,
-  Optional,
-} from '@nestjs/common';
+import { BadRequestException, Injectable, NotFoundException, Optional } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import {
-  DataSource,
-  type EntityManager,
-  Repository,
-} from 'typeorm';
+import { DataSource, type EntityManager, Repository } from 'typeorm';
 
 import { CoreEventName } from '../event-bus/event-catalog';
 import { EventBusService } from '../event-bus/event-bus.service';
 import { GiftCardTransactionEntity } from './entities/gift-card-transaction.entity';
 import { GiftCardEntity } from './entities/gift-card.entity';
-import {
-  generateGiftCardCode,
-  type GiftCardStatus,
-} from './gift-card-status';
+import { generateGiftCardCode, type GiftCardStatus } from './gift-card-status';
 import type {
   GiftCardLedgerEntryType,
   GiftCardType,
@@ -90,10 +78,7 @@ function toTxType(row: GiftCardTransactionEntity): GiftCardLedgerEntryType {
   };
 }
 
-function statusForBalance(
-  balance: bigint,
-  current: GiftCardStatus,
-): GiftCardStatus {
+function statusForBalance(balance: bigint, current: GiftCardStatus): GiftCardStatus {
   if (current === 'disabled' || current === 'expired') {
     return current;
   }
@@ -132,9 +117,7 @@ export class GiftCardService {
     return toCardType(row);
   }
 
-  async listTransactions(
-    giftCardId: string,
-  ): Promise<GiftCardLedgerEntryType[]> {
+  async listTransactions(giftCardId: string): Promise<GiftCardLedgerEntryType[]> {
     const rows = await this.transactions.find({
       where: { giftCardId },
       order: { createdAt: 'ASC' },
@@ -224,9 +207,7 @@ export class GiftCardService {
    * Quote how much of a gift card can apply toward a checkout total.
    * Does not mutate balances.
    */
-  async quoteRedeem(
-    input: QuoteGiftCardRedeemInput,
-  ): Promise<QuoteGiftCardRedeemResult> {
+  async quoteRedeem(input: QuoteGiftCardRedeemInput): Promise<QuoteGiftCardRedeemResult> {
     const code = normalizeCode(input.code);
     const maxAmount = parseNonNegMinor(input.maxAmountMinor, 'maxAmountMinor');
     const currency = input.currencyCode.trim().toUpperCase();
@@ -315,10 +296,7 @@ export class GiftCardService {
     return toCardType(saved);
   }
 
-  private async lockByCode(
-    manager: EntityManager,
-    code: string,
-  ): Promise<GiftCardEntity | null> {
+  private async lockByCode(manager: EntityManager, code: string): Promise<GiftCardEntity | null> {
     return manager
       .getRepository(GiftCardEntity)
       .createQueryBuilder('gc')
@@ -327,10 +305,7 @@ export class GiftCardService {
       .getOne();
   }
 
-  private assertRedeemable(
-    card: GiftCardEntity,
-    expectedCurrency?: string,
-  ): void {
+  private assertRedeemable(card: GiftCardEntity, expectedCurrency?: string): void {
     if (card.status === 'disabled') {
       throw new BadRequestException(`Gift card ${card.code} is disabled`);
     }
@@ -343,10 +318,7 @@ export class GiftCardService {
     if (card.status === 'redeemed' || BigInt(String(card.balanceMinor)) <= 0n) {
       throw new BadRequestException(`Gift card ${card.code} has no balance`);
     }
-    if (
-      expectedCurrency &&
-      card.currencyCode.toUpperCase() !== expectedCurrency.toUpperCase()
-    ) {
+    if (expectedCurrency && card.currencyCode.toUpperCase() !== expectedCurrency.toUpperCase()) {
       throw new BadRequestException(
         `Gift card currency ${card.currencyCode} does not match cart ${expectedCurrency}`,
       );

@@ -1,8 +1,4 @@
-import {
-  BadRequestException,
-  ConflictException,
-  NotFoundException,
-} from '@nestjs/common';
+import { BadRequestException, ConflictException, NotFoundException } from '@nestjs/common';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 
 import { CoreEventName } from '../event-bus/event-catalog';
@@ -187,12 +183,8 @@ describe('StockTransferService (unit)', () => {
             },
           ) => {
             if (Entity.name === 'StockTransferLineEntity') {
-              const lines = lineStore.filter(
-                (l) => l.transferId === opts.where.transferId,
-              );
-              return [...lines].sort((a, b) =>
-                a.variantId.localeCompare(b.variantId),
-              );
+              const lines = lineStore.filter((l) => l.transferId === opts.where.transferId);
+              return [...lines].sort((a, b) => a.variantId.localeCompare(b.variantId));
             }
             return [];
           },
@@ -209,9 +201,7 @@ describe('StockTransferService (unit)', () => {
                     },
                     getOne: async () => {
                       if (!state.id) return null;
-                      return (
-                        transferStore.find((t) => t.id === state.id) ?? null
-                      );
+                      return transferStore.find((t) => t.id === state.id) ?? null;
                     },
                   };
                   return qb;
@@ -238,9 +228,7 @@ describe('StockTransferService (unit)', () => {
                     },
                     getOne: async () => {
                       if (state.id) {
-                        return (
-                          itemStore.find((r) => r.id === state.id) ?? null
-                        );
+                        return itemStore.find((r) => r.id === state.id) ?? null;
                       }
                       if (state.variantId && state.warehouseId) {
                         return (
@@ -346,9 +334,7 @@ describe('StockTransferService (unit)', () => {
       lines: [{ variantId, quantity: 9 }], // available = 8
     });
 
-    await expect(service.ship('xfer-1')).rejects.toBeInstanceOf(
-      ConflictException,
-    );
+    await expect(service.ship('xfer-1')).rejects.toBeInstanceOf(ConflictException);
     expect(itemStore[0]?.quantityOnHand).toBe(10);
   });
 
@@ -365,9 +351,7 @@ describe('StockTransferService (unit)', () => {
     expect(received.status).toBe('received');
     expect(received.receivedAt).toBeTruthy();
 
-    const dest = itemStore.find(
-      (i) => i.variantId === variantId && i.warehouseId === toWh,
-    );
+    const dest = itemStore.find((i) => i.variantId === variantId && i.warehouseId === toWh);
     expect(dest?.quantityOnHand).toBe(4);
     expect(itemStore[0]?.quantityOnHand).toBe(6);
     expect(eventBus.publish).toHaveBeenCalledWith(
@@ -394,15 +378,11 @@ describe('StockTransferService (unit)', () => {
     // force overwrite id for second create mock — last transfer is still xfer-1
     // ship then cancel should fail
     transferStore[0]!.status = 'in_transit';
-    await expect(service.cancel('xfer-1')).rejects.toBeInstanceOf(
-      BadRequestException,
-    );
+    await expect(service.cancel('xfer-1')).rejects.toBeInstanceOf(BadRequestException);
   });
 
   it('findById throws when missing', async () => {
-    await expect(service.findById('missing')).rejects.toBeInstanceOf(
-      NotFoundException,
-    );
+    await expect(service.findById('missing')).rejects.toBeInstanceOf(NotFoundException);
   });
 
   it('create rejects when store warehouse guard fails (E-03)', async () => {

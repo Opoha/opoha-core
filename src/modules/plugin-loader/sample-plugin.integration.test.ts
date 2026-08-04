@@ -74,14 +74,11 @@ describe('D-11 sample plugin integration', () => {
     expect(existsSync(SAMPLE_PLUGIN_ROOT)).toBe(true);
     ensureSamplePluginBuilt();
 
-    const { loader, contributions, admin, eventBus } =
-      createLoader(SAMPLE_PLUGIN_ROOT);
+    const { loader, contributions, admin, eventBus } = createLoader(SAMPLE_PLUGIN_ROOT);
 
     const result = await loader.loadDefinitions();
     expect(result.ordered.map((p) => p.manifest.id)).toEqual(['sample']);
-    expect(result.loaded).toEqual([
-      expect.objectContaining({ id: 'sample' }),
-    ]);
+    expect(result.loaded).toEqual([expect.objectContaining({ id: 'sample' })]);
 
     // Boundary: production loader path used discovery + dynamic import only.
     expect(loader.getRecord('sample')?.definition?.id).toBe('sample');
@@ -90,12 +87,8 @@ describe('D-11 sample plugin integration', () => {
     await loader.enable('sample');
 
     expect(loader.getState('sample')).toBe('enabled');
-    expect(contributions.listGraphQL(true).map((g) => g.name)).toEqual([
-      'samplePing',
-    ]);
-    expect(
-      contributions.getProvider<{ ping: () => string }>('sample.ping')?.ping(),
-    ).toBe('pong');
+    expect(contributions.listGraphQL(true).map((g) => g.name)).toEqual(['samplePing']);
+    expect(contributions.getProvider<{ ping: () => string }>('sample.ping')?.ping()).toBe('pong');
     expect(admin.getManifest(true).plugins).toEqual([
       expect.objectContaining({
         pluginId: 'sample',

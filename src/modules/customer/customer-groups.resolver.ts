@@ -1,11 +1,7 @@
 import { UseGuards } from '@nestjs/common';
 import { Args, ID, Mutation, Query, Resolver } from '@nestjs/graphql';
 
-import {
-  GqlAuthGuard,
-  PermissionsGuard,
-  RequirePermission,
-} from '../auth/public';
+import { GqlAuthGuard, PermissionsGuard, RequirePermission } from '../auth/public';
 import { CustomerGroupsService } from './customer-groups.service';
 import {
   AddCustomerToGroupInput,
@@ -34,9 +30,7 @@ export class CustomerGroupsResolver {
     description: 'Get customer group by id',
   })
   @RequirePermission('customer-group:read')
-  customerGroup(
-    @Args('id', { type: () => ID }) id: string,
-  ): Promise<CustomerGroupType> {
+  customerGroup(@Args('id', { type: () => ID }) id: string): Promise<CustomerGroupType> {
     return this.groupsService.findById(id);
   }
 

@@ -23,11 +23,7 @@ export {
   roundHalfUpToMinor,
 } from '../currency-conversion';
 export type { CurrencyRoundingMode } from '../currency-conversion';
-export {
-  StoreCurrencyConfigEntity,
-  ExchangeRateEntity,
-  currencyEntities,
-} from '../entities';
+export { StoreCurrencyConfigEntity, ExchangeRateEntity, currencyEntities } from '../entities';
 export {
   DEFAULT_STORE_CURRENCY,
   defaultStoreCurrencyConfig,

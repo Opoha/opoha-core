@@ -11,9 +11,7 @@ describe('Omnichannel gate smoke (G-02) — event bus contracts', () => {
   it('registers POS / marketplace / digital / subscription channel events', () => {
     expect(CoreEventName.PosSaleCompleted).toBe('PosSaleCompleted');
     expect(CoreEventName.VendorOrderRouted).toBe('VendorOrderRouted');
-    expect(CoreEventName.DigitalFulfillmentIssued).toBe(
-      'DigitalFulfillmentIssued',
-    );
+    expect(CoreEventName.DigitalFulfillmentIssued).toBe('DigitalFulfillmentIssued');
     expect(CoreEventName.SubscriptionRenewed).toBe('SubscriptionRenewed');
   });
 

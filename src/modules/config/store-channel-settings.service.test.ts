@@ -108,18 +108,18 @@ describe('StoreChannelSettingsService (unit)', () => {
 
   it('rejects invalid timezone / country / catalogMode / settingsJson', async () => {
     await service.getForStore(storeId);
-    await expect(
-      service.update(storeId, { timezone: 'Not/AZone' }),
-    ).rejects.toBeInstanceOf(BadRequestException);
-    await expect(
-      service.update(storeId, { countryCode: 'USA' }),
-    ).rejects.toBeInstanceOf(BadRequestException);
+    await expect(service.update(storeId, { timezone: 'Not/AZone' })).rejects.toBeInstanceOf(
+      BadRequestException,
+    );
+    await expect(service.update(storeId, { countryCode: 'USA' })).rejects.toBeInstanceOf(
+      BadRequestException,
+    );
     await expect(
       service.update(storeId, { catalogMode: 'hybrid' as never }),
     ).rejects.toBeInstanceOf(BadRequestException);
-    await expect(
-      service.update(storeId, { settingsJson: '[]' }),
-    ).rejects.toBeInstanceOf(BadRequestException);
+    await expect(service.update(storeId, { settingsJson: '[]' })).rejects.toBeInstanceOf(
+      BadRequestException,
+    );
   });
 
   it('isolates settings per store id', async () => {

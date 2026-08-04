@@ -26,10 +26,7 @@ function isUniqueViolation(error: unknown): boolean {
   );
 }
 
-function toEndpointType(
-  row: WebhookEndpointEntity,
-  maskSecret = false,
-): WebhookEndpointType {
+function toEndpointType(row: WebhookEndpointEntity, maskSecret = false): WebhookEndpointType {
   return {
     id: row.id,
     code: row.code,
@@ -43,9 +40,7 @@ function toEndpointType(
   };
 }
 
-function toAttemptType(
-  row: WebhookDeliveryAttemptEntity,
-): WebhookDeliveryAttemptType {
+function toAttemptType(row: WebhookDeliveryAttemptEntity): WebhookDeliveryAttemptType {
   return {
     id: row.id,
     endpointId: row.endpointId,
@@ -152,10 +147,7 @@ export class WebhooksService {
     return rows.map((r) => toEndpointType(r, opts?.maskSecret ?? true));
   }
 
-  async findById(
-    id: string,
-    opts?: { maskSecret?: boolean },
-  ): Promise<WebhookEndpointType> {
+  async findById(id: string, opts?: { maskSecret?: boolean }): Promise<WebhookEndpointType> {
     const row = await this.endpoints.findOne({ where: { id } });
     if (!row) {
       throw new NotFoundException(`Webhook endpoint "${id}" not found`);
@@ -163,10 +155,7 @@ export class WebhooksService {
     return toEndpointType(row, opts?.maskSecret ?? true);
   }
 
-  async findByCode(
-    code: string,
-    opts?: { maskSecret?: boolean },
-  ): Promise<WebhookEndpointType> {
+  async findByCode(code: string, opts?: { maskSecret?: boolean }): Promise<WebhookEndpointType> {
     const row = await this.endpoints.findOne({
       where: { code: normalizeCode(code) },
     });
@@ -195,9 +184,7 @@ export class WebhooksService {
 
     const existing = await this.endpoints.findOne({ where: { code } });
     if (existing) {
-      throw new ConflictException(
-        `Webhook endpoint code "${code}" already exists`,
-      );
+      throw new ConflictException(`Webhook endpoint code "${code}" already exists`);
     }
 
     const row = this.endpoints.create({
@@ -215,9 +202,7 @@ export class WebhooksService {
       return toEndpointType(saved, false);
     } catch (error: unknown) {
       if (isUniqueViolation(error)) {
-        throw new ConflictException(
-          `Webhook endpoint code "${code}" already exists`,
-        );
+        throw new ConflictException(`Webhook endpoint code "${code}" already exists`);
       }
       throw error;
     }
@@ -253,9 +238,7 @@ export class WebhooksService {
       return toEndpointType(saved, input.secret === undefined);
     } catch (error: unknown) {
       if (isUniqueViolation(error)) {
-        throw new ConflictException(
-          `Webhook endpoint code "${row.code}" already exists`,
-        );
+        throw new ConflictException(`Webhook endpoint code "${row.code}" already exists`);
       }
       throw error;
     }

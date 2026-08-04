@@ -3,10 +3,7 @@
  */
 import { config as loadDotenv } from 'dotenv';
 
-import {
-  resolveSeedAdminFromEnv,
-  seedAuth,
-} from '../src/modules/auth/seed/seed-auth';
+import { resolveSeedAdminFromEnv, seedAuth } from '../src/modules/auth/seed/seed-auth';
 import { createTypeOrmSeedStore } from '../src/modules/auth/seed/typeorm-seed-store';
 import { seedLocalization } from '../src/modules/localization/seed/seed-localization';
 import { createTypeOrmLocalizationSeedStore } from '../src/modules/localization/seed/typeorm-localization-seed-store';
@@ -19,13 +16,9 @@ async function main(): Promise<void> {
   try {
     const store = createTypeOrmSeedStore(dataSource);
     const result = await seedAuth(store, resolveSeedAdminFromEnv());
-    const localization = await seedLocalization(
-      createTypeOrmLocalizationSeedStore(dataSource),
-    );
+    const localization = await seedLocalization(createTypeOrmLocalizationSeedStore(dataSource));
     const perms = result.permissionKeys.length;
-    process.stdout.write(
-      `Seed complete: role="${result.roleName}" permissions=${perms}`,
-    );
+    process.stdout.write(`Seed complete: role="${result.roleName}" permissions=${perms}`);
     if (result.adminUserCreated) {
       process.stdout.write(' adminUser=created');
     } else if (result.adminUserLinked) {

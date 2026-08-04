@@ -26,9 +26,7 @@ describe('EventBusService', () => {
     expect(result.failures).toHaveLength(0);
     expect(result.event.eventName).toBe(CoreEventName.UserRegistered);
     expect(received).toHaveLength(1);
-    expect((received[0] as { data: { email: string } }).data.email).toBe(
-      'a@example.com',
-    );
+    expect((received[0] as { data: { email: string } }).data.email).toBe('a@example.com');
   });
 
   it('isolates listener failures by default', async () => {

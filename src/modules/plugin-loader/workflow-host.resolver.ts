@@ -1,15 +1,7 @@
-import {
-  BadRequestException,
-  NotFoundException,
-  UseGuards,
-} from '@nestjs/common';
+import { BadRequestException, NotFoundException, UseGuards } from '@nestjs/common';
 import { Args, Mutation, Query, Resolver } from '@nestjs/graphql';
 
-import {
-  GqlAuthGuard,
-  PermissionsGuard,
-  RequirePermission,
-} from '../auth/public';
+import { GqlAuthGuard, PermissionsGuard, RequirePermission } from '../auth/public';
 import { ContributionRegistry } from './contribution-registry';
 import {
   UpsertWorkflowDefinitionGqlInput,
@@ -61,9 +53,7 @@ export type WorkflowRunLike = {
 
 export const WORKFLOW_ENGINE_PROVIDER_TOKEN = 'workflow.engine';
 
-function toDefinitionGql(
-  def: WorkflowDefinitionLike,
-): WorkflowDefinitionGqlType {
+function toDefinitionGql(def: WorkflowDefinitionLike): WorkflowDefinitionGqlType {
   return {
     id: def.id,
     code: def.code,
@@ -103,9 +93,7 @@ function parseStepsJson(stepsJson: string): unknown[] {
     return parsed;
   } catch (err) {
     throw new BadRequestException(
-      err instanceof Error
-        ? err.message
-        : 'stepsJson must be a valid JSON array string',
+      err instanceof Error ? err.message : 'stepsJson must be a valid JSON array string',
     );
   }
 }
@@ -188,9 +176,7 @@ export class WorkflowHostResolver {
       return toDefinitionGql(saved);
     } catch (err) {
       throw new BadRequestException(
-        err instanceof Error
-          ? err.message
-          : 'upsertWorkflowDefinition failed',
+        err instanceof Error ? err.message : 'upsertWorkflowDefinition failed',
       );
     }
   }

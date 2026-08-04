@@ -29,10 +29,7 @@ export type NotificationTemplate = {
 };
 
 /** Formats minor-unit integer amounts (e.g. "1999") as "19.99 USD" for display. */
-export function formatMinorAmount(
-  amountMinor: string | number,
-  currencyCode: string,
-): string {
+export function formatMinorAmount(amountMinor: string | number, currencyCode: string): string {
   const amount = BigInt(amountMinor);
   const negative = amount < 0n;
   const abs = negative ? -amount : amount;

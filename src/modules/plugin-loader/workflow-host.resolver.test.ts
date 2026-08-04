@@ -65,8 +65,6 @@ describe('WorkflowHostResolver (E-03)', () => {
       getProvider: vi.fn(() => undefined),
     } as unknown as ContributionRegistry;
     const resolver = new WorkflowHostResolver(contributions);
-    await expect(resolver.workflowDefinitions()).rejects.toThrow(
-      /workflow\.engine/,
-    );
+    await expect(resolver.workflowDefinitions()).rejects.toThrow(/workflow\.engine/);
   });
 });

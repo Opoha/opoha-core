@@ -1,20 +1,10 @@
 import { describe, expect, it } from 'vitest';
 
-import {
-  assertCronExpression,
-  cronMatchesAt,
-  isValidCronExpression,
-} from './cron-expression';
+import { assertCronExpression, cronMatchesAt, isValidCronExpression } from './cron-expression';
 
 describe('cron-expression (A-01/A-04)', () => {
   it('accepts standard 5-field crontab expressions', () => {
-    const valid = [
-      '*/5 * * * *',
-      '0 * * * *',
-      '0 0 * * *',
-      '30 2 * * 1',
-      '*   *   *   *   *',
-    ];
+    const valid = ['*/5 * * * *', '0 * * * *', '0 0 * * *', '30 2 * * 1', '*   *   *   *   *'];
     for (const expr of valid) {
       expect(isValidCronExpression(expr)).toBe(true);
       expect(assertCronExpression(expr)).toBe(expr.trim());
@@ -22,19 +12,10 @@ describe('cron-expression (A-01/A-04)', () => {
   });
 
   it('rejects empty, blank, and malformed expressions', () => {
-    const invalid = [
-      '',
-      '   ',
-      '* * * *',
-      '* * * * * *',
-      'not a cron',
-      '*/x * * * *',
-    ];
+    const invalid = ['', '   ', '* * * *', '* * * * * *', 'not a cron', '*/x * * * *'];
     for (const expr of invalid) {
       expect(isValidCronExpression(expr)).toBe(false);
-      expect(() => assertCronExpression(expr)).toThrow(
-        /Invalid cron expression/,
-      );
+      expect(() => assertCronExpression(expr)).toThrow(/Invalid cron expression/);
     }
   });
 

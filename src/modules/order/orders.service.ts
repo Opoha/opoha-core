@@ -1,20 +1,10 @@
-import {
-  BadRequestException,
-  Injectable,
-  NotFoundException,
-} from '@nestjs/common';
+import { BadRequestException, Injectable, NotFoundException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { In, Repository } from 'typeorm';
 
 import { B2bQuoteService, CompanyService } from '../b2b/public';
-import {
-  ProductEntity,
-  ProductVariantEntity,
-} from '../catalog/public';
-import {
-  DigitalFulfillmentService,
-  isNonPhysicalFulfillment,
-} from '../digital/public';
+import { ProductEntity, ProductVariantEntity } from '../catalog/public';
+import { DigitalFulfillmentService, isNonPhysicalFulfillment } from '../digital/public';
 import { GiftCardService } from '../gift-cards/public';
 import { InventoryService } from '../inventory/public';
 import { CoreEventName } from '../event-bus/event-catalog';
@@ -34,15 +24,8 @@ import {
   totalsWithTax,
 } from './checkout-tax';
 import { CartService } from './cart.service';
-import {
-  assertOrderSource,
-  type OrderSource,
-} from './entities/order-source';
-import {
-  canTransitionOrderStatus,
-  isOrderStatus,
-  type OrderStatus,
-} from './entities/order-status';
+import { assertOrderSource, type OrderSource } from './entities/order-source';
+import { canTransitionOrderStatus, isOrderStatus, type OrderStatus } from './entities/order-status';
 import { OrderLineEntity } from './entities/order-line.entity';
 import { OrderEntity } from './entities/order.entity';
 import type {
@@ -137,9 +120,7 @@ function resolvePaymentPath(paymentMethod: string): {
 }
 
 function primaryVendorId(vendorIds: Array<string | null>): string | null {
-  const distinct = [
-    ...new Set(vendorIds.filter((id): id is string => id != null)),
-  ];
+  const distinct = [...new Set(vendorIds.filter((id): id is string => id != null))];
   return distinct.length === 1 ? distinct[0]! : null;
 }
 
@@ -191,18 +172,14 @@ export class OrdersService {
    * B2B carts with `companyId` create a `draft` order (F-03) — no payment until
    * `approveB2bOrder` → `confirmB2bOrder`.
    */
-  async placeOrder(
-    input: PlaceOrderInput,
-    context?: StoreContextRef | null,
-  ): Promise<OrderType> {
+  async placeOrder(input: PlaceOrderInput, context?: StoreContextRef | null): Promise<OrderType> {
     const paymentMethod = (input.paymentMethod ?? 'manual').trim();
     if (!paymentMethod) {
       throw new BadRequestException('paymentMethod is required');
     }
     const orderSource = parseOrderSource(input.orderSource);
 
-    const { providerCode, captureImmediately, methodLabel } =
-      resolvePaymentPath(paymentMethod);
+    const { providerCode, captureImmediately, methodLabel } = resolvePaymentPath(paymentMethod);
 
     const { cart, lines } = await this.carts.getEntityWithLines(input.cartId);
 
@@ -247,9 +224,7 @@ export class OrdersService {
     const vendorByVariant = await this.resolveVendorIdsByVariantIds(
       lines.map((line) => line.variantId),
     );
-    const lineVendorIds = lines.map(
-      (line) => vendorByVariant.get(line.variantId) ?? null,
-    );
+    const lineVendorIds = lines.map((line) => vendorByVariant.get(line.variantId) ?? null);
     const orderVendorId = primaryVendorId(lineVendorIds);
 
     const subtotal = lineSubtotalMinor(lines);
@@ -259,10 +234,7 @@ export class OrdersService {
     const promoResult = await this.promotions.applyOrZero(promoInput);
 
     const taxInput = buildTaxCalculateInput(cart, lines);
-    const taxResult = await this.tax.calculateOrZero(
-      taxInput,
-      cart.taxProviderCode ?? undefined,
-    );
+    const taxResult = await this.tax.calculateOrZero(taxInput, cart.taxProviderCode ?? undefined);
     const totalsBase = totalsWithTax({
       currencyCode: cart.currencyCode,
       subtotalMinor: subtotal,
@@ -317,10 +289,7 @@ export class OrdersService {
         );
       }
       await this.companies.assertCanBuy(cart.companyId, cart.customerId);
-      await this.companies.assertWithinCreditLimit(
-        cart.companyId,
-        totalMinor.toString(),
-      );
+      await this.companies.assertWithinCreditLimit(cart.companyId, totalMinor.toString());
 
       const order = await this.orders.save(
         this.orders.create({
@@ -355,10 +324,7 @@ export class OrdersService {
             vendorId: vendorByVariant.get(line.variantId) ?? null,
             quantity: line.quantity,
             unitPriceMinor: String(line.unitPriceMinor),
-            lineTotalMinor: lineTotalMinor(
-              String(line.unitPriceMinor),
-              line.quantity,
-            ),
+            lineTotalMinor: lineTotalMinor(String(line.unitPriceMinor), line.quantity),
           }),
         ),
       );
@@ -449,10 +415,7 @@ export class OrdersService {
           vendorId: vendorByVariant.get(line.variantId) ?? null,
           quantity: line.quantity,
           unitPriceMinor: String(line.unitPriceMinor),
-          lineTotalMinor: lineTotalMinor(
-            String(line.unitPriceMinor),
-            line.quantity,
-          ),
+          lineTotalMinor: lineTotalMinor(String(line.unitPriceMinor), line.quantity),
         }),
       ),
     );
@@ -493,9 +456,7 @@ export class OrdersService {
         if (err instanceof BadRequestException) {
           throw err;
         }
-        throw new BadRequestException(
-          err instanceof Error ? err.message : 'Loyalty redeem failed',
-        );
+        throw new BadRequestException(err instanceof Error ? err.message : 'Loyalty redeem failed');
       }
     }
 
@@ -516,9 +477,7 @@ export class OrdersService {
       });
 
       if (payment.status === 'failed') {
-        throw new BadRequestException(
-          payment.errorMessage ?? 'Payment authorization failed',
-        );
+        throw new BadRequestException(payment.errorMessage ?? 'Payment authorization failed');
       }
 
       if (captureImmediately && payment.status !== 'captured') {
@@ -527,9 +486,7 @@ export class OrdersService {
           idempotencyKey: `place-order-capture:${order.id}`,
         });
         if (payment.status === 'failed') {
-          throw new BadRequestException(
-            payment.errorMessage ?? 'Payment capture failed',
-          );
+          throw new BadRequestException(payment.errorMessage ?? 'Payment capture failed');
         }
       }
     } catch (err) {
@@ -646,14 +603,12 @@ export class OrdersService {
    * Skips cart/inventory reservation — full CPQ/checkout path deferred.
    */
   async convertB2bQuote(input: { quoteId: string }): Promise<OrderType> {
-    const { quote, lines, subtotalMinor } =
-      await this.quotes.requireAcceptedForConvert(input.quoteId);
+    const { quote, lines, subtotalMinor } = await this.quotes.requireAcceptedForConvert(
+      input.quoteId,
+    );
 
     await this.companies.assertCanBuy(quote.companyId, quote.customerId);
-    await this.companies.assertWithinCreditLimit(
-      quote.companyId,
-      subtotalMinor,
-    );
+    await this.companies.assertWithinCreditLimit(quote.companyId, subtotalMinor);
     await requireActiveStore(this.stores, quote.storeId);
 
     const order = await this.orders.save(
@@ -687,10 +642,7 @@ export class OrdersService {
           variantId: line.variantId,
           quantity: line.quantity,
           unitPriceMinor: String(line.unitPriceMinor),
-          lineTotalMinor: lineTotalMinor(
-            String(line.unitPriceMinor),
-            line.quantity,
-          ),
+          lineTotalMinor: lineTotalMinor(String(line.unitPriceMinor), line.quantity),
         }),
       ),
     );
@@ -739,19 +691,14 @@ export class OrdersService {
       throw new NotFoundException(`Order ${input.orderId} not found`);
     }
     if (!row.companyId) {
-      throw new BadRequestException(
-        `Order ${input.orderId} is not a B2B company order`,
-      );
+      throw new BadRequestException(`Order ${input.orderId} is not a B2B company order`);
     }
     if (row.status !== 'draft') {
       throw new BadRequestException(
         `Order ${input.orderId} must be draft to approve (status=${row.status})`,
       );
     }
-    await this.companies.assertCanApprove(
-      row.companyId,
-      input.approverCustomerId,
-    );
+    await this.companies.assertCanApprove(row.companyId, input.approverCustomerId);
     return this.transitionStatus(row.id, 'approved', {
       note: `Approved by customer ${input.approverCustomerId}`,
     });
@@ -760,25 +707,19 @@ export class OrdersService {
   /**
    * Confirm an approved B2B order with payment (F-03): approved → confirmed.
    */
-  async confirmB2bOrder(input: {
-    orderId: string;
-    paymentMethod?: string;
-  }): Promise<OrderType> {
+  async confirmB2bOrder(input: { orderId: string; paymentMethod?: string }): Promise<OrderType> {
     const paymentMethod = (input.paymentMethod ?? 'manual').trim();
     if (!paymentMethod) {
       throw new BadRequestException('paymentMethod is required');
     }
-    const { providerCode, captureImmediately, methodLabel } =
-      resolvePaymentPath(paymentMethod);
+    const { providerCode, captureImmediately, methodLabel } = resolvePaymentPath(paymentMethod);
 
     const row = await this.orders.findOne({ where: { id: input.orderId } });
     if (!row) {
       throw new NotFoundException(`Order ${input.orderId} not found`);
     }
     if (!row.companyId) {
-      throw new BadRequestException(
-        `Order ${input.orderId} is not a B2B company order`,
-      );
+      throw new BadRequestException(`Order ${input.orderId} is not a B2B company order`);
     }
     if (row.status !== 'approved') {
       throw new BadRequestException(
@@ -832,9 +773,7 @@ export class OrdersService {
         if (err instanceof BadRequestException) {
           throw err;
         }
-        throw new BadRequestException(
-          err instanceof Error ? err.message : 'Loyalty redeem failed',
-        );
+        throw new BadRequestException(err instanceof Error ? err.message : 'Loyalty redeem failed');
       }
     }
 
@@ -861,9 +800,7 @@ export class OrdersService {
       });
 
       if (payment.status === 'failed') {
-        throw new BadRequestException(
-          payment.errorMessage ?? 'Payment authorization failed',
-        );
+        throw new BadRequestException(payment.errorMessage ?? 'Payment authorization failed');
       }
 
       if (captureImmediately && payment.status !== 'captured') {
@@ -872,9 +809,7 @@ export class OrdersService {
           idempotencyKey: `confirm-b2b-order-capture:${row.id}`,
         });
         if (payment.status === 'failed') {
-          throw new BadRequestException(
-            payment.errorMessage ?? 'Payment capture failed',
-          );
+          throw new BadRequestException(payment.errorMessage ?? 'Payment capture failed');
         }
       }
     } catch (err) {
@@ -908,9 +843,7 @@ export class OrdersService {
    */
   async updateStatus(input: UpdateOrderStatusInput): Promise<OrderType> {
     if (!isOrderStatus(input.status)) {
-      throw new BadRequestException(
-        `Invalid order status "${input.status}"`,
-      );
+      throw new BadRequestException(`Invalid order status "${input.status}"`);
     }
     return this.transitionStatus(input.id, input.status);
   }
@@ -931,9 +864,7 @@ export class OrdersService {
     }
 
     if (!canTransitionOrderStatus(fromStatus, toStatus)) {
-      throw new BadRequestException(
-        `Invalid order status transition: ${fromStatus} → ${toStatus}`,
-      );
+      throw new BadRequestException(`Invalid order status transition: ${fromStatus} → ${toStatus}`);
     }
 
     row.status = toStatus;
@@ -1029,12 +960,8 @@ export class OrdersService {
     });
     const productIds = [...new Set(variants.map((v) => v.productId))];
     const products =
-      productIds.length === 0
-        ? []
-        : await this.products.find({ where: { id: In(productIds) } });
-    const vendorByProduct = new Map(
-      products.map((p) => [p.id, p.vendorId ?? null] as const),
-    );
+      productIds.length === 0 ? [] : await this.products.find({ where: { id: In(productIds) } });
+    const vendorByProduct = new Map(products.map((p) => [p.id, p.vendorId ?? null] as const));
 
     for (const variant of variants) {
       result.set(variant.id, vendorByProduct.get(variant.productId) ?? null);

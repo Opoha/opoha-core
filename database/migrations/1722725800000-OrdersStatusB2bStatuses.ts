@@ -6,9 +6,7 @@ import type { MigrationInterface, QueryRunner } from 'typeorm';
  *
  * OWNER: order module (ADR-0005 / ADR-0010).
  */
-export class OrdersStatusB2bStatuses1722725800000
-  implements MigrationInterface
-{
+export class OrdersStatusB2bStatuses1722725800000 implements MigrationInterface {
   name = 'OrdersStatusB2bStatuses1722725800000';
 
   public async up(queryRunner: QueryRunner): Promise<void> {

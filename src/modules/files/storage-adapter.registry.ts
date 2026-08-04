@@ -1,9 +1,6 @@
 import { Injectable } from '@nestjs/common';
 
-import type {
-  RegisteredStorageAdapter,
-  StorageAdapter,
-} from './storage-adapter';
+import type { RegisteredStorageAdapter, StorageAdapter } from './storage-adapter';
 
 /**
  * In-memory registry for storage adapters registered by plugins (D-09).
@@ -12,11 +9,7 @@ import type {
 export class StorageAdapterRegistry {
   private readonly entries: RegisteredStorageAdapter[] = [];
 
-  register(
-    pluginId: string,
-    adapter: StorageAdapter,
-    active = true,
-  ): void {
+  register(pluginId: string, adapter: StorageAdapter, active = true): void {
     if (!adapter.code || adapter.code.trim().length === 0) {
       throw new Error('Storage adapter code is required');
     }
@@ -39,9 +32,7 @@ export class StorageAdapterRegistry {
   }
 
   list(activeOnly = false): readonly RegisteredStorageAdapter[] {
-    return activeOnly
-      ? this.entries.filter((e) => e.active)
-      : [...this.entries];
+    return activeOnly ? this.entries.filter((e) => e.active) : [...this.entries];
   }
 
   activatePlugin(pluginId: string): void {

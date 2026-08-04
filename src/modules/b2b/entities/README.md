@@ -4,13 +4,13 @@
 
 Plugins must not alter these tables.
 
-| Table | Purpose |
-|-------|---------|
-| `companies` | B2B company accounts scoped to a store channel |
-| `company_memberships` | Customer ↔ company buyer roles (`buyer`, `approver`, `admin`) |
-| `company_price_list_items` | Customer-specific (company ↔ variant) negotiated prices (F-04) |
-| `b2b_quotes` | Buyer quote / PO foundation (`draft`→`submitted`→`accepted`→`converted`) (F-05) |
-| `b2b_quote_lines` | Quote lines (variant, qty, unit price) |
+| Table                      | Purpose                                                                         |
+| -------------------------- | ------------------------------------------------------------------------------- |
+| `companies`                | B2B company accounts scoped to a store channel                                  |
+| `company_memberships`      | Customer ↔ company buyer roles (`buyer`, `approver`, `admin`)                   |
+| `company_price_list_items` | Customer-specific (company ↔ variant) negotiated prices (F-04)                  |
+| `b2b_quotes`               | Buyer quote / PO foundation (`draft`→`submitted`→`accepted`→`converted`) (F-05) |
+| `b2b_quote_lines`          | Quote lines (variant, qty, unit price)                                          |
 
 Cross-module references use UUID columns only (`stores.id`, `customers.id`, `product_variants.id`, `orders.id`) — no TypeORM relations into other modules.
 

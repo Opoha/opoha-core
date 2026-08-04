@@ -1,8 +1,4 @@
-import {
-  BadRequestException,
-  Injectable,
-  NotFoundException,
-} from '@nestjs/common';
+import { BadRequestException, Injectable, NotFoundException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { DataSource, Repository } from 'typeorm';
 
@@ -90,10 +86,7 @@ export class StoreWarehouseService {
   /**
    * Throws when warehouse is not associated with the store (E-02/E-03 guards).
    */
-  async assertWarehouseAllowedForStore(
-    storeId: string,
-    warehouseId: string,
-  ): Promise<void> {
+  async assertWarehouseAllowedForStore(storeId: string, warehouseId: string): Promise<void> {
     const link = await this.links.findOne({
       where: { storeId, warehouseId },
     });
@@ -104,10 +97,7 @@ export class StoreWarehouseService {
     }
   }
 
-  async isWarehouseAllowedForStore(
-    storeId: string,
-    warehouseId: string,
-  ): Promise<boolean> {
+  async isWarehouseAllowedForStore(storeId: string, warehouseId: string): Promise<boolean> {
     const link = await this.links.findOne({
       where: { storeId, warehouseId },
     });
@@ -147,11 +137,7 @@ export class StoreWarehouseService {
     }
   }
 
-  async link(
-    storeId: string,
-    warehouseId: string,
-    isPrimary = false,
-  ): Promise<StoreWarehouseType> {
+  async link(storeId: string, warehouseId: string, isPrimary = false): Promise<StoreWarehouseType> {
     await this.stores.findById(storeId);
     const warehouse = await this.warehouses.findOne({
       where: { id: warehouseId },
@@ -195,18 +181,13 @@ export class StoreWarehouseService {
     return toType(saved);
   }
 
-  async unlink(
-    storeId: string,
-    warehouseId: string,
-  ): Promise<StoreWarehouseType> {
+  async unlink(storeId: string, warehouseId: string): Promise<StoreWarehouseType> {
     await this.stores.findById(storeId);
     const existing = await this.links.findOne({
       where: { storeId, warehouseId },
     });
     if (!existing) {
-      throw new NotFoundException(
-        `Store ${storeId} is not linked to warehouse ${warehouseId}`,
-      );
+      throw new NotFoundException(`Store ${storeId} is not linked to warehouse ${warehouseId}`);
     }
 
     const wasPrimary = existing.isPrimary;

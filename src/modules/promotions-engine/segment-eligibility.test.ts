@@ -1,9 +1,6 @@
 import { describe, expect, it } from 'vitest';
 
-import {
-  extractSegmentRestriction,
-  membershipContextFromApplyInput,
-} from './segment-eligibility';
+import { extractSegmentRestriction, membershipContextFromApplyInput } from './segment-eligibility';
 
 describe('segment-eligibility (E-03)', () => {
   it('extractSegmentRestriction returns null when absent or empty', () => {

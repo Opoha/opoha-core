@@ -68,8 +68,7 @@ function toCompanyType(row: CompanyEntity): CompanyType {
     id: row.id,
     storeId: row.storeId,
     name: row.name,
-    creditLimitMinor:
-      row.creditLimitMinor == null ? null : String(row.creditLimitMinor),
+    creditLimitMinor: row.creditLimitMinor == null ? null : String(row.creditLimitMinor),
     isActive: row.isActive,
     createdAt: row.createdAt,
     updatedAt: row.updatedAt,
@@ -101,9 +100,7 @@ function toPriceListItemType(row: CompanyPriceEntity): CompanyPriceListItemType 
 function assertNonNegativeIntegerString(value: string, field: string): string {
   const raw = String(value).trim();
   if (!/^\d+$/.test(raw)) {
-    throw new BadRequestException(
-      `${field} must be a non-negative integer string`,
-    );
+    throw new BadRequestException(`${field} must be a non-negative integer string`);
   }
   return raw;
 }
@@ -147,10 +144,7 @@ export class CompanyService {
 
     let creditLimitMinor: string | null = null;
     if (input.creditLimitMinor !== undefined && input.creditLimitMinor !== null) {
-      creditLimitMinor = assertNonNegativeIntegerString(
-        input.creditLimitMinor,
-        'creditLimitMinor',
-      );
+      creditLimitMinor = assertNonNegativeIntegerString(input.creditLimitMinor, 'creditLimitMinor');
     }
 
     const entity = this.companies.create({
@@ -165,9 +159,7 @@ export class CompanyService {
       saved = await this.companies.save(entity);
     } catch (error) {
       if (isForeignKeyViolation(error)) {
-        throw new BadRequestException(
-          `Store ${input.storeId} does not exist`,
-        );
+        throw new BadRequestException(`Store ${input.storeId} does not exist`);
       }
       throw error;
     }
@@ -224,9 +216,7 @@ export class CompanyService {
   async addMember(input: AddCompanyMemberInput): Promise<CompanyMembershipType> {
     const company = await this.requireCompany(input.companyId);
     if (!company.isActive) {
-      throw new BadRequestException(
-        `Company ${input.companyId} is inactive`,
-      );
+      throw new BadRequestException(`Company ${input.companyId} is inactive`);
     }
     await this.customers.findById(input.customerId);
     const role = assertBuyerRole(input.role);
@@ -268,9 +258,7 @@ export class CompanyService {
     return toMembershipType(saved);
   }
 
-  async updateMemberRole(
-    input: UpdateCompanyMemberRoleInput,
-  ): Promise<CompanyMembershipType> {
+  async updateMemberRole(input: UpdateCompanyMemberRoleInput): Promise<CompanyMembershipType> {
     await this.requireCompany(input.companyId);
     const role = assertBuyerRole(input.role);
     const row = await this.memberships.findOne({
@@ -371,10 +359,7 @@ export class CompanyService {
    * Enforce credit limit at checkout (F-04).
    * Null creditLimitMinor = no limit. Full AR aging is out of scope for v0.6.
    */
-  async assertWithinCreditLimit(
-    companyId: string,
-    orderTotalMinor: string,
-  ): Promise<void> {
+  async assertWithinCreditLimit(companyId: string, orderTotalMinor: string): Promise<void> {
     const company = await this.requireCompany(companyId);
     if (company.creditLimitMinor == null) {
       return;
@@ -389,9 +374,7 @@ export class CompanyService {
   }
 
   /** List customer-specific price list items for a company (F-04). */
-  async listPriceListItems(
-    companyId: string,
-  ): Promise<CompanyPriceListItemType[]> {
+  async listPriceListItems(companyId: string): Promise<CompanyPriceListItemType[]> {
     await this.requireCompany(companyId);
     const rows = await this.prices.find({
       where: { companyId },
@@ -401,14 +384,9 @@ export class CompanyService {
   }
 
   /** Create or update a company's negotiated price for a variant (F-04). */
-  async setPriceListItem(
-    input: SetCompanyPriceListItemInput,
-  ): Promise<CompanyPriceListItemType> {
+  async setPriceListItem(input: SetCompanyPriceListItemInput): Promise<CompanyPriceListItemType> {
     await this.requireCompany(input.companyId);
-    const priceMinor = assertNonNegativeIntegerString(
-      input.priceMinor,
-      'priceMinor',
-    );
+    const priceMinor = assertNonNegativeIntegerString(input.priceMinor, 'priceMinor');
 
     const existing = await this.prices.findOne({
       where: { companyId: input.companyId, variantId: input.variantId },
@@ -441,9 +419,7 @@ export class CompanyService {
   }
 
   /** Remove a company's price list item for a variant (F-04). */
-  async removePriceListItem(
-    input: RemoveCompanyPriceListItemInput,
-  ): Promise<boolean> {
+  async removePriceListItem(input: RemoveCompanyPriceListItemInput): Promise<boolean> {
     await this.requireCompany(input.companyId);
     const row = await this.prices.findOne({
       where: { companyId: input.companyId, variantId: input.variantId },

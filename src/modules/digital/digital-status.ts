@@ -7,27 +7,17 @@ export const DIGITAL_DOWNLOAD_TOKEN_STATUSES = [
   'expired',
 ] as const;
 
-export type DigitalDownloadTokenStatus =
-  (typeof DIGITAL_DOWNLOAD_TOKEN_STATUSES)[number];
+export type DigitalDownloadTokenStatus = (typeof DIGITAL_DOWNLOAD_TOKEN_STATUSES)[number];
 
-export const DIGITAL_LICENSE_KEY_STATUSES = [
-  'active',
-  'revoked',
-  'expired',
-] as const;
+export const DIGITAL_LICENSE_KEY_STATUSES = ['active', 'revoked', 'expired'] as const;
 
-export type DigitalLicenseKeyStatus =
-  (typeof DIGITAL_LICENSE_KEY_STATUSES)[number];
+export type DigitalLicenseKeyStatus = (typeof DIGITAL_LICENSE_KEY_STATUSES)[number];
 
-export function isDigitalDownloadTokenStatus(
-  value: string,
-): value is DigitalDownloadTokenStatus {
+export function isDigitalDownloadTokenStatus(value: string): value is DigitalDownloadTokenStatus {
   return (DIGITAL_DOWNLOAD_TOKEN_STATUSES as readonly string[]).includes(value);
 }
 
-export function isDigitalLicenseKeyStatus(
-  value: string,
-): value is DigitalLicenseKeyStatus {
+export function isDigitalLicenseKeyStatus(value: string): value is DigitalLicenseKeyStatus {
   return (DIGITAL_LICENSE_KEY_STATUSES as readonly string[]).includes(value);
 }
 

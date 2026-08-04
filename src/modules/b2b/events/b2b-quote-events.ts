@@ -27,11 +27,8 @@ export const b2bQuoteStatusChangedDataSchema = z
   })
   .strict();
 
-export type B2bQuoteStatusChangedData = z.infer<
-  typeof b2bQuoteStatusChangedDataSchema
->;
-export type B2bQuoteStatusChangedEvent =
-  DomainEvent<B2bQuoteStatusChangedData>;
+export type B2bQuoteStatusChangedData = z.infer<typeof b2bQuoteStatusChangedDataSchema>;
+export type B2bQuoteStatusChangedEvent = DomainEvent<B2bQuoteStatusChangedData>;
 
 export const b2bQuoteConvertedDataSchema = z
   .object({

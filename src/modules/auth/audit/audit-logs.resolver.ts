@@ -1,11 +1,5 @@
 import { UseGuards } from '@nestjs/common';
-import {
-  Args,
-  GraphQLISODateTime,
-  Int,
-  Query,
-  Resolver,
-} from '@nestjs/graphql';
+import { Args, GraphQLISODateTime, Int, Query, Resolver } from '@nestjs/graphql';
 
 import { GqlAuthGuard } from '../jwt/gql-auth.guard';
 import { PermissionsGuard } from '../permissions/permissions.guard';
@@ -43,8 +37,7 @@ export class AuditLogsResolver {
 
   @Query(() => [AuditLogType], {
     name: 'activityLogs',
-    description:
-      'Activity log over audit_logs (filters: actionPrefix, resourceType, since)',
+    description: 'Activity log over audit_logs (filters: actionPrefix, resourceType, since)',
   })
   @RequirePermission('audit:read')
   activityLogs(

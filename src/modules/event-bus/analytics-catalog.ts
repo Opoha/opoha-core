@@ -24,10 +24,7 @@ export type AnalyticsStorefrontMapping = {
   meta: string;
 };
 
-export const ANALYTICS_STOREFRONT_MAP: Record<
-  AnalyticsEventName,
-  AnalyticsStorefrontMapping
-> = {
+export const ANALYTICS_STOREFRONT_MAP: Record<AnalyticsEventName, AnalyticsStorefrontMapping> = {
   [CoreEventName.CartCreated]: {
     ga4: 'cart_created',
     meta: 'CustomCartCreated',
@@ -57,8 +54,6 @@ export const ANALYTICS_STOREFRONT_MAP: Record<
   },
 };
 
-export function isAnalyticsEventName(
-  eventName: string,
-): eventName is AnalyticsEventName {
+export function isAnalyticsEventName(eventName: string): eventName is AnalyticsEventName {
   return (ANALYTICS_EVENT_NAMES as readonly string[]).includes(eventName);
 }

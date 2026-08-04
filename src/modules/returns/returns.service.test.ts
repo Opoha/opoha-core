@@ -1,7 +1,4 @@
-import {
-  BadRequestException,
-  NotFoundException,
-} from '@nestjs/common';
+import { BadRequestException, NotFoundException } from '@nestjs/common';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 
 import { CoreEventName } from '../event-bus/event-catalog';
@@ -136,9 +133,7 @@ describe('ReturnsService (unit)', () => {
 
     inventory = { adjust: vi.fn().mockResolvedValue({}) };
     payments = {
-      findByOrderId: vi.fn(async (oid: string) =>
-        paymentStore.filter((p) => p.orderId === oid),
-      ),
+      findByOrderId: vi.fn(async (oid: string) => paymentStore.filter((p) => p.orderId === oid)),
       findById: vi.fn(async (id: string) => {
         const row = paymentStore.find((p) => p.id === id);
         if (!row) {
@@ -155,18 +150,16 @@ describe('ReturnsService (unit)', () => {
     eventBus = { publish: vi.fn().mockResolvedValue(undefined) };
 
     const returnsRepo = {
-      find: vi.fn(
-        async (opts?: { where?: { orderId?: string; status?: string } }) => {
-          let rows = [...returnStore];
-          if (opts?.where?.orderId) {
-            rows = rows.filter((r) => r.orderId === opts.where!.orderId);
-          }
-          if (opts?.where?.status) {
-            rows = rows.filter((r) => r.status === opts.where!.status);
-          }
-          return rows.map(attachLines);
-        },
-      ),
+      find: vi.fn(async (opts?: { where?: { orderId?: string; status?: string } }) => {
+        let rows = [...returnStore];
+        if (opts?.where?.orderId) {
+          rows = rows.filter((r) => r.orderId === opts.where!.orderId);
+        }
+        if (opts?.where?.status) {
+          rows = rows.filter((r) => r.status === opts.where!.status);
+        }
+        return rows.map(attachLines);
+      }),
       findOne: vi.fn(async (opts: { where: { id: string } }) => {
         const row = returnStore.find((r) => r.id === opts.where.id);
         return row ? attachLines(row) : null;
@@ -260,10 +253,7 @@ describe('ReturnsService (unit)', () => {
             }
             return entity;
           },
-          find: async (
-            Entity: unknown,
-            opts: { where: { returnId?: string } },
-          ) => {
+          find: async (Entity: unknown, opts: { where: { returnId?: string } }) => {
             if (Entity === ReturnLineEntity) {
               return lineStore
                 .filter((l) => l.returnId === opts.where.returnId)
@@ -271,10 +261,7 @@ describe('ReturnsService (unit)', () => {
             }
             return [];
           },
-          findOne: async (
-            Entity: unknown,
-            opts: { where: { id: string } },
-          ) => {
+          findOne: async (Entity: unknown, opts: { where: { id: string } }) => {
             if (Entity === OrderLineEntity) {
               return orderLineStore.find((l) => l.id === opts.where.id) ?? null;
             }
@@ -286,9 +273,7 @@ describe('ReturnsService (unit)', () => {
                 where: (_clause: string, params: { id: string }) => ({
                   getOne: async () => {
                     const row = returnStore.find((r) => r.id === params.id);
-                    return row
-                      ? Object.assign(new ReturnEntity(), row)
-                      : null;
+                    return row ? Object.assign(new ReturnEntity(), row) : null;
                   },
                 }),
               }),
@@ -391,9 +376,7 @@ describe('ReturnsService (unit)', () => {
       lines: [{ orderLineId: orderLineA, quantity: 1 }],
     });
 
-    await expect(service.receive(created.id)).rejects.toBeInstanceOf(
-      BadRequestException,
-    );
+    await expect(service.receive(created.id)).rejects.toBeInstanceOf(BadRequestException);
   });
 
   it('cancel from requested', async () => {
@@ -408,8 +391,8 @@ describe('ReturnsService (unit)', () => {
   });
 
   it('findById throws when missing', async () => {
-    await expect(
-      service.findById('99999999-9999-9999-9999-999999999999'),
-    ).rejects.toBeInstanceOf(NotFoundException);
+    await expect(service.findById('99999999-9999-9999-9999-999999999999')).rejects.toBeInstanceOf(
+      NotFoundException,
+    );
   });
 });

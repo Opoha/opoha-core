@@ -1,11 +1,7 @@
 import { UseGuards } from '@nestjs/common';
 import { Args, ID, Mutation, Query, Resolver } from '@nestjs/graphql';
 
-import {
-  GqlAuthGuard,
-  PermissionsGuard,
-  RequirePermission,
-} from '../auth/public';
+import { GqlAuthGuard, PermissionsGuard, RequirePermission } from '../auth/public';
 import { B2bQuoteService } from './b2b-quote.service';
 import { B2bQuoteType, CreateB2bQuoteInput } from './b2b-quote.types';
 
@@ -36,8 +32,7 @@ export class B2bQuoteResolver {
 
   @Mutation(() => B2bQuoteType, {
     name: 'createB2bQuote',
-    description:
-      'Create a draft B2B quote / buyer PO foundation document (F-05)',
+    description: 'Create a draft B2B quote / buyer PO foundation document (F-05)',
   })
   @RequirePermission('b2b:create')
   createB2bQuote(
@@ -52,9 +47,7 @@ export class B2bQuoteResolver {
     description: 'Submit a draft quote for acceptance (draft → submitted)',
   })
   @RequirePermission('b2b:update')
-  submitB2bQuote(
-    @Args('id', { type: () => ID }) id: string,
-  ): Promise<B2bQuoteType> {
+  submitB2bQuote(@Args('id', { type: () => ID }) id: string): Promise<B2bQuoteType> {
     return this.quotes.submit(id);
   }
 
@@ -63,9 +56,7 @@ export class B2bQuoteResolver {
     description: 'Accept a submitted quote (submitted → accepted)',
   })
   @RequirePermission('b2b:update')
-  acceptB2bQuote(
-    @Args('id', { type: () => ID }) id: string,
-  ): Promise<B2bQuoteType> {
+  acceptB2bQuote(@Args('id', { type: () => ID }) id: string): Promise<B2bQuoteType> {
     return this.quotes.accept(id);
   }
 
@@ -74,9 +65,7 @@ export class B2bQuoteResolver {
     description: 'Cancel a non-terminal quote',
   })
   @RequirePermission('b2b:update')
-  cancelB2bQuote(
-    @Args('id', { type: () => ID }) id: string,
-  ): Promise<B2bQuoteType> {
+  cancelB2bQuote(@Args('id', { type: () => ID }) id: string): Promise<B2bQuoteType> {
     return this.quotes.cancel(id);
   }
 }

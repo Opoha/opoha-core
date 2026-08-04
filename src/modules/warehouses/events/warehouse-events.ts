@@ -27,12 +27,9 @@ export const storeWarehouseUpdatedDataSchema = z
   })
   .strict();
 
-export type StoreWarehouseUpdatedData = z.infer<
-  typeof storeWarehouseUpdatedDataSchema
->;
+export type StoreWarehouseUpdatedData = z.infer<typeof storeWarehouseUpdatedDataSchema>;
 
-export type StoreWarehouseUpdatedEvent =
-  DomainEvent<StoreWarehouseUpdatedData>;
+export type StoreWarehouseUpdatedEvent = DomainEvent<StoreWarehouseUpdatedData>;
 
 /** Register warehouse event payload schemas on the bus (call once at module init). */
 export function warehouseEventSchemas(): Array<{

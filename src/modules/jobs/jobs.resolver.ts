@@ -1,11 +1,7 @@
 import { UseGuards } from '@nestjs/common';
 import { Args, Mutation, Query, Resolver } from '@nestjs/graphql';
 
-import {
-  GqlAuthGuard,
-  PermissionsGuard,
-  RequirePermission,
-} from '../auth/public';
+import { GqlAuthGuard, PermissionsGuard, RequirePermission } from '../auth/public';
 import { JobDefinitionGqlType, JobRunGqlType } from './jobs.gql.types';
 import { JobsService } from './jobs.service';
 import type { JobDefinitionType, JobRunType } from './jobs.types';
@@ -73,9 +69,7 @@ export class JobsResolver {
     description: 'List run history for a job code (newest first)',
   })
   @RequirePermission('job:read')
-  async jobRuns(
-    @Args('code', { type: () => String }) code: string,
-  ): Promise<JobRunGqlType[]> {
+  async jobRuns(@Args('code', { type: () => String }) code: string): Promise<JobRunGqlType[]> {
     const rows = await this.jobs.listRuns(code);
     return rows.map(toRunGql);
   }
@@ -85,9 +79,7 @@ export class JobsResolver {
     description: 'Manually enqueue a scheduled job by code',
   })
   @RequirePermission('job:trigger')
-  async triggerJob(
-    @Args('code', { type: () => String }) code: string,
-  ): Promise<string> {
+  async triggerJob(@Args('code', { type: () => String }) code: string): Promise<string> {
     return this.jobs.trigger(code);
   }
 }

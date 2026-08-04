@@ -1,11 +1,7 @@
 import { UseGuards } from '@nestjs/common';
 import { Args, ID, Mutation, Query, Resolver } from '@nestjs/graphql';
 
-import {
-  GqlAuthGuard,
-  PermissionsGuard,
-  RequirePermission,
-} from '../auth/public';
+import { GqlAuthGuard, PermissionsGuard, RequirePermission } from '../auth/public';
 import { CompanyService } from './company.service';
 import {
   AddCompanyMemberInput,
@@ -129,8 +125,7 @@ export class CompanyResolver {
 
   @Mutation(() => CompanyPriceListItemType, {
     name: 'setCompanyPriceListItem',
-    description:
-      'Create or update a customer-specific negotiated price for a variant (F-04)',
+    description: 'Create or update a customer-specific negotiated price for a variant (F-04)',
   })
   @RequirePermission('b2b:update')
   setCompanyPriceListItem(

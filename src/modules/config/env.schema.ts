@@ -8,18 +8,13 @@ export const envSchema = z
   .object({
     NODE_ENV: z.enum(['development', 'test', 'production']).default('development'),
     PORT: z.coerce.number().int().positive().default(4000),
-    DATABASE_URL: z
-      .string()
-      .min(1)
-      .default('postgresql://opoha:opoha@localhost:5433/opoha'),
+    DATABASE_URL: z.string().min(1).default('postgresql://opoha:opoha@localhost:5433/opoha'),
     REDIS_URL: z.string().min(1).default('redis://localhost:6380'),
     LOG_LEVEL: z.enum(['fatal', 'error', 'warn', 'info', 'debug']).default('info'),
     OTEL_ENABLED: z
       .string()
       .optional()
-      .transform((value) =>
-        ['1', 'true', 'yes', 'on'].includes((value ?? '').toLowerCase()),
-      ),
+      .transform((value) => ['1', 'true', 'yes', 'on'].includes((value ?? '').toLowerCase())),
     /** HS256 signing secret. Required in production; optional elsewhere (dev fallback). */
     JWT_SECRET: z.string().min(1).optional(),
     /** jose/jsonwebtoken duration string, e.g. `15m`, `1h`. */

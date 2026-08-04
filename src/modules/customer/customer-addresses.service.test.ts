@@ -1,7 +1,4 @@
-import {
-  BadRequestException,
-  NotFoundException,
-} from '@nestjs/common';
+import { BadRequestException, NotFoundException } from '@nestjs/common';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 
 import { CoreEventName } from '../event-bus/event-catalog';
@@ -108,24 +105,17 @@ describe('CustomerAddressesService (unit)', () => {
     };
 
     addressesRepo = {
-      find: vi.fn(
-        async ({
-          where,
-        }: {
-          where: Partial<AddressRow>;
-          order?: unknown;
-        }) => {
-          return addressStore.filter((r) => {
-            if (where.customerId && r.customerId !== where.customerId) {
-              return false;
-            }
-            if (where.isDefault !== undefined && r.isDefault !== where.isDefault) {
-              return false;
-            }
-            return true;
-          });
-        },
-      ),
+      find: vi.fn(async ({ where }: { where: Partial<AddressRow>; order?: unknown }) => {
+        return addressStore.filter((r) => {
+          if (where.customerId && r.customerId !== where.customerId) {
+            return false;
+          }
+          if (where.isDefault !== undefined && r.isDefault !== where.isDefault) {
+            return false;
+          }
+          return true;
+        });
+      }),
       findOne: vi.fn(async ({ where }: { where: Partial<AddressRow> }) => {
         if (where.id) {
           return addressStore.find((r) => r.id === where.id) ?? null;
@@ -133,8 +123,7 @@ describe('CustomerAddressesService (unit)', () => {
         return null;
       }),
       count: vi.fn(async ({ where }: { where: Partial<AddressRow> }) => {
-        return addressStore.filter((r) => r.customerId === where.customerId)
-          .length;
+        return addressStore.filter((r) => r.customerId === where.customerId).length;
       }),
       create: vi.fn((data: Partial<AddressRow>) => ({
         id: `addr-${++addressSeq}`,
@@ -164,14 +153,8 @@ describe('CustomerAddressesService (unit)', () => {
     };
 
     eventBus = { publish: vi.fn(async () => undefined) };
-    customersService = new CustomersService(
-      customersRepo as never,
-      eventBus as never,
-    );
-    service = new CustomerAddressesService(
-      addressesRepo as never,
-      customersRepo as never,
-    );
+    customersService = new CustomersService(customersRepo as never, eventBus as never);
+    service = new CustomerAddressesService(addressesRepo as never, customersRepo as never);
   });
 
   it('register + address flow: create, list, update, delete', async () => {
@@ -216,9 +199,7 @@ describe('CustomerAddressesService (unit)', () => {
 
     const removed = await service.remove(created.id);
     expect(removed.id).toBe(created.id);
-    await expect(service.findById(created.id)).rejects.toBeInstanceOf(
-      NotFoundException,
-    );
+    await expect(service.findById(created.id)).rejects.toBeInstanceOf(NotFoundException);
   });
 
   it('promotes first address to default and clears prior default when setting another', async () => {

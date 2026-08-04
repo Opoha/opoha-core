@@ -1,10 +1,6 @@
 import { describe, expect, it } from 'vitest';
 
-import {
-  FULFILLMENT_MODES,
-  assertFulfillmentMode,
-  isFulfillmentMode,
-} from './fulfillment-mode';
+import { FULFILLMENT_MODES, assertFulfillmentMode, isFulfillmentMode } from './fulfillment-mode';
 
 describe('fulfillment-mode', () => {
   it('accepts physical, digital, service', () => {

@@ -102,9 +102,7 @@ describe('ProductsService', () => {
       name: 'Tee',
       slug: 'tee',
       description: 'Soft tee',
-      variants: [
-        { sku: 'TEE-S', priceMinor: '1999', name: 'Small' },
-      ],
+      variants: [{ sku: 'TEE-S', priceMinor: '1999', name: 'Small' }],
     });
 
     expect(created.name).toBe('Tee');

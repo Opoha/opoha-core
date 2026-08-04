@@ -1,11 +1,7 @@
 import { BadRequestException, UseGuards } from '@nestjs/common';
 import { Args, ID, Mutation, Query, Resolver } from '@nestjs/graphql';
 
-import {
-  GqlAuthGuard,
-  PermissionsGuard,
-  RequirePermission,
-} from '../auth/public';
+import { GqlAuthGuard, PermissionsGuard, RequirePermission } from '../auth/public';
 import { PaymentEntity } from './entities/payment.entity';
 import { PaymentEngine } from './payment-engine.service';
 import {
@@ -37,9 +33,7 @@ function toPaymentType(row: PaymentEntity): PaymentType {
   };
 }
 
-function parseMetadataJson(
-  metadataJson: string | undefined,
-): Record<string, unknown> | undefined {
+function parseMetadataJson(metadataJson: string | undefined): Record<string, unknown> | undefined {
   if (!metadataJson) {
     return undefined;
   }
@@ -98,9 +92,7 @@ export class PaymentResolver {
     description: 'Authorize a new payment against an order via the payment engine',
   })
   @RequirePermission('payment:authorize')
-  async authorizePayment(
-    @Args('input') input: AuthorizePaymentInput,
-  ): Promise<PaymentType> {
+  async authorizePayment(@Args('input') input: AuthorizePaymentInput): Promise<PaymentType> {
     const row = await this.payments.authorize({
       providerCode: input.providerCode,
       orderId: input.orderId,
@@ -116,9 +108,7 @@ export class PaymentResolver {
     description: 'Capture a previously authorized (or pending) payment',
   })
   @RequirePermission('payment:capture')
-  async capturePayment(
-    @Args('input') input: CapturePaymentInput,
-  ): Promise<PaymentType> {
+  async capturePayment(@Args('input') input: CapturePaymentInput): Promise<PaymentType> {
     const row = await this.payments.capture({
       paymentId: input.paymentId,
       amount: input.amount,
@@ -132,9 +122,7 @@ export class PaymentResolver {
     description: 'Refund a captured payment (full or partial amount)',
   })
   @RequirePermission('payment:refund')
-  async refundPayment(
-    @Args('input') input: RefundPaymentInput,
-  ): Promise<PaymentType> {
+  async refundPayment(@Args('input') input: RefundPaymentInput): Promise<PaymentType> {
     const row = await this.payments.refund({
       paymentId: input.paymentId,
       amount: input.amount,

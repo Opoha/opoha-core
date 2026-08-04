@@ -77,30 +77,23 @@ export function evaluateRuleConditions(
     return true;
   }
 
-  const results = equals.map((clause) =>
-    valuesEqual(getPath(data, clause.path), clause.value),
-  );
+  const results = equals.map((clause) => valuesEqual(getPath(data, clause.path), clause.value));
   const mode = conditions.match ?? 'all';
   return mode === 'any' ? results.some(Boolean) : results.every(Boolean);
 }
 
-export function normalizeActionRefs(
-  refs: RuleActionRef[] | null | undefined,
-): RuleActionRef[] {
+export function normalizeActionRefs(refs: RuleActionRef[] | null | undefined): RuleActionRef[] {
   if (!refs || !Array.isArray(refs)) {
     return [];
   }
   const out: RuleActionRef[] = [];
   for (const ref of refs) {
-    const action =
-      typeof ref?.action === 'string' ? ref.action.trim() : '';
+    const action = typeof ref?.action === 'string' ? ref.action.trim() : '';
     if (!action) {
       continue;
     }
     const params =
-      ref.params &&
-      typeof ref.params === 'object' &&
-      !Array.isArray(ref.params)
+      ref.params && typeof ref.params === 'object' && !Array.isArray(ref.params)
         ? (ref.params as Record<string, unknown>)
         : undefined;
     out.push(params === undefined ? { action } : { action, params });

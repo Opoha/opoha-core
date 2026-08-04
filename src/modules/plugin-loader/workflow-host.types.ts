@@ -1,8 +1,7 @@
 import { Field, ID, InputType, ObjectType } from '@nestjs/graphql';
 
 @ObjectType('WorkflowDefinition', {
-  description:
-    'Multi-step workflow definition (plugin-owned via workflow.engine)',
+  description: 'Multi-step workflow definition (plugin-owned via workflow.engine)',
 })
 export class WorkflowDefinitionGqlType {
   @Field(() => ID)

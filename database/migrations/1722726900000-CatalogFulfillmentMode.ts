@@ -29,12 +29,8 @@ export class CatalogFulfillmentMode1722726900000 implements MigrationInterface {
   }
 
   public async down(queryRunner: QueryRunner): Promise<void> {
-    await queryRunner.query(
-      `DROP INDEX IF EXISTS "product_variants_fulfillment_mode_idx"`,
-    );
-    await queryRunner.query(
-      `DROP INDEX IF EXISTS "products_fulfillment_mode_idx"`,
-    );
+    await queryRunner.query(`DROP INDEX IF EXISTS "product_variants_fulfillment_mode_idx"`);
+    await queryRunner.query(`DROP INDEX IF EXISTS "products_fulfillment_mode_idx"`);
     await queryRunner.query(`
       ALTER TABLE "product_variants"
         DROP COLUMN IF EXISTS "fulfillment_mode"

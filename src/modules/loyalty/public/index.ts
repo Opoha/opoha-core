@@ -4,11 +4,7 @@
 export { LoyaltyModule } from '../loyalty.module';
 export { LoyaltyService } from '../loyalty.service';
 export { LoyaltyResolver } from '../loyalty.resolver';
-export {
-  LoyaltyAccountEntity,
-  LoyaltyTransactionEntity,
-  loyaltyEntities,
-} from '../entities';
+export { LoyaltyAccountEntity, LoyaltyTransactionEntity, loyaltyEntities } from '../entities';
 export type { LoyaltyTransactionType } from '../entities';
 export {
   LOYALTY_TRANSACTION_TYPES,

@@ -11,10 +11,7 @@ import type { CatalogTranslationsService } from './catalog-translations.service'
  * C-03 — translation GraphQL permission metadata + PermissionsGuard deny path.
  */
 describe('CatalogTranslationsResolver RBAC (C-03)', () => {
-  function gqlContext(
-    req: { user?: unknown },
-    handler: (...args: never[]) => unknown,
-  ) {
+  function gqlContext(req: { user?: unknown }, handler: (...args: never[]) => unknown) {
     return {
       getType: () => 'graphql',
       getArgs: () => [{}, {}, { req }, {}],
@@ -128,9 +125,7 @@ describe('CatalogTranslationsResolver RBAC (C-03)', () => {
     const resolver = new CatalogTranslationsResolver(
       service as unknown as CatalogTranslationsService,
     );
-    await expect(resolver.productTranslations('p1')).resolves.toMatchObject([
-      { locale: 'th-TH' },
-    ]);
+    await expect(resolver.productTranslations('p1')).resolves.toMatchObject([{ locale: 'th-TH' }]);
     await expect(
       resolver.upsertProductTranslation({
         productId: 'p1',

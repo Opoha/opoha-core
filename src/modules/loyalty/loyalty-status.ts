@@ -1,15 +1,9 @@
 /** Loyalty ledger transaction kinds (Phase 4 C-03). */
-export const LOYALTY_TRANSACTION_TYPES = [
-  'accrue',
-  'redeem',
-  'adjust',
-] as const;
+export const LOYALTY_TRANSACTION_TYPES = ['accrue', 'redeem', 'adjust'] as const;
 
 export type LoyaltyTransactionType = (typeof LOYALTY_TRANSACTION_TYPES)[number];
 
-export function isLoyaltyTransactionType(
-  value: string,
-): value is LoyaltyTransactionType {
+export function isLoyaltyTransactionType(value: string): value is LoyaltyTransactionType {
   return (LOYALTY_TRANSACTION_TYPES as readonly string[]).includes(value);
 }
 
@@ -31,7 +25,5 @@ export function computeAccrualPoints(totalMinor: string | bigint): number {
 
 /** Money value (minor units) redeemed for a given point count. */
 export function computeRedemptionValueMinor(points: number): string {
-  return (
-    BigInt(points) * LOYALTY_REDEMPTION_MINOR_UNITS_PER_POINT
-  ).toString();
+  return (BigInt(points) * LOYALTY_REDEMPTION_MINOR_UNITS_PER_POINT).toString();
 }

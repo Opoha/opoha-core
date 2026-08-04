@@ -1,8 +1,5 @@
 import type { CouponEntity, CouponKind } from './entities/coupon.entity';
-import type {
-  DiscountRuleEntity,
-  DiscountRuleKind,
-} from './entities/discount-rule.entity';
+import type { DiscountRuleEntity, DiscountRuleKind } from './entities/discount-rule.entity';
 import type {
   PromotionApplication,
   PromotionApplyInput,
@@ -108,23 +105,14 @@ export function computeRuleDiscount(
 
   let discount = 0n;
 
-  if (
-    kind === 'percentage' ||
-    (kind === 'automatic' && rule.valueBps != null)
-  ) {
+  if (kind === 'percentage' || (kind === 'automatic' && rule.valueBps != null)) {
     const bps = rule.valueBps ?? 0;
     if (bps <= 0) {
       return empty;
     }
     discount = (subtotal * BigInt(bps)) / 10000n;
-  } else if (
-    kind === 'fixed_amount' ||
-    (kind === 'automatic' && rule.amountMinor != null)
-  ) {
-    if (
-      rule.currencyCode &&
-      rule.currencyCode.toUpperCase() !== input.currencyCode.toUpperCase()
-    ) {
+  } else if (kind === 'fixed_amount' || (kind === 'automatic' && rule.amountMinor != null)) {
+    if (rule.currencyCode && rule.currencyCode.toUpperCase() !== input.currencyCode.toUpperCase()) {
       return empty;
     }
     try {
@@ -173,9 +161,7 @@ export function couponToDiscountable(coupon: CouponEntity): DiscountableRule {
   };
 }
 
-export function discountRuleToDiscountable(
-  rule: DiscountRuleEntity,
-): DiscountableRule {
+export function discountRuleToDiscountable(rule: DiscountRuleEntity): DiscountableRule {
   return {
     code: rule.code,
     name: rule.name,
@@ -233,9 +219,7 @@ export function mergePromotionApplications(
  * qualifying stackable, apply only that non-stackable; otherwise apply all
  * qualifying stackables (ignore lower-priority non-stackables).
  */
-export function selectAutomaticRules(
-  rules: DiscountRuleEntity[],
-): DiscountRuleEntity[] {
+export function selectAutomaticRules(rules: DiscountRuleEntity[]): DiscountRuleEntity[] {
   const qualifying = rules
     .filter((r) => isWithinSchedule(discountRuleToDiscountable(r)))
     .sort((a, b) => b.priority - a.priority || a.code.localeCompare(b.code));

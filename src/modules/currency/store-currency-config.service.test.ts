@@ -114,12 +114,12 @@ describe('StoreCurrencyConfigService (unit)', () => {
 
   it('rejects invalid currency codes', async () => {
     await service.getForStore(storeId);
-    await expect(
-      service.update(storeId, { settlementCurrencyCode: 'US' }),
-    ).rejects.toBeInstanceOf(BadRequestException);
-    await expect(
-      service.update(storeId, { displayCurrencyCode: 'EURO' }),
-    ).rejects.toBeInstanceOf(BadRequestException);
+    await expect(service.update(storeId, { settlementCurrencyCode: 'US' })).rejects.toBeInstanceOf(
+      BadRequestException,
+    );
+    await expect(service.update(storeId, { displayCurrencyCode: 'EURO' })).rejects.toBeInstanceOf(
+      BadRequestException,
+    );
     await expect(
       service.update(storeId, { enabledDisplayCurrencies: ['USD', 'XXXX'] }),
     ).rejects.toBeInstanceOf(BadRequestException);

@@ -57,9 +57,7 @@ describe('Digital gate smoke (D-04)', () => {
   let eventBus: { publish: ReturnType<typeof vi.fn> };
   let inventoryCommit: ReturnType<typeof vi.fn>;
 
-  function buildDigitalService(
-    fulfillmentMode: 'digital' | 'physical',
-  ): DigitalFulfillmentService {
+  function buildDigitalService(fulfillmentMode: 'digital' | 'physical'): DigitalFulfillmentService {
     tokenStore = [];
     licenseStore = [];
     let tokenSeq = 0;
@@ -68,22 +66,14 @@ describe('Digital gate smoke (D-04)', () => {
     const tokensRepo = {
       find: vi.fn(async ({ where }: { where: Partial<TokenRow> }) =>
         tokenStore
-          .filter((row) =>
-            Object.entries(where).every(
-              ([k, v]) => row[k as keyof TokenRow] === v,
-            ),
-          )
+          .filter((row) => Object.entries(where).every(([k, v]) => row[k as keyof TokenRow] === v))
           .map((row) => Object.assign(new DigitalDownloadTokenEntity(), row)),
       ),
       findOne: vi.fn(async ({ where }: { where: Partial<TokenRow> }) => {
         const row = tokenStore.find((r) =>
-          Object.entries(where).every(
-            ([k, v]) => r[k as keyof TokenRow] === v,
-          ),
+          Object.entries(where).every(([k, v]) => r[k as keyof TokenRow] === v),
         );
-        return row
-          ? Object.assign(new DigitalDownloadTokenEntity(), row)
-          : null;
+        return row ? Object.assign(new DigitalDownloadTokenEntity(), row) : null;
       }),
       create: vi.fn((data: Partial<TokenRow>) => ({
         id: `tok-${++tokenSeq}`,
@@ -108,21 +98,15 @@ describe('Digital gate smoke (D-04)', () => {
       find: vi.fn(async ({ where }: { where: Partial<LicenseRow> }) =>
         licenseStore
           .filter((row) =>
-            Object.entries(where).every(
-              ([k, v]) => row[k as keyof LicenseRow] === v,
-            ),
+            Object.entries(where).every(([k, v]) => row[k as keyof LicenseRow] === v),
           )
           .map((row) => Object.assign(new DigitalLicenseKeyEntity(), row)),
       ),
       findOne: vi.fn(async ({ where }: { where: Partial<LicenseRow> }) => {
         const row = licenseStore.find((r) =>
-          Object.entries(where).every(
-            ([k, v]) => r[k as keyof LicenseRow] === v,
-          ),
+          Object.entries(where).every(([k, v]) => r[k as keyof LicenseRow] === v),
         );
-        return row
-          ? Object.assign(new DigitalLicenseKeyEntity(), row)
-          : null;
+        return row ? Object.assign(new DigitalLicenseKeyEntity(), row) : null;
       }),
       create: vi.fn((data: Partial<LicenseRow>) => ({
         id: `lic-${++licenseSeq}`,
@@ -182,10 +166,8 @@ describe('Digital gate smoke (D-04)', () => {
       giftCardMinor: '0',
       loyaltyPointsRedeemed: 0,
       loyaltyMinor: '0',
-      shippingMethodCode:
-        opts.fulfillmentMode === 'physical' ? 'flat' : null,
-      shippingRateCode:
-        opts.fulfillmentMode === 'physical' ? 'standard' : null,
+      shippingMethodCode: opts.fulfillmentMode === 'physical' ? 'flat' : null,
+      shippingRateCode: opts.fulfillmentMode === 'physical' ? 'standard' : null,
       totalMinor: '1999',
       createdAt: now,
       updatedAt: now,
@@ -289,10 +271,8 @@ describe('Digital gate smoke (D-04)', () => {
             companyId: null,
             status: 'locked',
             currencyCode: 'USD',
-            shippingMethodCode:
-              opts.fulfillmentMode === 'physical' ? 'flat' : null,
-            shippingRateCode:
-              opts.fulfillmentMode === 'physical' ? 'standard' : null,
+            shippingMethodCode: opts.fulfillmentMode === 'physical' ? 'flat' : null,
+            shippingRateCode: opts.fulfillmentMode === 'physical' ? 'standard' : null,
             shippingMinor: '0',
             taxPricingMode: 'exclusive',
             taxCountryCode: 'US',
@@ -379,12 +359,8 @@ describe('Digital gate smoke (D-04)', () => {
     expect(download.status).toBe('active');
     expect(download.customerId).toBe(customerId);
     expect(download.token).toMatch(/^[a-f0-9]{32}$/);
-    expect(download.assetUrl).toBe(
-      `/digital/assets/${variantId}?token=${download.token}`,
-    );
-    expect(licenses[0]!.licenseKey).toMatch(
-      /^[A-F0-9]{4}-[A-F0-9]{4}-[A-F0-9]{4}-[A-F0-9]{4}$/,
-    );
+    expect(download.assetUrl).toBe(`/digital/assets/${variantId}?token=${download.token}`);
+    expect(licenses[0]!.licenseKey).toMatch(/^[A-F0-9]{4}-[A-F0-9]{4}-[A-F0-9]{4}-[A-F0-9]{4}$/);
 
     const byCustomer = await digital.listDownloadTokensForCustomer(customerId);
     expect(byCustomer).toHaveLength(1);
@@ -486,9 +462,7 @@ describe('Digital gate smoke (D-04)', () => {
       { reserveForStore, release: vi.fn(async () => undefined) } as never,
       { save: vi.fn(async (line: unknown) => line) } as never,
       {
-        find: vi.fn(async () => [
-          { id: variantId, fulfillmentMode: 'digital' },
-        ]),
+        find: vi.fn(async () => [{ id: variantId, fulfillmentMode: 'digital' }]),
       } as never,
       {
         calculateOrZero: vi.fn(async () => ({

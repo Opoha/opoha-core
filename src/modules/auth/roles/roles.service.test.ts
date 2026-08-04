@@ -7,16 +7,14 @@ describe('RolesService', () => {
   it('creates a role and replaces permissions', async () => {
     const roles = {
       find: vi.fn(),
-      findOne: vi
-        .fn()
-        .mockResolvedValueOnce({
-          id: 'r1',
-          name: 'editor',
-          description: null,
-          createdAt: new Date('2026-01-01'),
-          updatedAt: new Date('2026-01-01'),
-          rolePermissions: [],
-        }),
+      findOne: vi.fn().mockResolvedValueOnce({
+        id: 'r1',
+        name: 'editor',
+        description: null,
+        createdAt: new Date('2026-01-01'),
+        updatedAt: new Date('2026-01-01'),
+        rolePermissions: [],
+      }),
       create: vi.fn((v: unknown) => v),
       save: vi.fn().mockResolvedValue({
         id: 'r1',
@@ -45,10 +43,7 @@ describe('RolesService', () => {
       auditLogs as never,
     );
 
-    const created = await service.create(
-      { name: 'Editor', permissionIds: ['p1'] },
-      'actor',
-    );
+    const created = await service.create({ name: 'Editor', permissionIds: ['p1'] }, 'actor');
 
     expect(created.name).toBe('editor');
     expect(rolePermissions.delete).toHaveBeenCalledWith({ roleId: 'r1' });
@@ -77,9 +72,7 @@ describe('RolesService', () => {
       { append: vi.fn() } as never,
     );
 
-    await expect(service.remove('r-admin')).rejects.toThrow(
-      /Cannot delete the default admin role/,
-    );
+    await expect(service.remove('r-admin')).rejects.toThrow(/Cannot delete the default admin role/);
     expect(roles.delete).not.toHaveBeenCalled();
   });
 });

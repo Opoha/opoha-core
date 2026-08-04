@@ -1,9 +1,6 @@
 import { Injectable } from '@nestjs/common';
 
-import type {
-  RegisteredSearchProvider,
-  SearchProvider,
-} from './search-provider';
+import type { RegisteredSearchProvider, SearchProvider } from './search-provider';
 
 /**
  * Registry for search providers (Phase 4 A-01 / A-02).
@@ -17,9 +14,7 @@ export class SearchProviderRegistry {
     if (!provider.code || provider.code.trim().length === 0) {
       throw new Error('Search provider code is required');
     }
-    const existing = this.entries.find(
-      (e) => e.provider.code === provider.code,
-    );
+    const existing = this.entries.find((e) => e.provider.code === provider.code);
     if (existing && existing.pluginId !== pluginId) {
       throw new Error(
         `Search provider conflict: code "${provider.code}" already registered by plugin "${existing.pluginId}"`,
@@ -34,14 +29,11 @@ export class SearchProviderRegistry {
   }
 
   get(id: string): SearchProvider | undefined {
-    return this.entries.find((e) => e.provider.code === id && e.active)
-      ?.provider;
+    return this.entries.find((e) => e.provider.code === id && e.active)?.provider;
   }
 
   list(activeOnly = false): readonly RegisteredSearchProvider[] {
-    return activeOnly
-      ? this.entries.filter((e) => e.active)
-      : [...this.entries];
+    return activeOnly ? this.entries.filter((e) => e.active) : [...this.entries];
   }
 
   activatePlugin(pluginId: string): void {

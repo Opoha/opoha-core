@@ -42,10 +42,7 @@ export class OpenTelemetryService implements OnModuleInit, OnModuleDestroy {
     span.setAttribute('opoha.otel.enabled', true);
     span.end();
 
-    this.logger.log(
-      'OpenTelemetry enabled — console span exporter registered',
-      'OpenTelemetry',
-    );
+    this.logger.log('OpenTelemetry enabled — console span exporter registered', 'OpenTelemetry');
   }
 
   async onModuleDestroy(): Promise<void> {

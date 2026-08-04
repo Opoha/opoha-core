@@ -1,8 +1,4 @@
-import {
-  BadRequestException,
-  ConflictException,
-  NotFoundException,
-} from '@nestjs/common';
+import { BadRequestException, ConflictException, NotFoundException } from '@nestjs/common';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 
 import { CoreEventName } from '../event-bus/event-catalog';
@@ -133,15 +129,15 @@ describe('SupplierService (unit)', () => {
   });
 
   it('rejects empty code', async () => {
-    await expect(
-      service.create({ code: '   ', name: 'X' }),
-    ).rejects.toBeInstanceOf(BadRequestException);
+    await expect(service.create({ code: '   ', name: 'X' })).rejects.toBeInstanceOf(
+      BadRequestException,
+    );
   });
 
   it('rejects empty name', async () => {
-    await expect(
-      service.create({ code: 'X-1', name: '   ' }),
-    ).rejects.toBeInstanceOf(BadRequestException);
+    await expect(service.create({ code: 'X-1', name: '   ' })).rejects.toBeInstanceOf(
+      BadRequestException,
+    );
   });
 
   it('maps unique code violations to ConflictException', async () => {
@@ -151,9 +147,9 @@ describe('SupplierService (unit)', () => {
     } as never);
     suppliersRepo.save.mockRejectedValueOnce(qfe);
 
-    await expect(
-      service.create({ code: 'ACME', name: 'Dup' }),
-    ).rejects.toBeInstanceOf(ConflictException);
+    await expect(service.create({ code: 'ACME', name: 'Dup' })).rejects.toBeInstanceOf(
+      ConflictException,
+    );
   });
 
   it('finds supplier by code', async () => {
@@ -162,9 +158,7 @@ describe('SupplierService (unit)', () => {
   });
 
   it('throws NotFound for missing code', async () => {
-    await expect(service.findByCode('missing')).rejects.toBeInstanceOf(
-      NotFoundException,
-    );
+    await expect(service.findByCode('missing')).rejects.toBeInstanceOf(NotFoundException);
   });
 
   it('updates a supplier and publishes SupplierUpdated', async () => {
@@ -183,9 +177,9 @@ describe('SupplierService (unit)', () => {
   });
 
   it('throws NotFound updating missing supplier', async () => {
-    await expect(
-      service.update('missing', { name: 'X' }),
-    ).rejects.toBeInstanceOf(NotFoundException);
+    await expect(service.update('missing', { name: 'X' })).rejects.toBeInstanceOf(
+      NotFoundException,
+    );
   });
 
   it('removes a supplier and publishes SupplierUpdated', async () => {
@@ -201,8 +195,6 @@ describe('SupplierService (unit)', () => {
   });
 
   it('throws NotFound removing missing supplier', async () => {
-    await expect(service.remove('missing')).rejects.toBeInstanceOf(
-      NotFoundException,
-    );
+    await expect(service.remove('missing')).rejects.toBeInstanceOf(NotFoundException);
   });
 });

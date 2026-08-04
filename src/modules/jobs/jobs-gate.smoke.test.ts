@@ -48,15 +48,12 @@ describe('Jobs gate smoke (A-04)', () => {
     let runSeq = 0;
 
     const definitionsRepo = {
-      find: vi.fn(async () =>
-        [...definitions].sort((a, b) => a.code.localeCompare(b.code)),
-      ),
-      findOne: vi.fn(async ({ where }: { where: Partial<DefinitionRow> }) =>
-        definitions.find((row) =>
-          Object.entries(where).every(
-            ([k, v]) => row[k as keyof DefinitionRow] === v,
-          ),
-        ) ?? null,
+      find: vi.fn(async () => [...definitions].sort((a, b) => a.code.localeCompare(b.code))),
+      findOne: vi.fn(
+        async ({ where }: { where: Partial<DefinitionRow> }) =>
+          definitions.find((row) =>
+            Object.entries(where).every(([k, v]) => row[k as keyof DefinitionRow] === v),
+          ) ?? null,
       ),
       create: vi.fn((data: Partial<DefinitionRow>) => ({
         id: `def-${++defSeq}`,
@@ -77,21 +74,10 @@ describe('Jobs gate smoke (A-04)', () => {
     };
 
     const runsRepo = {
-      find: vi.fn(
-        async ({
-          where,
-          order: _order,
-        }: {
-          where: Partial<RunRow>;
-          order?: unknown;
-        }) =>
-          runs
-            .filter((row) =>
-              Object.entries(where).every(
-                ([k, v]) => row[k as keyof RunRow] === v,
-              ),
-            )
-            .sort((a, b) => b.createdAt.getTime() - a.createdAt.getTime()),
+      find: vi.fn(async ({ where, order: _order }: { where: Partial<RunRow>; order?: unknown }) =>
+        runs
+          .filter((row) => Object.entries(where).every(([k, v]) => row[k as keyof RunRow] === v))
+          .sort((a, b) => b.createdAt.getTime() - a.createdAt.getTime()),
       ),
       create: vi.fn((data: Partial<RunRow>) => ({
         id: `run-${++runSeq}`,
@@ -183,9 +169,7 @@ describe('Jobs gate smoke (A-04)', () => {
       },
     });
 
-    await expect(service.trigger('sample:tick')).rejects.toThrow(
-      'handler-failed',
-    );
+    await expect(service.trigger('sample:tick')).rejects.toThrow('handler-failed');
 
     const history = await service.listRuns('sample:tick');
     expect(history).toHaveLength(2);

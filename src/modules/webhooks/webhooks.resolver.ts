@@ -1,15 +1,8 @@
 import { UseGuards } from '@nestjs/common';
 import { Args, ID, Int, Mutation, Query, Resolver } from '@nestjs/graphql';
 
-import {
-  GqlAuthGuard,
-  PermissionsGuard,
-  RequirePermission,
-} from '../auth/public';
-import type {
-  WebhookDeliveryAttemptType,
-  WebhookEndpointType,
-} from './webhooks.types';
+import { GqlAuthGuard, PermissionsGuard, RequirePermission } from '../auth/public';
+import type { WebhookDeliveryAttemptType, WebhookEndpointType } from './webhooks.types';
 import { WebhooksService } from './webhooks.service';
 import {
   CreateWebhookEndpointGqlInput,
@@ -32,9 +25,7 @@ function toEndpointGql(row: WebhookEndpointType): WebhookEndpointGqlType {
   };
 }
 
-function toAttemptGql(
-  row: WebhookDeliveryAttemptType,
-): WebhookDeliveryAttemptGqlType {
+function toAttemptGql(row: WebhookDeliveryAttemptType): WebhookDeliveryAttemptGqlType {
   return {
     id: row.id,
     endpointId: row.endpointId,
@@ -88,10 +79,7 @@ export class WebhooksResolver {
     @Args('endpointId', { type: () => ID }) endpointId: string,
     @Args('limit', { type: () => Int, nullable: true }) limit?: number,
   ): Promise<WebhookDeliveryAttemptGqlType[]> {
-    const rows = await this.webhooks.listDeliveryAttempts(
-      endpointId,
-      limit ?? 50,
-    );
+    const rows = await this.webhooks.listDeliveryAttempts(endpointId, limit ?? 50);
     return rows.map(toAttemptGql);
   }
 

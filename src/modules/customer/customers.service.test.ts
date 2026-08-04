@@ -1,8 +1,4 @@
-import {
-  BadRequestException,
-  ConflictException,
-  NotFoundException,
-} from '@nestjs/common';
+import { BadRequestException, ConflictException, NotFoundException } from '@nestjs/common';
 import { QueryFailedError } from 'typeorm';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 
@@ -107,9 +103,9 @@ describe('CustomersService (unit)', () => {
   });
 
   it('rejects short passwords', async () => {
-    await expect(
-      service.register({ email: 'a@b.co', password: 'short' }),
-    ).rejects.toBeInstanceOf(BadRequestException);
+    await expect(service.register({ email: 'a@b.co', password: 'short' })).rejects.toBeInstanceOf(
+      BadRequestException,
+    );
   });
 
   it('rejects invalid email', async () => {
@@ -162,8 +158,8 @@ describe('CustomersService (unit)', () => {
   });
 
   it('throws when updating missing customer', async () => {
-    await expect(
-      service.update({ id: 'missing', firstName: 'X' }),
-    ).rejects.toBeInstanceOf(NotFoundException);
+    await expect(service.update({ id: 'missing', firstName: 'X' })).rejects.toBeInstanceOf(
+      NotFoundException,
+    );
   });
 });

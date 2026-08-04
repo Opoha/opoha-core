@@ -20,10 +20,7 @@ import { CategoryEntity } from './category.entity';
  * overrides for additional BCP 47 locales.
  */
 @Entity({ name: 'category_translations' })
-@Unique('category_translations_category_id_locale_key', [
-  'categoryId',
-  'locale',
-])
+@Unique('category_translations_category_id_locale_key', ['categoryId', 'locale'])
 @Index('category_translations_locale_idx', ['locale'])
 export class CategoryTranslationEntity {
   @PrimaryGeneratedColumn('uuid')

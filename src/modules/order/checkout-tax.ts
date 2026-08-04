@@ -1,13 +1,6 @@
 import { DEFAULT_LOCALIZATION_SETTINGS } from '../localization/public';
-import type {
-  PromotionApplyInput,
-  PromotionApplyResult,
-} from '../promotions-engine/public';
-import type {
-  TaxCalculateInput,
-  TaxCalculateResult,
-  TaxPricingMode,
-} from '../tax-engine/public';
+import type { PromotionApplyInput, PromotionApplyResult } from '../promotions-engine/public';
+import type { TaxCalculateInput, TaxCalculateResult, TaxPricingMode } from '../tax-engine/public';
 import type { CartLineEntity } from './entities/cart-line.entity';
 import type { CartEntity } from './entities/cart.entity';
 import type { CheckoutTotalsType } from './order.types';
@@ -188,7 +181,4 @@ export function lineSubtotalMinor(lines: CartLineEntity[]): bigint {
 }
 
 /** Persist helper shape for promotion apply results. */
-export type CartPromotionSnapshot = Pick<
-  PromotionApplyResult,
-  'discountMinor' | 'freeShipping'
->;
+export type CartPromotionSnapshot = Pick<PromotionApplyResult, 'discountMinor' | 'freeShipping'>;

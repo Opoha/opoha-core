@@ -122,8 +122,7 @@ export class CreateProductVariantInput {
 
   @Field(() => String, {
     nullable: true,
-    description:
-      'physical | digital | service; defaults to parent product fulfillmentMode',
+    description: 'physical | digital | service; defaults to parent product fulfillmentMode',
   })
   fulfillmentMode?: string;
 

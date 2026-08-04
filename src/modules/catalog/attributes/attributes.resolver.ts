@@ -1,11 +1,7 @@
 import { UseGuards } from '@nestjs/common';
 import { Args, ID, Mutation, Query, Resolver } from '@nestjs/graphql';
 
-import {
-  GqlAuthGuard,
-  PermissionsGuard,
-  RequirePermission,
-} from '../../auth/public';
+import { GqlAuthGuard, PermissionsGuard, RequirePermission } from '../../auth/public';
 import {
   AttributeDefinitionType,
   AttributeValueType,
@@ -128,9 +124,7 @@ export class AttributesResolver {
     description: 'Remove an attribute value from a product or variant',
   })
   @RequirePermission('attribute:delete')
-  removeAttributeValue(
-    @Args('id', { type: () => ID }) id: string,
-  ): Promise<AttributeValueType> {
+  removeAttributeValue(@Args('id', { type: () => ID }) id: string): Promise<AttributeValueType> {
     return this.attributesService.removeAttributeValue(id);
   }
 }

@@ -1,7 +1,7 @@
 packages:
-  - "."
+  - '.'
 
 allowBuilds:
   esbuild: true
-  "@apollo/protobufjs": true
+  '@apollo/protobufjs': true
   protobufjs: true

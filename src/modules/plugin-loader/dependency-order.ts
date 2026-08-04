@@ -4,9 +4,7 @@ import type { DiscoveredPlugin } from './plugin-manifest';
  * Topologically sort plugins by `dependsOn`.
  * Throws on unknown dependency ids or cycles.
  */
-export function orderPluginsByDependency(
-  plugins: DiscoveredPlugin[],
-): DiscoveredPlugin[] {
+export function orderPluginsByDependency(plugins: DiscoveredPlugin[]): DiscoveredPlugin[] {
   const byId = new Map<string, DiscoveredPlugin>();
   for (const plugin of plugins) {
     if (byId.has(plugin.manifest.id)) {
@@ -18,9 +16,7 @@ export function orderPluginsByDependency(
   for (const plugin of plugins) {
     for (const dep of plugin.manifest.dependsOn) {
       if (!byId.has(dep)) {
-        throw new Error(
-          `Plugin "${plugin.manifest.id}" depends on missing plugin "${dep}"`,
-        );
+        throw new Error(`Plugin "${plugin.manifest.id}" depends on missing plugin "${dep}"`);
       }
     }
   }

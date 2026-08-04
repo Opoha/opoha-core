@@ -23,10 +23,7 @@ describe('FulfillmentResolver RBAC (resolver metadata + PermissionsGuard)', () =
   };
   let resolver: FulfillmentResolver;
 
-  function gqlContext(
-    req: { user?: unknown },
-    handler: (...args: never[]) => unknown,
-  ) {
+  function gqlContext(req: { user?: unknown }, handler: (...args: never[]) => unknown) {
     return {
       getType: () => 'graphql',
       getArgs: () => [{}, {}, { req }, {}],
@@ -52,52 +49,28 @@ describe('FulfillmentResolver RBAC (resolver metadata + PermissionsGuard)', () =
   it('declares fulfillment:* permission keys', () => {
     const reflector = new Reflector();
     expect(
-      reflector.get(
-        REQUIRE_PERMISSION_KEY,
-        FulfillmentResolver.prototype.fulfillments,
-      ),
+      reflector.get(REQUIRE_PERMISSION_KEY, FulfillmentResolver.prototype.fulfillments),
     ).toEqual(['fulfillment:read']);
     expect(
-      reflector.get(
-        REQUIRE_PERMISSION_KEY,
-        FulfillmentResolver.prototype.fulfillment,
-      ),
+      reflector.get(REQUIRE_PERMISSION_KEY, FulfillmentResolver.prototype.fulfillment),
     ).toEqual(['fulfillment:read']);
     expect(
-      reflector.get(
-        REQUIRE_PERMISSION_KEY,
-        FulfillmentResolver.prototype.fulfillmentsByOrder,
-      ),
+      reflector.get(REQUIRE_PERMISSION_KEY, FulfillmentResolver.prototype.fulfillmentsByOrder),
     ).toEqual(['fulfillment:read']);
     expect(
-      reflector.get(
-        REQUIRE_PERMISSION_KEY,
-        FulfillmentResolver.prototype.createFulfillment,
-      ),
+      reflector.get(REQUIRE_PERMISSION_KEY, FulfillmentResolver.prototype.createFulfillment),
     ).toEqual(['fulfillment:create']);
     expect(
-      reflector.get(
-        REQUIRE_PERMISSION_KEY,
-        FulfillmentResolver.prototype.pickFulfillment,
-      ),
+      reflector.get(REQUIRE_PERMISSION_KEY, FulfillmentResolver.prototype.pickFulfillment),
     ).toEqual(['fulfillment:pick']);
     expect(
-      reflector.get(
-        REQUIRE_PERMISSION_KEY,
-        FulfillmentResolver.prototype.packFulfillment,
-      ),
+      reflector.get(REQUIRE_PERMISSION_KEY, FulfillmentResolver.prototype.packFulfillment),
     ).toEqual(['fulfillment:pack']);
     expect(
-      reflector.get(
-        REQUIRE_PERMISSION_KEY,
-        FulfillmentResolver.prototype.shipFulfillment,
-      ),
+      reflector.get(REQUIRE_PERMISSION_KEY, FulfillmentResolver.prototype.shipFulfillment),
     ).toEqual(['fulfillment:ship']);
     expect(
-      reflector.get(
-        REQUIRE_PERMISSION_KEY,
-        FulfillmentResolver.prototype.cancelFulfillment,
-      ),
+      reflector.get(REQUIRE_PERMISSION_KEY, FulfillmentResolver.prototype.cancelFulfillment),
     ).toEqual(['fulfillment:cancel']);
   });
 

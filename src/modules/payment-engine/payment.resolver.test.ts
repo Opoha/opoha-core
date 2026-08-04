@@ -11,10 +11,7 @@ import { PaymentResolver } from './payment.resolver';
  * A-06 — payment GraphQL permission metadata + resolver behavior.
  */
 describe('PaymentResolver RBAC (resolver metadata + PermissionsGuard deny)', () => {
-  function gqlContext(
-    req: { user?: unknown },
-    handler: (...args: never[]) => unknown,
-  ) {
+  function gqlContext(req: { user?: unknown }, handler: (...args: never[]) => unknown) {
     return {
       getType: () => 'graphql',
       getArgs: () => [{}, {}, { req }, {}],
@@ -25,39 +22,24 @@ describe('PaymentResolver RBAC (resolver metadata + PermissionsGuard deny)', () 
 
   it('declares payment:read/authorize/capture/refund permission keys', () => {
     const reflector = new Reflector();
+    expect(reflector.get(REQUIRE_PERMISSION_KEY, PaymentResolver.prototype.payment)).toEqual([
+      'payment:read',
+    ]);
     expect(
-      reflector.get(REQUIRE_PERMISSION_KEY, PaymentResolver.prototype.payment),
+      reflector.get(REQUIRE_PERMISSION_KEY, PaymentResolver.prototype.paymentsByOrder),
     ).toEqual(['payment:read']);
     expect(
-      reflector.get(
-        REQUIRE_PERMISSION_KEY,
-        PaymentResolver.prototype.paymentsByOrder,
-      ),
+      reflector.get(REQUIRE_PERMISSION_KEY, PaymentResolver.prototype.paymentProviders),
     ).toEqual(['payment:read']);
     expect(
-      reflector.get(
-        REQUIRE_PERMISSION_KEY,
-        PaymentResolver.prototype.paymentProviders,
-      ),
-    ).toEqual(['payment:read']);
-    expect(
-      reflector.get(
-        REQUIRE_PERMISSION_KEY,
-        PaymentResolver.prototype.authorizePayment,
-      ),
+      reflector.get(REQUIRE_PERMISSION_KEY, PaymentResolver.prototype.authorizePayment),
     ).toEqual(['payment:authorize']);
-    expect(
-      reflector.get(
-        REQUIRE_PERMISSION_KEY,
-        PaymentResolver.prototype.capturePayment,
-      ),
-    ).toEqual(['payment:capture']);
-    expect(
-      reflector.get(
-        REQUIRE_PERMISSION_KEY,
-        PaymentResolver.prototype.refundPayment,
-      ),
-    ).toEqual(['payment:refund']);
+    expect(reflector.get(REQUIRE_PERMISSION_KEY, PaymentResolver.prototype.capturePayment)).toEqual(
+      ['payment:capture'],
+    );
+    expect(reflector.get(REQUIRE_PERMISSION_KEY, PaymentResolver.prototype.refundPayment)).toEqual([
+      'payment:refund',
+    ]);
   });
 
   it('PermissionsGuard denies capturePayment without payment:capture', async () => {

@@ -25,9 +25,7 @@ describe('AnalyticsSinkRegistry (F-04)', () => {
   it('rejects a conflicting code registered by a different plugin', () => {
     const registry = new AnalyticsSinkRegistry();
     registry.register('plugin-a', makeSink('shared'));
-    expect(() => registry.register('plugin-b', makeSink('shared'))).toThrow(
-      /already registered/,
-    );
+    expect(() => registry.register('plugin-b', makeSink('shared'))).toThrow(/already registered/);
   });
 
   it('updates an existing entry when the same plugin re-registers', () => {
@@ -58,8 +56,6 @@ describe('AnalyticsSinkRegistry (F-04)', () => {
 
   it('rejects sinks with an empty code', () => {
     const registry = new AnalyticsSinkRegistry();
-    expect(() => registry.register('plugin-analytics', makeSink(''))).toThrow(
-      /code is required/,
-    );
+    expect(() => registry.register('plugin-analytics', makeSink(''))).toThrow(/code is required/);
   });
 });

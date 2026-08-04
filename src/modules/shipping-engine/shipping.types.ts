@@ -1,9 +1,4 @@
-import {
-  Field,
-  InputType,
-  Int,
-  ObjectType,
-} from '@nestjs/graphql';
+import { Field, InputType, Int, ObjectType } from '@nestjs/graphql';
 
 @ObjectType('ShippingMethod', {
   description: 'Registered shipping method available for rate quotes',

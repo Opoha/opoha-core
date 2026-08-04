@@ -11,12 +11,7 @@ import {
 import { FulfillmentLineEntity } from './fulfillment-line.entity';
 import { FulfillmentPackageEntity } from './fulfillment-package.entity';
 
-export type FulfillmentStatus =
-  | 'pending'
-  | 'picked'
-  | 'packed'
-  | 'shipped'
-  | 'cancelled';
+export type FulfillmentStatus = 'pending' | 'picked' | 'packed' | 'shipped' | 'cancelled';
 
 /** OWNER: fulfillment module — plugins must not alter this table. */
 @Entity({ name: 'fulfillments' })

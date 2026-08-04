@@ -30,9 +30,7 @@ export const inventoryReservationCreatedDataSchema = z
   })
   .strict();
 
-export type InventoryReservationCreatedData = z.infer<
-  typeof inventoryReservationCreatedDataSchema
->;
+export type InventoryReservationCreatedData = z.infer<typeof inventoryReservationCreatedDataSchema>;
 
 export const inventoryReservationReleasedDataSchema = z
   .object({
@@ -60,9 +58,7 @@ export const stockTransferCreatedDataSchema = z
   })
   .strict();
 
-export type StockTransferCreatedData = z.infer<
-  typeof stockTransferCreatedDataSchema
->;
+export type StockTransferCreatedData = z.infer<typeof stockTransferCreatedDataSchema>;
 
 export const stockTransferShippedDataSchema = z
   .object({
@@ -75,9 +71,7 @@ export const stockTransferShippedDataSchema = z
   })
   .strict();
 
-export type StockTransferShippedData = z.infer<
-  typeof stockTransferShippedDataSchema
->;
+export type StockTransferShippedData = z.infer<typeof stockTransferShippedDataSchema>;
 
 export const stockTransferReceivedDataSchema = z
   .object({
@@ -90,9 +84,7 @@ export const stockTransferReceivedDataSchema = z
   })
   .strict();
 
-export type StockTransferReceivedData = z.infer<
-  typeof stockTransferReceivedDataSchema
->;
+export type StockTransferReceivedData = z.infer<typeof stockTransferReceivedDataSchema>;
 
 export const stockTransferCancelledDataSchema = z
   .object({
@@ -103,20 +95,15 @@ export const stockTransferCancelledDataSchema = z
   })
   .strict();
 
-export type StockTransferCancelledData = z.infer<
-  typeof stockTransferCancelledDataSchema
->;
+export type StockTransferCancelledData = z.infer<typeof stockTransferCancelledDataSchema>;
 
 export type InventoryUpdatedEvent = DomainEvent<InventoryUpdatedData>;
-export type InventoryReservationCreatedEvent =
-  DomainEvent<InventoryReservationCreatedData>;
-export type InventoryReservationReleasedEvent =
-  DomainEvent<InventoryReservationReleasedData>;
+export type InventoryReservationCreatedEvent = DomainEvent<InventoryReservationCreatedData>;
+export type InventoryReservationReleasedEvent = DomainEvent<InventoryReservationReleasedData>;
 export type StockTransferCreatedEvent = DomainEvent<StockTransferCreatedData>;
 export type StockTransferShippedEvent = DomainEvent<StockTransferShippedData>;
 export type StockTransferReceivedEvent = DomainEvent<StockTransferReceivedData>;
-export type StockTransferCancelledEvent =
-  DomainEvent<StockTransferCancelledData>;
+export type StockTransferCancelledEvent = DomainEvent<StockTransferCancelledData>;
 
 /** Register inventory event payload schemas on the bus (call once at module init). */
 export function inventoryEventSchemas(): Array<{

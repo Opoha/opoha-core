@@ -1,10 +1,6 @@
 import { describe, expect, it } from 'vitest';
 
-import {
-  ORDER_SOURCES,
-  assertOrderSource,
-  isOrderSource,
-} from './order-source';
+import { ORDER_SOURCES, assertOrderSource, isOrderSource } from './order-source';
 
 describe('order-source', () => {
   it('accepts web, pos, marketplace', () => {

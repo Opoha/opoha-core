@@ -10,10 +10,7 @@ import type {
   NotificationSendInput,
   NotificationSendResult,
 } from './notification-provider';
-import type {
-  NotificationTemplate,
-  NotificationTemplateRendered,
-} from './notification-template';
+import type { NotificationTemplate, NotificationTemplateRendered } from './notification-template';
 
 /**
  * Notifications orchestration — providers, templates, and send.
@@ -62,10 +59,7 @@ export class NotificationsService {
   /**
    * Render a registered template. Throws BadRequestException when unknown.
    */
-  renderTemplate(
-    code: string,
-    data: Record<string, unknown> = {},
-  ): NotificationTemplateRendered {
+  renderTemplate(code: string, data: Record<string, unknown> = {}): NotificationTemplateRendered {
     try {
       return this.templates.render(code, data);
     } catch (err) {
@@ -81,10 +75,7 @@ export class NotificationsService {
    * unless the caller already supplied them.
    * Publishes NotificationQueued after a successful handoff (queued/sent).
    */
-  async send(
-    input: NotificationSendInput,
-    providerCode?: string,
-  ): Promise<NotificationSendResult> {
+  async send(input: NotificationSendInput, providerCode?: string): Promise<NotificationSendResult> {
     const resolved = this.applyTemplate(input);
     this.requireSendInput(resolved);
     const provider = this.resolveProvider(providerCode);
@@ -195,9 +186,7 @@ export class NotificationsService {
       ) {
         return input;
       }
-      throw new BadRequestException(
-        `Notification template "${code}" is not registered`,
-      );
+      throw new BadRequestException(`Notification template "${code}" is not registered`);
     }
     const rendered = this.templates.render(code, input.data ?? {});
     return {
@@ -215,9 +204,7 @@ export class NotificationsService {
     }
     const channel = input.channel ?? 'email';
     if (channel === 'email') {
-      const hasEmail = recipients.some(
-        (r) => r.email && r.email.trim().length > 0,
-      );
+      const hasEmail = recipients.some((r) => r.email && r.email.trim().length > 0);
       if (!hasEmail) {
         throw new BadRequestException(
           'At least one recipient email is required for email notifications',
@@ -230,9 +217,7 @@ export class NotificationsService {
       (input.bodyHtml && input.bodyHtml.trim().length > 0) ||
       (input.templateCode && input.templateCode.trim().length > 0);
     if (!hasContent) {
-      throw new BadRequestException(
-        'Notification requires subject, body, or templateCode',
-      );
+      throw new BadRequestException('Notification requires subject, body, or templateCode');
     }
   }
 

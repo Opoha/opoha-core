@@ -20,8 +20,5 @@ export function catalogStoreWhere<T extends { storeId: string | null }>(
   if (catalogMode === 'isolated') {
     return { storeId: scope } as FindOptionsWhere<T>;
   }
-  return [
-    { storeId: IsNull() } as FindOptionsWhere<T>,
-    { storeId: scope } as FindOptionsWhere<T>,
-  ];
+  return [{ storeId: IsNull() } as FindOptionsWhere<T>, { storeId: scope } as FindOptionsWhere<T>];
 }

@@ -48,9 +48,7 @@ export function redactSensitive(value: unknown, depth = 0): unknown {
   if (value && typeof value === 'object') {
     const out: Record<string, unknown> = {};
     for (const [key, nested] of Object.entries(value as Record<string, unknown>)) {
-      out[key] = SENSITIVE_KEY.test(key)
-        ? REDACTED
-        : redactSensitive(nested, depth + 1);
+      out[key] = SENSITIVE_KEY.test(key) ? REDACTED : redactSensitive(nested, depth + 1);
     }
     return out;
   }

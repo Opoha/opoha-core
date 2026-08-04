@@ -18,11 +18,7 @@ import { StoreCurrencyConfigService } from './store-currency-config.service';
  * cart/checkout display conversion (D-03), and optional FX provider port (D-04).
  */
 @Module({
-  imports: [
-    AuthModule,
-    StoresModule,
-    TypeOrmModule.forFeature([...currencyEntities]),
-  ],
+  imports: [AuthModule, StoresModule, TypeOrmModule.forFeature([...currencyEntities])],
   providers: [
     StoreCurrencyConfigService,
     StoreCurrencyConfigResolver,

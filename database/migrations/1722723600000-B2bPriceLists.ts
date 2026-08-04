@@ -38,11 +38,7 @@ export class B2bPriceLists1722723600000 implements MigrationInterface {
   }
 
   public async down(queryRunner: QueryRunner): Promise<void> {
-    await queryRunner.query(
-      `DROP INDEX IF EXISTS "company_price_list_items_company_id_idx"`,
-    );
-    await queryRunner.query(
-      `DROP TABLE IF EXISTS "company_price_list_items"`,
-    );
+    await queryRunner.query(`DROP INDEX IF EXISTS "company_price_list_items_company_id_idx"`);
+    await queryRunner.query(`DROP TABLE IF EXISTS "company_price_list_items"`);
   }
 }

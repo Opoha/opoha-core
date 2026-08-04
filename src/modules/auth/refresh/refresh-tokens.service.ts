@@ -46,9 +46,7 @@ export class RefreshTokensService {
     return raw;
   }
 
-  async rotate(
-    rawRefreshToken: string,
-  ): Promise<{ userId: string; refreshToken: string }> {
+  async rotate(rawRefreshToken: string): Promise<{ userId: string; refreshToken: string }> {
     const tokenHash = hashOpaqueToken(rawRefreshToken);
     const existing = await this.refreshTokens.findOne({ where: { tokenHash } });
     if (!existing) {
@@ -90,14 +88,20 @@ export class RefreshTokensService {
 
   async revoke(rawRefreshToken: string): Promise<void> {
     const tokenHash = hashOpaqueToken(rawRefreshToken);
-    await this.refreshTokens.update({ tokenHash, revokedAt: IsNull() }, {
-      revokedAt: new Date(),
-    });
+    await this.refreshTokens.update(
+      { tokenHash, revokedAt: IsNull() },
+      {
+        revokedAt: new Date(),
+      },
+    );
   }
 
   async revokeAllForUser(userId: string): Promise<void> {
-    await this.refreshTokens.update({ userId, revokedAt: IsNull() }, {
-      revokedAt: new Date(),
-    });
+    await this.refreshTokens.update(
+      { userId, revokedAt: IsNull() },
+      {
+        revokedAt: new Date(),
+      },
+    );
   }
 }

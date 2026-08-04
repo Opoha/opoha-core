@@ -10,11 +10,7 @@ import { DataSource, QueryFailedError, Repository } from 'typeorm';
 import { CoreEventName } from '../event-bus/event-catalog';
 import { EventBusService } from '../event-bus/event-bus.service';
 import { WarehouseEntity } from './entities/warehouse.entity';
-import type {
-  CreateWarehouseInput,
-  UpdateWarehouseInput,
-  WarehouseType,
-} from './warehouse.types';
+import type { CreateWarehouseInput, UpdateWarehouseInput, WarehouseType } from './warehouse.types';
 
 function isUniqueViolation(error: unknown): boolean {
   return (
@@ -45,9 +41,7 @@ function toWarehouseType(row: WarehouseEntity): WarehouseType {
   };
 }
 
-function normalizeOptionalText(
-  value: string | null | undefined,
-): string | null | undefined {
+function normalizeOptionalText(value: string | null | undefined): string | null | undefined {
   if (value === undefined) {
     return undefined;
   }
@@ -232,9 +226,7 @@ export class WarehouseService {
       return toWarehouseType(saved);
     } catch (error) {
       if (isUniqueViolation(error)) {
-        throw new ConflictException(
-          `Warehouse code "${existing.code}" already exists`,
-        );
+        throw new ConflictException(`Warehouse code "${existing.code}" already exists`);
       }
       throw error;
     }

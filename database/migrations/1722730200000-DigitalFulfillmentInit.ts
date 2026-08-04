@@ -9,9 +9,7 @@ import type { MigrationInterface, QueryRunner } from 'typeorm';
  *
  * Plugins must not alter these tables.
  */
-export class DigitalFulfillmentInit1722730200000
-  implements MigrationInterface
-{
+export class DigitalFulfillmentInit1722730200000 implements MigrationInterface {
   name = 'DigitalFulfillmentInit1722730200000';
 
   public async up(queryRunner: QueryRunner): Promise<void> {

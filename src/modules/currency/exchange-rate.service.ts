@@ -23,9 +23,7 @@ const DEFAULT_SOURCE = 'manual';
 function assertCurrencyCode(value: string, field: string): string {
   const normalized = value.trim().toUpperCase();
   if (!CURRENCY_RE.test(normalized)) {
-    throw new BadRequestException(
-      `Invalid ${field} "${value}" (expected ISO 4217)`,
-    );
+    throw new BadRequestException(`Invalid ${field} "${value}" (expected ISO 4217)`);
   }
   return normalized;
 }
@@ -85,16 +83,10 @@ export class ExchangeRateService {
       toCurrencyCode?: string;
     } = {};
     if (filters?.fromCurrencyCode) {
-      where.fromCurrencyCode = assertCurrencyCode(
-        filters.fromCurrencyCode,
-        'fromCurrencyCode',
-      );
+      where.fromCurrencyCode = assertCurrencyCode(filters.fromCurrencyCode, 'fromCurrencyCode');
     }
     if (filters?.toCurrencyCode) {
-      where.toCurrencyCode = assertCurrencyCode(
-        filters.toCurrencyCode,
-        'toCurrencyCode',
-      );
+      where.toCurrencyCode = assertCurrencyCode(filters.toCurrencyCode, 'toCurrencyCode');
     }
     const rows = await this.rates.find({
       where: Object.keys(where).length > 0 ? where : undefined,
@@ -115,10 +107,7 @@ export class ExchangeRateService {
    * Lookup rate for a currency pair. Same-currency returns 1 without a row.
    * Throws when a cross-currency rate is missing (D-03 consumers should catch).
    */
-  async getRate(
-    fromCurrencyCode: string,
-    toCurrencyCode: string,
-  ): Promise<number> {
+  async getRate(fromCurrencyCode: string, toCurrencyCode: string): Promise<number> {
     const from = assertCurrencyCode(fromCurrencyCode, 'fromCurrencyCode');
     const to = assertCurrencyCode(toCurrencyCode, 'toCurrencyCode');
     if (from === to) {
@@ -128,26 +117,16 @@ export class ExchangeRateService {
       where: { fromCurrencyCode: from, toCurrencyCode: to },
     });
     if (!row) {
-      throw new NotFoundException(
-        `Exchange rate ${from}→${to} not found`,
-      );
+      throw new NotFoundException(`Exchange rate ${from}→${to} not found`);
     }
     return row.rate;
   }
 
   async create(input: CreateExchangeRateInput): Promise<ExchangeRateType> {
-    const fromCurrencyCode = assertCurrencyCode(
-      input.fromCurrencyCode,
-      'fromCurrencyCode',
-    );
-    const toCurrencyCode = assertCurrencyCode(
-      input.toCurrencyCode,
-      'toCurrencyCode',
-    );
+    const fromCurrencyCode = assertCurrencyCode(input.fromCurrencyCode, 'fromCurrencyCode');
+    const toCurrencyCode = assertCurrencyCode(input.toCurrencyCode, 'toCurrencyCode');
     if (fromCurrencyCode === toCurrencyCode) {
-      throw new BadRequestException(
-        'fromCurrencyCode and toCurrencyCode must differ',
-      );
+      throw new BadRequestException('fromCurrencyCode and toCurrencyCode must differ');
     }
     const rate = assertRate(input.rate);
     const source = assertSource(input.source);
@@ -175,10 +154,7 @@ export class ExchangeRateService {
     return toType(saved);
   }
 
-  async update(
-    id: string,
-    input: UpdateExchangeRateInput,
-  ): Promise<ExchangeRateType> {
+  async update(id: string, input: UpdateExchangeRateInput): Promise<ExchangeRateType> {
     const row = await this.rates.findOne({ where: { id } });
     if (!row) {
       throw new NotFoundException(`Exchange rate ${id} not found`);
@@ -201,18 +177,10 @@ export class ExchangeRateService {
    * ExchangeRateUpdated).
    */
   async upsert(input: CreateExchangeRateInput): Promise<ExchangeRateType> {
-    const fromCurrencyCode = assertCurrencyCode(
-      input.fromCurrencyCode,
-      'fromCurrencyCode',
-    );
-    const toCurrencyCode = assertCurrencyCode(
-      input.toCurrencyCode,
-      'toCurrencyCode',
-    );
+    const fromCurrencyCode = assertCurrencyCode(input.fromCurrencyCode, 'fromCurrencyCode');
+    const toCurrencyCode = assertCurrencyCode(input.toCurrencyCode, 'toCurrencyCode');
     if (fromCurrencyCode === toCurrencyCode) {
-      throw new BadRequestException(
-        'fromCurrencyCode and toCurrencyCode must differ',
-      );
+      throw new BadRequestException('fromCurrencyCode and toCurrencyCode must differ');
     }
     const rate = assertRate(input.rate);
     const source = assertSource(input.source);
@@ -279,21 +247,13 @@ export class ExchangeRateService {
     }
     const provider = this.fxProviders.get(providerCode.trim());
     if (!provider) {
-      throw new NotFoundException(
-        `FX provider "${providerCode}" is not registered or inactive`,
-      );
+      throw new NotFoundException(`FX provider "${providerCode}" is not registered or inactive`);
     }
 
     const results: ExchangeRateType[] = [];
     for (const pair of pairs) {
-      const fromCurrencyCode = assertCurrencyCode(
-        pair.fromCurrencyCode,
-        'fromCurrencyCode',
-      );
-      const toCurrencyCode = assertCurrencyCode(
-        pair.toCurrencyCode,
-        'toCurrencyCode',
-      );
+      const fromCurrencyCode = assertCurrencyCode(pair.fromCurrencyCode, 'fromCurrencyCode');
+      const toCurrencyCode = assertCurrencyCode(pair.toCurrencyCode, 'toCurrencyCode');
       const quote = await provider.getRate({ fromCurrencyCode, toCurrencyCode });
       const saved = await this.upsert({
         fromCurrencyCode,

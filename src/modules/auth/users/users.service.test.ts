@@ -43,20 +43,13 @@ describe('UsersService', () => {
       };
     });
     const users = {
-      findOne: vi
-        .fn()
-        .mockResolvedValueOnce(null)
-        .mockResolvedValueOnce(saved),
+      findOne: vi.fn().mockResolvedValueOnce(null).mockResolvedValueOnce(saved),
       save,
       create: vi.fn((data) => data),
     };
     const audit = mockAudit();
     const eventBus = mockEventBus();
-    const service = new UsersService(
-      users as never,
-      audit as never,
-      eventBus as never,
-    );
+    const service = new UsersService(users as never, audit as never, eventBus as never);
     const user = await service.create(
       {
         email: 'Staff@Example.com',
@@ -84,25 +77,15 @@ describe('UsersService', () => {
 
   it('rejects duplicate emails on create', async () => {
     const users = { findOne: vi.fn().mockResolvedValue({ id: 'existing' }) };
-    const service = new UsersService(
-      users as never,
-      mockAudit() as never,
-      mockEventBus() as never,
+    const service = new UsersService(users as never, mockAudit() as never, mockEventBus() as never);
+    await expect(service.create({ email: 'a@b.c', password: 'x' })).rejects.toBeInstanceOf(
+      ConflictException,
     );
-    await expect(
-      service.create({ email: 'a@b.c', password: 'x' }),
-    ).rejects.toBeInstanceOf(ConflictException);
   });
 
   it('throws NotFoundException when user missing', async () => {
     const users = { findOne: vi.fn().mockResolvedValue(null) };
-    const service = new UsersService(
-      users as never,
-      mockAudit() as never,
-      mockEventBus() as never,
-    );
-    await expect(service.findById('missing')).rejects.toBeInstanceOf(
-      NotFoundException,
-    );
+    const service = new UsersService(users as never, mockAudit() as never, mockEventBus() as never);
+    await expect(service.findById('missing')).rejects.toBeInstanceOf(NotFoundException);
   });
 });

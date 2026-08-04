@@ -4,9 +4,7 @@ import type { MigrationInterface, QueryRunner } from 'typeorm';
  * Persist tax pricing mode + jurisdiction on carts for checkout calc (Phase 2 C-03).
  * OWNER: order module tables — tax-engine orchestrates calculation only.
  */
-export class CartTaxContextOnCheckout1722698300000
-  implements MigrationInterface
-{
+export class CartTaxContextOnCheckout1722698300000 implements MigrationInterface {
   name = 'CartTaxContextOnCheckout1722698300000';
 
   public async up(queryRunner: QueryRunner): Promise<void> {

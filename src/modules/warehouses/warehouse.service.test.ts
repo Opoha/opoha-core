@@ -1,8 +1,4 @@
-import {
-  BadRequestException,
-  ConflictException,
-  NotFoundException,
-} from '@nestjs/common';
+import { BadRequestException, ConflictException, NotFoundException } from '@nestjs/common';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 
 import { CoreEventName } from '../event-bus/event-catalog';
@@ -123,11 +119,7 @@ describe('WarehouseService (unit)', () => {
       publish: vi.fn(async () => undefined),
     };
 
-    service = new WarehouseService(
-      warehousesRepo as never,
-      dataSource as never,
-      eventBus as never,
-    );
+    service = new WarehouseService(warehousesRepo as never, dataSource as never, eventBus as never);
   });
 
   it('lists warehouses ordered by code', async () => {
@@ -158,9 +150,9 @@ describe('WarehouseService (unit)', () => {
   });
 
   it('rejects empty code', async () => {
-    await expect(
-      service.create({ code: '   ', name: 'X' }),
-    ).rejects.toBeInstanceOf(BadRequestException);
+    await expect(service.create({ code: '   ', name: 'X' })).rejects.toBeInstanceOf(
+      BadRequestException,
+    );
   });
 
   it('maps unique violations to ConflictException', async () => {
@@ -170,9 +162,9 @@ describe('WarehouseService (unit)', () => {
     } as never);
     dataSource.transaction.mockRejectedValueOnce(qfe);
 
-    await expect(
-      service.create({ code: 'DEFAULT', name: 'Dup' }),
-    ).rejects.toBeInstanceOf(ConflictException);
+    await expect(service.create({ code: 'DEFAULT', name: 'Dup' })).rejects.toBeInstanceOf(
+      ConflictException,
+    );
   });
 
   it('finds default warehouse', async () => {
@@ -181,9 +173,7 @@ describe('WarehouseService (unit)', () => {
   });
 
   it('refuses deleting the default warehouse', async () => {
-    await expect(service.remove('wh-1')).rejects.toBeInstanceOf(
-      BadRequestException,
-    );
+    await expect(service.remove('wh-1')).rejects.toBeInstanceOf(BadRequestException);
   });
 
   it('updates and clears previous default when setting isDefault', async () => {
@@ -216,8 +206,6 @@ describe('WarehouseService (unit)', () => {
   });
 
   it('throws NotFound for missing id', async () => {
-    await expect(service.findById('missing')).rejects.toBeInstanceOf(
-      NotFoundException,
-    );
+    await expect(service.findById('missing')).rejects.toBeInstanceOf(NotFoundException);
   });
 });

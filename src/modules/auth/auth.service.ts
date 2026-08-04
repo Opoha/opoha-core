@@ -88,8 +88,7 @@ export class AuthService {
    * Revoked or replayed refresh tokens are rejected.
    */
   async refresh(rawRefreshToken: string): Promise<AuthPayload> {
-    const { userId, refreshToken } =
-      await this.refreshTokensService.rotate(rawRefreshToken);
+    const { userId, refreshToken } = await this.refreshTokensService.rotate(rawRefreshToken);
     const user = await this.usersService.findById(userId).catch(() => null);
     if (!user || !user.isActive) {
       throw new UnauthorizedException('User inactive or not found');

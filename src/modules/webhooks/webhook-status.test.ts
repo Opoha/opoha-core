@@ -1,9 +1,6 @@
 import { describe, expect, it } from 'vitest';
 
-import {
-  isWebhookDeliveryStatus,
-  webhookBackoffMs,
-} from './webhook-status';
+import { isWebhookDeliveryStatus, webhookBackoffMs } from './webhook-status';
 
 describe('webhook-status', () => {
   it('recognizes delivery statuses', () => {

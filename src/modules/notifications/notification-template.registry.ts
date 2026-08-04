@@ -81,13 +81,10 @@ function paymentFailedTemplate(): NotificationTemplate {
 function shipmentCreatedTemplate(): NotificationTemplate {
   return {
     code: NotificationTemplateCode.ShipmentCreated,
-    description:
-      'Sent when a shipment is created for an order (reserved for Phase 3 fulfillment).',
+    description: 'Sent when a shipment is created for an order (reserved for Phase 3 fulfillment).',
     render(data) {
       const orderId = String(data.orderId ?? '');
-      const trackingNumber = data.trackingNumber
-        ? String(data.trackingNumber)
-        : undefined;
+      const trackingNumber = data.trackingNumber ? String(data.trackingNumber) : undefined;
       return {
         subject: `Your order has shipped — #${orderId}`,
         bodyText: trackingNumber
@@ -141,10 +138,7 @@ export class NotificationTemplateRegistry {
     return [...this.templates.values()];
   }
 
-  render(
-    code: string,
-    data: Record<string, unknown>,
-  ): NotificationTemplateRendered {
+  render(code: string, data: Record<string, unknown>): NotificationTemplateRendered {
     const template = this.templates.get(code);
     if (!template) {
       throw new Error(`Notification template "${code}" is not registered`);

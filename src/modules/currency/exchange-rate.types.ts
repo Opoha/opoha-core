@@ -1,8 +1,7 @@
 import { Field, Float, ID, InputType, ObjectType } from '@nestjs/graphql';
 
 @ObjectType('ExchangeRate', {
-  description:
-    'FX rate: 1 fromCurrencyCode = rate × toCurrencyCode (Phase 5 D-02)',
+  description: 'FX rate: 1 fromCurrencyCode = rate × toCurrencyCode (Phase 5 D-02)',
 })
 export class ExchangeRateType {
   @Field(() => ID)

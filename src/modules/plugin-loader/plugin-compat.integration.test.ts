@@ -69,7 +69,18 @@ function createLoader(pluginPaths: string) {
     search,
     fx,
   );
-  return { loader, contributions, admin, payment, shipping, tax, promotions, notifications, storage, search };
+  return {
+    loader,
+    contributions,
+    admin,
+    payment,
+    shipping,
+    tax,
+    promotions,
+    notifications,
+    storage,
+    search,
+  };
 }
 
 /**
@@ -84,9 +95,7 @@ describe('Phase 9 E-02 official plugin compatibility', () => {
   it('every matrix entry has an existing sibling repo with a built entry', () => {
     for (const entry of OFFICIAL_PLUGIN_MATRIX) {
       const root = pluginRoot(entry.repoDir);
-      expect(existsSync(root), `missing sibling repo: ${entry.repoDir}`).toBe(
-        true,
-      );
+      expect(existsSync(root), `missing sibling repo: ${entry.repoDir}`).toBe(true);
       ensurePluginBuilt(root);
       expect(
         existsSync(join(root, 'dist', 'index.js')),
@@ -96,9 +105,7 @@ describe('Phase 9 E-02 official plugin compatibility', () => {
   });
 
   it('discovers all 21 certified plugins with compatible contractVersion', async () => {
-    const pluginPaths = OFFICIAL_PLUGIN_MATRIX.map((entry) =>
-      pluginRoot(entry.repoDir),
-    ).join(',');
+    const pluginPaths = OFFICIAL_PLUGIN_MATRIX.map((entry) => pluginRoot(entry.repoDir)).join(',');
     const { loader } = createLoader(pluginPaths);
 
     const discovered = loader.reload();
@@ -113,9 +120,7 @@ describe('Phase 9 E-02 official plugin compatibility', () => {
   });
 
   it('loads, installs, and enables the full official matrix without conflicts', async () => {
-    const pluginPaths = OFFICIAL_PLUGIN_MATRIX.map((entry) =>
-      pluginRoot(entry.repoDir),
-    ).join(',');
+    const pluginPaths = OFFICIAL_PLUGIN_MATRIX.map((entry) => pluginRoot(entry.repoDir)).join(',');
     const { loader, contributions, admin } = createLoader(pluginPaths);
 
     const result = await loader.loadDefinitions();
@@ -137,9 +142,7 @@ describe('Phase 9 E-02 official plugin compatibility', () => {
     // per plugin — proves boot() ran and registries accepted every plugin's
     // registrations without a duplicate-code / conflict throw (design's
     // "deterministic conflict error" requirement).
-    const adminPluginIds = new Set(
-      admin.getManifest(true).plugins.map((p) => p.pluginId),
-    );
+    const adminPluginIds = new Set(admin.getManifest(true).plugins.map((p) => p.pluginId));
     for (const entry of OFFICIAL_PLUGIN_MATRIX) {
       expect(
         adminPluginIds.has(entry.id),

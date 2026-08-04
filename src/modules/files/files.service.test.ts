@@ -25,8 +25,7 @@ function createService() {
       store.set(entity.id, entity);
       return entity;
     },
-    findOne: async ({ where }: { where: { id: string } }) =>
-      store.get(where.id) ?? null,
+    findOne: async ({ where }: { where: { id: string } }) => store.get(where.id) ?? null,
     remove: async (entity: FileEntity) => {
       store.delete(entity.id);
       return entity;

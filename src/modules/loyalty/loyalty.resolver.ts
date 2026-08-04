@@ -1,11 +1,7 @@
 import { UseGuards } from '@nestjs/common';
 import { Args, ID, Mutation, Query, Resolver } from '@nestjs/graphql';
 
-import {
-  GqlAuthGuard,
-  PermissionsGuard,
-  RequirePermission,
-} from '../auth/public';
+import { GqlAuthGuard, PermissionsGuard, RequirePermission } from '../auth/public';
 import { LoyaltyService } from './loyalty.service';
 import {
   AccrueLoyaltyInput,
@@ -46,8 +42,7 @@ export class LoyaltyResolver {
 
   @Query(() => QuoteLoyaltyRedeemResult, {
     name: 'quoteLoyaltyRedeem',
-    description:
-      'Preview how many loyalty points can apply toward a total (no mutation)',
+    description: 'Preview how many loyalty points can apply toward a total (no mutation)',
   })
   @RequirePermission('loyalty:read')
   quoteLoyaltyRedeem(
@@ -59,8 +54,7 @@ export class LoyaltyResolver {
 
   @Mutation(() => LoyaltyAccountType, {
     name: 'accrueLoyaltyPoints',
-    description:
-      'Staff/admin manual loyalty points accrual (publishes LoyaltyPointsAccrued)',
+    description: 'Staff/admin manual loyalty points accrual (publishes LoyaltyPointsAccrued)',
   })
   @RequirePermission('loyalty:accrue')
   accrueLoyaltyPoints(
@@ -72,8 +66,7 @@ export class LoyaltyResolver {
 
   @Mutation(() => LoyaltyAccountType, {
     name: 'redeemLoyaltyPoints',
-    description:
-      'Redeem loyalty points against an order (publishes LoyaltyPointsRedeemed)',
+    description: 'Redeem loyalty points against an order (publishes LoyaltyPointsRedeemed)',
   })
   @RequirePermission('loyalty:redeem')
   redeemLoyaltyPoints(

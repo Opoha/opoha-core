@@ -82,19 +82,16 @@ describe('Webhooks gate smoke (D-04)', () => {
         let list = [...endpoints];
         if (opts?.where) {
           list = list.filter((row) =>
-            Object.entries(opts.where!).every(
-              ([k, v]) => row[k as keyof EndpointRow] === v,
-            ),
+            Object.entries(opts.where!).every(([k, v]) => row[k as keyof EndpointRow] === v),
           );
         }
         return list.sort((a, b) => a.code.localeCompare(b.code));
       }),
-      findOne: vi.fn(async ({ where }: { where: Partial<EndpointRow> }) =>
-        endpoints.find((row) =>
-          Object.entries(where).every(
-            ([k, v]) => row[k as keyof EndpointRow] === v,
-          ),
-        ) ?? null,
+      findOne: vi.fn(
+        async ({ where }: { where: Partial<EndpointRow> }) =>
+          endpoints.find((row) =>
+            Object.entries(where).every(([k, v]) => row[k as keyof EndpointRow] === v),
+          ) ?? null,
       ),
       create: vi.fn((data: Partial<EndpointRow>) => ({
         id: `ep-${++seq}`,
@@ -181,18 +178,11 @@ describe('Webhooks gate smoke (D-04)', () => {
     };
 
     webhooks = new WebhooksService(endpointRepo as never, attemptRepo as never);
-    worker = new WebhookDeliveryWorker(
-      attemptRepo as never,
-      endpointRepo as never,
-      http,
-    ).configure({ maxAttempts: 3, backoffMs: [0, 0, 0] });
-    eventBus = new EventBusService();
-    dispatcher = new WebhookDispatcherService(
-      webhooks,
-      worker,
-      eventBus,
-      attemptRepo as never,
+    worker = new WebhookDeliveryWorker(attemptRepo as never, endpointRepo as never, http).configure(
+      { maxAttempts: 3, backoffMs: [0, 0, 0] },
     );
+    eventBus = new EventBusService();
+    dispatcher = new WebhookDispatcherService(webhooks, worker, eventBus, attemptRepo as never);
     dispatcher.onModuleInit();
   });
 
@@ -246,9 +236,7 @@ describe('Webhooks gate smoke (D-04)', () => {
     const sig1 = httpCalls[0]!.headers[WEBHOOK_SIGNATURE_HEADER]!;
     expect(verifyWebhookSignature(secret, body1, sig1)).toBe(true);
     expect(sig1).toBe(signWebhookPayload(secret, body1));
-    expect(httpCalls[0]!.headers[WEBHOOK_EVENT_HEADER]).toBe(
-      CoreEventName.OrderPaid,
-    );
+    expect(httpCalls[0]!.headers[WEBHOOK_EVENT_HEADER]).toBe(CoreEventName.OrderPaid);
     expect(JSON.parse(body1)).toEqual(
       expect.objectContaining({
         eventName: CoreEventName.OrderPaid,

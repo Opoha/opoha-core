@@ -1,17 +1,9 @@
 import { UseGuards } from '@nestjs/common';
 import { Args, ID, Mutation, Query, Resolver } from '@nestjs/graphql';
 
-import {
-  GqlAuthGuard,
-  PermissionsGuard,
-  RequirePermission,
-} from '../auth/public';
+import { GqlAuthGuard, PermissionsGuard, RequirePermission } from '../auth/public';
 import { ReturnsService } from './returns.service';
-import {
-  CompleteRefundInput,
-  CreateReturnInput,
-  ReturnType,
-} from './returns.types';
+import { CompleteRefundInput, CreateReturnInput, ReturnType } from './returns.types';
 
 @Resolver(() => ReturnType)
 @UseGuards(GqlAuthGuard, PermissionsGuard)
@@ -29,13 +21,7 @@ export class ReturnsResolver {
   ): Promise<ReturnType[]> {
     return this.returnsService.findAll(
       status as
-        | 'requested'
-        | 'approved'
-        | 'received'
-        | 'refunded'
-        | 'exchanged'
-        | 'cancelled'
-        | undefined,
+        'requested' | 'approved' | 'received' | 'refunded' | 'exchanged' | 'cancelled' | undefined,
     );
   }
 
@@ -44,9 +30,7 @@ export class ReturnsResolver {
     description: 'Get a return / RMA by id',
   })
   @RequirePermission('return:read')
-  returnById(
-    @Args('id', { type: () => ID }) id: string,
-  ): Promise<ReturnType> {
+  returnById(@Args('id', { type: () => ID }) id: string): Promise<ReturnType> {
     return this.returnsService.findById(id);
   }
 
@@ -55,9 +39,7 @@ export class ReturnsResolver {
     description: 'List returns / RMAs for an order',
   })
   @RequirePermission('return:read')
-  returnsByOrder(
-    @Args('orderId', { type: () => ID }) orderId: string,
-  ): Promise<ReturnType[]> {
+  returnsByOrder(@Args('orderId', { type: () => ID }) orderId: string): Promise<ReturnType[]> {
     return this.returnsService.findByOrderId(orderId);
   }
 
@@ -78,9 +60,7 @@ export class ReturnsResolver {
     description: 'Approve a requested RMA',
   })
   @RequirePermission('return:approve')
-  approveReturn(
-    @Args('id', { type: () => ID }) id: string,
-  ): Promise<ReturnType> {
+  approveReturn(@Args('id', { type: () => ID }) id: string): Promise<ReturnType> {
     return this.returnsService.approve(id);
   }
 
@@ -89,16 +69,13 @@ export class ReturnsResolver {
     description: 'Mark an approved RMA received and restock into its warehouse',
   })
   @RequirePermission('return:receive')
-  receiveReturn(
-    @Args('id', { type: () => ID }) id: string,
-  ): Promise<ReturnType> {
+  receiveReturn(@Args('id', { type: () => ID }) id: string): Promise<ReturnType> {
     return this.returnsService.receive(id);
   }
 
   @Mutation(() => ReturnType, {
     name: 'completeReturnRefund',
-    description:
-      'Complete a refund-resolution RMA via PaymentEngine (publishes RefundCompleted)',
+    description: 'Complete a refund-resolution RMA via PaymentEngine (publishes RefundCompleted)',
   })
   @RequirePermission('return:refund')
   completeReturnRefund(
@@ -110,13 +87,10 @@ export class ReturnsResolver {
 
   @Mutation(() => ReturnType, {
     name: 'completeReturnExchange',
-    description:
-      'Complete an exchange-resolution RMA (creates a pending replacement order stub)',
+    description: 'Complete an exchange-resolution RMA (creates a pending replacement order stub)',
   })
   @RequirePermission('return:exchange')
-  completeReturnExchange(
-    @Args('id', { type: () => ID }) id: string,
-  ): Promise<ReturnType> {
+  completeReturnExchange(@Args('id', { type: () => ID }) id: string): Promise<ReturnType> {
     return this.returnsService.completeExchange(id);
   }
 
@@ -125,9 +99,7 @@ export class ReturnsResolver {
     description: 'Cancel a requested or approved RMA',
   })
   @RequirePermission('return:cancel')
-  cancelReturn(
-    @Args('id', { type: () => ID }) id: string,
-  ): Promise<ReturnType> {
+  cancelReturn(@Args('id', { type: () => ID }) id: string): Promise<ReturnType> {
     return this.returnsService.cancel(id);
   }
 }

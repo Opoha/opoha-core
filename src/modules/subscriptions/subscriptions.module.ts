@@ -16,11 +16,7 @@ import { SubscriptionService } from './subscription.service';
     PaymentEngineModule,
     TypeOrmModule.forFeature([...subscriptionEntities]),
   ],
-  providers: [
-    SubscriptionService,
-    SubscriptionResolver,
-    SubscriptionEventsRegistrar,
-  ],
+  providers: [SubscriptionService, SubscriptionResolver, SubscriptionEventsRegistrar],
   exports: [SubscriptionService, TypeOrmModule],
 })
 export class SubscriptionsModule {}

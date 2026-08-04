@@ -4,15 +4,8 @@
 export { WebhooksModule } from '../webhooks.module';
 export { WebhooksService } from '../webhooks.service';
 export { WebhookDeliveryWorker } from '../webhook-delivery.worker';
-export {
-  WebhookDispatcherService,
-  WEBHOOK_TRIGGER_EVENTS,
-} from '../webhook-dispatcher.service';
-export {
-  WebhookEndpointEntity,
-  WebhookDeliveryAttemptEntity,
-  webhookEntities,
-} from '../entities';
+export { WebhookDispatcherService, WEBHOOK_TRIGGER_EVENTS } from '../webhook-dispatcher.service';
+export { WebhookEndpointEntity, WebhookDeliveryAttemptEntity, webhookEntities } from '../entities';
 export {
   signWebhookPayload,
   verifyWebhookSignature,
@@ -34,5 +27,9 @@ export type {
   UpdateWebhookEndpointInput,
   WebhookDeliveryAttemptType,
 } from '../webhooks.types';
-export type { WebhookHttpClient, WebhookHttpRequest, WebhookHttpResponse } from '../webhook-http.client';
+export type {
+  WebhookHttpClient,
+  WebhookHttpRequest,
+  WebhookHttpResponse,
+} from '../webhook-http.client';
 export { WEBHOOK_HTTP_CLIENT, createFetchWebhookHttpClient } from '../webhook-http.client';

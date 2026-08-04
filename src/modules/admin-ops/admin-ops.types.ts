@@ -1,11 +1,4 @@
-import {
-  Field,
-  GraphQLISODateTime,
-  ID,
-  InputType,
-  Int,
-  ObjectType,
-} from '@nestjs/graphql';
+import { Field, GraphQLISODateTime, ID, InputType, Int, ObjectType } from '@nestjs/graphql';
 
 @ObjectType({ description: 'Order count and revenue for one status' })
 export class OrdersReportStatusRow {

@@ -62,9 +62,7 @@ describe('order store-scope helpers (B-02)', () => {
       }),
     ).resolves.toBe('ctx-store');
 
-    await expect(
-      resolveCartStoreId({ stores: stores as never }),
-    ).resolves.toBe('default-store');
+    await expect(resolveCartStoreId({ stores: stores as never })).resolves.toBe('default-store');
   });
 
   it('resolveContextStoreId resolves store code via StoreService', async () => {

@@ -1,7 +1,4 @@
-import {
-  BadRequestException,
-  NotFoundException,
-} from '@nestjs/common';
+import { BadRequestException, NotFoundException } from '@nestjs/common';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 
 import { CoreEventName } from '../event-bus/event-catalog';
@@ -92,8 +89,7 @@ describe('StoreWarehouseService (unit)', () => {
       })),
       save: vi.fn(async (row: LinkRow) => {
         const idx = links.findIndex(
-          (r) =>
-            r.storeId === row.storeId && r.warehouseId === row.warehouseId,
+          (r) => r.storeId === row.storeId && r.warehouseId === row.warehouseId,
         );
         if (idx >= 0) {
           links[idx] = { ...row };
@@ -102,30 +98,21 @@ describe('StoreWarehouseService (unit)', () => {
         links.push({ ...row });
         return row;
       }),
-      update: vi.fn(
-        async (
-          where: Partial<LinkRow>,
-          patch: Partial<LinkRow>,
-        ) => {
-          for (const row of links) {
-            if (where.storeId && row.storeId !== where.storeId) continue;
-            if (where.isPrimary === true && !row.isPrimary) continue;
-            Object.assign(row, patch);
-          }
-        },
-      ),
+      update: vi.fn(async (where: Partial<LinkRow>, patch: Partial<LinkRow>) => {
+        for (const row of links) {
+          if (where.storeId && row.storeId !== where.storeId) continue;
+          if (where.isPrimary === true && !row.isPrimary) continue;
+          Object.assign(row, patch);
+        }
+      }),
       delete: vi.fn(async (where: Partial<LinkRow>) => {
         links = links.filter(
-          (r) =>
-            !(
-              r.storeId === where.storeId &&
-              r.warehouseId === where.warehouseId
-            ),
+          (r) => !(r.storeId === where.storeId && r.warehouseId === where.warehouseId),
         );
       }),
-      count: vi.fn(async ({ where }: { where: Partial<LinkRow> }) =>
-        links.filter((r) => !where.storeId || r.storeId === where.storeId)
-          .length,
+      count: vi.fn(
+        async ({ where }: { where: Partial<LinkRow> }) =>
+          links.filter((r) => !where.storeId || r.storeId === where.storeId).length,
       ),
     };
 
@@ -200,9 +187,9 @@ describe('StoreWarehouseService (unit)', () => {
     await expect(
       service.assertWarehouseAllowedForStore('store-1', 'wh-1'),
     ).resolves.toBeUndefined();
-    await expect(
-      service.assertWarehouseAllowedForStore('store-1', 'wh-2'),
-    ).rejects.toBeInstanceOf(BadRequestException);
+    await expect(service.assertWarehouseAllowedForStore('store-1', 'wh-2')).rejects.toBeInstanceOf(
+      BadRequestException,
+    );
   });
 
   it('links a secondary warehouse and can promote primary', async () => {
@@ -239,9 +226,7 @@ describe('StoreWarehouseService (unit)', () => {
 
   it('resolvePrimaryWarehouseId prefers primary', async () => {
     await service.link('store-1', 'wh-2', false);
-    await expect(service.resolvePrimaryWarehouseId('store-1')).resolves.toBe(
-      'wh-1',
-    );
+    await expect(service.resolvePrimaryWarehouseId('store-1')).resolves.toBe('wh-1');
   });
 
   it('assertTransferAllowed rejects warehouses with no shared store', async () => {
@@ -261,9 +246,9 @@ describe('StoreWarehouseService (unit)', () => {
         updatedAt: now,
       },
     ];
-    await expect(
-      service.assertTransferAllowed('wh-1', 'wh-2'),
-    ).rejects.toBeInstanceOf(BadRequestException);
+    await expect(service.assertTransferAllowed('wh-1', 'wh-2')).rejects.toBeInstanceOf(
+      BadRequestException,
+    );
   });
 
   it('assertTransferAllowed accepts when storeId scopes both warehouses', async () => {
@@ -283,14 +268,10 @@ describe('StoreWarehouseService (unit)', () => {
         updatedAt: now,
       },
     ];
-    await expect(
-      service.assertTransferAllowed('wh-1', 'wh-2', 'store-1'),
-    ).resolves.toBeUndefined();
+    await expect(service.assertTransferAllowed('wh-1', 'wh-2', 'store-1')).resolves.toBeUndefined();
   });
 
   it('rejects unknown warehouse on link', async () => {
-    await expect(service.link('store-1', 'wh-missing')).rejects.toBeInstanceOf(
-      NotFoundException,
-    );
+    await expect(service.link('store-1', 'wh-missing')).rejects.toBeInstanceOf(NotFoundException);
   });
 });

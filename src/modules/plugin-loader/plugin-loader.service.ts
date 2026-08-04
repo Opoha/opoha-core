@@ -116,9 +116,7 @@ export class PluginLoaderService implements OnModuleInit {
     for (const plugin of ordered) {
       const entryPath = join(plugin.rootPath, plugin.manifest.entry);
       if (!existsSync(entryPath) && plugin.manifest.required) {
-        throw new Error(
-          `Required plugin "${plugin.manifest.id}" entry not found: ${entryPath}`,
-        );
+        throw new Error(`Required plugin "${plugin.manifest.id}" entry not found: ${entryPath}`);
       }
       validated.push({ id: plugin.manifest.id, entryPath });
     }
@@ -136,9 +134,7 @@ export class PluginLoaderService implements OnModuleInit {
       const entryPath = join(plugin.rootPath, plugin.manifest.entry);
       if (!existsSync(entryPath)) {
         if (plugin.manifest.required) {
-          throw new Error(
-            `Required plugin "${plugin.manifest.id}" entry not found: ${entryPath}`,
-          );
+          throw new Error(`Required plugin "${plugin.manifest.id}" entry not found: ${entryPath}`);
         }
         this.logger?.warn(
           `Skipping plugin "${plugin.manifest.id}" — entry missing: ${entryPath}`,
@@ -226,10 +222,7 @@ export class PluginLoaderService implements OnModuleInit {
     const ctx = this.contextFor(record, active);
     await record.definition?.boot?.(ctx);
     record.booted = true;
-    this.logger?.log(
-      `Plugin booted: ${pluginId} active=${active}`,
-      'PluginLoaderService',
-    );
+    this.logger?.log(`Plugin booted: ${pluginId} active=${active}`, 'PluginLoaderService');
   }
 
   async enable(pluginId: string): Promise<PluginLifecycleState> {
@@ -337,9 +330,7 @@ export class PluginLoaderService implements OnModuleInit {
     const fromList = discoverPlugins(paths);
     const pluginsPath = this.config.get('OPOHA_PLUGINS_PATH')?.trim();
     const fromDir =
-      pluginsPath && pluginsPath.length > 0
-        ? discoverPluginsInDirectory(pluginsPath)
-        : [];
+      pluginsPath && pluginsPath.length > 0 ? discoverPluginsInDirectory(pluginsPath) : [];
 
     const byId = new Map<string, DiscoveredPlugin>();
     for (const plugin of [...fromList, ...fromDir]) {
@@ -359,14 +350,11 @@ export class PluginLoaderService implements OnModuleInit {
  * Uses a Function-wrapped `import()` so TypeScript/CJS emit does not rewrite to
  * `require()` — official plugins are ESM (`"type": "module"`).
  */
-export async function importPluginDefinition(
-  entryPath: string,
-): Promise<PluginDefinition> {
+export async function importPluginDefinition(entryPath: string): Promise<PluginDefinition> {
   const href = pathToFileURL(entryPath).href;
-  const dynamicImport = new Function(
-    'specifier',
-    'return import(specifier)',
-  ) as (specifier: string) => Promise<{
+  const dynamicImport = new Function('specifier', 'return import(specifier)') as (
+    specifier: string,
+  ) => Promise<{
     default?: PluginDefinition;
     plugin?: PluginDefinition;
   }>;
@@ -378,9 +366,7 @@ export async function importPluginDefinition(
     typeof definition.id !== 'string' ||
     definition.id.trim().length === 0
   ) {
-    throw new Error(
-      `Plugin entry must default-export a PluginDefinition with id: ${entryPath}`,
-    );
+    throw new Error(`Plugin entry must default-export a PluginDefinition with id: ${entryPath}`);
   }
   return definition;
 }

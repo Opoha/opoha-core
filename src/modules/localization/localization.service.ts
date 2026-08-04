@@ -19,9 +19,7 @@ const LOCALE_RE = /^[a-z]{2}(-[A-Za-z0-9]+)*$/;
 function assertCountryCode(value: string): string {
   const normalized = value.trim().toUpperCase();
   if (!COUNTRY_RE.test(normalized)) {
-    throw new BadRequestException(
-      `Invalid countryCode "${value}" (expected ISO 3166-1 alpha-2)`,
-    );
+    throw new BadRequestException(`Invalid countryCode "${value}" (expected ISO 3166-1 alpha-2)`);
   }
   return normalized;
 }
@@ -29,9 +27,7 @@ function assertCountryCode(value: string): string {
 function assertCurrencyCode(value: string): string {
   const normalized = value.trim().toUpperCase();
   if (!CURRENCY_RE.test(normalized)) {
-    throw new BadRequestException(
-      `Invalid currencyCode "${value}" (expected ISO 4217)`,
-    );
+    throw new BadRequestException(`Invalid currencyCode "${value}" (expected ISO 4217)`);
   }
   return normalized;
 }
@@ -44,9 +40,7 @@ function assertTimezone(value: string): string {
   try {
     Intl.DateTimeFormat(undefined, { timeZone: trimmed });
   } catch {
-    throw new BadRequestException(
-      `Invalid timezone "${value}" (expected IANA identifier)`,
-    );
+    throw new BadRequestException(`Invalid timezone "${value}" (expected IANA identifier)`);
   }
   return trimmed;
 }
@@ -85,9 +79,7 @@ export class LocalizationService {
     return toType(row);
   }
 
-  async update(
-    input: UpdateLocalizationSettingsInput,
-  ): Promise<LocalizationSettingsType> {
+  async update(input: UpdateLocalizationSettingsInput): Promise<LocalizationSettingsType> {
     const row = await this.ensureRow();
     if (input.countryCode !== undefined) {
       row.countryCode = assertCountryCode(input.countryCode);

@@ -1,15 +1,8 @@
-import {
-  BadRequestException,
-  Injectable,
-  NotFoundException,
-} from '@nestjs/common';
+import { BadRequestException, Injectable, NotFoundException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { In, Repository } from 'typeorm';
 
-import {
-  ProductVariantEntity,
-  type FulfillmentMode,
-} from '../catalog/public';
+import { ProductVariantEntity, type FulfillmentMode } from '../catalog/public';
 import { CoreEventName } from '../event-bus/event-catalog';
 import { EventBusService } from '../event-bus/event-bus.service';
 import { DigitalDownloadTokenEntity } from './entities/download-token.entity';
@@ -108,9 +101,7 @@ export class DigitalFulfillmentService {
     return toTokenType(row);
   }
 
-  async findDownloadTokenByToken(
-    token: string,
-  ): Promise<DigitalDownloadTokenType> {
+  async findDownloadTokenByToken(token: string): Promise<DigitalDownloadTokenType> {
     const row = await this.tokens.findOne({
       where: { token: token.trim() },
     });
@@ -128,9 +119,7 @@ export class DigitalFulfillmentService {
     return toLicenseType(row);
   }
 
-  async listDownloadTokensForOrder(
-    orderId: string,
-  ): Promise<DigitalDownloadTokenType[]> {
+  async listDownloadTokensForOrder(orderId: string): Promise<DigitalDownloadTokenType[]> {
     const rows = await this.tokens.find({
       where: { orderId },
       order: { createdAt: 'ASC' },
@@ -138,9 +127,7 @@ export class DigitalFulfillmentService {
     return rows.map(toTokenType);
   }
 
-  async listLicenseKeysForOrder(
-    orderId: string,
-  ): Promise<DigitalLicenseKeyType[]> {
+  async listLicenseKeysForOrder(orderId: string): Promise<DigitalLicenseKeyType[]> {
     const rows = await this.licenses.find({
       where: { orderId },
       order: { createdAt: 'ASC' },
@@ -148,9 +135,7 @@ export class DigitalFulfillmentService {
     return rows.map(toLicenseType);
   }
 
-  async listDownloadTokensForCustomer(
-    customerId: string,
-  ): Promise<DigitalDownloadTokenType[]> {
+  async listDownloadTokensForCustomer(customerId: string): Promise<DigitalDownloadTokenType[]> {
     const rows = await this.tokens.find({
       where: { customerId },
       order: { createdAt: 'DESC' },
@@ -158,9 +143,7 @@ export class DigitalFulfillmentService {
     return rows.map(toTokenType);
   }
 
-  async listLicenseKeysForCustomer(
-    customerId: string,
-  ): Promise<DigitalLicenseKeyType[]> {
+  async listLicenseKeysForCustomer(customerId: string): Promise<DigitalLicenseKeyType[]> {
     const rows = await this.licenses.find({
       where: { customerId },
       order: { createdAt: 'DESC' },
@@ -172,9 +155,7 @@ export class DigitalFulfillmentService {
    * Issue download token(s) + license key(s) for a digital order line.
    * One pair per quantity unit. Idempotent when tokens already exist for the line.
    */
-  async issueForLine(
-    input: IssueDigitalLineInput,
-  ): Promise<{
+  async issueForLine(input: IssueDigitalLineInput): Promise<{
     downloadTokens: DigitalDownloadTokenType[];
     licenseKeys: DigitalLicenseKeyType[];
   }> {
@@ -210,9 +191,7 @@ export class DigitalFulfillmentService {
 
     for (let i = 0; i < quantity; i += 1) {
       const token = generateDownloadToken();
-      const assetUrl =
-        input.assetUrl?.trim() ||
-        defaultDigitalAssetUrl(input.variantId, token);
+      const assetUrl = input.assetUrl?.trim() || defaultDigitalAssetUrl(input.variantId, token);
 
       downloadTokens.push(
         this.tokens.create({
@@ -263,16 +242,10 @@ export class DigitalFulfillmentService {
       quantity: number;
     }>;
   }): Promise<DigitalFulfillmentResultType> {
-    const variantIds = [
-      ...new Set(input.lines.map((l) => l.variantId).filter(Boolean)),
-    ];
+    const variantIds = [...new Set(input.lines.map((l) => l.variantId).filter(Boolean))];
     const variants =
-      variantIds.length === 0
-        ? []
-        : await this.variants.find({ where: { id: In(variantIds) } });
-    const modeByVariant = new Map(
-      variants.map((v) => [v.id, v.fulfillmentMode] as const),
-    );
+      variantIds.length === 0 ? [] : await this.variants.find({ where: { id: In(variantIds) } });
+    const modeByVariant = new Map(variants.map((v) => [v.id, v.fulfillmentMode] as const));
 
     const allTokens: DigitalDownloadTokenType[] = [];
     const allLicenses: DigitalLicenseKeyType[] = [];

@@ -1,11 +1,7 @@
 import { UseGuards } from '@nestjs/common';
 import { Args, ID, Mutation, Query, Resolver } from '@nestjs/graphql';
 
-import {
-  GqlAuthGuard,
-  PermissionsGuard,
-  RequirePermission,
-} from '../auth/public';
+import { GqlAuthGuard, PermissionsGuard, RequirePermission } from '../auth/public';
 import { SubscriptionService } from './subscription.service';
 import {
   CreateSubscriptionPlanInput,
@@ -37,9 +33,7 @@ export class SubscriptionResolver {
     description: 'Get a subscription plan by id',
   })
   @RequirePermission('subscription:read')
-  subscriptionPlan(
-    @Args('id', { type: () => ID }) id: string,
-  ): Promise<SubscriptionPlanType> {
+  subscriptionPlan(@Args('id', { type: () => ID }) id: string): Promise<SubscriptionPlanType> {
     return this.subscriptionService.findPlanById(id);
   }
 
@@ -48,9 +42,7 @@ export class SubscriptionResolver {
     description: 'Get a subscription by id',
   })
   @RequirePermission('subscription:read')
-  subscription(
-    @Args('id', { type: () => ID }) id: string,
-  ): Promise<SubscriptionType> {
+  subscription(@Args('id', { type: () => ID }) id: string): Promise<SubscriptionType> {
     return this.subscriptionService.findById(id);
   }
 
@@ -94,9 +86,7 @@ export class SubscriptionResolver {
     description: 'Cancel a subscription',
   })
   @RequirePermission('subscription:manage')
-  cancelSubscription(
-    @Args('id', { type: () => ID }) id: string,
-  ): Promise<SubscriptionType> {
+  cancelSubscription(@Args('id', { type: () => ID }) id: string): Promise<SubscriptionType> {
     return this.subscriptionService.cancel(id);
   }
 

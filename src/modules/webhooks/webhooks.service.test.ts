@@ -49,19 +49,16 @@ describe('WebhooksService (D-01/D-03)', () => {
         let list = [...endpoints];
         if (opts?.where) {
           list = list.filter((row) =>
-            Object.entries(opts.where!).every(
-              ([k, v]) => row[k as keyof EndpointRow] === v,
-            ),
+            Object.entries(opts.where!).every(([k, v]) => row[k as keyof EndpointRow] === v),
           );
         }
         return list.sort((a, b) => a.code.localeCompare(b.code));
       }),
-      findOne: vi.fn(async ({ where }: { where: Partial<EndpointRow> }) =>
-        endpoints.find((row) =>
-          Object.entries(where).every(
-            ([k, v]) => row[k as keyof EndpointRow] === v,
-          ),
-        ) ?? null,
+      findOne: vi.fn(
+        async ({ where }: { where: Partial<EndpointRow> }) =>
+          endpoints.find((row) =>
+            Object.entries(where).every(([k, v]) => row[k as keyof EndpointRow] === v),
+          ) ?? null,
       ),
       create: vi.fn((data: Partial<EndpointRow>) => ({
         id: `ep-${++seq}`,
@@ -171,8 +168,6 @@ describe('WebhooksService (D-01/D-03)', () => {
   });
 
   it('throws when endpoint missing', async () => {
-    await expect(service.findById('missing')).rejects.toBeInstanceOf(
-      NotFoundException,
-    );
+    await expect(service.findById('missing')).rejects.toBeInstanceOf(NotFoundException);
   });
 });

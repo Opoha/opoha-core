@@ -38,12 +38,8 @@ export class ExchangeRatesInit1722719200000 implements MigrationInterface {
   }
 
   public async down(queryRunner: QueryRunner): Promise<void> {
-    await queryRunner.query(
-      `DROP INDEX IF EXISTS "exchange_rates_to_currency_idx"`,
-    );
-    await queryRunner.query(
-      `DROP INDEX IF EXISTS "exchange_rates_from_currency_idx"`,
-    );
+    await queryRunner.query(`DROP INDEX IF EXISTS "exchange_rates_to_currency_idx"`);
+    await queryRunner.query(`DROP INDEX IF EXISTS "exchange_rates_from_currency_idx"`);
     await queryRunner.query(`DROP TABLE IF EXISTS "exchange_rates"`);
   }
 }

@@ -1,11 +1,7 @@
 import { UseGuards } from '@nestjs/common';
 import { Args, ID, Mutation, Query, Resolver } from '@nestjs/graphql';
 
-import {
-  GqlAuthGuard,
-  PermissionsGuard,
-  RequirePermission,
-} from '../../auth/public';
+import { GqlAuthGuard, PermissionsGuard, RequirePermission } from '../../auth/public';
 import {
   CategoryTranslationType,
   ProductTranslationType,

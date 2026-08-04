@@ -21,9 +21,7 @@ export type WebhookHttpClient = {
 export const WEBHOOK_HTTP_CLIENT = Symbol('WEBHOOK_HTTP_CLIENT');
 
 /** Default fetch-backed client. Truncates response body to 4 KiB. */
-export function createFetchWebhookHttpClient(
-  fetchImpl: typeof fetch = fetch,
-): WebhookHttpClient {
+export function createFetchWebhookHttpClient(fetchImpl: typeof fetch = fetch): WebhookHttpClient {
   return {
     async post(request) {
       const res = await fetchImpl(request.url, {

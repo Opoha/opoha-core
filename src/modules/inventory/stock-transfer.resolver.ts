@@ -1,16 +1,9 @@
 import { UseGuards } from '@nestjs/common';
 import { Args, ID, Mutation, Query, Resolver } from '@nestjs/graphql';
 
-import {
-  GqlAuthGuard,
-  PermissionsGuard,
-  RequirePermission,
-} from '../auth/public';
+import { GqlAuthGuard, PermissionsGuard, RequirePermission } from '../auth/public';
 import { StockTransferService } from './stock-transfer.service';
-import {
-  CreateStockTransferInput,
-  StockTransferType,
-} from './stock-transfer.types';
+import { CreateStockTransferInput, StockTransferType } from './stock-transfer.types';
 
 @Resolver(() => StockTransferType)
 @UseGuards(GqlAuthGuard, PermissionsGuard)
@@ -27,12 +20,7 @@ export class StockTransferResolver {
     status?: string,
   ): Promise<StockTransferType[]> {
     return this.stockTransferService.findAll(
-      status as
-        | 'draft'
-        | 'in_transit'
-        | 'received'
-        | 'cancelled'
-        | undefined,
+      status as 'draft' | 'in_transit' | 'received' | 'cancelled' | undefined,
     );
   }
 
@@ -41,9 +29,7 @@ export class StockTransferResolver {
     description: 'Get a stock transfer by id',
   })
   @RequirePermission('inventory:read')
-  stockTransfer(
-    @Args('id', { type: () => ID }) id: string,
-  ): Promise<StockTransferType> {
+  stockTransfer(@Args('id', { type: () => ID }) id: string): Promise<StockTransferType> {
     return this.stockTransferService.findById(id);
   }
 
@@ -61,25 +47,19 @@ export class StockTransferResolver {
 
   @Mutation(() => StockTransferType, {
     name: 'shipStockTransfer',
-    description:
-      'Ship a draft transfer — deducts stock at the source warehouse',
+    description: 'Ship a draft transfer — deducts stock at the source warehouse',
   })
   @RequirePermission('inventory:transfer')
-  shipStockTransfer(
-    @Args('id', { type: () => ID }) id: string,
-  ): Promise<StockTransferType> {
+  shipStockTransfer(@Args('id', { type: () => ID }) id: string): Promise<StockTransferType> {
     return this.stockTransferService.ship(id);
   }
 
   @Mutation(() => StockTransferType, {
     name: 'receiveStockTransfer',
-    description:
-      'Receive an in-transit transfer — adds stock at the destination warehouse',
+    description: 'Receive an in-transit transfer — adds stock at the destination warehouse',
   })
   @RequirePermission('inventory:transfer')
-  receiveStockTransfer(
-    @Args('id', { type: () => ID }) id: string,
-  ): Promise<StockTransferType> {
+  receiveStockTransfer(@Args('id', { type: () => ID }) id: string): Promise<StockTransferType> {
     return this.stockTransferService.receive(id);
   }
 
@@ -88,9 +68,7 @@ export class StockTransferResolver {
     description: 'Cancel a draft stock transfer (no stock movement)',
   })
   @RequirePermission('inventory:transfer')
-  cancelStockTransfer(
-    @Args('id', { type: () => ID }) id: string,
-  ): Promise<StockTransferType> {
+  cancelStockTransfer(@Args('id', { type: () => ID }) id: string): Promise<StockTransferType> {
     return this.stockTransferService.cancel(id);
   }
 }

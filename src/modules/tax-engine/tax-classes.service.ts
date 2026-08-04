@@ -8,11 +8,7 @@ import { InjectRepository } from '@nestjs/typeorm';
 import { QueryFailedError, Repository } from 'typeorm';
 
 import { TaxClassEntity } from './entities/tax-class.entity';
-import type {
-  CreateTaxClassInput,
-  TaxClassType,
-  UpdateTaxClassInput,
-} from './tax.types';
+import type { CreateTaxClassInput, TaxClassType, UpdateTaxClassInput } from './tax.types';
 
 function isUniqueViolation(error: unknown): boolean {
   return (

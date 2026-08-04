@@ -13,10 +13,7 @@ import { PromotionsResolver } from './promotions.resolver';
  * D-05 — promotions GraphQL permission metadata + resolver behavior.
  */
 describe('PromotionsResolver RBAC (resolver metadata + PermissionsGuard deny)', () => {
-  function gqlContext(
-    req: { user?: unknown },
-    handler: (...args: never[]) => unknown,
-  ) {
+  function gqlContext(req: { user?: unknown }, handler: (...args: never[]) => unknown) {
     return {
       getType: () => 'graphql',
       getArgs: () => [{}, {}, { req }, {}],
@@ -28,73 +25,40 @@ describe('PromotionsResolver RBAC (resolver metadata + PermissionsGuard deny)', 
   it('declares promotion:read/create/update/delete permission keys', () => {
     const reflector = new Reflector();
     expect(
-      reflector.get(
-        REQUIRE_PERMISSION_KEY,
-        PromotionsResolver.prototype.promotionProviders,
-      ),
+      reflector.get(REQUIRE_PERMISSION_KEY, PromotionsResolver.prototype.promotionProviders),
+    ).toEqual(['promotion:read']);
+    expect(reflector.get(REQUIRE_PERMISSION_KEY, PromotionsResolver.prototype.couponsList)).toEqual(
+      ['promotion:read'],
+    );
+    expect(reflector.get(REQUIRE_PERMISSION_KEY, PromotionsResolver.prototype.coupon)).toEqual([
+      'promotion:read',
+    ]);
+    expect(
+      reflector.get(REQUIRE_PERMISSION_KEY, PromotionsResolver.prototype.discountRulesList),
     ).toEqual(['promotion:read']);
     expect(
-      reflector.get(
-        REQUIRE_PERMISSION_KEY,
-        PromotionsResolver.prototype.couponsList,
-      ),
+      reflector.get(REQUIRE_PERMISSION_KEY, PromotionsResolver.prototype.discountRule),
     ).toEqual(['promotion:read']);
     expect(
-      reflector.get(REQUIRE_PERMISSION_KEY, PromotionsResolver.prototype.coupon),
+      reflector.get(REQUIRE_PERMISSION_KEY, PromotionsResolver.prototype.applyPromotions),
     ).toEqual(['promotion:read']);
     expect(
-      reflector.get(
-        REQUIRE_PERMISSION_KEY,
-        PromotionsResolver.prototype.discountRulesList,
-      ),
-    ).toEqual(['promotion:read']);
-    expect(
-      reflector.get(
-        REQUIRE_PERMISSION_KEY,
-        PromotionsResolver.prototype.discountRule,
-      ),
-    ).toEqual(['promotion:read']);
-    expect(
-      reflector.get(
-        REQUIRE_PERMISSION_KEY,
-        PromotionsResolver.prototype.applyPromotions,
-      ),
-    ).toEqual(['promotion:read']);
-    expect(
-      reflector.get(
-        REQUIRE_PERMISSION_KEY,
-        PromotionsResolver.prototype.createCoupon,
-      ),
+      reflector.get(REQUIRE_PERMISSION_KEY, PromotionsResolver.prototype.createCoupon),
     ).toEqual(['promotion:create']);
     expect(
-      reflector.get(
-        REQUIRE_PERMISSION_KEY,
-        PromotionsResolver.prototype.createDiscountRule,
-      ),
+      reflector.get(REQUIRE_PERMISSION_KEY, PromotionsResolver.prototype.createDiscountRule),
     ).toEqual(['promotion:create']);
     expect(
-      reflector.get(
-        REQUIRE_PERMISSION_KEY,
-        PromotionsResolver.prototype.updateCoupon,
-      ),
+      reflector.get(REQUIRE_PERMISSION_KEY, PromotionsResolver.prototype.updateCoupon),
     ).toEqual(['promotion:update']);
     expect(
-      reflector.get(
-        REQUIRE_PERMISSION_KEY,
-        PromotionsResolver.prototype.updateDiscountRule,
-      ),
+      reflector.get(REQUIRE_PERMISSION_KEY, PromotionsResolver.prototype.updateDiscountRule),
     ).toEqual(['promotion:update']);
     expect(
-      reflector.get(
-        REQUIRE_PERMISSION_KEY,
-        PromotionsResolver.prototype.deleteCoupon,
-      ),
+      reflector.get(REQUIRE_PERMISSION_KEY, PromotionsResolver.prototype.deleteCoupon),
     ).toEqual(['promotion:delete']);
     expect(
-      reflector.get(
-        REQUIRE_PERMISSION_KEY,
-        PromotionsResolver.prototype.deleteDiscountRule,
-      ),
+      reflector.get(REQUIRE_PERMISSION_KEY, PromotionsResolver.prototype.deleteDiscountRule),
     ).toEqual(['promotion:delete']);
   });
 
@@ -170,9 +134,7 @@ describe('PromotionsResolver behavior', () => {
 
   beforeEach(() => {
     engine = {
-      list: vi.fn(() => [
-        { code: 'typeorm', displayName: 'Core TypeORM promotions' },
-      ]),
+      list: vi.fn(() => [{ code: 'typeorm', displayName: 'Core TypeORM promotions' }]),
       apply: vi.fn(async () => ({
         currencyCode: 'USD',
         discountMinor: '500',

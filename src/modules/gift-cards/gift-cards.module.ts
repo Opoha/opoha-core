@@ -9,11 +9,7 @@ import { GiftCardsResolver } from './gift-cards.resolver';
 import { GiftCardService } from './gift-cards.service';
 
 @Module({
-  imports: [
-    AuthModule,
-    EventBusModule,
-    TypeOrmModule.forFeature([...giftCardEntities]),
-  ],
+  imports: [AuthModule, EventBusModule, TypeOrmModule.forFeature([...giftCardEntities])],
   providers: [GiftCardService, GiftCardsResolver, GiftCardEventsRegistrar],
   exports: [GiftCardService, TypeOrmModule],
 })

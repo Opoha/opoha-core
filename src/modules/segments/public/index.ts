@@ -25,11 +25,5 @@ export {
   EvaluateSegmentMembershipInput,
   SegmentMembershipResultType,
 } from '../segments.gql.types';
-export {
-  segmentEventSchemas,
-  segmentUpdatedDataSchema,
-} from '../events/segment-events';
-export type {
-  SegmentUpdatedData,
-  SegmentUpdatedEvent,
-} from '../events/segment-events';
+export { segmentEventSchemas, segmentUpdatedDataSchema } from '../events/segment-events';
+export type { SegmentUpdatedData, SegmentUpdatedEvent } from '../events/segment-events';

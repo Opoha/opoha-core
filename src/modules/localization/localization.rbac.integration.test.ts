@@ -10,10 +10,7 @@ import { LocalizationResolver } from './localization.resolver';
  * E-02 — localization GraphQL permission metadata + RBAC deny path.
  */
 describe('localization RBAC (resolver metadata + PermissionsGuard deny)', () => {
-  function gqlContext(
-    req: { user?: unknown },
-    handler: (...args: never[]) => unknown,
-  ) {
+  function gqlContext(req: { user?: unknown }, handler: (...args: never[]) => unknown) {
     return {
       getType: () => 'graphql',
       getArgs: () => [{}, {}, { req }, {}],
@@ -25,10 +22,7 @@ describe('localization RBAC (resolver metadata + PermissionsGuard deny)', () => 
   it('LocalizationResolver declares localization:read/update', () => {
     const reflector = new Reflector();
     expect(
-      reflector.get(
-        REQUIRE_PERMISSION_KEY,
-        LocalizationResolver.prototype.localizationSettings,
-      ),
+      reflector.get(REQUIRE_PERMISSION_KEY, LocalizationResolver.prototype.localizationSettings),
     ).toEqual(['localization:read']);
     expect(
       reflector.get(

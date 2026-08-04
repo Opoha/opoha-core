@@ -1,11 +1,7 @@
 import { UseGuards } from '@nestjs/common';
 import { Args, GraphQLISODateTime, ID, Query, Resolver } from '@nestjs/graphql';
 
-import {
-  GqlAuthGuard,
-  PermissionsGuard,
-  RequirePermission,
-} from '../auth/public';
+import { GqlAuthGuard, PermissionsGuard, RequirePermission } from '../auth/public';
 import {
   FulfillmentThroughputType,
   InventoryByWarehouseRow,
@@ -46,8 +42,7 @@ export class ReportsResolver {
 
   @Query(() => FulfillmentThroughputType, {
     name: 'fulfillmentThroughputReport',
-    description:
-      'Fulfillment created vs shipped counts and status breakdown for a window',
+    description: 'Fulfillment created vs shipped counts and status breakdown for a window',
   })
   @RequirePermission('report:read')
   fulfillmentThroughputReport(

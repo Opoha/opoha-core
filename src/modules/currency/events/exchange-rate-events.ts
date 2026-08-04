@@ -15,9 +15,7 @@ export const exchangeRateUpdatedDataSchema = z
   })
   .strict();
 
-export type ExchangeRateUpdatedData = z.infer<
-  typeof exchangeRateUpdatedDataSchema
->;
+export type ExchangeRateUpdatedData = z.infer<typeof exchangeRateUpdatedDataSchema>;
 
 export type ExchangeRateUpdatedEvent = DomainEvent<ExchangeRateUpdatedData>;
 

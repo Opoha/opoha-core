@@ -1,15 +1,8 @@
-import {
-  BadRequestException,
-  Injectable,
-  Optional,
-} from '@nestjs/common';
+import { BadRequestException, Injectable, Optional } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 
-import {
-  SegmentsService,
-  type SegmentMembershipContext,
-} from '../segments/public';
+import { SegmentsService, type SegmentMembershipContext } from '../segments/public';
 import {
   computeRuleDiscount,
   couponToDiscountable,
@@ -56,14 +49,7 @@ export class TypeOrmPromotionProvider implements PromotionRuleProvider {
     const membership = membershipContextFromApplyInput(input);
 
     if (input.couponCode?.trim()) {
-      parts.push(
-        await this.applyCoupon(
-          input.couponCode.trim(),
-          input,
-          subtotal,
-          membership,
-        ),
-      );
+      parts.push(await this.applyCoupon(input.couponCode.trim(), input, subtotal, membership));
     }
 
     const autoRules = await this.loadActiveAutomaticRules();
@@ -122,11 +108,7 @@ export class TypeOrmPromotionProvider implements PromotionRuleProvider {
       coupon.kind === 'free_shipping' ? 'free_shipping' : 'coupon',
     );
 
-    if (
-      !computed.application &&
-      !computed.freeShipping &&
-      computed.discountMinor === 0n
-    ) {
+    if (!computed.application && !computed.freeShipping && computed.discountMinor === 0n) {
       // Distinguish schedule / min / currency mismatches from unknown codes.
       if (!coupon.isActive) {
         throw new BadRequestException(`Coupon "${rawCode}" is not active`);
@@ -135,9 +117,7 @@ export class TypeOrmPromotionProvider implements PromotionRuleProvider {
         coupon.minSubtotalMinor != null &&
         !meetsMinSubtotal(couponToDiscountable(coupon), subtotal)
       ) {
-        throw new BadRequestException(
-          `Coupon "${rawCode}" requires a higher merchandise subtotal`,
-        );
+        throw new BadRequestException(`Coupon "${rawCode}" requires a higher merchandise subtotal`);
       }
       throw new BadRequestException(`Coupon "${rawCode}" cannot be applied`);
     }
@@ -174,10 +154,7 @@ export class TypeOrmPromotionProvider implements PromotionRuleProvider {
     for (const code of restriction.segmentCodes) {
       try {
         const segment = await this.segments.findByCode(code);
-        if (
-          segment.isActive &&
-          this.segments.evaluateRules(segment.rules, membership)
-        ) {
+        if (segment.isActive && this.segments.evaluateRules(segment.rules, membership)) {
           return true;
         }
       } catch {

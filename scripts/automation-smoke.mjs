@@ -74,7 +74,5 @@ for (const step of steps) {
   }
 }
 
-console.log(
-  '\nAutomation smoke OK (jobs + workflow + rules + webhooks + boundary)',
-);
+console.log('\nAutomation smoke OK (jobs + workflow + rules + webhooks + boundary)');
 process.exit(0);

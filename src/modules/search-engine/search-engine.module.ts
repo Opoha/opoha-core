@@ -10,12 +10,7 @@ import { SearchResolver } from './search.resolver';
 @Global()
 @Module({
   imports: [AuthModule, EventBusModule],
-  providers: [
-    SearchProviderRegistry,
-    SearchEngine,
-    SearchResolver,
-    SearchIndexListener,
-  ],
+  providers: [SearchProviderRegistry, SearchEngine, SearchResolver, SearchIndexListener],
   exports: [SearchProviderRegistry, SearchEngine],
 })
 export class SearchEngineModule {}

@@ -4,9 +4,7 @@ import type { MigrationInterface, QueryRunner } from 'typeorm';
  * Persist gift card code + applied amount on carts/orders (Phase 4 C-02).
  * OWNER: order module tables — gift-cards module owns balances only.
  */
-export class CartGiftCardOnCheckout1722708300000
-  implements MigrationInterface
-{
+export class CartGiftCardOnCheckout1722708300000 implements MigrationInterface {
   name = 'CartGiftCardOnCheckout1722708300000';
 
   public async up(queryRunner: QueryRunner): Promise<void> {

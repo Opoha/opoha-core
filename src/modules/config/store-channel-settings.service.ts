@@ -5,10 +5,7 @@ import { Repository } from 'typeorm';
 import { CoreEventName } from '../event-bus/event-catalog';
 import { EventBusService } from '../event-bus/event-bus.service';
 import { StoreService } from '../stores/public';
-import {
-  StoreChannelSettingsEntity,
-  type StoreCatalogMode,
-} from './entities';
+import { StoreChannelSettingsEntity, type StoreCatalogMode } from './entities';
 import { DEFAULT_STORE_CHANNEL_SETTINGS } from './store-channel-settings.defaults';
 import type {
   StoreChannelSettingsType,
@@ -26,9 +23,7 @@ function assertTimezone(value: string): string {
   try {
     Intl.DateTimeFormat(undefined, { timeZone: trimmed });
   } catch {
-    throw new BadRequestException(
-      `Invalid timezone "${value}" (expected IANA identifier)`,
-    );
+    throw new BadRequestException(`Invalid timezone "${value}" (expected IANA identifier)`);
   }
   return trimmed;
 }
@@ -36,18 +31,14 @@ function assertTimezone(value: string): string {
 function assertCountryCode(value: string): string {
   const normalized = value.trim().toUpperCase();
   if (!COUNTRY_RE.test(normalized)) {
-    throw new BadRequestException(
-      `Invalid countryCode "${value}" (expected ISO 3166-1 alpha-2)`,
-    );
+    throw new BadRequestException(`Invalid countryCode "${value}" (expected ISO 3166-1 alpha-2)`);
   }
   return normalized;
 }
 
 function assertCatalogMode(value: string): StoreCatalogMode {
   if (!CATALOG_MODES.has(value as StoreCatalogMode)) {
-    throw new BadRequestException(
-      `Invalid catalogMode "${value}" (expected shared|isolated)`,
-    );
+    throw new BadRequestException(`Invalid catalogMode "${value}" (expected shared|isolated)`);
   }
   return value as StoreCatalogMode;
 }
@@ -62,11 +53,7 @@ function parseSettingsJson(raw: string | undefined): Record<string, unknown> {
   } catch {
     throw new BadRequestException('settingsJson must be valid JSON');
   }
-  if (
-    parsed === null ||
-    typeof parsed !== 'object' ||
-    Array.isArray(parsed)
-  ) {
+  if (parsed === null || typeof parsed !== 'object' || Array.isArray(parsed)) {
     throw new BadRequestException('settingsJson must be a JSON object');
   }
   return parsed as Record<string, unknown>;
@@ -157,9 +144,7 @@ export class StoreChannelSettingsService {
     return toType(row);
   }
 
-  private async ensureRow(
-    storeId: string,
-  ): Promise<StoreChannelSettingsEntity> {
+  private async ensureRow(storeId: string): Promise<StoreChannelSettingsEntity> {
     const existing = await this.settings.findOne({ where: { storeId } });
     if (existing) {
       return existing;

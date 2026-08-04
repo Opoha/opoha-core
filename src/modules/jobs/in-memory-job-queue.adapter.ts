@@ -3,11 +3,7 @@ import { randomUUID } from 'node:crypto';
 import { Injectable } from '@nestjs/common';
 
 import { cronMatchesAt } from './cron-expression';
-import type {
-  JobExecuteHook,
-  JobQueueAdapter,
-  UpsertCronJobInput,
-} from './job-queue.adapter';
+import type { JobExecuteHook, JobQueueAdapter, UpsertCronJobInput } from './job-queue.adapter';
 
 type StoredCron = UpsertCronJobInput;
 
@@ -50,9 +46,7 @@ export class InMemoryJobQueueAdapter implements JobQueueAdapter {
    */
   async runDueAt(at: Date, attempt = 1): Promise<Map<string, string>> {
     const fired = new Map<string, string>();
-    for (const [code, job] of [...this.jobs.entries()].sort(([a], [b]) =>
-      a.localeCompare(b),
-    )) {
+    for (const [code, job] of [...this.jobs.entries()].sort(([a], [b]) => a.localeCompare(b))) {
       if (cronMatchesAt(job.cron, at, job.timezone)) {
         const queueJobId = await this.execute(code, job, attempt);
         fired.set(code, queueJobId);
@@ -65,11 +59,7 @@ export class InMemoryJobQueueAdapter implements JobQueueAdapter {
     return [...this.jobs.keys()].sort();
   }
 
-  private async execute(
-    code: string,
-    job: StoredCron,
-    attempt: number,
-  ): Promise<string> {
+  private async execute(code: string, job: StoredCron, attempt: number): Promise<string> {
     const queueJobId = `memory:${randomUUID()}`;
     if (this.executeHook) {
       await this.executeHook(code, job.handler, queueJobId, attempt);

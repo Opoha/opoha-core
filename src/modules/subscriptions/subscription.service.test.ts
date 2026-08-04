@@ -1,8 +1,4 @@
-import {
-  BadRequestException,
-  ConflictException,
-  NotFoundException,
-} from '@nestjs/common';
+import { BadRequestException, ConflictException, NotFoundException } from '@nestjs/common';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 
 import { CoreEventName } from '../event-bus/event-catalog';
@@ -63,9 +59,7 @@ describe('SubscriptionService (unit)', () => {
         let rows = planStore;
         if (where) {
           rows = rows.filter((row) =>
-            Object.entries(where).every(
-              ([k, v]) => row[k as keyof PlanRow] === v,
-            ),
+            Object.entries(where).every(([k, v]) => row[k as keyof PlanRow] === v),
           );
         }
         void order;
@@ -73,9 +67,7 @@ describe('SubscriptionService (unit)', () => {
       }),
       findOne: vi.fn(async ({ where }: { where: Partial<PlanRow> }) => {
         const row = planStore.find((r) =>
-          Object.entries(where).every(
-            ([k, v]) => r[k as keyof PlanRow] === v,
-          ),
+          Object.entries(where).every(([k, v]) => r[k as keyof PlanRow] === v),
         );
         return row ? Object.assign(new SubscriptionPlanEntity(), row) : null;
       }),
@@ -120,9 +112,7 @@ describe('SubscriptionService (unit)', () => {
       }),
       findOne: vi.fn(async ({ where }: { where: Partial<SubRow> }) => {
         const row = subStore.find((r) =>
-          Object.entries(where).every(
-            ([k, v]) => r[k as keyof SubRow] === v,
-          ),
+          Object.entries(where).every(([k, v]) => r[k as keyof SubRow] === v),
         );
         return row ? Object.assign(new SubscriptionEntity(), row) : null;
       }),
@@ -254,9 +244,9 @@ describe('SubscriptionService (unit)', () => {
       isActive: false,
     });
 
-    await expect(
-      service.subscribe({ planId: plan.id, customerId }),
-    ).rejects.toBeInstanceOf(BadRequestException);
+    await expect(service.subscribe({ planId: plan.id, customerId })).rejects.toBeInstanceOf(
+      BadRequestException,
+    );
   });
 
   it('cancels a subscription', async () => {
@@ -276,9 +266,9 @@ describe('SubscriptionService (unit)', () => {
   });
 
   it('throws NotFound for missing subscription', async () => {
-    await expect(
-      service.findById('99999999-9999-4999-8999-999999999999'),
-    ).rejects.toBeInstanceOf(NotFoundException);
+    await expect(service.findById('99999999-9999-4999-8999-999999999999')).rejects.toBeInstanceOf(
+      NotFoundException,
+    );
   });
 
   it('renews an active subscription via the payment engine and publishes SubscriptionRenewed (E-03)', async () => {
@@ -328,9 +318,7 @@ describe('SubscriptionService (unit)', () => {
     expect(result.paymentStatus).toBe('captured');
     expect(result.subscription.status).toBe('active');
     expect(result.subscription.currentPeriodStart).toEqual(periodEnd);
-    expect(result.subscription.nextBillingAt.getTime()).toBeGreaterThan(
-      periodEnd.getTime(),
-    );
+    expect(result.subscription.nextBillingAt.getTime()).toBeGreaterThan(periodEnd.getTime());
 
     expect(eventBus.publish).toHaveBeenCalledWith(
       expect.objectContaining({
@@ -421,9 +409,7 @@ describe('SubscriptionService (unit)', () => {
       updatedAt: now,
     });
 
-    await expect(service.renew(subscriptionId)).rejects.toBeInstanceOf(
-      BadRequestException,
-    );
+    await expect(service.renew(subscriptionId)).rejects.toBeInstanceOf(BadRequestException);
   });
 
   it('finds subscriptions due for renewal as of a given date', async () => {

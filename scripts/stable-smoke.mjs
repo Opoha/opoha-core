@@ -69,7 +69,5 @@ for (const step of steps) {
   }
 }
 
-console.log(
-  '\nStable smoke OK (walking-skeleton + plugin-compat + perf-bench + boundary)',
-);
+console.log('\nStable smoke OK (walking-skeleton + plugin-compat + perf-bench + boundary)');
 process.exit(0);

@@ -1,11 +1,7 @@
 import { UseGuards } from '@nestjs/common';
 import { Args, ID, Mutation, Query, Resolver } from '@nestjs/graphql';
 
-import {
-  GqlAuthGuard,
-  PermissionsGuard,
-  RequirePermission,
-} from '../auth/public';
+import { GqlAuthGuard, PermissionsGuard, RequirePermission } from '../auth/public';
 import { StoreChannelSettingsService } from './store-channel-settings.service';
 import {
   StoreChannelSettingsType,
@@ -15,9 +11,7 @@ import {
 @Resolver(() => StoreChannelSettingsType)
 @UseGuards(GqlAuthGuard, PermissionsGuard)
 export class StoreChannelSettingsResolver {
-  constructor(
-    private readonly channelSettings: StoreChannelSettingsService,
-  ) {}
+  constructor(private readonly channelSettings: StoreChannelSettingsService) {}
 
   @Query(() => [StoreChannelSettingsType], {
     name: 'storeChannelSettingsList',
@@ -30,8 +24,7 @@ export class StoreChannelSettingsResolver {
 
   @Query(() => StoreChannelSettingsType, {
     name: 'storeChannelSettings',
-    description:
-      'Get store-scoped channel settings (creates defaults when missing)',
+    description: 'Get store-scoped channel settings (creates defaults when missing)',
   })
   @RequirePermission('settings:read')
   storeChannelSettings(

@@ -1,11 +1,7 @@
 import { BadRequestException, Injectable } from '@nestjs/common';
 
 import { TaxProviderRegistry } from './tax-provider.registry';
-import type {
-  TaxCalculateInput,
-  TaxCalculateResult,
-  TaxProvider,
-} from './tax-provider';
+import type { TaxCalculateInput, TaxCalculateResult, TaxProvider } from './tax-provider';
 
 /**
  * Tax engine — register / get / list providers + calculate orchestration.
@@ -35,10 +31,7 @@ export class TaxEngine {
   /**
    * Calculate tax via a specific provider, or the sole active provider when omitted.
    */
-  async calculate(
-    input: TaxCalculateInput,
-    providerCode?: string,
-  ): Promise<TaxCalculateResult> {
+  async calculate(input: TaxCalculateInput, providerCode?: string): Promise<TaxCalculateResult> {
     this.requireCalculateInput(input);
     const provider = this.resolveProvider(providerCode);
 
@@ -47,9 +40,7 @@ export class TaxEngine {
       result = await provider.calculateTax(input);
     } catch (err) {
       throw new BadRequestException(
-        err instanceof Error
-          ? err.message
-          : `Tax provider "${provider.code}" failed to calculate`,
+        err instanceof Error ? err.message : `Tax provider "${provider.code}" failed to calculate`,
       );
     }
 
@@ -116,9 +107,7 @@ export class TaxEngine {
       throw new BadRequestException('currencyCode is required for tax calculation');
     }
     if (input.pricingMode !== 'inclusive' && input.pricingMode !== 'exclusive') {
-      throw new BadRequestException(
-        'pricingMode must be "inclusive" or "exclusive"',
-      );
+      throw new BadRequestException('pricingMode must be "inclusive" or "exclusive"');
     }
     if (!Array.isArray(input.items) || input.items.length === 0) {
       throw new BadRequestException('items are required for tax calculation');

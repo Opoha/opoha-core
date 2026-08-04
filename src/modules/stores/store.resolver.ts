@@ -1,17 +1,9 @@
 import { UseGuards } from '@nestjs/common';
 import { Args, ID, Mutation, Query, Resolver } from '@nestjs/graphql';
 
-import {
-  GqlAuthGuard,
-  PermissionsGuard,
-  RequirePermission,
-} from '../auth/public';
+import { GqlAuthGuard, PermissionsGuard, RequirePermission } from '../auth/public';
 import { StoreService } from './store.service';
-import {
-  CreateStoreInput,
-  StoreType,
-  UpdateStoreInput,
-} from './store.types';
+import { CreateStoreInput, StoreType, UpdateStoreInput } from './store.types';
 
 @Resolver(() => StoreType)
 @UseGuards(GqlAuthGuard, PermissionsGuard)
@@ -41,9 +33,7 @@ export class StoreResolver {
     description: 'Get store by stable code',
   })
   @RequirePermission('store:read')
-  storeByCode(
-    @Args('code', { type: () => String }) code: string,
-  ): Promise<StoreType> {
+  storeByCode(@Args('code', { type: () => String }) code: string): Promise<StoreType> {
     return this.storeService.findByCode(code);
   }
 
@@ -87,9 +77,7 @@ export class StoreResolver {
     description: 'Delete a non-default store',
   })
   @RequirePermission('store:delete')
-  deleteStore(
-    @Args('id', { type: () => ID }) id: string,
-  ): Promise<StoreType> {
+  deleteStore(@Args('id', { type: () => ID }) id: string): Promise<StoreType> {
     return this.storeService.remove(id);
   }
 }

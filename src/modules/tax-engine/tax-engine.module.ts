@@ -12,23 +12,8 @@ import { TaxResolver } from './tax.resolver';
 
 @Global()
 @Module({
-  imports: [
-    AuthModule,
-    TypeOrmModule.forFeature([TaxClassEntity, TaxRuleEntity]),
-  ],
-  providers: [
-    TaxProviderRegistry,
-    TaxEngine,
-    TaxClassesService,
-    TaxRulesService,
-    TaxResolver,
-  ],
-  exports: [
-    TaxProviderRegistry,
-    TaxEngine,
-    TaxClassesService,
-    TaxRulesService,
-    TypeOrmModule,
-  ],
+  imports: [AuthModule, TypeOrmModule.forFeature([TaxClassEntity, TaxRuleEntity])],
+  providers: [TaxProviderRegistry, TaxEngine, TaxClassesService, TaxRulesService, TaxResolver],
+  exports: [TaxProviderRegistry, TaxEngine, TaxClassesService, TaxRulesService, TypeOrmModule],
 })
 export class TaxEngineModule {}

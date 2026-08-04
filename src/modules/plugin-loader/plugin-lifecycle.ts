@@ -13,16 +13,9 @@ export const PLUGIN_LIFECYCLE_STATES = [
 
 export type PluginLifecycleState = (typeof PLUGIN_LIFECYCLE_STATES)[number];
 
-export type PluginLifecycleAction =
-  | 'install'
-  | 'enable'
-  | 'disable'
-  | 'uninstall';
+export type PluginLifecycleAction = 'install' | 'enable' | 'disable' | 'uninstall';
 
-const ALLOWED: Record<
-  PluginLifecycleAction,
-  readonly PluginLifecycleState[]
-> = {
+const ALLOWED: Record<PluginLifecycleAction, readonly PluginLifecycleState[]> = {
   install: ['discovered', 'uninstalled'],
   enable: ['installed', 'disabled'],
   disable: ['enabled'],

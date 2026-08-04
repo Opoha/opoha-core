@@ -241,18 +241,9 @@ describe('CheckoutService (unit)', () => {
       }),
     );
     expect(cartService.persistTaxResult).toHaveBeenCalledWith('cart-1', '0');
-    expect(cartService.persistDiscountResult).toHaveBeenCalledWith(
-      'cart-1',
-      '0',
-    );
-    expect(cartService.persistGiftCardResult).toHaveBeenCalledWith(
-      'cart-1',
-      '0',
-    );
-    expect(cartService.persistLoyaltyResult).toHaveBeenCalledWith(
-      'cart-1',
-      '0',
-    );
+    expect(cartService.persistDiscountResult).toHaveBeenCalledWith('cart-1', '0');
+    expect(cartService.persistGiftCardResult).toHaveBeenCalledWith('cart-1', '0');
+    expect(cartService.persistLoyaltyResult).toHaveBeenCalledWith('cart-1', '0');
     expect(cartService.setStatus).toHaveBeenCalledWith('cart-1', 'locked');
     expect(inventory.reserveForStore).toHaveBeenCalledTimes(2);
     expect(inventory.reserveForStore).toHaveBeenCalledWith(
@@ -338,9 +329,7 @@ describe('CheckoutService (unit)', () => {
     promotions.applyOrZero.mockResolvedValueOnce({
       currencyCode: 'USD',
       discountMinor: '300',
-      applications: [
-        { code: 'SAVE', kind: 'coupon', discountMinor: '300' },
-      ],
+      applications: [{ code: 'SAVE', kind: 'coupon', discountMinor: '300' }],
       freeShipping: false,
     });
     cartService.getEntityWithLines.mockResolvedValueOnce({
@@ -370,10 +359,7 @@ describe('CheckoutService (unit)', () => {
     expect(preview.totals.discountMinor).toBe('300');
     expect(preview.totals.shippingMinor).toBe('500');
     expect(preview.totals.totalMinor).toBe('2200');
-    expect(cartService.persistDiscountResult).toHaveBeenCalledWith(
-      'cart-1',
-      '300',
-    );
+    expect(cartService.persistDiscountResult).toHaveBeenCalledWith('cart-1', '300');
   });
 
   it('does not double-count inclusive tax in total (C-03)', async () => {
@@ -422,9 +408,7 @@ describe('CheckoutService (unit)', () => {
       },
       lines: [],
     });
-    await expect(service.prepare('cart-1')).rejects.toBeInstanceOf(
-      BadRequestException,
-    );
+    await expect(service.prepare('cart-1')).rejects.toBeInstanceOf(BadRequestException);
   });
 
   it('rolls back reservations when a later reserve fails', async () => {
@@ -433,9 +417,7 @@ describe('CheckoutService (unit)', () => {
       .mockResolvedValueOnce({ id: 'res-1' })
       .mockRejectedValueOnce(new ConflictException('Insufficient stock'));
 
-    await expect(service.prepare('cart-1')).rejects.toBeInstanceOf(
-      ConflictException,
-    );
+    await expect(service.prepare('cart-1')).rejects.toBeInstanceOf(ConflictException);
     expect(inventory.release).toHaveBeenCalledWith('res-1');
     expect(cartService.setStatus).not.toHaveBeenCalled();
   });

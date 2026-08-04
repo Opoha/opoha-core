@@ -1,14 +1,7 @@
-import {
-  BadRequestException,
-  UseGuards,
-} from '@nestjs/common';
+import { BadRequestException, UseGuards } from '@nestjs/common';
 import { Args, ID, Mutation, Query, Resolver } from '@nestjs/graphql';
 
-import {
-  GqlAuthGuard,
-  PermissionsGuard,
-  RequirePermission,
-} from '../auth/public';
+import { GqlAuthGuard, PermissionsGuard, RequirePermission } from '../auth/public';
 import type { RuleActionRef, RuleConditions } from './rule-conditions';
 import { RulesService } from './rules.service';
 import type { RuleDefinitionType } from './rules.types';
@@ -39,16 +32,12 @@ function parseConditionsJson(
     return parsed as RuleConditions;
   } catch (err) {
     throw new BadRequestException(
-      err instanceof Error
-        ? err.message
-        : 'conditionsJson must be a valid JSON object string',
+      err instanceof Error ? err.message : 'conditionsJson must be a valid JSON object string',
     );
   }
 }
 
-function parseActionRefsJson(
-  actionRefsJson: string | undefined,
-): RuleActionRef[] | undefined {
+function parseActionRefsJson(actionRefsJson: string | undefined): RuleActionRef[] | undefined {
   if (actionRefsJson === undefined) {
     return undefined;
   }
@@ -64,9 +53,7 @@ function parseActionRefsJson(
     return parsed as RuleActionRef[];
   } catch (err) {
     throw new BadRequestException(
-      err instanceof Error
-        ? err.message
-        : 'actionRefsJson must be a valid JSON array string',
+      err instanceof Error ? err.message : 'actionRefsJson must be a valid JSON array string',
     );
   }
 }
@@ -107,9 +94,7 @@ export class RulesResolver {
     description: 'Get an automation rule by id',
   })
   @RequirePermission('rule:read')
-  async ruleDefinition(
-    @Args('id', { type: () => ID }) id: string,
-  ): Promise<RuleDefinitionGqlType> {
+  async ruleDefinition(@Args('id', { type: () => ID }) id: string): Promise<RuleDefinitionGqlType> {
     return toGql(await this.rules.findById(id));
   }
 

@@ -69,21 +69,19 @@ describe('CustomerGroupsService (unit)', () => {
     };
 
     const membershipsRepo = {
-      find: vi.fn(
-        async ({ where }: { where: Partial<MembershipRow> }) =>
-          memberships.filter((m) => {
-            if (where.groupId && m.groupId !== where.groupId) return false;
-            if (where.customerId && m.customerId !== where.customerId) {
-              return false;
-            }
-            return true;
-          }),
+      find: vi.fn(async ({ where }: { where: Partial<MembershipRow> }) =>
+        memberships.filter((m) => {
+          if (where.groupId && m.groupId !== where.groupId) return false;
+          if (where.customerId && m.customerId !== where.customerId) {
+            return false;
+          }
+          return true;
+        }),
       ),
       findOne: vi.fn(
         async ({ where }: { where: Partial<MembershipRow> }) =>
           memberships.find(
-            (m) =>
-              m.customerId === where.customerId && m.groupId === where.groupId,
+            (m) => m.customerId === where.customerId && m.groupId === where.groupId,
           ) ?? null,
       ),
       create: vi.fn((data: Partial<MembershipRow>) => ({
@@ -92,12 +90,7 @@ describe('CustomerGroupsService (unit)', () => {
         ...data,
       })),
       save: vi.fn(async (row: MembershipRow) => {
-        if (
-          memberships.some(
-            (m) =>
-              m.customerId === row.customerId && m.groupId === row.groupId,
-          )
-        ) {
+        if (memberships.some((m) => m.customerId === row.customerId && m.groupId === row.groupId)) {
           throw uniqueViolation();
         }
         memberships.push(row);
@@ -140,9 +133,7 @@ describe('CustomerGroupsService (unit)', () => {
 
   it('rejects duplicate group name', async () => {
     await service.create({ name: 'VIP' });
-    await expect(service.create({ name: 'VIP' })).rejects.toBeInstanceOf(
-      ConflictException,
-    );
+    await expect(service.create({ name: 'VIP' })).rejects.toBeInstanceOf(ConflictException);
   });
 
   it('rejects membership for missing customer', async () => {
@@ -157,8 +148,8 @@ describe('CustomerGroupsService (unit)', () => {
     await service.addMember({ customerId: 'cust-1', groupId: group.id });
     const removed = await service.removeMember('cust-1', group.id);
     expect(removed.customerId).toBe('cust-1');
-    await expect(
-      service.removeMember('cust-1', group.id),
-    ).rejects.toBeInstanceOf(NotFoundException);
+    await expect(service.removeMember('cust-1', group.id)).rejects.toBeInstanceOf(
+      NotFoundException,
+    );
   });
 });

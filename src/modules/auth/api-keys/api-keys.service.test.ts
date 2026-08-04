@@ -80,9 +80,7 @@ describe('ApiKeysService', () => {
       permissions as never,
       apiKeyPermissions as never,
       {
-        listKeysForUser: vi
-          .fn()
-          .mockResolvedValue(['api-key:read', 'api-key:create']),
+        listKeysForUser: vi.fn().mockResolvedValue(['api-key:read', 'api-key:create']),
       } as never,
       audit as never,
       eventBus as never,

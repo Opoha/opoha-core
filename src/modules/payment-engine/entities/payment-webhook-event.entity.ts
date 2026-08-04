@@ -1,20 +1,13 @@
-import {
-  Column,
-  CreateDateColumn,
-  Entity,
-  Index,
-  PrimaryGeneratedColumn,
-} from 'typeorm';
+import { Column, CreateDateColumn, Entity, Index, PrimaryGeneratedColumn } from 'typeorm';
 
 /**
  * Deduped provider webhook events (Phase 2 A-05).
  * OWNER: payment-engine — plugins must not alter this table.
  */
 @Entity({ name: 'payment_webhook_events' })
-@Index('payment_webhook_events_provider_event_uidx', [
-  'providerCode',
-  'externalEventId',
-], { unique: true })
+@Index('payment_webhook_events_provider_event_uidx', ['providerCode', 'externalEventId'], {
+  unique: true,
+})
 export class PaymentWebhookEventEntity {
   @PrimaryGeneratedColumn('uuid')
   id!: string;

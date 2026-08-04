@@ -35,9 +35,7 @@ export type DomainEvent<T = unknown> = Omit<DomainEventEnvelope, 'data'> & {
 /** Per-listener failure policy for in-process sync delivery. */
 export type EventErrorPolicy = 'isolate' | 'throw';
 
-export type EventListener<T = unknown> = (
-  event: DomainEvent<T>,
-) => void | Promise<void>;
+export type EventListener<T = unknown> = (event: DomainEvent<T>) => void | Promise<void>;
 
 export type SubscribeOptions = {
   /** Stable listener id for unsubscribe / diagnostics. */
@@ -59,9 +57,7 @@ export type PublishInput<T> = {
 /**
  * Build a validated domain event envelope (assigns eventId / occurredAt when omitted).
  */
-export function createDomainEvent<T>(
-  input: PublishInput<T>,
-): DomainEvent<T> {
+export function createDomainEvent<T>(input: PublishInput<T>): DomainEvent<T> {
   const envelope: DomainEvent<T> = {
     eventId: input.eventId ?? crypto.randomUUID(),
     eventName: input.eventName,

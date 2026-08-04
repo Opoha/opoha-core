@@ -1,11 +1,7 @@
 import { UseGuards } from '@nestjs/common';
 import { Args, Context, ID, Mutation, Query, Resolver } from '@nestjs/graphql';
 
-import {
-  GqlAuthGuard,
-  PermissionsGuard,
-  RequirePermission,
-} from '../auth/public';
+import { GqlAuthGuard, PermissionsGuard, RequirePermission } from '../auth/public';
 import type { StoreContextRef } from '../stores/public';
 import { CartService } from './cart.service';
 import {
@@ -32,8 +28,7 @@ export class CartResolver {
 
   @Query(() => [CartType], {
     name: 'carts',
-    description:
-      'List shopping carts. Optional storeId filters to that store channel.',
+    description: 'List shopping carts. Optional storeId filters to that store channel.',
   })
   @RequirePermission('cart:read')
   carts(
@@ -64,8 +59,7 @@ export class CartResolver {
     @Args('displayCurrencyCode', {
       type: () => String,
       nullable: true,
-      description:
-        'Optional display currency; defaults to store displayCurrencyCode',
+      description: 'Optional display currency; defaults to store displayCurrencyCode',
     })
     displayCurrencyCode?: string,
   ): Promise<CheckoutDisplayTotalsType> {
@@ -115,16 +109,13 @@ export class CartResolver {
     description: 'Remove a line from a cart',
   })
   @RequirePermission('cart:update')
-  removeCartLine(
-    @Args('id', { type: () => ID }) id: string,
-  ): Promise<CartType> {
+  removeCartLine(@Args('id', { type: () => ID }) id: string): Promise<CartType> {
     return this.cartService.removeLine(id);
   }
 
   @Mutation(() => CartType, {
     name: 'selectCartShipping',
-    description:
-      'Validate a shipping rate via ShippingEngine and persist selection on the cart',
+    description: 'Validate a shipping rate via ShippingEngine and persist selection on the cart',
   })
   @RequirePermission('cart:update')
   selectCartShipping(
@@ -136,8 +127,7 @@ export class CartResolver {
 
   @Mutation(() => CartType, {
     name: 'setCartTaxContext',
-    description:
-      'Set tax pricing mode and jurisdiction on a cart for TaxEngine checkout calc',
+    description: 'Set tax pricing mode and jurisdiction on a cart for TaxEngine checkout calc',
   })
   @RequirePermission('cart:update')
   setCartTaxContext(
@@ -149,8 +139,7 @@ export class CartResolver {
 
   @Mutation(() => CartType, {
     name: 'setCartCoupon',
-    description:
-      'Set or clear a coupon code on a cart for PromotionsEngine (D-01)',
+    description: 'Set or clear a coupon code on a cart for PromotionsEngine (D-01)',
   })
   @RequirePermission('cart:update')
   setCartCoupon(
@@ -162,8 +151,7 @@ export class CartResolver {
 
   @Mutation(() => CartType, {
     name: 'setCartGiftCard',
-    description:
-      'Set or clear a gift card code on a cart for GiftCardService (C-02)',
+    description: 'Set or clear a gift card code on a cart for GiftCardService (C-02)',
   })
   @RequirePermission('cart:update')
   setCartGiftCard(
@@ -175,8 +163,7 @@ export class CartResolver {
 
   @Mutation(() => CartType, {
     name: 'setCartLoyaltyPoints',
-    description:
-      'Set loyalty points to redeem on a cart for LoyaltyService (C-03)',
+    description: 'Set loyalty points to redeem on a cart for LoyaltyService (C-03)',
   })
   @RequirePermission('cart:update')
   setCartLoyaltyPoints(

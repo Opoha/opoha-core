@@ -13,10 +13,7 @@ import { CustomerGroupEntity } from './customer-group.entity';
 
 /** OWNER: customer module — plugins must not alter this table. */
 @Entity({ name: 'customer_group_memberships' })
-@Unique('customer_group_memberships_customer_group_key', [
-  'customerId',
-  'groupId',
-])
+@Unique('customer_group_memberships_customer_group_key', ['customerId', 'groupId'])
 export class CustomerGroupMembershipEntity {
   @PrimaryGeneratedColumn('uuid')
   id!: string;

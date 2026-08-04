@@ -149,18 +149,10 @@ export class WebhookDeliveryWorker {
         };
       }
 
-      return this.scheduleRetryOrDeadLetter(
-        row,
-        now,
-        `HTTP ${response.status}`,
-        response.status,
-      );
+      return this.scheduleRetryOrDeadLetter(row, now, `HTTP ${response.status}`, response.status);
     } catch (err: unknown) {
       const message = err instanceof Error ? err.message : 'delivery failed';
-      this.logger?.warn(
-        `Webhook delivery ${row.id} failed: ${message}`,
-        'WebhookDeliveryWorker',
-      );
+      this.logger?.warn(`Webhook delivery ${row.id} failed: ${message}`, 'WebhookDeliveryWorker');
       return this.scheduleRetryOrDeadLetter(row, now, message, null);
     }
   }

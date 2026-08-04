@@ -12,11 +12,7 @@ export {
   resolveStoreContext,
 } from '../store-context';
 export type { StoreContextRef, StoreJwtClaim } from '../store-context';
-export type {
-  CreateStoreInput,
-  UpdateStoreInput,
-  StoreType,
-} from '../store.types';
+export type { CreateStoreInput, UpdateStoreInput, StoreType } from '../store.types';
 export type {
   StoreCreatedData,
   StoreCreatedEvent,

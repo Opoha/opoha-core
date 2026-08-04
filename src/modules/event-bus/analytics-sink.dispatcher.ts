@@ -23,11 +23,9 @@ export class AnalyticsSinkDispatcher implements OnModuleInit {
 
   onModuleInit(): void {
     for (const eventName of ANALYTICS_EVENT_NAMES) {
-      this.eventBus.subscribe(
-        eventName,
-        (event) => this.dispatch(event),
-        { id: `analytics-sink-dispatcher:${eventName}` },
-      );
+      this.eventBus.subscribe(eventName, (event) => this.dispatch(event), {
+        id: `analytics-sink-dispatcher:${eventName}`,
+      });
     }
   }
 

@@ -11,10 +11,7 @@ import { ShippingResolver } from './shipping.resolver';
  * B-05 — shipping GraphQL permission metadata + resolver behavior.
  */
 describe('ShippingResolver RBAC (resolver metadata + PermissionsGuard deny)', () => {
-  function gqlContext(
-    req: { user?: unknown },
-    handler: (...args: never[]) => unknown,
-  ) {
+  function gqlContext(req: { user?: unknown }, handler: (...args: never[]) => unknown) {
     return {
       getType: () => 'graphql',
       getArgs: () => [{}, {}, { req }, {}],
@@ -26,16 +23,10 @@ describe('ShippingResolver RBAC (resolver metadata + PermissionsGuard deny)', ()
   it('declares shipping:read permission keys', () => {
     const reflector = new Reflector();
     expect(
-      reflector.get(
-        REQUIRE_PERMISSION_KEY,
-        ShippingResolver.prototype.shippingMethods,
-      ),
+      reflector.get(REQUIRE_PERMISSION_KEY, ShippingResolver.prototype.shippingMethods),
     ).toEqual(['shipping:read']);
     expect(
-      reflector.get(
-        REQUIRE_PERMISSION_KEY,
-        ShippingResolver.prototype.quoteShippingRates,
-      ),
+      reflector.get(REQUIRE_PERMISSION_KEY, ShippingResolver.prototype.quoteShippingRates),
     ).toEqual(['shipping:read']);
   });
 

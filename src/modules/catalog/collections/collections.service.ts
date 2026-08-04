@@ -1,8 +1,4 @@
-import {
-  ConflictException,
-  Injectable,
-  NotFoundException,
-} from '@nestjs/common';
+import { ConflictException, Injectable, NotFoundException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { QueryFailedError, Repository } from 'typeorm';
 
@@ -69,18 +65,13 @@ export class CollectionsService {
       return this.findById(saved.id);
     } catch (error) {
       if (isUniqueViolation(error)) {
-        throw new ConflictException(
-          `Collection slug "${collection.slug}" already exists`,
-        );
+        throw new ConflictException(`Collection slug "${collection.slug}" already exists`);
       }
       throw error;
     }
   }
 
-  async update(
-    id: string,
-    input: UpdateCollectionInput,
-  ): Promise<CollectionType> {
+  async update(id: string, input: UpdateCollectionInput): Promise<CollectionType> {
     const row = await this.collections.findOne({ where: { id } });
     if (!row) {
       throw new NotFoundException(`Collection ${id} not found`);
@@ -102,9 +93,7 @@ export class CollectionsService {
       return this.findById(id);
     } catch (error) {
       if (isUniqueViolation(error)) {
-        throw new ConflictException(
-          `Collection slug "${row.slug}" already exists`,
-        );
+        throw new ConflictException(`Collection slug "${row.slug}" already exists`);
       }
       throw error;
     }

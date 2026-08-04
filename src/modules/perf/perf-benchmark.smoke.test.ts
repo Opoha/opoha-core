@@ -126,12 +126,10 @@ function buildCartService(): CartService {
       cartStore.push({ ...row });
       return row;
     }),
-    update: vi.fn(
-      async (where: { id: string }, patch: Record<string, unknown>) => {
-        const row = cartStore.find((r) => r.id === where.id);
-        if (row) Object.assign(row, patch);
-      },
-    ),
+    update: vi.fn(async (where: { id: string }, patch: Record<string, unknown>) => {
+      const row = cartStore.find((r) => r.id === where.id);
+      if (row) Object.assign(row, patch);
+    }),
   };
 
   const linesRepo = {
@@ -139,19 +137,13 @@ function buildCartService(): CartService {
       lineStore.filter((r) => r.cartId === where.cartId),
     ),
     findOne: vi.fn(
-      async ({
-        where,
-      }: {
-        where: { id?: string; cartId?: string; variantId?: string };
-      }) => {
+      async ({ where }: { where: { id?: string; cartId?: string; variantId?: string } }) => {
         if (where.id) {
           return lineStore.find((r) => r.id === where.id) ?? null;
         }
         return (
-          lineStore.find(
-            (r) =>
-              r.cartId === where.cartId && r.variantId === where.variantId,
-          ) ?? null
+          lineStore.find((r) => r.cartId === where.cartId && r.variantId === where.variantId) ??
+          null
         );
       },
     ),
@@ -230,11 +222,7 @@ function buildCartService(): CartService {
     } as never,
     {
       resolveUnitPriceMinor: vi.fn(
-        async (
-          _companyId: string | null,
-          _variantId: string,
-          catalog: string,
-        ) => catalog,
+        async (_companyId: string | null, _variantId: string, catalog: string) => catalog,
       ),
     } as never,
   );
@@ -612,11 +600,7 @@ describe('Performance benchmark harness (C-02/C-03)', () => {
         { warmup: WARMUP, iterations: ITERS },
       );
       results.push(
-        evaluateScenario(
-          'PERF-CATALOG-LIST',
-          stats,
-          PERF_SLO_P95_MS['PERF-CATALOG-LIST'],
-        ),
+        evaluateScenario('PERF-CATALOG-LIST', stats, PERF_SLO_P95_MS['PERF-CATALOG-LIST']),
       );
     }
 
@@ -636,11 +620,7 @@ describe('Performance benchmark harness (C-02/C-03)', () => {
         { warmup: WARMUP, iterations: ITERS },
       );
       results.push(
-        evaluateScenario(
-          'PERF-CART-CREATE-ADD',
-          stats,
-          PERF_SLO_P95_MS['PERF-CART-CREATE-ADD'],
-        ),
+        evaluateScenario('PERF-CART-CREATE-ADD', stats, PERF_SLO_P95_MS['PERF-CART-CREATE-ADD']),
       );
     }
 
@@ -655,11 +635,7 @@ describe('Performance benchmark harness (C-02/C-03)', () => {
         { warmup: WARMUP, iterations: ITERS },
       );
       results.push(
-        evaluateScenario(
-          'PERF-CHECKOUT-PREPARE',
-          stats,
-          PERF_SLO_P95_MS['PERF-CHECKOUT-PREPARE'],
-        ),
+        evaluateScenario('PERF-CHECKOUT-PREPARE', stats, PERF_SLO_P95_MS['PERF-CHECKOUT-PREPARE']),
       );
     }
 
@@ -678,11 +654,7 @@ describe('Performance benchmark harness (C-02/C-03)', () => {
         { warmup: WARMUP, iterations: ITERS },
       );
       results.push(
-        evaluateScenario(
-          'PERF-ORDERS-PLACE',
-          stats,
-          PERF_SLO_P95_MS['PERF-ORDERS-PLACE'],
-        ),
+        evaluateScenario('PERF-ORDERS-PLACE', stats, PERF_SLO_P95_MS['PERF-ORDERS-PLACE']),
       );
     }
 
@@ -692,9 +664,8 @@ describe('Performance benchmark harness (C-02/C-03)', () => {
     }
 
     const failed = results.filter((r) => !r.pass);
-    expect(
-      failed,
-      failed.map(formatScenarioLine).join('\n') || 'all scenarios pass',
-    ).toHaveLength(0);
+    expect(failed, failed.map(formatScenarioLine).join('\n') || 'all scenarios pass').toHaveLength(
+      0,
+    );
   }, 60_000);
 });

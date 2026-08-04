@@ -22,10 +22,7 @@ describe('GiftCardsResolver RBAC (resolver metadata + PermissionsGuard)', () => 
   };
   let resolver: GiftCardsResolver;
 
-  function gqlContext(
-    req: { user?: unknown },
-    handler: (...args: never[]) => unknown,
-  ) {
+  function gqlContext(req: { user?: unknown }, handler: (...args: never[]) => unknown) {
     return {
       getType: () => 'graphql',
       getArgs: () => [{}, {}, { req }, {}],
@@ -55,44 +52,26 @@ describe('GiftCardsResolver RBAC (resolver metadata + PermissionsGuard)', () => 
 
   it('declares giftcard:* permission keys', () => {
     const reflector = new Reflector();
+    expect(reflector.get(REQUIRE_PERMISSION_KEY, GiftCardsResolver.prototype.giftCard)).toEqual([
+      'giftcard:read',
+    ]);
     expect(
-      reflector.get(REQUIRE_PERMISSION_KEY, GiftCardsResolver.prototype.giftCard),
+      reflector.get(REQUIRE_PERMISSION_KEY, GiftCardsResolver.prototype.giftCardByCode),
     ).toEqual(['giftcard:read']);
     expect(
-      reflector.get(
-        REQUIRE_PERMISSION_KEY,
-        GiftCardsResolver.prototype.giftCardByCode,
-      ),
+      reflector.get(REQUIRE_PERMISSION_KEY, GiftCardsResolver.prototype.giftCardTransactions),
     ).toEqual(['giftcard:read']);
     expect(
-      reflector.get(
-        REQUIRE_PERMISSION_KEY,
-        GiftCardsResolver.prototype.giftCardTransactions,
-      ),
+      reflector.get(REQUIRE_PERMISSION_KEY, GiftCardsResolver.prototype.quoteGiftCardRedeem),
     ).toEqual(['giftcard:read']);
     expect(
-      reflector.get(
-        REQUIRE_PERMISSION_KEY,
-        GiftCardsResolver.prototype.quoteGiftCardRedeem,
-      ),
-    ).toEqual(['giftcard:read']);
-    expect(
-      reflector.get(
-        REQUIRE_PERMISSION_KEY,
-        GiftCardsResolver.prototype.issueGiftCard,
-      ),
+      reflector.get(REQUIRE_PERMISSION_KEY, GiftCardsResolver.prototype.issueGiftCard),
     ).toEqual(['giftcard:issue']);
     expect(
-      reflector.get(
-        REQUIRE_PERMISSION_KEY,
-        GiftCardsResolver.prototype.purchaseGiftCard,
-      ),
+      reflector.get(REQUIRE_PERMISSION_KEY, GiftCardsResolver.prototype.purchaseGiftCard),
     ).toEqual(['giftcard:purchase']);
     expect(
-      reflector.get(
-        REQUIRE_PERMISSION_KEY,
-        GiftCardsResolver.prototype.redeemGiftCard,
-      ),
+      reflector.get(REQUIRE_PERMISSION_KEY, GiftCardsResolver.prototype.redeemGiftCard),
     ).toEqual(['giftcard:redeem']);
   });
 

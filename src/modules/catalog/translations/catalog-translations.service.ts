@@ -1,8 +1,4 @@
-import {
-  BadRequestException,
-  Injectable,
-  NotFoundException,
-} from '@nestjs/common';
+import { BadRequestException, Injectable, NotFoundException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { In, QueryFailedError, Repository } from 'typeorm';
 
@@ -40,9 +36,7 @@ function isFkViolation(error: unknown): boolean {
   );
 }
 
-function toProductTranslation(
-  row: ProductTranslationEntity,
-): ProductTranslationRecord {
+function toProductTranslation(row: ProductTranslationEntity): ProductTranslationRecord {
   return {
     id: row.id,
     productId: row.productId,
@@ -55,9 +49,7 @@ function toProductTranslation(
   };
 }
 
-function toCategoryTranslation(
-  row: CategoryTranslationEntity,
-): CategoryTranslationRecord {
+function toCategoryTranslation(row: CategoryTranslationEntity): CategoryTranslationRecord {
   return {
     id: row.id,
     categoryId: row.categoryId,
@@ -82,9 +74,7 @@ function overlayFields<T extends { name: string; slug: string; description: stri
     name: tr.name,
     slug: tr.slug?.trim() ? tr.slug.trim() : base.slug,
     description:
-      tr.description !== null && tr.description !== undefined
-        ? tr.description
-        : base.description,
+      tr.description !== null && tr.description !== undefined ? tr.description : base.description,
   };
 }
 
@@ -107,9 +97,7 @@ export class CatalogTranslationsService {
     private readonly categories: Repository<CategoryEntity>,
   ) {}
 
-  async listProductTranslations(
-    productId: string,
-  ): Promise<ProductTranslationRecord[]> {
+  async listProductTranslations(productId: string): Promise<ProductTranslationRecord[]> {
     const rows = await this.productTranslations.find({
       where: { productId },
       order: { locale: 'ASC' },
@@ -117,9 +105,7 @@ export class CatalogTranslationsService {
     return rows.map(toProductTranslation);
   }
 
-  async listCategoryTranslations(
-    categoryId: string,
-  ): Promise<CategoryTranslationRecord[]> {
+  async listCategoryTranslations(categoryId: string): Promise<CategoryTranslationRecord[]> {
     const rows = await this.categoryTranslations.find({
       where: { categoryId },
       order: { locale: 'ASC' },
@@ -141,10 +127,7 @@ export class CatalogTranslationsService {
     if (!name) {
       throw new BadRequestException('Translation name must not be empty');
     }
-    const slug =
-      input.slug === undefined || input.slug === null
-        ? null
-        : input.slug.trim() || null;
+    const slug = input.slug === undefined || input.slug === null ? null : input.slug.trim() || null;
     const description =
       input.description === undefined
         ? null
@@ -203,10 +186,7 @@ export class CatalogTranslationsService {
     if (!name) {
       throw new BadRequestException('Translation name must not be empty');
     }
-    const slug =
-      input.slug === undefined || input.slug === null
-        ? null
-        : input.slug.trim() || null;
+    const slug = input.slug === undefined || input.slug === null ? null : input.slug.trim() || null;
     const description =
       input.description === undefined
         ? null
@@ -251,10 +231,7 @@ export class CatalogTranslationsService {
     }
   }
 
-  async deleteProductTranslation(
-    productId: string,
-    locale: string,
-  ): Promise<boolean> {
+  async deleteProductTranslation(productId: string, locale: string): Promise<boolean> {
     const normalized = assertLocale(locale);
     const result = await this.productTranslations.delete({
       productId,
@@ -263,10 +240,7 @@ export class CatalogTranslationsService {
     return (result.affected ?? 0) > 0;
   }
 
-  async deleteCategoryTranslation(
-    categoryId: string,
-    locale: string,
-  ): Promise<boolean> {
+  async deleteCategoryTranslation(categoryId: string, locale: string): Promise<boolean> {
     const normalized = assertLocale(locale);
     const result = await this.categoryTranslations.delete({
       categoryId,
@@ -342,8 +316,6 @@ export class CatalogTranslationsService {
       },
     });
     const byCategory = new Map(rows.map((r) => [r.categoryId, r]));
-    return categories.map((c) =>
-      overlayFields(c, byCategory.get(c.id) ?? null),
-    );
+    return categories.map((c) => overlayFields(c, byCategory.get(c.id) ?? null));
   }
 }

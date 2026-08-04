@@ -22,9 +22,7 @@ export function assertLocale(value: string): string {
  * Parse the primary locale from an Accept-Language header value.
  * Returns null when absent or unparseable.
  */
-export function parseAcceptLanguageHeader(
-  value: string | undefined,
-): string | null {
+export function parseAcceptLanguageHeader(value: string | undefined): string | null {
   if (!value?.trim()) {
     return null;
   }
@@ -41,10 +39,7 @@ export function parseAcceptLanguageHeader(
   return normalized;
 }
 
-function headerValue(
-  headers: HeaderMap,
-  name: string,
-): string | undefined {
+function headerValue(headers: HeaderMap, name: string): string | undefined {
   const raw = headers[name] ?? headers[name.toLowerCase()];
   const value = Array.isArray(raw) ? raw[0] : raw;
   if (typeof value !== 'string') {

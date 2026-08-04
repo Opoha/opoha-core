@@ -26,9 +26,7 @@ export function isReturnResolution(value: string): value is ReturnResolution {
  * Allowed status transitions.
  * Terminal: refunded, exchanged, cancelled.
  */
-export const RETURN_STATUS_TRANSITIONS: Readonly<
-  Record<ReturnStatus, readonly ReturnStatus[]>
-> = {
+export const RETURN_STATUS_TRANSITIONS: Readonly<Record<ReturnStatus, readonly ReturnStatus[]>> = {
   requested: ['approved', 'cancelled'],
   approved: ['received', 'cancelled'],
   received: ['refunded', 'exchanged'],
@@ -37,9 +35,6 @@ export const RETURN_STATUS_TRANSITIONS: Readonly<
   cancelled: [],
 };
 
-export function canTransitionReturnStatus(
-  from: ReturnStatus,
-  to: ReturnStatus,
-): boolean {
+export function canTransitionReturnStatus(from: ReturnStatus, to: ReturnStatus): boolean {
   return RETURN_STATUS_TRANSITIONS[from].includes(to);
 }

@@ -4,10 +4,7 @@ import { EventBusService } from '../../event-bus/event-bus.service';
 import { CoreEventName } from '../../event-bus/event-catalog';
 import type { DomainEvent } from '../../event-bus/domain-event';
 import { AppLogger } from '../../logging/app-logger';
-import {
-  NotificationTemplateCode,
-  NotificationsService,
-} from '../../notifications/public';
+import { NotificationTemplateCode, NotificationsService } from '../../notifications/public';
 import { CustomersService } from '../../customer/public';
 import { OrdersService } from '../orders.service';
 import type { OrderCreatedData } from './order-events';
@@ -17,10 +14,7 @@ import type {
   PaymentRefundedData,
 } from '../../payment-engine/events/payment-events';
 
-type PaymentEventData =
-  | PaymentCapturedData
-  | PaymentRefundedData
-  | PaymentFailedData;
+type PaymentEventData = PaymentCapturedData | PaymentRefundedData | PaymentFailedData;
 
 /** Loose ShipmentCreated payload until fulfillment owns a strict schema. */
 type ShipmentCreatedData = {
@@ -72,11 +66,8 @@ export class OrderNotificationsListener implements OnModuleInit {
     );
   }
 
-  private async handleOrderCreated(
-    event: DomainEvent<OrderCreatedData>,
-  ): Promise<void> {
-    const { orderId, customerId, totalMinor, currencyCode, paymentMethod } =
-      event.data;
+  private async handleOrderCreated(event: DomainEvent<OrderCreatedData>): Promise<void> {
+    const { orderId, customerId, totalMinor, currencyCode, paymentMethod } = event.data;
     const email = await this.resolveEmail(customerId);
     if (!email) {
       return;
@@ -95,10 +86,8 @@ export class OrderNotificationsListener implements OnModuleInit {
       | typeof NotificationTemplateCode.PaymentRefunded
       | typeof NotificationTemplateCode.PaymentFailed,
   ): Promise<void> {
-    const { orderId, paymentId, amountMinor, currencyCode, providerCode } =
-      event.data;
-    const errorMessage =
-      'errorMessage' in event.data ? event.data.errorMessage : undefined;
+    const { orderId, paymentId, amountMinor, currencyCode, providerCode } = event.data;
+    const errorMessage = 'errorMessage' in event.data ? event.data.errorMessage : undefined;
 
     let customerId: string | null;
     try {
@@ -129,9 +118,7 @@ export class OrderNotificationsListener implements OnModuleInit {
     );
   }
 
-  private async handleShipmentCreated(
-    event: DomainEvent<ShipmentCreatedData>,
-  ): Promise<void> {
+  private async handleShipmentCreated(event: DomainEvent<ShipmentCreatedData>): Promise<void> {
     const { orderId, trackingNumber, customerId, customerEmail } = event.data;
     const email =
       (customerEmail && customerEmail.trim()) ||
@@ -147,9 +134,7 @@ export class OrderNotificationsListener implements OnModuleInit {
     );
   }
 
-  private async resolveEmailFromOrder(
-    orderId: string,
-  ): Promise<string | undefined> {
+  private async resolveEmailFromOrder(orderId: string): Promise<string | undefined> {
     try {
       const order = await this.orders.findById(orderId);
       return this.resolveEmail(order.customerId);
@@ -158,9 +143,7 @@ export class OrderNotificationsListener implements OnModuleInit {
     }
   }
 
-  private async resolveEmail(
-    customerId: string | null | undefined,
-  ): Promise<string | undefined> {
+  private async resolveEmail(customerId: string | null | undefined): Promise<string | undefined> {
     if (!customerId) {
       return undefined;
     }

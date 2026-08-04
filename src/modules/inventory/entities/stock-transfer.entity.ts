@@ -10,11 +10,7 @@ import {
 
 import { StockTransferLineEntity } from './stock-transfer-line.entity';
 
-export type StockTransferStatus =
-  | 'draft'
-  | 'in_transit'
-  | 'received'
-  | 'cancelled';
+export type StockTransferStatus = 'draft' | 'in_transit' | 'received' | 'cancelled';
 
 /** OWNER: inventory module — plugins must not alter this table. */
 @Entity({ name: 'stock_transfers' })

@@ -3,9 +3,7 @@ import { LOCALIZATION_SETTINGS_KEY } from '../entities/localization-settings.ent
 
 export type SeedLocalizationStore = {
   localizationSettings: {
-    findUnique: (args: {
-      where: { key: string };
-    }) => Promise<{
+    findUnique: (args: { where: { key: string } }) => Promise<{
       key: string;
       countryCode: string;
       currencyCode: string;

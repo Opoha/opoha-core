@@ -1,16 +1,8 @@
 import { UseGuards } from '@nestjs/common';
 import { Args, ID, Mutation, Query, Resolver } from '@nestjs/graphql';
 
-import {
-  GqlAuthGuard,
-  PermissionsGuard,
-  RequirePermission,
-} from '../../auth/public';
-import {
-  CollectionType,
-  CreateCollectionInput,
-  UpdateCollectionInput,
-} from './collection.types';
+import { GqlAuthGuard, PermissionsGuard, RequirePermission } from '../../auth/public';
+import { CollectionType, CreateCollectionInput, UpdateCollectionInput } from './collection.types';
 import { CollectionsService } from './collections.service';
 
 @Resolver(() => CollectionType)
@@ -32,9 +24,7 @@ export class CollectionsResolver {
     description: 'Get catalog collection by id',
   })
   @RequirePermission('collection:read')
-  collection(
-    @Args('id', { type: () => ID }) id: string,
-  ): Promise<CollectionType> {
+  collection(@Args('id', { type: () => ID }) id: string): Promise<CollectionType> {
     return this.collectionsService.findById(id);
   }
 
@@ -68,9 +58,7 @@ export class CollectionsResolver {
     description: 'Delete a catalog collection',
   })
   @RequirePermission('collection:delete')
-  deleteCollection(
-    @Args('id', { type: () => ID }) id: string,
-  ): Promise<CollectionType> {
+  deleteCollection(@Args('id', { type: () => ID }) id: string): Promise<CollectionType> {
     return this.collectionsService.remove(id);
   }
 }

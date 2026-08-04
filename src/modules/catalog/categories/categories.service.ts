@@ -13,11 +13,7 @@ import { StoreChannelSettingsService } from '../../config/public';
 import { CategoryEntity } from '../entities/category.entity';
 import { catalogStoreWhere } from '../store-catalog-scope';
 import { CatalogTranslationsService } from '../translations/catalog-translations.service';
-import type {
-  CategoryType,
-  CreateCategoryInput,
-  UpdateCategoryInput,
-} from './category.types';
+import type { CategoryType, CreateCategoryInput, UpdateCategoryInput } from './category.types';
 
 function isUniqueViolation(error: unknown): boolean {
   return (
@@ -54,9 +50,7 @@ function toCategoryType(row: CategoryEntity): CategoryType {
   };
 }
 
-function normalizeStoreId(
-  value: string | null | undefined,
-): string | null | undefined {
+function normalizeStoreId(value: string | null | undefined): string | null | undefined {
   if (value === undefined) {
     return undefined;
   }
@@ -119,10 +113,7 @@ export class CategoriesService {
     return 'shared';
   }
 
-  async findById(
-    id: string,
-    locale?: string | null,
-  ): Promise<CategoryType> {
+  async findById(id: string, locale?: string | null): Promise<CategoryType> {
     const row = await this.categories.findOne({ where: { id } });
     if (!row) {
       throw new NotFoundException(`Category ${id} not found`);
@@ -156,9 +147,7 @@ export class CategoriesService {
         throw new BadRequestException(`Store ${storeId} not found`);
       }
       if (isUniqueViolation(error)) {
-        throw new ConflictException(
-          `Category slug "${category.slug}" already exists`,
-        );
+        throw new ConflictException(`Category slug "${category.slug}" already exists`);
       }
       throw error;
     }
@@ -225,17 +214,12 @@ export class CategoriesService {
   }
 
   /** Walk ancestors of proposed parent; fail if `categoryId` appears. */
-  private async assertNoCycle(
-    categoryId: string,
-    proposedParentId: string,
-  ): Promise<void> {
+  private async assertNoCycle(categoryId: string, proposedParentId: string): Promise<void> {
     let currentId: string | null = proposedParentId;
     const seen = new Set<string>();
     while (currentId) {
       if (currentId === categoryId) {
-        throw new BadRequestException(
-          'Cannot set parent: would create a category cycle',
-        );
+        throw new BadRequestException('Cannot set parent: would create a category cycle');
       }
       if (seen.has(currentId)) {
         break;

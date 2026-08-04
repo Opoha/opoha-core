@@ -70,9 +70,7 @@ describe('CategoriesService', () => {
     });
     expect(child.parentId).toBe(root.id);
 
-    await expect(
-      service.update(root.id, { parentId: root.id }),
-    ).rejects.toThrow(/own parent/);
+    await expect(service.update(root.id, { parentId: root.id })).rejects.toThrow(/own parent/);
   });
 
   it('scopes findAll to shared + store-owned for a store', async () => {
@@ -116,9 +114,7 @@ describe('CategoriesService', () => {
       slug: 'child',
       parentId: root.id,
     });
-    await expect(
-      service.update(root.id, { parentId: child.id }),
-    ).rejects.toThrow(/cycle/);
+    await expect(service.update(root.id, { parentId: child.id })).rejects.toThrow(/cycle/);
   });
 
   it('updates and deletes categories', async () => {

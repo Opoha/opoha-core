@@ -1,8 +1,4 @@
-import {
-  ConflictException,
-  Injectable,
-  NotFoundException,
-} from '@nestjs/common';
+import { ConflictException, Injectable, NotFoundException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { QueryFailedError, Repository } from 'typeorm';
 
@@ -98,10 +94,7 @@ export class ProductMediaService {
     }
   }
 
-  async update(
-    id: string,
-    input: UpdateProductMediaInput,
-  ): Promise<ProductMediaType> {
+  async update(id: string, input: UpdateProductMediaInput): Promise<ProductMediaType> {
     const row = await this.media.findOne({ where: { id } });
     if (!row) {
       throw new NotFoundException(`Product media ${id} not found`);

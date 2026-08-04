@@ -1,31 +1,16 @@
-import {
-  BadRequestException,
-  Injectable,
-  NotFoundException,
-} from '@nestjs/common';
+import { BadRequestException, Injectable, NotFoundException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import {
-  DataSource,
-  type EntityManager,
-  Repository,
-} from 'typeorm';
+import { DataSource, type EntityManager, Repository } from 'typeorm';
 
 import { CoreEventName } from '../event-bus/event-catalog';
 import { EventBusService } from '../event-bus/event-bus.service';
 import { InventoryService } from '../inventory/public';
-import {
-  OrderEntity,
-  OrderLineEntity,
-} from '../order/public';
+import { OrderEntity, OrderLineEntity } from '../order/public';
 import { PaymentEngine } from '../payment-engine/public';
 import { WarehouseEntity } from '../warehouses/public';
 import { ReturnLineEntity } from './entities/return-line.entity';
 import { ReturnEntity } from './entities/return.entity';
-import {
-  canTransitionReturnStatus,
-  isReturnResolution,
-  type ReturnStatus,
-} from './return-status';
+import { canTransitionReturnStatus, isReturnResolution, type ReturnStatus } from './return-status';
 import type {
   CompleteRefundInput,
   CreateReturnInput,
@@ -136,14 +121,10 @@ export class ReturnsService {
     const orderLineIds = new Set<string>();
     for (const line of input.lines) {
       if (!Number.isInteger(line.quantity) || line.quantity <= 0) {
-        throw new BadRequestException(
-          'Each line quantity must be a positive integer',
-        );
+        throw new BadRequestException('Each line quantity must be a positive integer');
       }
       if (orderLineIds.has(line.orderLineId)) {
-        throw new BadRequestException(
-          `Duplicate orderLineId ${line.orderLineId} in return lines`,
-        );
+        throw new BadRequestException(`Duplicate orderLineId ${line.orderLineId} in return lines`);
       }
       orderLineIds.add(line.orderLineId);
     }
@@ -172,9 +153,7 @@ export class ReturnsService {
       }
     }
 
-    const alreadyRequested = await this.openReturnedQuantityByOrderLine(
-      input.orderId,
-    );
+    const alreadyRequested = await this.openReturnedQuantityByOrderLine(input.orderId);
 
     for (const line of input.lines) {
       const orderLine = orderLineById.get(line.orderLineId)!;
@@ -291,12 +270,9 @@ export class ReturnsService {
     }
     this.assertTransition(rma.status, 'refunded');
 
-    const amountMinor =
-      input.amountMinor ?? (await this.computeRefundAmountMinor(rma));
+    const amountMinor = input.amountMinor ?? (await this.computeRefundAmountMinor(rma));
     if (!/^\d+$/.test(amountMinor) || amountMinor === '0') {
-      throw new BadRequestException(
-        'Refund amountMinor must be a positive integer string',
-      );
+      throw new BadRequestException('Refund amountMinor must be a positive integer string');
     }
 
     let paymentId = input.paymentId ?? null;
@@ -304,18 +280,14 @@ export class ReturnsService {
       const payments = await this.payments.findByOrderId(rma.orderId);
       const captured = payments.find((p) => p.status === 'captured');
       if (!captured) {
-        throw new BadRequestException(
-          `No captured payment found for order ${rma.orderId}`,
-        );
+        throw new BadRequestException(`No captured payment found for order ${rma.orderId}`);
       }
       paymentId = captured.id;
     }
 
     const payment = await this.payments.findById(paymentId);
     if (payment.orderId !== rma.orderId) {
-      throw new BadRequestException(
-        `Payment ${paymentId} does not belong to order ${rma.orderId}`,
-      );
+      throw new BadRequestException(`Payment ${paymentId} does not belong to order ${rma.orderId}`);
     }
 
     const refunded = await this.payments.refund({
@@ -381,78 +353,76 @@ export class ReturnsService {
     }
 
     const completedAt = new Date();
-    const replacementOrderId = await this.dataSource.transaction(
-      async (manager) => {
-        const locked = await this.lockReturn(manager, id);
-        this.assertTransition(locked.status, 'exchanged');
+    const replacementOrderId = await this.dataSource.transaction(async (manager) => {
+      const locked = await this.lockReturn(manager, id);
+      this.assertTransition(locked.status, 'exchanged');
 
-        let subtotal = 0n;
-        const stubLines: Array<{
-          variantId: string;
-          quantity: number;
-          unitPriceMinor: string;
-          lineTotalMinor: string;
-        }> = [];
+      let subtotal = 0n;
+      const stubLines: Array<{
+        variantId: string;
+        quantity: number;
+        unitPriceMinor: string;
+        lineTotalMinor: string;
+      }> = [];
 
-        for (const line of locked.lines ?? []) {
-          const orderLine = await manager.findOne(OrderLineEntity, {
-            where: { id: line.orderLineId },
-          });
-          if (!orderLine) {
-            throw new BadRequestException(
-              `Order line ${line.orderLineId} not found for exchange stub`,
-            );
-          }
-          const unit = BigInt(orderLine.unitPriceMinor);
-          const lineTotal = unit * BigInt(line.quantity);
-          subtotal += lineTotal;
-          stubLines.push({
+      for (const line of locked.lines ?? []) {
+        const orderLine = await manager.findOne(OrderLineEntity, {
+          where: { id: line.orderLineId },
+        });
+        if (!orderLine) {
+          throw new BadRequestException(
+            `Order line ${line.orderLineId} not found for exchange stub`,
+          );
+        }
+        const unit = BigInt(orderLine.unitPriceMinor);
+        const lineTotal = unit * BigInt(line.quantity);
+        subtotal += lineTotal;
+        stubLines.push({
+          variantId: line.variantId,
+          quantity: line.quantity,
+          unitPriceMinor: orderLine.unitPriceMinor,
+          lineTotalMinor: lineTotal.toString(),
+        });
+      }
+
+      const replacement = await manager.save(
+        manager.create(OrderEntity, {
+          customerId: order.customerId,
+          cartId: null,
+          status: 'pending',
+          currencyCode: order.currencyCode,
+          subtotalMinor: subtotal.toString(),
+          taxMinor: '0',
+          shippingMinor: '0',
+          discountMinor: '0',
+          couponCode: null,
+          shippingMethodCode: null,
+          shippingRateCode: null,
+          totalMinor: subtotal.toString(),
+        }),
+      );
+
+      await manager.save(
+        stubLines.map((line) =>
+          manager.create(OrderLineEntity, {
+            orderId: replacement.id,
             variantId: line.variantId,
             quantity: line.quantity,
-            unitPriceMinor: orderLine.unitPriceMinor,
-            lineTotalMinor: lineTotal.toString(),
-          });
-        }
-
-        const replacement = await manager.save(
-          manager.create(OrderEntity, {
-            customerId: order.customerId,
-            cartId: null,
-            status: 'pending',
-            currencyCode: order.currencyCode,
-            subtotalMinor: subtotal.toString(),
-            taxMinor: '0',
-            shippingMinor: '0',
-            discountMinor: '0',
-            couponCode: null,
-            shippingMethodCode: null,
-            shippingRateCode: null,
-            totalMinor: subtotal.toString(),
+            unitPriceMinor: line.unitPriceMinor,
+            lineTotalMinor: line.lineTotalMinor,
           }),
-        );
+        ),
+      );
 
-        await manager.save(
-          stubLines.map((line) =>
-            manager.create(OrderLineEntity, {
-              orderId: replacement.id,
-              variantId: line.variantId,
-              quantity: line.quantity,
-              unitPriceMinor: line.unitPriceMinor,
-              lineTotalMinor: line.lineTotalMinor,
-            }),
-          ),
-        );
-
-        locked.status = 'exchanged';
-        locked.replacementOrderId = replacement.id;
-        locked.completedAt = completedAt;
-        locked.notes = locked.notes
-          ? `${locked.notes}\n[exchange stub order ${replacement.id}]`
-          : `[exchange stub order ${replacement.id}]`;
-        await manager.save(locked);
-        return replacement.id;
-      },
-    );
+      locked.status = 'exchanged';
+      locked.replacementOrderId = replacement.id;
+      locked.completedAt = completedAt;
+      locked.notes = locked.notes
+        ? `${locked.notes}\n[exchange stub order ${replacement.id}]`
+        : `[exchange stub order ${replacement.id}]`;
+      await manager.save(locked);
+      return replacement.id;
+    });
 
     if (!replacementOrderId) {
       throw new BadRequestException('Failed to create exchange replacement order');
@@ -474,9 +444,7 @@ export class ReturnsService {
 
   private assertTransition(from: ReturnStatus, to: ReturnStatus): void {
     if (!canTransitionReturnStatus(from, to)) {
-      throw new BadRequestException(
-        `Cannot transition return from ${from} to ${to}`,
-      );
+      throw new BadRequestException(`Cannot transition return from ${from} to ${to}`);
     }
   }
 
@@ -491,10 +459,7 @@ export class ReturnsService {
     return row;
   }
 
-  private async lockReturn(
-    manager: EntityManager,
-    id: string,
-  ): Promise<ReturnEntity> {
+  private async lockReturn(manager: EntityManager, id: string): Promise<ReturnEntity> {
     const rma = await manager
       .getRepository(ReturnEntity)
       .createQueryBuilder('rma')
@@ -523,9 +488,7 @@ export class ReturnsService {
   }
 
   /** Quantities already on non-cancelled RMAs for an order. */
-  private async openReturnedQuantityByOrderLine(
-    orderId: string,
-  ): Promise<Map<string, number>> {
+  private async openReturnedQuantityByOrderLine(orderId: string): Promise<Map<string, number>> {
     const existing = await this.returns.find({
       where: { orderId },
       relations: { lines: true },
@@ -536,27 +499,20 @@ export class ReturnsService {
         continue;
       }
       for (const line of rma.lines ?? []) {
-        map.set(
-          line.orderLineId,
-          (map.get(line.orderLineId) ?? 0) + line.quantity,
-        );
+        map.set(line.orderLineId, (map.get(line.orderLineId) ?? 0) + line.quantity);
       }
     }
     return map;
   }
 
-  private async computeRefundAmountMinor(
-    rma: ReturnEntity,
-  ): Promise<string> {
+  private async computeRefundAmountMinor(rma: ReturnEntity): Promise<string> {
     let total = 0n;
     for (const line of rma.lines ?? []) {
       const orderLine = await this.orderLines.findOne({
         where: { id: line.orderLineId },
       });
       if (!orderLine) {
-        throw new BadRequestException(
-          `Order line ${line.orderLineId} not found for refund calc`,
-        );
+        throw new BadRequestException(`Order line ${line.orderLineId} not found for refund calc`);
       }
       total += BigInt(orderLine.unitPriceMinor) * BigInt(line.quantity);
     }

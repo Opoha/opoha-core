@@ -1,11 +1,7 @@
 import { BadRequestException, UseGuards } from '@nestjs/common';
 import { Args, Query, Resolver } from '@nestjs/graphql';
 
-import {
-  GqlAuthGuard,
-  PermissionsGuard,
-  RequirePermission,
-} from '../auth/public';
+import { GqlAuthGuard, PermissionsGuard, RequirePermission } from '../auth/public';
 import type { QuotedShippingRate, ShippingQuoteResult } from './shipping-method';
 import { ShippingEngine } from './shipping-engine.service';
 import {
@@ -38,9 +34,7 @@ function toQuoteType(result: ShippingQuoteResult): ShippingQuoteType {
   };
 }
 
-function parseMetadataJson(
-  metadataJson: string | undefined,
-): Record<string, unknown> | undefined {
+function parseMetadataJson(metadataJson: string | undefined): Record<string, unknown> | undefined {
   if (!metadataJson) {
     return undefined;
   }
@@ -74,8 +68,7 @@ export class ShippingResolver {
 
   @Query(() => ShippingQuoteType, {
     name: 'quoteShippingRates',
-    description:
-      'Quote shipping rates from all active methods (flat-rate, carriers, …)',
+    description: 'Quote shipping rates from all active methods (flat-rate, carriers, …)',
   })
   @RequirePermission('shipping:read')
   async quoteShippingRates(

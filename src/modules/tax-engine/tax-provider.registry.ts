@@ -29,14 +29,11 @@ export class TaxProviderRegistry {
   }
 
   get(id: string): TaxProvider | undefined {
-    return this.entries.find((e) => e.provider.code === id && e.active)
-      ?.provider;
+    return this.entries.find((e) => e.provider.code === id && e.active)?.provider;
   }
 
   list(activeOnly = false): readonly RegisteredTaxProvider[] {
-    return activeOnly
-      ? this.entries.filter((e) => e.active)
-      : [...this.entries];
+    return activeOnly ? this.entries.filter((e) => e.active) : [...this.entries];
   }
 
   activatePlugin(pluginId: string): void {

@@ -15,11 +15,7 @@ describe('RefreshTokensService', () => {
   it('issues a hashed refresh token row', async () => {
     const save = vi.fn().mockResolvedValue({});
     const refreshTokens = { save, create: vi.fn((data) => data) };
-    const service = new RefreshTokensService(
-      refreshTokens as never,
-      {} as never,
-      config as never,
-    );
+    const service = new RefreshTokensService(refreshTokens as never, {} as never, config as never);
 
     const raw = await service.issue('user-1');
     expect(raw.startsWith('opr_')).toBe(true);
@@ -33,14 +29,8 @@ describe('RefreshTokensService', () => {
 
   it('rejects unknown refresh tokens', async () => {
     const refreshTokens = { findOne: vi.fn().mockResolvedValue(null) };
-    const service = new RefreshTokensService(
-      refreshTokens as never,
-      {} as never,
-      config as never,
-    );
-    await expect(service.rotate('opr_missing')).rejects.toBeInstanceOf(
-      UnauthorizedException,
-    );
+    const service = new RefreshTokensService(refreshTokens as never, {} as never, config as never);
+    await expect(service.rotate('opr_missing')).rejects.toBeInstanceOf(UnauthorizedException);
   });
 
   it('rejects already-revoked tokens and clears siblings', async () => {
@@ -54,14 +44,8 @@ describe('RefreshTokensService', () => {
       }),
       update,
     };
-    const service = new RefreshTokensService(
-      refreshTokens as never,
-      {} as never,
-      config as never,
-    );
-    await expect(service.rotate('opr_reused')).rejects.toBeInstanceOf(
-      UnauthorizedException,
-    );
+    const service = new RefreshTokensService(refreshTokens as never, {} as never, config as never);
+    await expect(service.rotate('opr_reused')).rejects.toBeInstanceOf(UnauthorizedException);
     expect(update).toHaveBeenCalled();
   });
 });

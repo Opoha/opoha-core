@@ -28,17 +28,17 @@ describe('FXRateProviderRegistry (unit)', () => {
 
   it('rejects empty provider code', () => {
     const registry = new FXRateProviderRegistry();
-    expect(() =>
-      registry.register('fx-plugin', makeProvider(''), true),
-    ).toThrow(/code is required/);
+    expect(() => registry.register('fx-plugin', makeProvider(''), true)).toThrow(
+      /code is required/,
+    );
   });
 
   it('rejects conflicting code from a different plugin', () => {
     const registry = new FXRateProviderRegistry();
     registry.register('fx-plugin-a', makeProvider('oxr'), true);
-    expect(() =>
-      registry.register('fx-plugin-b', makeProvider('oxr'), true),
-    ).toThrow(/already registered/);
+    expect(() => registry.register('fx-plugin-b', makeProvider('oxr'), true)).toThrow(
+      /already registered/,
+    );
   });
 
   it('removePlugin clears its registrations', () => {

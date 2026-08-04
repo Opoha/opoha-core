@@ -24,9 +24,7 @@ describe('PermissionsGuard', () => {
       reflector as unknown as Reflector,
       permissionsService as never,
     );
-    await expect(guard.canActivate(mockContext({ userId: 'u1' }))).resolves.toBe(
-      true,
-    );
+    await expect(guard.canActivate(mockContext({ userId: 'u1' }))).resolves.toBe(true);
   });
 
   it('allows when user has required permission', async () => {
@@ -42,9 +40,7 @@ describe('PermissionsGuard', () => {
       reflector as unknown as Reflector,
       permissionsService as never,
     );
-    await expect(
-      guard.canActivate(mockContext({ userId: 'u1' })),
-    ).resolves.toBe(true);
+    await expect(guard.canActivate(mockContext({ userId: 'u1' }))).resolves.toBe(true);
   });
 
   it('denies when permission is missing', async () => {
@@ -58,9 +54,9 @@ describe('PermissionsGuard', () => {
       reflector as unknown as Reflector,
       permissionsService as never,
     );
-    await expect(
-      guard.canActivate(mockContext({ userId: 'u1' })),
-    ).rejects.toBeInstanceOf(ForbiddenException);
+    await expect(guard.canActivate(mockContext({ userId: 'u1' }))).rejects.toBeInstanceOf(
+      ForbiddenException,
+    );
   });
 
   it('uses API-key scoped permissions when present on AuthUser', async () => {

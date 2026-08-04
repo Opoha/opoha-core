@@ -13,10 +13,7 @@ import { catalogStoreWhere } from './store-catalog-scope';
 const STORE_A = 'aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa';
 const STORE_B = 'bbbbbbbb-bbbb-4bbb-8bbb-bbbbbbbbbbbb';
 
-function matchStoreWhere(
-  rowStoreId: string | null,
-  where: unknown,
-): boolean {
+function matchStoreWhere(rowStoreId: string | null, where: unknown): boolean {
   const clauses = Array.isArray(where) ? where : where ? [where] : [];
   if (clauses.length === 0) {
     return true;
@@ -109,7 +106,9 @@ describe('multi-store catalog (B-04)', () => {
       };
 
       const variantRepo = {
-        create: vi.fn((data: Partial<ProductVariantEntity>) => ({ ...data }) as ProductVariantEntity),
+        create: vi.fn(
+          (data: Partial<ProductVariantEntity>) => ({ ...data }) as ProductVariantEntity,
+        ),
         save: vi.fn(async (rows: ProductVariantEntity | ProductVariantEntity[]) => {
           const list = Array.isArray(rows) ? rows : [rows];
           for (const row of list) {
@@ -161,10 +160,7 @@ describe('multi-store catalog (B-04)', () => {
         undefined,
         channelSettings as never,
       );
-      categoriesService = new CategoriesService(
-        categoryRepo as never,
-        channelSettings as never,
-      );
+      categoriesService = new CategoriesService(categoryRepo as never, channelSettings as never);
 
       const contributions = new ContributionRegistry({
         subscribe: vi.fn(),

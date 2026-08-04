@@ -8,11 +8,7 @@ import { InjectRepository } from '@nestjs/typeorm';
 import { QueryFailedError, Repository } from 'typeorm';
 
 import { CouponEntity } from './entities/coupon.entity';
-import type {
-  CreateCouponInput,
-  CouponType,
-  UpdateCouponInput,
-} from './promotion.types';
+import type { CreateCouponInput, CouponType, UpdateCouponInput } from './promotion.types';
 
 function isUniqueViolation(error: unknown): boolean {
   return (

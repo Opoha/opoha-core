@@ -1,9 +1,6 @@
 import { Injectable } from '@nestjs/common';
 
-import type {
-  FXRateProvider,
-  RegisteredFXRateProvider,
-} from './fx-rate-provider';
+import type { FXRateProvider, RegisteredFXRateProvider } from './fx-rate-provider';
 
 /**
  * Registry for FX rate providers (Phase 5 D-04).
@@ -32,14 +29,11 @@ export class FXRateProviderRegistry {
   }
 
   get(code: string): FXRateProvider | undefined {
-    return this.entries.find((e) => e.provider.code === code && e.active)
-      ?.provider;
+    return this.entries.find((e) => e.provider.code === code && e.active)?.provider;
   }
 
   list(activeOnly = false): readonly RegisteredFXRateProvider[] {
-    return activeOnly
-      ? this.entries.filter((e) => e.active)
-      : [...this.entries];
+    return activeOnly ? this.entries.filter((e) => e.active) : [...this.entries];
   }
 
   activatePlugin(pluginId: string): void {

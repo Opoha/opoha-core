@@ -20,8 +20,7 @@ export class AuthResolver {
 
   @Mutation(() => AuthPayload, {
     name: 'login',
-    description:
-      'Staff login — returns JWT access token + opaque refresh token (public)',
+    description: 'Staff login — returns JWT access token + opaque refresh token (public)',
   })
   login(
     @Args('email', { type: () => String }) email: string,
@@ -45,9 +44,7 @@ export class AuthResolver {
     name: 'logout',
     description: 'Revoke a refresh token (public; idempotent)',
   })
-  logout(
-    @Args('refreshToken', { type: () => String }) refreshToken: string,
-  ): Promise<boolean> {
+  logout(@Args('refreshToken', { type: () => String }) refreshToken: string): Promise<boolean> {
     return this.authService.logout(refreshToken);
   }
 
@@ -62,8 +59,7 @@ export class AuthResolver {
 
   @Query(() => [String], {
     name: 'myPermissions',
-    description:
-      'Permission keys for the current staff user (role-derived or API-key scoped)',
+    description: 'Permission keys for the current staff user (role-derived or API-key scoped)',
   })
   @UseGuards(GqlAuthGuard)
   myPermissions(@CurrentUser() user: AuthUser): Promise<string[]> {

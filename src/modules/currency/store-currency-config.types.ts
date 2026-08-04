@@ -1,8 +1,7 @@
 import { Field, ID, InputType, ObjectType } from '@nestjs/graphql';
 
 @ObjectType('StoreCurrencyConfig', {
-  description:
-    'Store-scoped display vs settlement currency configuration (Phase 5 D-01)',
+  description: 'Store-scoped display vs settlement currency configuration (Phase 5 D-01)',
 })
 export class StoreCurrencyConfigType {
   @Field(() => ID, { description: 'Store channel id' })
@@ -19,8 +18,7 @@ export class StoreCurrencyConfigType {
   displayCurrencyCode!: string;
 
   @Field(() => [String], {
-    description:
-      'Additional allowed display currencies (primary display always enabled)',
+    description: 'Additional allowed display currencies (primary display always enabled)',
   })
   enabledDisplayCurrencies!: string[];
 
@@ -47,8 +45,7 @@ export class UpdateStoreCurrencyConfigInput {
 
   @Field(() => [String], {
     nullable: true,
-    description:
-      'Replace additional allowed display currencies (ISO 4217 codes)',
+    description: 'Replace additional allowed display currencies (ISO 4217 codes)',
   })
   enabledDisplayCurrencies?: string[];
 }

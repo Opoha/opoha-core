@@ -15,10 +15,7 @@ import {
  * by id only (ADR-0005 / ADR-0010) — no TypeORM relation into catalog.
  */
 @Entity({ name: 'company_price_list_items' })
-@Unique('company_price_list_items_company_variant_key', [
-  'companyId',
-  'variantId',
-])
+@Unique('company_price_list_items_company_variant_key', ['companyId', 'variantId'])
 @Index('company_price_list_items_company_id_idx', ['companyId'])
 export class CompanyPriceEntity {
   @PrimaryGeneratedColumn('uuid')

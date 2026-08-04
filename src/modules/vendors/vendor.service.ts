@@ -53,9 +53,7 @@ function toVendorType(row: VendorEntity): VendorType {
   };
 }
 
-function normalizeOptionalText(
-  value: string | null | undefined,
-): string | null | undefined {
+function normalizeOptionalText(value: string | null | undefined): string | null | undefined {
   if (value === undefined) {
     return undefined;
   }
@@ -66,9 +64,7 @@ function normalizeOptionalText(
   return trimmed.length === 0 ? null : trimmed;
 }
 
-function normalizeStoreId(
-  value: string | null | undefined,
-): string | null | undefined {
+function normalizeStoreId(value: string | null | undefined): string | null | undefined {
   return normalizeOptionalText(value);
 }
 
@@ -77,9 +73,7 @@ function assertCommissionBps(value: number | undefined): number {
     return 0;
   }
   if (!Number.isInteger(value) || value < 0 || value > 10000) {
-    throw new BadRequestException(
-      'commissionBps must be an integer between 0 and 10000',
-    );
+    throw new BadRequestException('commissionBps must be an integer between 0 and 10000');
   }
   return value;
 }
@@ -229,9 +223,7 @@ export class VendorService {
         throw new BadRequestException(`Store ${existing.storeId} not found`);
       }
       if (isUniqueViolation(error)) {
-        throw new ConflictException(
-          `Vendor code "${existing.code}" already exists`,
-        );
+        throw new ConflictException(`Vendor code "${existing.code}" already exists`);
       }
       throw error;
     }
@@ -254,9 +246,7 @@ export class VendorService {
       await this.vendors.delete({ id });
     } catch (error) {
       if (isForeignKeyViolation(error)) {
-        throw new BadRequestException(
-          `Cannot delete vendor ${id}: orders still reference it`,
-        );
+        throw new BadRequestException(`Cannot delete vendor ${id}: orders still reference it`);
       }
       throw error;
     }

@@ -9,12 +9,7 @@ import {
 
 /** Payment lifecycle status (core-owned). */
 export type PaymentStatus =
-  | 'pending'
-  | 'authorized'
-  | 'captured'
-  | 'refunded'
-  | 'failed'
-  | 'cancelled';
+  'pending' | 'authorized' | 'captured' | 'refunded' | 'failed' | 'cancelled';
 
 /** OWNER: payment-engine module — plugins must not alter this table. */
 @Entity({ name: 'payments' })

@@ -10,11 +10,7 @@ import {
   Resolver,
 } from '@nestjs/graphql';
 
-import {
-  GqlAuthGuard,
-  PermissionsGuard,
-  RequirePermission,
-} from '../../auth/public';
+import { GqlAuthGuard, PermissionsGuard, RequirePermission } from '../../auth/public';
 import { StoreCatalogModeGql } from '../../config/public';
 import type { StoreCatalogMode } from '../../config/public';
 import { ContributionRegistry } from '../../plugin-loader/public';
@@ -34,10 +30,13 @@ import { ProductsService } from './products.service';
  * (Phase 4 D-04 hook; ADR core-never-imports-plugins).
  */
 export type ReviewAggregateProvider = {
-  aggregate(productId: string): {
-    averageRating: number;
-    reviewCount: number;
-  } | null | undefined;
+  aggregate(productId: string):
+    | {
+        averageRating: number;
+        reviewCount: number;
+      }
+    | null
+    | undefined;
 };
 
 export const REVIEW_AGGREGATE_PROVIDER_TOKEN = 'product-review.reviews';
@@ -60,9 +59,7 @@ export class ProductsResolver {
    * Returns null when no (active) review plugin is installed.
    */
   @ResolveField(() => ProductReviewAggregateType, { nullable: true })
-  reviewAggregate(
-    @Parent() product: ProductType,
-  ): ProductReviewAggregateType | null {
+  reviewAggregate(@Parent() product: ProductType): ProductReviewAggregateType | null {
     const provider = this.contributions.getProvider<ReviewAggregateProvider>(
       REVIEW_AGGREGATE_PROVIDER_TOKEN,
     );
@@ -156,9 +153,7 @@ export class ProductsResolver {
     description: 'Delete a catalog product and its variants',
   })
   @RequirePermission('product:delete')
-  deleteProduct(
-    @Args('id', { type: () => ID }) id: string,
-  ): Promise<ProductType> {
+  deleteProduct(@Args('id', { type: () => ID }) id: string): Promise<ProductType> {
     return this.productsService.remove(id);
   }
 }

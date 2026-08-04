@@ -72,8 +72,7 @@ export class CartType {
   shippingMinor!: string;
 
   @Field(() => String, {
-    description:
-      'Tax pricing mode: exclusive (tax added) or inclusive (tax embedded in prices)',
+    description: 'Tax pricing mode: exclusive (tax added) or inclusive (tax embedded in prices)',
   })
   taxPricingMode!: string;
 
@@ -146,8 +145,7 @@ export class CartType {
 export class CreateCartInput {
   @Field(() => ID, {
     nullable: true,
-    description:
-      'Store id for this cart; falls back to x-opoha-store-id / default store',
+    description: 'Store id for this cart; falls back to x-opoha-store-id / default store',
   })
   storeId?: string;
 
@@ -281,8 +279,7 @@ export class CheckoutDisplayTotalsType {
 }
 
 @ObjectType({
-  description:
-    'Result of preparing checkout — reservations + totals (incl. shipping)',
+  description: 'Result of preparing checkout — reservations + totals (incl. shipping)',
 })
 export class CheckoutPreviewType {
   @Field(() => ID)
@@ -368,8 +365,7 @@ export class OrderType {
 
   @Field(() => ID, {
     nullable: true,
-    description:
-      'Primary marketplace vendor when all lines share one vendor (Phase 7 C-02)',
+    description: 'Primary marketplace vendor when all lines share one vendor (Phase 7 C-02)',
   })
   vendorId!: string | null;
 
@@ -446,8 +442,7 @@ export class OrderType {
 }
 
 @InputType({
-  description:
-    'Select a shipping method/rate on a cart after ShippingEngine.quote',
+  description: 'Select a shipping method/rate on a cart after ShippingEngine.quote',
 })
 export class SelectCartShippingInput {
   @Field(() => ID)
@@ -473,8 +468,7 @@ export class SelectCartShippingInput {
 }
 
 @InputType({
-  description:
-    'Set tax pricing mode and jurisdiction on a cart before prepareCheckout (C-03)',
+  description: 'Set tax pricing mode and jurisdiction on a cart before prepareCheckout (C-03)',
 })
 export class SetCartTaxContextInput {
   @Field(() => ID)
@@ -505,8 +499,7 @@ export class SetCartTaxContextInput {
 }
 
 @InputType({
-  description:
-    'Set or clear a coupon code on a cart for PromotionsEngine (D-01)',
+  description: 'Set or clear a coupon code on a cart for PromotionsEngine (D-01)',
 })
 export class SetCartCouponInput {
   @Field(() => ID)
@@ -520,8 +513,7 @@ export class SetCartCouponInput {
 }
 
 @InputType({
-  description:
-    'Set or clear a gift card code on a cart for GiftCardService (C-02)',
+  description: 'Set or clear a gift card code on a cart for GiftCardService (C-02)',
 })
 export class SetCartGiftCardInput {
   @Field(() => ID)
@@ -535,8 +527,7 @@ export class SetCartGiftCardInput {
 }
 
 @InputType({
-  description:
-    'Set loyalty points to redeem on a cart for LoyaltyService (C-03)',
+  description: 'Set loyalty points to redeem on a cart for LoyaltyService (C-03)',
 })
 export class SetCartLoyaltyPointsInput {
   @Field(() => ID)
@@ -550,8 +541,7 @@ export class SetCartLoyaltyPointsInput {
 }
 
 @InputType({
-  description:
-    'Place order from a locked checkout cart via PaymentEngine',
+  description: 'Place order from a locked checkout cart via PaymentEngine',
 })
 export class PlaceOrderInput {
   @Field(() => ID)

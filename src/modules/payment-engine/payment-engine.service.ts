@@ -1,17 +1,10 @@
-import {
-  BadRequestException,
-  Injectable,
-  NotFoundException,
-} from '@nestjs/common';
+import { BadRequestException, Injectable, NotFoundException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 
 import { CoreEventName } from '../event-bus/event-catalog';
 import { EventBusService } from '../event-bus/event-bus.service';
-import {
-  PaymentEntity,
-  type PaymentStatus,
-} from './entities/payment.entity';
+import { PaymentEntity, type PaymentStatus } from './entities/payment.entity';
 import { PaymentWebhookEventEntity } from './entities/payment-webhook-event.entity';
 import { PaymentProviderRegistry } from './payment-provider.registry';
 import type {
@@ -147,9 +140,7 @@ export class PaymentEngine {
       return row;
     }
     if (row.status !== 'authorized' && row.status !== 'pending') {
-      throw new BadRequestException(
-        `Cannot capture payment in status "${row.status}"`,
-      );
+      throw new BadRequestException(`Cannot capture payment in status "${row.status}"`);
     }
 
     const provider = this.requireProvider(row.providerCode);
@@ -208,9 +199,7 @@ export class PaymentEngine {
       return row;
     }
     if (row.status !== 'captured') {
-      throw new BadRequestException(
-        `Cannot refund payment in status "${row.status}"`,
-      );
+      throw new BadRequestException(`Cannot refund payment in status "${row.status}"`);
     }
 
     const provider = this.requireProvider(row.providerCode);
@@ -342,12 +331,10 @@ export class PaymentEngine {
           ok: true,
           duplicate: true,
           result: {
-            handled:
-              raced.status === 'processed' || raced.status === 'ignored',
+            handled: raced.status === 'processed' || raced.status === 'ignored',
             externalEventId,
             paymentExternalId: result.paymentExternalId,
-            action:
-              (raced.action as PaymentWebhookResult['action']) ?? 'ignore',
+            action: (raced.action as PaymentWebhookResult['action']) ?? 'ignore',
           },
         };
       }
@@ -392,10 +379,7 @@ export class PaymentEngine {
       payment.errorMessage = 'Failed via provider webhook';
       const saved = await this.payments.save(payment);
       await this.publishFailed(saved);
-    } else if (
-      result.action === 'authorize' &&
-      payment.status === 'pending'
-    ) {
+    } else if (result.action === 'authorize' && payment.status === 'pending') {
       payment.status = 'authorized';
       payment.authorizedAt = new Date();
       const saved = await this.payments.save(payment);
@@ -408,9 +392,7 @@ export class PaymentEngine {
   private requireProvider(code: string): PaymentProvider {
     const provider = this.registry.get(code);
     if (!provider) {
-      throw new BadRequestException(
-        `Payment provider "${code}" is not registered or inactive`,
-      );
+      throw new BadRequestException(`Payment provider "${code}" is not registered or inactive`);
     }
     return provider;
   }
@@ -525,11 +507,7 @@ export class PaymentEngine {
   }
 }
 
-type PaymentAuthorizeResultStatus =
-  | 'authorized'
-  | 'captured'
-  | 'pending'
-  | 'failed';
+type PaymentAuthorizeResultStatus = 'authorized' | 'captured' | 'pending' | 'failed';
 
 /** Map entity to a plain DTO if needed by callers. */
 export type PaymentRecord = {

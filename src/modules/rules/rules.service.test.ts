@@ -32,22 +32,16 @@ describe('RulesService (C-01/C-03)', () => {
         let list = [...rows];
         if (opts?.where) {
           list = list.filter((row) =>
-            Object.entries(opts.where!).every(
-              ([k, v]) => row[k as keyof RuleRow] === v,
-            ),
+            Object.entries(opts.where!).every(([k, v]) => row[k as keyof RuleRow] === v),
           );
         }
-        return list.sort(
-          (a, b) =>
-            a.priority - b.priority || a.code.localeCompare(b.code),
-        );
+        return list.sort((a, b) => a.priority - b.priority || a.code.localeCompare(b.code));
       }),
-      findOne: vi.fn(async ({ where }: { where: Partial<RuleRow> }) =>
-        rows.find((row) =>
-          Object.entries(where).every(
-            ([k, v]) => row[k as keyof RuleRow] === v,
-          ),
-        ) ?? null,
+      findOne: vi.fn(
+        async ({ where }: { where: Partial<RuleRow> }) =>
+          rows.find((row) =>
+            Object.entries(where).every(([k, v]) => row[k as keyof RuleRow] === v),
+          ) ?? null,
       ),
       create: vi.fn((data: Partial<RuleRow>) => ({
         id: `rule-${++seq}`,
@@ -96,9 +90,7 @@ describe('RulesService (C-01/C-03)', () => {
     expect(rule.code).toBe('tag-usd-paid');
     expect(rule.eventName).toBe('OrderPaid');
     expect(rule.conditions?.equals?.[0]?.value).toBe('USD');
-    expect(rule.actionRefs).toEqual([
-      { action: 'customer.tag', params: { tag: 'usd-buyer' } },
-    ]);
+    expect(rule.actionRefs).toEqual([{ action: 'customer.tag', params: { tag: 'usd-buyer' } }]);
     expect(rule.enabled).toBe(true);
     expect(rule.priority).toBe(10);
   });
@@ -163,8 +155,6 @@ describe('RulesService (C-01/C-03)', () => {
 
     const removed = await service.remove(created.id);
     expect(removed.id).toBe(created.id);
-    await expect(service.findById(created.id)).rejects.toBeInstanceOf(
-      NotFoundException,
-    );
+    await expect(service.findById(created.id)).rejects.toBeInstanceOf(NotFoundException);
   });
 });

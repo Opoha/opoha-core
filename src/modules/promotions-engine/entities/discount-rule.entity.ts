@@ -9,11 +9,7 @@ import {
 
 /** Automatic / catalog discount rule kinds. */
 export type DiscountRuleKind =
-  | 'percentage'
-  | 'fixed_amount'
-  | 'free_shipping'
-  | 'bxgy'
-  | 'automatic';
+  'percentage' | 'fixed_amount' | 'free_shipping' | 'bxgy' | 'automatic';
 
 /**
  * Automatic discount rule (Phase 2 D-02).

@@ -44,10 +44,7 @@ export class ReportsService {
       .createQueryBuilder('o')
       .select('o.status', 'status')
       .addSelect('COUNT(*)', 'orderCount')
-      .addSelect(
-        'COALESCE(SUM(CAST(o.totalMinor AS bigint)), 0)',
-        'totalMinorSum',
-      )
+      .addSelect('COALESCE(SUM(CAST(o.totalMinor AS bigint)), 0)', 'totalMinorSum')
       .groupBy('o.status');
 
     if (input.from) {
@@ -86,9 +83,7 @@ export class ReportsService {
   /**
    * Stock levels rolled up by warehouse (optionally a single warehouse).
    */
-  async inventoryByWarehouse(
-    warehouseId?: string | null,
-  ): Promise<InventoryByWarehouseRow[]> {
+  async inventoryByWarehouse(warehouseId?: string | null): Promise<InventoryByWarehouseRow[]> {
     const qb = this.inventoryItems
       .createQueryBuilder('i')
       .innerJoin(WarehouseEntity, 'w', 'w.id = i.warehouseId')
@@ -134,9 +129,7 @@ export class ReportsService {
   /**
    * Fulfillment created/shipped counts and status breakdown for a window.
    */
-  async fulfillmentThroughput(
-    input: ReportWindowInput = {},
-  ): Promise<FulfillmentThroughputType> {
+  async fulfillmentThroughput(input: ReportWindowInput = {}): Promise<FulfillmentThroughputType> {
     assertWindow(input.from, input.to);
 
     const statusQb = this.fulfillments

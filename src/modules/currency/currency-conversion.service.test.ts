@@ -64,16 +64,14 @@ describe('CurrencyConversionService (unit)', () => {
   });
 
   it('resolves primary display when arg omitted', async () => {
-    await expect(service.resolveDisplayCurrency('store-1')).resolves.toBe(
-      'EUR',
-    );
+    await expect(service.resolveDisplayCurrency('store-1')).resolves.toBe('EUR');
   });
 
   it('rejects disabled display currency', async () => {
     storeCurrency.isDisplayCurrencyAllowed.mockResolvedValue(false);
-    await expect(
-      service.resolveDisplayCurrency('store-1', 'JPY'),
-    ).rejects.toThrow(BadRequestException);
+    await expect(service.resolveDisplayCurrency('store-1', 'JPY')).rejects.toThrow(
+      BadRequestException,
+    );
   });
 
   it('convertAmount applies rate with half-up rounding', async () => {

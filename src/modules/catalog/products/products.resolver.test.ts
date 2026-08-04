@@ -1,10 +1,7 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 
 import { ContributionRegistry } from '../../plugin-loader/public';
-import {
-  ProductsResolver,
-  REVIEW_AGGREGATE_PROVIDER_TOKEN,
-} from './products.resolver';
+import { ProductsResolver, REVIEW_AGGREGATE_PROVIDER_TOKEN } from './products.resolver';
 import type { ProductType } from './product.types';
 import type { ProductsService } from './products.service';
 
@@ -29,10 +26,7 @@ describe('ProductsResolver.reviewAggregate (Phase 4 D-04)', () => {
     contributions = new ContributionRegistry({
       subscribe: vi.fn(),
     } as never);
-    resolver = new ProductsResolver(
-      {} as ProductsService,
-      contributions,
-    );
+    resolver = new ProductsResolver({} as ProductsService, contributions);
   });
 
   it('returns null when no review provider is registered', () => {

@@ -4,15 +4,9 @@ import { EventBusService } from '../event-bus/event-bus.service';
 import { CoreEventName } from '../event-bus/event-catalog';
 import { NotificationProviderRegistry } from './notification-provider.registry';
 import { NotificationTemplateRegistry } from './notification-template.registry';
-import {
-  NotificationTemplateCode,
-  formatMinorAmount,
-} from './notification-template';
+import { NotificationTemplateCode, formatMinorAmount } from './notification-template';
 import { NotificationsService } from './notifications.service';
-import type {
-  NotificationProvider,
-  NotificationSendInput,
-} from './notification-provider';
+import type { NotificationProvider, NotificationSendInput } from './notification-provider';
 
 const sampleInput: NotificationSendInput = {
   templateCode: 'order.confirmation',
@@ -23,8 +17,7 @@ const sampleInput: NotificationSendInput = {
 };
 
 function stubProvider(
-  overrides: Partial<NotificationProvider> &
-    Pick<NotificationProvider, 'code' | 'displayName'> = {
+  overrides: Partial<NotificationProvider> & Pick<NotificationProvider, 'code' | 'displayName'> = {
     code: 'smtp',
     displayName: 'SMTP',
   },
@@ -60,33 +53,21 @@ describe('NotificationsService', () => {
   it('rejects duplicate codes from different plugins', () => {
     const registry = new NotificationProviderRegistry();
     registry.register('a', stubProvider({ code: 'smtp', displayName: 'A' }));
-    expect(() =>
-      registry.register(
-        'b',
-        stubProvider({ code: 'smtp', displayName: 'B' }),
-      ),
-    ).toThrow(/conflict/);
+    expect(() => registry.register('b', stubProvider({ code: 'smtp', displayName: 'B' }))).toThrow(
+      /conflict/,
+    );
   });
 
   it('deactivates and removes by plugin', () => {
     const registry = new NotificationProviderRegistry();
-    registry.register(
-      'mail-smtp',
-      stubProvider({ code: 'smtp', displayName: 'SMTP' }),
-    );
+    registry.register('mail-smtp', stubProvider({ code: 'smtp', displayName: 'SMTP' }));
     registry.deactivatePlugin('mail-smtp');
     expect(
-      new NotificationsService(
-        registry,
-        new NotificationTemplateRegistry(),
-      ).get('smtp'),
+      new NotificationsService(registry, new NotificationTemplateRegistry()).get('smtp'),
     ).toBeUndefined();
     registry.activatePlugin('mail-smtp');
     expect(
-      new NotificationsService(
-        registry,
-        new NotificationTemplateRegistry(),
-      ).get('smtp'),
+      new NotificationsService(registry, new NotificationTemplateRegistry()).get('smtp'),
     ).toBeDefined();
     registry.removePlugin('mail-smtp');
     expect(registry.list()).toHaveLength(0);
@@ -137,10 +118,7 @@ describe('NotificationsService', () => {
   it('requires providerCode when multiple providers are active', async () => {
     const service = createService();
     service.register(stubProvider({ code: 'smtp', displayName: 'SMTP' }), 'a');
-    service.register(
-      stubProvider({ code: 'resend', displayName: 'Resend' }),
-      'b',
-    );
+    service.register(stubProvider({ code: 'resend', displayName: 'Resend' }), 'b');
     await expect(service.send(sampleInput)).rejects.toThrow(/providerCode/);
     const result = await service.send(sampleInput, 'resend');
     expect(result.providerCode).toBe('resend');
@@ -150,7 +128,12 @@ describe('NotificationsService', () => {
 describe('NotificationTemplateRegistry (E-02)', () => {
   it('ships default order / payment / shipment templates', () => {
     const registry = new NotificationTemplateRegistry();
-    expect(registry.list().map((t) => t.code).sort()).toEqual(
+    expect(
+      registry
+        .list()
+        .map((t) => t.code)
+        .sort(),
+    ).toEqual(
       [
         NotificationTemplateCode.OrderConfirmation,
         NotificationTemplateCode.PaymentCaptured,
@@ -168,15 +151,12 @@ describe('NotificationTemplateRegistry (E-02)', () => {
 
   it('renders order confirmation from event data', () => {
     const registry = new NotificationTemplateRegistry();
-    const rendered = registry.render(
-      NotificationTemplateCode.OrderConfirmation,
-      {
-        orderId: 'ord_42',
-        currencyCode: 'USD',
-        totalMinor: '1999',
-        paymentMethod: 'manual',
-      },
-    );
+    const rendered = registry.render(NotificationTemplateCode.OrderConfirmation, {
+      orderId: 'ord_42',
+      currencyCode: 'USD',
+      totalMinor: '1999',
+      paymentMethod: 'manual',
+    });
     expect(rendered.subject).toBe('Order confirmed — #ord_42');
     expect(rendered.bodyText).toContain('19.99 USD');
     expect(rendered.bodyText).toContain('manual');
@@ -195,10 +175,10 @@ describe('NotificationTemplateRegistry (E-02)', () => {
         };
       },
     });
-    const rendered = registry.render(
-      NotificationTemplateCode.OrderConfirmation,
-      { orderId: 'x', customerName: 'Ada' },
-    );
+    const rendered = registry.render(NotificationTemplateCode.OrderConfirmation, {
+      orderId: 'x',
+      customerName: 'Ada',
+    });
     expect(rendered.subject).toBe('Custom x');
     expect(rendered.bodyText).toBe('Hello Ada');
   });
@@ -228,9 +208,7 @@ describe('NotificationTemplateRegistry (E-02)', () => {
     );
 
     expect(sent).toHaveLength(1);
-    expect(sent[0]?.templateCode).toBe(
-      NotificationTemplateCode.PaymentCaptured,
-    );
+    expect(sent[0]?.templateCode).toBe(NotificationTemplateCode.PaymentCaptured);
     expect(sent[0]?.subject).toBe('Payment received — order #ord_1');
     expect(sent[0]?.bodyText).toContain('5.00 USD');
     expect(sent[0]?.bodyHtml).toContain('5.00 USD');

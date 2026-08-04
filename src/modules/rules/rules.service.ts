@@ -8,11 +8,7 @@ import { InjectRepository } from '@nestjs/typeorm';
 import { QueryFailedError, Repository } from 'typeorm';
 
 import { RuleDefinitionEntity } from './entities/rule-definition.entity';
-import {
-  normalizeActionRefs,
-  type RuleActionRef,
-  type RuleConditions,
-} from './rule-conditions';
+import { normalizeActionRefs, type RuleActionRef, type RuleConditions } from './rule-conditions';
 import type {
   CreateRuleDefinitionInput,
   RuleDefinitionType,
@@ -74,9 +70,7 @@ function normalizeEventName(eventName: string): string {
   return trimmed;
 }
 
-function normalizeConditions(
-  conditions: RuleConditions | null | undefined,
-): RuleConditions | null {
+function normalizeConditions(conditions: RuleConditions | null | undefined): RuleConditions | null {
   if (conditions === undefined || conditions === null) {
     return null;
   }
@@ -131,9 +125,7 @@ export class RulesService {
     return toRuleType(row);
   }
 
-  async findEnabledByEventName(
-    eventName: string,
-  ): Promise<RuleDefinitionType[]> {
+  async findEnabledByEventName(eventName: string): Promise<RuleDefinitionType[]> {
     const rows = await this.rules.find({
       where: { eventName: normalizeEventName(eventName), enabled: true },
       order: { priority: 'ASC', code: 'ASC' },
@@ -194,10 +186,7 @@ export class RulesService {
       row.name = normalizeName(input.name);
     }
     if (input.description !== undefined) {
-      row.description =
-        input.description === null
-          ? null
-          : input.description.trim() || null;
+      row.description = input.description === null ? null : input.description.trim() || null;
     }
     if (input.eventName !== undefined) {
       row.eventName = normalizeEventName(input.eventName);
@@ -220,9 +209,7 @@ export class RulesService {
       return toRuleType(saved);
     } catch (error: unknown) {
       if (isUniqueViolation(error)) {
-        throw new ConflictException(
-          `Rule code "${row.code}" already exists`,
-        );
+        throw new ConflictException(`Rule code "${row.code}" already exists`);
       }
       throw error;
     }
@@ -246,9 +233,7 @@ export class RulesService {
       eventName: string;
     },
   ): Promise<RuleDefinitionType> {
-    const actionRefs: RuleActionRef[] = normalizeActionRefs(
-      partial.actionRefs,
-    );
+    const actionRefs: RuleActionRef[] = normalizeActionRefs(partial.actionRefs);
     const row = this.rules.create({
       enabled: true,
       priority: 100,

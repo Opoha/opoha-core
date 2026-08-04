@@ -1,11 +1,7 @@
 import { UseGuards } from '@nestjs/common';
 import { Args, ID, Mutation, Query, Resolver } from '@nestjs/graphql';
 
-import {
-  GqlAuthGuard,
-  PermissionsGuard,
-  RequirePermission,
-} from '../../auth/public';
+import { GqlAuthGuard, PermissionsGuard, RequirePermission } from '../../auth/public';
 import {
   AttachProductMediaInput,
   ProductMediaType,
@@ -34,9 +30,7 @@ export class ProductMediaResolver {
     description: 'Get a product media link by id',
   })
   @RequirePermission('product-media:read')
-  productMediaItem(
-    @Args('id', { type: () => ID }) id: string,
-  ): Promise<ProductMediaType> {
+  productMediaItem(@Args('id', { type: () => ID }) id: string): Promise<ProductMediaType> {
     return this.productMediaService.findById(id);
   }
 
@@ -70,9 +64,7 @@ export class ProductMediaResolver {
     description: 'Remove a product↔file media link (does not delete the file)',
   })
   @RequirePermission('product-media:delete')
-  detachProductMedia(
-    @Args('id', { type: () => ID }) id: string,
-  ): Promise<ProductMediaType> {
+  detachProductMedia(@Args('id', { type: () => ID }) id: string): Promise<ProductMediaType> {
     return this.productMediaService.detach(id);
   }
 }

@@ -6,14 +6,8 @@ export { NotificationsService } from '../notifications.service';
 export { NotificationsResolver } from '../notifications.resolver';
 export { NotificationProviderRegistry } from '../notification-provider.registry';
 export { NotificationTemplateRegistry } from '../notification-template.registry';
-export {
-  NotificationTemplateCode,
-  formatMinorAmount,
-} from '../notification-template';
-export type {
-  NotificationTemplate,
-  NotificationTemplateRendered,
-} from '../notification-template';
+export { NotificationTemplateCode, formatMinorAmount } from '../notification-template';
+export type { NotificationTemplate, NotificationTemplateRendered } from '../notification-template';
 export type {
   NotificationChannel,
   NotificationRecipient,
@@ -23,7 +17,4 @@ export type {
   NotificationProvider,
   RegisteredNotificationProvider,
 } from '../notification-provider';
-export {
-  NotificationProviderType,
-  NotificationTemplateType,
-} from '../notification.types';
+export { NotificationProviderType, NotificationTemplateType } from '../notification.types';

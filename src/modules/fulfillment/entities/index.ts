@@ -8,9 +8,5 @@ export const fulfillmentEntities = [
   FulfillmentPackageEntity,
 ] as const;
 
-export {
-  FulfillmentEntity,
-  FulfillmentLineEntity,
-  FulfillmentPackageEntity,
-};
+export { FulfillmentEntity, FulfillmentLineEntity, FulfillmentPackageEntity };
 export type { FulfillmentStatus } from './fulfillment.entity';

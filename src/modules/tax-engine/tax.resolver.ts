@@ -1,11 +1,7 @@
 import { BadRequestException, UseGuards } from '@nestjs/common';
 import { Args, ID, Mutation, Query, Resolver } from '@nestjs/graphql';
 
-import {
-  GqlAuthGuard,
-  PermissionsGuard,
-  RequirePermission,
-} from '../auth/public';
+import { GqlAuthGuard, PermissionsGuard, RequirePermission } from '../auth/public';
 import { TaxClassesService } from './tax-classes.service';
 import { TaxEngine } from './tax-engine.service';
 import { TaxRulesService } from './tax-rules.service';
@@ -22,9 +18,7 @@ import {
   UpdateTaxRuleInput,
 } from './tax.types';
 
-function parseMetadataJson(
-  metadataJson: string | undefined,
-): Record<string, unknown> | undefined {
+function parseMetadataJson(metadataJson: string | undefined): Record<string, unknown> | undefined {
   if (!metadataJson) {
     return undefined;
   }
@@ -39,9 +33,7 @@ function parseMetadataJson(
   }
 }
 
-function toCalculateResultType(
-  result: TaxCalculateResult,
-): TaxCalculateResultType {
+function toCalculateResultType(result: TaxCalculateResult): TaxCalculateResultType {
   return {
     currencyCode: result.currencyCode,
     pricingMode: result.pricingMode,
@@ -127,9 +119,7 @@ export class TaxResolver {
     description: 'Delete a tax class (cascades rules)',
   })
   @RequirePermission('tax:delete')
-  deleteTaxClass(
-    @Args('id', { type: () => ID }) id: string,
-  ): Promise<TaxClassType> {
+  deleteTaxClass(@Args('id', { type: () => ID }) id: string): Promise<TaxClassType> {
     return this.taxClasses.remove(id);
   }
 
@@ -181,21 +171,16 @@ export class TaxResolver {
     description: 'Delete a tax rule',
   })
   @RequirePermission('tax:delete')
-  deleteTaxRule(
-    @Args('id', { type: () => ID }) id: string,
-  ): Promise<TaxRuleType> {
+  deleteTaxRule(@Args('id', { type: () => ID }) id: string): Promise<TaxRuleType> {
     return this.taxRules.remove(id);
   }
 
   @Query(() => TaxCalculateResultType, {
     name: 'calculateTax',
-    description:
-      'Admin preview: calculate tax via TaxEngine (inclusive or exclusive)',
+    description: 'Admin preview: calculate tax via TaxEngine (inclusive or exclusive)',
   })
   @RequirePermission('tax:read')
-  async calculateTax(
-    @Args('input') input: CalculateTaxInput,
-  ): Promise<TaxCalculateResultType> {
+  async calculateTax(@Args('input') input: CalculateTaxInput): Promise<TaxCalculateResultType> {
     const result = await this.tax.calculate(
       {
         currencyCode: input.currencyCode,

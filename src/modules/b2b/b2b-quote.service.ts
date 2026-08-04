@@ -1,8 +1,4 @@
-import {
-  BadRequestException,
-  Injectable,
-  NotFoundException,
-} from '@nestjs/common';
+import { BadRequestException, Injectable, NotFoundException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { DataSource, QueryFailedError, Repository } from 'typeorm';
 
@@ -15,11 +11,7 @@ import {
   B2bQuoteLineEntity,
   type B2bQuoteStatus,
 } from './entities';
-import type {
-  B2bQuoteLineType,
-  B2bQuoteType,
-  CreateB2bQuoteInput,
-} from './b2b-quote.types';
+import type { B2bQuoteLineType, B2bQuoteType, CreateB2bQuoteInput } from './b2b-quote.types';
 
 function isForeignKeyViolation(error: unknown): boolean {
   return (
@@ -34,9 +26,7 @@ function isForeignKeyViolation(error: unknown): boolean {
 function assertNonNegativeIntegerString(value: string, field: string): string {
   const raw = String(value).trim();
   if (!/^\d+$/.test(raw)) {
-    throw new BadRequestException(
-      `${field} must be a non-negative integer string`,
-    );
+    throw new BadRequestException(`${field} must be a non-negative integer string`);
   }
   return raw;
 }
@@ -118,24 +108,18 @@ export class B2bQuoteService {
     const variantIds = new Set<string>();
     for (const line of input.lines) {
       if (!Number.isInteger(line.quantity) || line.quantity <= 0) {
-        throw new BadRequestException(
-          'Each line quantity must be a positive integer',
-        );
+        throw new BadRequestException('Each line quantity must be a positive integer');
       }
       assertNonNegativeIntegerString(line.unitPriceMinor, 'unitPriceMinor');
       if (variantIds.has(line.variantId)) {
-        throw new BadRequestException(
-          `Duplicate variantId ${line.variantId} in quote lines`,
-        );
+        throw new BadRequestException(`Duplicate variantId ${line.variantId} in quote lines`);
       }
       variantIds.add(line.variantId);
     }
 
     const currencyCode = (input.currencyCode ?? 'USD').trim().toUpperCase();
     if (!/^[A-Z]{3}$/.test(currencyCode)) {
-      throw new BadRequestException(
-        'currencyCode must be a 3-letter ISO 4217 code',
-      );
+      throw new BadRequestException('currencyCode must be a 3-letter ISO 4217 code');
     }
 
     let saved: B2bQuoteEntity;
@@ -166,9 +150,7 @@ export class B2bQuoteService {
       });
     } catch (error) {
       if (isForeignKeyViolation(error)) {
-        throw new BadRequestException(
-          'Invalid company, customer, or product variant reference',
-        );
+        throw new BadRequestException('Invalid company, customer, or product variant reference');
       }
       throw error;
     }
@@ -202,9 +184,7 @@ export class B2bQuoteService {
   async cancel(id: string): Promise<B2bQuoteType> {
     const row = await this.requireQuote(id);
     if (row.status === 'converted' || row.status === 'cancelled') {
-      throw new BadRequestException(
-        `Quote ${id} cannot be cancelled (status=${row.status})`,
-      );
+      throw new BadRequestException(`Quote ${id} cannot be cancelled (status=${row.status})`);
     }
     return this.transition(id, row.status, 'cancelled');
   }
@@ -221,9 +201,7 @@ export class B2bQuoteService {
       );
     }
     if (row.orderId) {
-      throw new BadRequestException(
-        `Quote ${quoteId} is already linked to order ${row.orderId}`,
-      );
+      throw new BadRequestException(`Quote ${quoteId} is already linked to order ${row.orderId}`);
     }
     row.status = 'converted';
     row.orderId = orderId;

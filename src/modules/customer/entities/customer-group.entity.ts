@@ -27,9 +27,6 @@ export class CustomerGroupEntity {
   @UpdateDateColumn({ name: 'updated_at', type: 'timestamptz' })
   updatedAt!: Date;
 
-  @OneToMany(
-    () => CustomerGroupMembershipEntity,
-    (membership) => membership.group,
-  )
+  @OneToMany(() => CustomerGroupMembershipEntity, (membership) => membership.group)
   memberships!: CustomerGroupMembershipEntity[];
 }

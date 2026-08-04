@@ -18,8 +18,7 @@ const sampleInclusiveInput: TaxCalculateInput = {
 };
 
 function stubProvider(
-  overrides: Partial<TaxProvider> &
-    Pick<TaxProvider, 'code' | 'displayName'> = {
+  overrides: Partial<TaxProvider> & Pick<TaxProvider, 'code' | 'displayName'> = {
     code: 'standard',
     displayName: 'Standard tax',
   },
@@ -49,10 +48,7 @@ describe('TaxEngine', () => {
     const registry = new TaxProviderRegistry();
     registry.register('a', stubProvider({ code: 'standard', displayName: 'A' }));
     expect(() =>
-      registry.register(
-        'b',
-        stubProvider({ code: 'standard', displayName: 'B' }),
-      ),
+      registry.register('b', stubProvider({ code: 'standard', displayName: 'B' })),
     ).toThrow(/conflict/);
   });
 
@@ -161,18 +157,14 @@ describe('TaxEngine', () => {
     const engine = new TaxEngine(new TaxProviderRegistry());
     engine.register(stubProvider({ code: 'a', displayName: 'A' }));
     engine.register(stubProvider({ code: 'b', displayName: 'B' }));
-    await expect(engine.calculate(sampleExclusiveInput)).rejects.toThrow(
-      /Multiple tax providers/,
-    );
+    await expect(engine.calculate(sampleExclusiveInput)).rejects.toThrow(/Multiple tax providers/);
     const result = await engine.calculate(sampleExclusiveInput, 'a');
     expect(result.taxMinor).toBe('0');
   });
 
   it('throws when no provider is registered', async () => {
     const engine = new TaxEngine(new TaxProviderRegistry());
-    await expect(engine.calculate(sampleExclusiveInput)).rejects.toThrow(
-      /No active tax provider/,
-    );
+    await expect(engine.calculate(sampleExclusiveInput)).rejects.toThrow(/No active tax provider/);
   });
 
   it('calculateOrZero returns zero tax when no provider (C-03)', async () => {

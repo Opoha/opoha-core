@@ -1,8 +1,4 @@
-import {
-  BadRequestException,
-  ConflictException,
-  NotFoundException,
-} from '@nestjs/common';
+import { BadRequestException, ConflictException, NotFoundException } from '@nestjs/common';
 import { QueryFailedError } from 'typeorm';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 
@@ -36,14 +32,10 @@ describe('ExchangeRateService (unit)', () => {
       find: vi.fn(async ({ where }: { where?: Partial<RateRow> } = {}) => {
         let result = [...rows];
         if (where?.fromCurrencyCode) {
-          result = result.filter(
-            (r) => r.fromCurrencyCode === where.fromCurrencyCode,
-          );
+          result = result.filter((r) => r.fromCurrencyCode === where.fromCurrencyCode);
         }
         if (where?.toCurrencyCode) {
-          result = result.filter(
-            (r) => r.toCurrencyCode === where.toCurrencyCode,
-          );
+          result = result.filter((r) => r.toCurrencyCode === where.toCurrencyCode);
         }
         return result.sort((a, b) =>
           `${a.fromCurrencyCode}${a.toCurrencyCode}`.localeCompare(
@@ -117,11 +109,7 @@ describe('ExchangeRateService (unit)', () => {
     };
     eventBus = { publish: vi.fn(async () => undefined) };
     fxProviders = new FXRateProviderRegistry();
-    service = new ExchangeRateService(
-      ratesRepo as never,
-      eventBus as never,
-      fxProviders,
-    );
+    service = new ExchangeRateService(ratesRepo as never, eventBus as never, fxProviders);
   });
 
   it('creates a manual rate and publishes ExchangeRateUpdated', async () => {
@@ -214,9 +202,7 @@ describe('ExchangeRateService (unit)', () => {
       rate: 0.85,
     });
     expect(await service.getRate('USD', 'EUR')).toBe(0.85);
-    await expect(service.getRate('EUR', 'USD')).rejects.toBeInstanceOf(
-      NotFoundException,
-    );
+    await expect(service.getRate('EUR', 'USD')).rejects.toBeInstanceOf(NotFoundException);
   });
 
   it('deletes a rate and publishes deleted ExchangeRateUpdated', async () => {
@@ -280,17 +266,15 @@ describe('ExchangeRateService (unit)', () => {
 
     it('rejects an unregistered provider', async () => {
       await expect(
-        service.syncFromProvider('missing', [
-          { fromCurrencyCode: 'USD', toCurrencyCode: 'EUR' },
-        ]),
+        service.syncFromProvider('missing', [{ fromCurrencyCode: 'USD', toCurrencyCode: 'EUR' }]),
       ).rejects.toBeInstanceOf(NotFoundException);
     });
 
     it('rejects an empty pairs list', async () => {
       fxProviders.register('fx-plugin', provider);
-      await expect(
-        service.syncFromProvider('openexchangerates', []),
-      ).rejects.toBeInstanceOf(BadRequestException);
+      await expect(service.syncFromProvider('openexchangerates', [])).rejects.toBeInstanceOf(
+        BadRequestException,
+      );
     });
 
     it('fetches quotes from the registered provider and upserts as source=providerCode', async () => {

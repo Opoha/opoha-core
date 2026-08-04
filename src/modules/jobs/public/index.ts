@@ -6,18 +6,10 @@ export { JobsService } from '../jobs.service';
 export { ScheduledJobRegistry } from '../scheduled-job.registry';
 export { JobDefinitionEntity, JobRunEntity, jobEntities } from '../entities';
 export { JOB_QUEUE_ADAPTER } from '../job-queue.adapter';
-export type {
-  JobExecuteHook,
-  JobQueueAdapter,
-  UpsertCronJobInput,
-} from '../job-queue.adapter';
+export type { JobExecuteHook, JobQueueAdapter, UpsertCronJobInput } from '../job-queue.adapter';
 export { InMemoryJobQueueAdapter } from '../in-memory-job-queue.adapter';
 export { BullMqJobQueueAdapter } from '../bullmq-job-queue.adapter';
-export {
-  assertCronExpression,
-  cronMatchesAt,
-  isValidCronExpression,
-} from '../cron-expression';
+export { assertCronExpression, cronMatchesAt, isValidCronExpression } from '../cron-expression';
 export { JOB_RUN_STATUSES, isJobRunStatus } from '../job-status';
 export type { JobRunStatus } from '../job-status';
 export type {

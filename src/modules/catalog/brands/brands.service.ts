@@ -1,17 +1,9 @@
-import {
-  ConflictException,
-  Injectable,
-  NotFoundException,
-} from '@nestjs/common';
+import { ConflictException, Injectable, NotFoundException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { QueryFailedError, Repository } from 'typeorm';
 
 import { BrandEntity } from '../entities/brand.entity';
-import type {
-  BrandType,
-  CreateBrandInput,
-  UpdateBrandInput,
-} from './brand.types';
+import type { BrandType, CreateBrandInput, UpdateBrandInput } from './brand.types';
 
 function isUniqueViolation(error: unknown): boolean {
   return (

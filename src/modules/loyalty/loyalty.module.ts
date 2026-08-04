@@ -9,11 +9,7 @@ import { LoyaltyResolver } from './loyalty.resolver';
 import { LoyaltyService } from './loyalty.service';
 
 @Module({
-  imports: [
-    AuthModule,
-    EventBusModule,
-    TypeOrmModule.forFeature([...loyaltyEntities]),
-  ],
+  imports: [AuthModule, EventBusModule, TypeOrmModule.forFeature([...loyaltyEntities])],
   providers: [LoyaltyService, LoyaltyResolver, LoyaltyEventsRegistrar],
   exports: [LoyaltyService, TypeOrmModule],
 })

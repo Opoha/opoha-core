@@ -6,10 +6,7 @@ import { EventBusModule } from '../event-bus/event-bus.module';
 import { webhookEntities } from './entities';
 import { WebhookDeliveryWorker } from './webhook-delivery.worker';
 import { WebhookDispatcherService } from './webhook-dispatcher.service';
-import {
-  createFetchWebhookHttpClient,
-  WEBHOOK_HTTP_CLIENT,
-} from './webhook-http.client';
+import { createFetchWebhookHttpClient, WEBHOOK_HTTP_CLIENT } from './webhook-http.client';
 import { WebhooksResolver } from './webhooks.resolver';
 import { WebhooksService } from './webhooks.service';
 
@@ -18,11 +15,7 @@ import { WebhooksService } from './webhooks.service';
  * Outbound subscriptions, HMAC signing, retries, dead-letter, GraphQL CRUD.
  */
 @Module({
-  imports: [
-    AuthModule,
-    EventBusModule,
-    TypeOrmModule.forFeature([...webhookEntities]),
-  ],
+  imports: [AuthModule, EventBusModule, TypeOrmModule.forFeature([...webhookEntities])],
   providers: [
     WebhooksService,
     WebhookDeliveryWorker,
@@ -33,11 +26,6 @@ import { WebhooksService } from './webhooks.service';
       useFactory: () => createFetchWebhookHttpClient(),
     },
   ],
-  exports: [
-    WebhooksService,
-    WebhookDeliveryWorker,
-    WebhookDispatcherService,
-    TypeOrmModule,
-  ],
+  exports: [WebhooksService, WebhookDeliveryWorker, WebhookDispatcherService, TypeOrmModule],
 })
 export class WebhooksModule {}

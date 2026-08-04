@@ -75,9 +75,7 @@ export class B2bQuotesInit1722724700000 implements MigrationInterface {
   }
 
   public async down(queryRunner: QueryRunner): Promise<void> {
-    await queryRunner.query(
-      `DROP INDEX IF EXISTS "b2b_quote_lines_quote_id_idx"`,
-    );
+    await queryRunner.query(`DROP INDEX IF EXISTS "b2b_quote_lines_quote_id_idx"`);
     await queryRunner.query(`DROP TABLE IF EXISTS "b2b_quote_lines"`);
     await queryRunner.query(`DROP INDEX IF EXISTS "b2b_quotes_status_idx"`);
     await queryRunner.query(`DROP INDEX IF EXISTS "b2b_quotes_store_id_idx"`);

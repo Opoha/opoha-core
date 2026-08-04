@@ -1,11 +1,7 @@
 import { UseGuards } from '@nestjs/common';
 import { Args, ID, Mutation, Query, Resolver } from '@nestjs/graphql';
 
-import {
-  GqlAuthGuard,
-  PermissionsGuard,
-  RequirePermission,
-} from '../auth/public';
+import { GqlAuthGuard, PermissionsGuard, RequirePermission } from '../auth/public';
 import { CustomerAddressesService } from './customer-addresses.service';
 import {
   CreateCustomerAddressInput,
@@ -34,9 +30,7 @@ export class CustomerAddressesResolver {
     description: 'Get customer address by id (staff)',
   })
   @RequirePermission('customer:read')
-  customerAddress(
-    @Args('id', { type: () => ID }) id: string,
-  ): Promise<CustomerAddressType> {
+  customerAddress(@Args('id', { type: () => ID }) id: string): Promise<CustomerAddressType> {
     return this.addressesService.findById(id);
   }
 
@@ -69,9 +63,7 @@ export class CustomerAddressesResolver {
     description: 'Delete a customer address (staff)',
   })
   @RequirePermission('customer:update')
-  deleteCustomerAddress(
-    @Args('id', { type: () => ID }) id: string,
-  ): Promise<CustomerAddressType> {
+  deleteCustomerAddress(@Args('id', { type: () => ID }) id: string): Promise<CustomerAddressType> {
     return this.addressesService.remove(id);
   }
 }

@@ -19,10 +19,10 @@ export class PermissionsGuard implements CanActivate {
   ) {}
 
   async canActivate(context: ExecutionContext): Promise<boolean> {
-    const required = this.reflector.getAllAndOverride<string[]>(
-      REQUIRE_PERMISSION_KEY,
-      [context.getHandler(), context.getClass()],
-    );
+    const required = this.reflector.getAllAndOverride<string[]>(REQUIRE_PERMISSION_KEY, [
+      context.getHandler(),
+      context.getClass(),
+    ]);
     if (!required || required.length === 0) {
       return true;
     }
@@ -35,14 +35,11 @@ export class PermissionsGuard implements CanActivate {
     }
 
     const granted =
-      user.permissions ??
-      (await this.permissionsService.listKeysForUser(user.userId));
+      user.permissions ?? (await this.permissionsService.listKeysForUser(user.userId));
 
     const missing = required.filter((key) => !granted.includes(key));
     if (missing.length > 0) {
-      throw new ForbiddenException(
-        `Missing permission(s): ${missing.join(', ')}`,
-      );
+      throw new ForbiddenException(`Missing permission(s): ${missing.join(', ')}`);
     }
     return true;
   }

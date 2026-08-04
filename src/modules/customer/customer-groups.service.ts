@@ -1,8 +1,4 @@
-import {
-  ConflictException,
-  Injectable,
-  NotFoundException,
-} from '@nestjs/common';
+import { ConflictException, Injectable, NotFoundException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { QueryFailedError, Repository } from 'typeorm';
 
@@ -47,9 +43,7 @@ function toGroupType(row: CustomerGroupEntity): CustomerGroupType {
   };
 }
 
-function toMembershipType(
-  row: CustomerGroupMembershipEntity,
-): CustomerGroupMembershipType {
+function toMembershipType(row: CustomerGroupMembershipEntity): CustomerGroupMembershipType {
   return {
     id: row.id,
     customerId: row.customerId,
@@ -92,9 +86,7 @@ export class CustomerGroupsService {
       return toGroupType(saved);
     } catch (error) {
       if (isUniqueViolation(error)) {
-        throw new ConflictException(
-          `Customer group name already exists: ${input.name.trim()}`,
-        );
+        throw new ConflictException(`Customer group name already exists: ${input.name.trim()}`);
       }
       throw error;
     }
@@ -116,17 +108,13 @@ export class CustomerGroupsService {
       return toGroupType(saved);
     } catch (error) {
       if (isUniqueViolation(error)) {
-        throw new ConflictException(
-          `Customer group name already exists: ${row.name}`,
-        );
+        throw new ConflictException(`Customer group name already exists: ${row.name}`);
       }
       throw error;
     }
   }
 
-  async addMember(
-    input: AddCustomerToGroupInput,
-  ): Promise<CustomerGroupMembershipType> {
+  async addMember(input: AddCustomerToGroupInput): Promise<CustomerGroupMembershipType> {
     const customer = await this.customers.findOne({
       where: { id: input.customerId },
     });
@@ -158,10 +146,7 @@ export class CustomerGroupsService {
     }
   }
 
-  async removeMember(
-    customerId: string,
-    groupId: string,
-  ): Promise<CustomerGroupMembershipType> {
+  async removeMember(customerId: string, groupId: string): Promise<CustomerGroupMembershipType> {
     const row = await this.memberships.findOne({
       where: { customerId, groupId },
     });
@@ -186,9 +171,7 @@ export class CustomerGroupsService {
     return rows.map(toMembershipType);
   }
 
-  async listGroupsForCustomer(
-    customerId: string,
-  ): Promise<CustomerGroupMembershipType[]> {
+  async listGroupsForCustomer(customerId: string): Promise<CustomerGroupMembershipType[]> {
     const customer = await this.customers.findOne({ where: { id: customerId } });
     if (!customer) {
       throw new NotFoundException(`Customer ${customerId} not found`);

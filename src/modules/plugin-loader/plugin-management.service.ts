@@ -1,8 +1,4 @@
-import {
-  BadRequestException,
-  Injectable,
-  NotFoundException,
-} from '@nestjs/common';
+import { BadRequestException, Injectable, NotFoundException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 
@@ -28,9 +24,11 @@ export class PluginManagementService {
   async list(): Promise<PluginType[]> {
     const rows = await this.states.find();
     const byId = new Map(rows.map((row) => [row.pluginId, row]));
-    return this.loader.listRecords().map((record) =>
-      this.toType(record.discovered.manifest.id, byId.get(record.discovered.manifest.id)),
-    );
+    return this.loader
+      .listRecords()
+      .map((record) =>
+        this.toType(record.discovered.manifest.id, byId.get(record.discovered.manifest.id)),
+      );
   }
 
   async get(pluginId: string): Promise<PluginType> {
@@ -162,11 +160,7 @@ export function normalizeConfigJson(raw: string): string {
   } catch {
     throw new BadRequestException('configJson must be valid JSON');
   }
-  if (
-    parsed === null ||
-    typeof parsed !== 'object' ||
-    Array.isArray(parsed)
-  ) {
+  if (parsed === null || typeof parsed !== 'object' || Array.isArray(parsed)) {
     throw new BadRequestException('configJson must be a JSON object');
   }
   return JSON.stringify(parsed);

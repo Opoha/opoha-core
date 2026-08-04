@@ -44,10 +44,7 @@ export class SearchEngine {
    * Idempotent when callers supply the same document id / idempotencyKey.
    * Soft no-op when no provider is registered (plugins install later).
    */
-  async indexDocument(
-    document: SearchDocument,
-    providerCode?: string,
-  ): Promise<void> {
+  async indexDocument(document: SearchDocument, providerCode?: string): Promise<void> {
     this.requireDocument(document);
     const providers = this.resolveProviders(providerCode);
     if (providers.length === 0) {
@@ -58,9 +55,7 @@ export class SearchEngine {
         await provider.indexDocument(document);
       } catch (err) {
         throw new BadRequestException(
-          err instanceof Error
-            ? err.message
-            : `Search provider "${provider.code}" failed to index`,
+          err instanceof Error ? err.message : `Search provider "${provider.code}" failed to index`,
         );
       }
       await this.publishIndexUpdated({
@@ -76,10 +71,7 @@ export class SearchEngine {
    * Delete a document via a specific provider, or all active providers when omitted.
    * Soft no-op when no provider is registered.
    */
-  async deleteDocument(
-    input: SearchDeleteInput,
-    providerCode?: string,
-  ): Promise<void> {
+  async deleteDocument(input: SearchDeleteInput, providerCode?: string): Promise<void> {
     if (!input.id?.trim()) {
       throw new BadRequestException('Search delete id is required');
     }
@@ -110,10 +102,7 @@ export class SearchEngine {
    * Query products (or other document types) via a registered provider.
    * When no provider is registered, returns an empty result set.
    */
-  async search(
-    input: SearchQueryInput,
-    providerCode?: string,
-  ): Promise<SearchQueryResult> {
+  async search(input: SearchQueryInput, providerCode?: string): Promise<SearchQueryResult> {
     if (typeof input.query !== 'string') {
       throw new BadRequestException('Search query is required');
     }
@@ -140,9 +129,7 @@ export class SearchEngine {
       };
     } catch (err) {
       throw new BadRequestException(
-        err instanceof Error
-          ? err.message
-          : `Search provider "${provider.code}" failed to search`,
+        err instanceof Error ? err.message : `Search provider "${provider.code}" failed to search`,
       );
     }
   }
@@ -162,9 +149,7 @@ export class SearchEngine {
       throw new BadRequestException('No search provider is registered');
     }
     if (active.length > 1) {
-      throw new BadRequestException(
-        'Multiple search providers are active; specify providerCode',
-      );
+      throw new BadRequestException('Multiple search providers are active; specify providerCode');
     }
     return active[0]!.provider;
   }

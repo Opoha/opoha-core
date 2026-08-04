@@ -10,11 +10,7 @@ import { QueryFailedError, Repository } from 'typeorm';
 import { CoreEventName } from '../event-bus/event-catalog';
 import { EventBusService } from '../event-bus/event-bus.service';
 import { SupplierEntity } from './entities/supplier.entity';
-import type {
-  CreateSupplierInput,
-  SupplierType,
-  UpdateSupplierInput,
-} from './supplier.types';
+import type { CreateSupplierInput, SupplierType, UpdateSupplierInput } from './supplier.types';
 
 function isUniqueViolation(error: unknown): boolean {
   return (
@@ -57,9 +53,7 @@ function toSupplierType(row: SupplierEntity): SupplierType {
   };
 }
 
-function normalizeOptionalText(
-  value: string | null | undefined,
-): string | null | undefined {
+function normalizeOptionalText(value: string | null | undefined): string | null | undefined {
   if (value === undefined) {
     return undefined;
   }
@@ -128,8 +122,7 @@ export class SupplierService {
           city: normalizeOptionalText(input.city) ?? null,
           province: normalizeOptionalText(input.province) ?? null,
           postalCode: normalizeOptionalText(input.postalCode) ?? null,
-          countryCode:
-            normalizeOptionalText(input.countryCode)?.toUpperCase() ?? null,
+          countryCode: normalizeOptionalText(input.countryCode)?.toUpperCase() ?? null,
         }),
       );
 
@@ -229,9 +222,7 @@ export class SupplierService {
       return toSupplierType(saved);
     } catch (error) {
       if (isUniqueViolation(error)) {
-        throw new ConflictException(
-          `Supplier code "${existing.code}" already exists`,
-        );
+        throw new ConflictException(`Supplier code "${existing.code}" already exists`);
       }
       throw error;
     }

@@ -6,11 +6,7 @@ import { CurrentUser } from '../jwt/current-user.decorator';
 import { GqlAuthGuard } from '../jwt/gql-auth.guard';
 import { PermissionsGuard } from '../permissions/permissions.guard';
 import { RequirePermission } from '../permissions/require-permission.decorator';
-import {
-  ApiKeyCreatedPayload,
-  ApiKeyType,
-  CreateApiKeyInput,
-} from './api-key.types';
+import { ApiKeyCreatedPayload, ApiKeyType, CreateApiKeyInput } from './api-key.types';
 import { ApiKeysService } from './api-keys.service';
 
 @Resolver(() => ApiKeyType)
@@ -29,8 +25,7 @@ export class ApiKeysResolver {
 
   @Mutation(() => ApiKeyCreatedPayload, {
     name: 'createApiKey',
-    description:
-      'Create an API key scoped to permission keys (secret returned once)',
+    description: 'Create an API key scoped to permission keys (secret returned once)',
   })
   @RequirePermission('api-key:create')
   createApiKey(

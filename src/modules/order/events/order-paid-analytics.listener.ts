@@ -26,15 +26,12 @@ export class OrderPaidAnalyticsListener implements OnModuleInit {
   onModuleInit(): void {
     this.eventBus.subscribe(
       CoreEventName.PaymentCaptured,
-      (event) =>
-        this.onPaymentCaptured(event as DomainEvent<PaymentCapturedData>),
+      (event) => this.onPaymentCaptured(event as DomainEvent<PaymentCapturedData>),
       { id: 'order-paid-analytics' },
     );
   }
 
-  private async onPaymentCaptured(
-    event: DomainEvent<PaymentCapturedData>,
-  ): Promise<void> {
+  private async onPaymentCaptured(event: DomainEvent<PaymentCapturedData>): Promise<void> {
     const paymentId = event.data.paymentId;
     if (this.publishedPaymentIds.has(paymentId)) {
       return;

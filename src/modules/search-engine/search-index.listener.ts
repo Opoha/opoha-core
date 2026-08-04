@@ -75,9 +75,7 @@ export class SearchIndexListener implements OnModuleInit {
     });
   }
 
-  private async onProductDeleted(
-    event: DomainEvent<ProductDeletedData>,
-  ): Promise<void> {
+  private async onProductDeleted(event: DomainEvent<ProductDeletedData>): Promise<void> {
     const { productId } = event.data;
     if (!productId) {
       return;

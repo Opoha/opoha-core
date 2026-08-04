@@ -4,9 +4,7 @@ import { EventBusService } from '../../event-bus/event-bus.service';
 import { CoreEventName } from '../../event-bus/event-catalog';
 import { NotificationProviderRegistry } from '../../notifications/notification-provider.registry';
 import { NotificationTemplateRegistry } from '../../notifications/notification-template.registry';
-import {
-  NotificationTemplateCode,
-} from '../../notifications/notification-template';
+import { NotificationTemplateCode } from '../../notifications/notification-template';
 import { NotificationsService } from '../../notifications/notifications.service';
 import type { NotificationSendInput } from '../../notifications/notification-provider';
 import { OrderNotificationsListener } from './order-notifications.listener';
@@ -105,9 +103,7 @@ describe('OrderNotificationsListener (E-03 / E-05)', () => {
     });
 
     expect(sent).toHaveLength(1);
-    expect(sent[0]?.templateCode).toBe(
-      NotificationTemplateCode.OrderConfirmation,
-    );
+    expect(sent[0]?.templateCode).toBe(NotificationTemplateCode.OrderConfirmation);
     expect(sent[0]?.to).toEqual({ email: 'buyer@example.com' });
     expect(sent[0]?.subject).toBe('Order confirmed — #ord_1');
     expect(sent[0]?.bodyText).toContain('19.99 USD');
@@ -132,9 +128,7 @@ describe('OrderNotificationsListener (E-03 / E-05)', () => {
 
     expect(orders.findById).toHaveBeenCalledWith('ord_1');
     expect(sent).toHaveLength(1);
-    expect(sent[0]?.templateCode).toBe(
-      NotificationTemplateCode.PaymentCaptured,
-    );
+    expect(sent[0]?.templateCode).toBe(NotificationTemplateCode.PaymentCaptured);
     expect(sent[0]?.subject).toBe('Payment received — order #ord_1');
     expect(sent[0]?.bodyText).toContain('5.00 USD');
   });
@@ -171,9 +165,7 @@ describe('OrderNotificationsListener (E-03 / E-05)', () => {
     });
 
     expect(sent).toHaveLength(2);
-    expect(sent[0]?.templateCode).toBe(
-      NotificationTemplateCode.PaymentRefunded,
-    );
+    expect(sent[0]?.templateCode).toBe(NotificationTemplateCode.PaymentRefunded);
     expect(sent[0]?.subject).toBe('Refund issued — order #ord_1');
     expect(sent[1]?.templateCode).toBe(NotificationTemplateCode.PaymentFailed);
     expect(sent[1]?.bodyText).toContain('card declined');
@@ -195,9 +187,7 @@ describe('OrderNotificationsListener (E-03 / E-05)', () => {
 
     expect(customers.findById).not.toHaveBeenCalled();
     expect(sent).toHaveLength(1);
-    expect(sent[0]?.templateCode).toBe(
-      NotificationTemplateCode.ShipmentCreated,
-    );
+    expect(sent[0]?.templateCode).toBe(NotificationTemplateCode.ShipmentCreated);
     expect(sent[0]?.to).toEqual({ email: 'ship@example.com' });
     expect(sent[0]?.bodyText).toContain('1Z999');
   });

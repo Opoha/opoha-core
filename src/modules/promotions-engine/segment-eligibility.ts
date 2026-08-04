@@ -32,9 +32,7 @@ export function extractSegmentRestriction(
     return null;
   }
   const segmentIds = asStringArray(bag.segmentIds);
-  const segmentCodes = asStringArray(bag.segmentCodes).map((c) =>
-    c.toLowerCase(),
-  );
+  const segmentCodes = asStringArray(bag.segmentCodes).map((c) => c.toLowerCase());
   if (segmentIds.length === 0 && segmentCodes.length === 0) {
     return null;
   }
@@ -76,8 +74,6 @@ export function membershipContextFromApplyInput(
   };
 }
 
-export function hasSegmentRestriction(
-  restriction: SegmentRestriction | null,
-): boolean {
+export function hasSegmentRestriction(restriction: SegmentRestriction | null): boolean {
   return restriction != null;
 }

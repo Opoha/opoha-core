@@ -1,8 +1,4 @@
-import {
-  BadRequestException,
-  ConflictException,
-  NotFoundException,
-} from '@nestjs/common';
+import { BadRequestException, ConflictException, NotFoundException } from '@nestjs/common';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 
 import { CoreEventName } from '../event-bus/event-catalog';
@@ -116,9 +112,7 @@ describe('InventoryService (unit)', () => {
         if (where.variantId && where.warehouseId) {
           return (
             itemStore.find(
-              (r) =>
-                r.variantId === where.variantId &&
-                r.warehouseId === where.warehouseId,
+              (r) => r.variantId === where.variantId && r.warehouseId === where.warehouseId,
             ) ?? null
           );
         }
@@ -191,9 +185,7 @@ describe('InventoryService (unit)', () => {
                     },
                     getOne: async () => {
                       if (state.id) {
-                        return (
-                          itemStore.find((r) => r.id === state.id) ?? null
-                        );
+                        return itemStore.find((r) => r.id === state.id) ?? null;
                       }
                       if (state.variantId && state.warehouseId) {
                         return (
@@ -205,11 +197,7 @@ describe('InventoryService (unit)', () => {
                         );
                       }
                       if (state.variantId) {
-                        return (
-                          itemStore.find(
-                            (r) => r.variantId === state.variantId,
-                          ) ?? null
-                        );
+                        return itemStore.find((r) => r.variantId === state.variantId) ?? null;
                       }
                       return null;
                     },
@@ -230,9 +218,7 @@ describe('InventoryService (unit)', () => {
                     },
                     getOne: async () => {
                       if (!state.id) return null;
-                      return (
-                        reservationStore.find((r) => r.id === state.id) ?? null
-                      );
+                      return reservationStore.find((r) => r.id === state.id) ?? null;
                     },
                   };
                   return qb;
@@ -288,10 +274,7 @@ describe('InventoryService (unit)', () => {
     };
 
     storeWarehouses = {
-      listWarehouseIdsForStore: vi.fn(async () => [
-        defaultWarehouseId,
-        secondaryWarehouseId,
-      ]),
+      listWarehouseIdsForStore: vi.fn(async () => [defaultWarehouseId, secondaryWarehouseId]),
       assertWarehouseAllowedForStore: vi.fn(async () => undefined),
     };
 
@@ -356,18 +339,15 @@ describe('InventoryService (unit)', () => {
       delta: 3,
     });
     const defaultItem = await service.findByVariantId('var-1');
-    const nycItem = await service.findByVariantId(
-      'var-1',
-      secondaryWarehouseId,
-    );
+    const nycItem = await service.findByVariantId('var-1', secondaryWarehouseId);
     expect(defaultItem.quantityOnHand).toBe(10);
     expect(nycItem.quantityOnHand).toBe(8);
   });
 
   it('adjust rejects when result would go negative', async () => {
-    await expect(
-      service.adjust({ variantId: 'var-1', delta: -20 }),
-    ).rejects.toBeInstanceOf(BadRequestException);
+    await expect(service.adjust({ variantId: 'var-1', delta: -20 })).rejects.toBeInstanceOf(
+      BadRequestException,
+    );
   });
 
   it('reserve reduces available and creates active reservation', async () => {
@@ -403,19 +383,16 @@ describe('InventoryService (unit)', () => {
       quantity: 2,
     });
     const defaultItem = await service.findByVariantId('var-1');
-    const nycItem = await service.findByVariantId(
-      'var-1',
-      secondaryWarehouseId,
-    );
+    const nycItem = await service.findByVariantId('var-1', secondaryWarehouseId);
     expect(defaultItem.quantityReserved).toBe(2);
     expect(nycItem.quantityReserved).toBe(2);
     expect(nycItem.quantityAvailable).toBe(3);
   });
 
   it('reserve rejects when insufficient available stock', async () => {
-    await expect(
-      service.reserve({ variantId: 'var-1', quantity: 9 }),
-    ).rejects.toBeInstanceOf(ConflictException);
+    await expect(service.reserve({ variantId: 'var-1', quantity: 9 })).rejects.toBeInstanceOf(
+      ConflictException,
+    );
   });
 
   it('release frees reserved quantity', async () => {
@@ -445,9 +422,7 @@ describe('InventoryService (unit)', () => {
   });
 
   it('release rejects unknown reservation', async () => {
-    await expect(service.release('missing')).rejects.toBeInstanceOf(
-      NotFoundException,
-    );
+    await expect(service.release('missing')).rejects.toBeInstanceOf(NotFoundException);
   });
 
   it('commit deducts on-hand and marks reservation committed', async () => {
@@ -495,9 +470,7 @@ describe('InventoryService (unit)', () => {
     expect(reservation.status).toBe('active');
     const item = await service.findByVariantId('var-1');
     expect(item.quantityReserved).toBe(4);
-    expect(storeWarehouses.listWarehouseIdsForStore).toHaveBeenCalledWith(
-      'store-a',
-    );
+    expect(storeWarehouses.listWarehouseIdsForStore).toHaveBeenCalledWith('store-a');
   });
 
   it('reserveForStore falls back to next allowed warehouse when primary lacks stock', async () => {
@@ -507,8 +480,7 @@ describe('InventoryService (unit)', () => {
     ]);
     // Exhaust default available (onHand 10, reserved 2 → available 8)
     const defaultItem = itemStore.find(
-      (r) =>
-        r.variantId === 'var-1' && r.warehouseId === defaultWarehouseId,
+      (r) => r.variantId === 'var-1' && r.warehouseId === defaultWarehouseId,
     )!;
     defaultItem.quantityReserved = 10;
 
@@ -534,9 +506,7 @@ describe('InventoryService (unit)', () => {
   });
 
   it('reserveForStore does not use warehouses outside the allow-list', async () => {
-    storeWarehouses.listWarehouseIdsForStore = vi.fn(async () => [
-      secondaryWarehouseId,
-    ]);
+    storeWarehouses.listWarehouseIdsForStore = vi.fn(async () => [secondaryWarehouseId]);
     const reservation = await service.reserveForStore({
       variantId: 'var-1',
       storeId: 'store-nyc-only',

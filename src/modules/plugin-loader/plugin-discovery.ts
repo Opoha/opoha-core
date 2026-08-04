@@ -1,10 +1,7 @@
 import { existsSync, readdirSync, readFileSync, statSync } from 'node:fs';
 import { isAbsolute, join, resolve } from 'node:path';
 
-import {
-  type DiscoveredPlugin,
-  parsePluginManifest,
-} from './plugin-manifest';
+import { type DiscoveredPlugin, parsePluginManifest } from './plugin-manifest';
 
 function readJsonFile(path: string): unknown {
   const text = readFileSync(path, 'utf8');
@@ -46,9 +43,7 @@ export function discoverPluginAt(rootPath: string): DiscoveredPlugin {
     };
   }
 
-  throw new Error(
-    `No opoha.plugin.json or package.json found under ${resolved}`,
-  );
+  throw new Error(`No opoha.plugin.json or package.json found under ${resolved}`);
 }
 
 /**
@@ -65,12 +60,8 @@ export function discoverPlugins(paths: string[]): DiscoveredPlugin[] {
  * Scan a directory for immediate child folders that look like plugins.
  * Skips entries that are not directories or lack a recognizable manifest.
  */
-export function discoverPluginsInDirectory(
-  directoryPath: string,
-): DiscoveredPlugin[] {
-  const resolved = isAbsolute(directoryPath)
-    ? directoryPath
-    : resolve(directoryPath);
+export function discoverPluginsInDirectory(directoryPath: string): DiscoveredPlugin[] {
+  const resolved = isAbsolute(directoryPath) ? directoryPath : resolve(directoryPath);
   if (!existsSync(resolved) || !statSync(resolved).isDirectory()) {
     throw new Error(`OPOHA_PLUGINS_PATH is not a directory: ${resolved}`);
   }
@@ -82,8 +73,7 @@ export function discoverPluginsInDirectory(
       continue;
     }
     const hasManifest =
-      existsSync(join(child, 'opoha.plugin.json')) ||
-      existsSync(join(child, 'package.json'));
+      existsSync(join(child, 'opoha.plugin.json')) || existsSync(join(child, 'package.json'));
     if (!hasManifest) {
       continue;
     }

@@ -24,9 +24,7 @@ export function isOrderStatus(value: string): value is OrderStatus {
  * Terminal: fulfilled, cancelled.
  * B2B path: draft → approved → confirmed.
  */
-export const ORDER_STATUS_TRANSITIONS: Readonly<
-  Record<OrderStatus, readonly OrderStatus[]>
-> = {
+export const ORDER_STATUS_TRANSITIONS: Readonly<Record<OrderStatus, readonly OrderStatus[]>> = {
   draft: ['approved', 'cancelled'],
   approved: ['confirmed', 'cancelled'],
   pending: ['confirmed', 'cancelled'],
@@ -35,9 +33,6 @@ export const ORDER_STATUS_TRANSITIONS: Readonly<
   cancelled: [],
 };
 
-export function canTransitionOrderStatus(
-  from: OrderStatus,
-  to: OrderStatus,
-): boolean {
+export function canTransitionOrderStatus(from: OrderStatus, to: OrderStatus): boolean {
   return ORDER_STATUS_TRANSITIONS[from].includes(to);
 }

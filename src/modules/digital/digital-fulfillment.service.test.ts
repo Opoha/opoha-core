@@ -56,22 +56,14 @@ describe('DigitalFulfillmentService (unit)', () => {
     const tokensRepo = {
       find: vi.fn(async ({ where }: { where: Partial<TokenRow> }) =>
         tokenStore
-          .filter((row) =>
-            Object.entries(where).every(
-              ([k, v]) => row[k as keyof TokenRow] === v,
-            ),
-          )
+          .filter((row) => Object.entries(where).every(([k, v]) => row[k as keyof TokenRow] === v))
           .map((row) => Object.assign(new DigitalDownloadTokenEntity(), row)),
       ),
       findOne: vi.fn(async ({ where }: { where: Partial<TokenRow> }) => {
         const row = tokenStore.find((r) =>
-          Object.entries(where).every(
-            ([k, v]) => r[k as keyof TokenRow] === v,
-          ),
+          Object.entries(where).every(([k, v]) => r[k as keyof TokenRow] === v),
         );
-        return row
-          ? Object.assign(new DigitalDownloadTokenEntity(), row)
-          : null;
+        return row ? Object.assign(new DigitalDownloadTokenEntity(), row) : null;
       }),
       create: vi.fn((data: Partial<TokenRow>) => ({
         id: `tok-${++tokenSeq}`,
@@ -101,21 +93,15 @@ describe('DigitalFulfillmentService (unit)', () => {
       find: vi.fn(async ({ where }: { where: Partial<LicenseRow> }) =>
         licenseStore
           .filter((row) =>
-            Object.entries(where).every(
-              ([k, v]) => row[k as keyof LicenseRow] === v,
-            ),
+            Object.entries(where).every(([k, v]) => row[k as keyof LicenseRow] === v),
           )
           .map((row) => Object.assign(new DigitalLicenseKeyEntity(), row)),
       ),
       findOne: vi.fn(async ({ where }: { where: Partial<LicenseRow> }) => {
         const row = licenseStore.find((r) =>
-          Object.entries(where).every(
-            ([k, v]) => r[k as keyof LicenseRow] === v,
-          ),
+          Object.entries(where).every(([k, v]) => r[k as keyof LicenseRow] === v),
         );
-        return row
-          ? Object.assign(new DigitalLicenseKeyEntity(), row)
-          : null;
+        return row ? Object.assign(new DigitalLicenseKeyEntity(), row) : null;
       }),
       create: vi.fn((data: Partial<LicenseRow>) => ({
         id: `lic-${++licenseSeq}`,
@@ -140,9 +126,7 @@ describe('DigitalFulfillmentService (unit)', () => {
     };
 
     const variantsRepo = {
-      find: vi.fn(async () => [
-        { id: variantId, fulfillmentMode: 'digital' },
-      ]),
+      find: vi.fn(async () => [{ id: variantId, fulfillmentMode: 'digital' }]),
     };
 
     eventBus = { publish: vi.fn(async () => undefined) };
@@ -219,9 +203,7 @@ describe('DigitalFulfillmentService (unit)', () => {
 
   it('issueForOrder skips non-digital variants and does not publish', async () => {
     const variantsRepo = {
-      find: vi.fn(async () => [
-        { id: variantId, fulfillmentMode: 'physical' },
-      ]),
+      find: vi.fn(async () => [{ id: variantId, fulfillmentMode: 'physical' }]),
     };
     service = new DigitalFulfillmentService(
       {
@@ -262,9 +244,7 @@ describe('DigitalFulfillmentService (unit)', () => {
     const licenses = await service.listLicenseKeysForCustomer(customerId);
     expect(byOrder).toHaveLength(1);
     expect(licenses).toHaveLength(1);
-    await expect(
-      service.findDownloadTokenById(byOrder[0]!.id),
-    ).resolves.toMatchObject({ orderId });
+    await expect(service.findDownloadTokenById(byOrder[0]!.id)).resolves.toMatchObject({ orderId });
   });
 
   it('rejects invalid quantity', async () => {

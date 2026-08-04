@@ -16,11 +16,7 @@ import { DigitalEventsRegistrar } from './events/digital-events.registrar';
     EventBusModule,
     TypeOrmModule.forFeature([...digitalEntities, ProductVariantEntity]),
   ],
-  providers: [
-    DigitalFulfillmentService,
-    DigitalResolver,
-    DigitalEventsRegistrar,
-  ],
+  providers: [DigitalFulfillmentService, DigitalResolver, DigitalEventsRegistrar],
   exports: [DigitalFulfillmentService, TypeOrmModule],
 })
 export class DigitalModule {}

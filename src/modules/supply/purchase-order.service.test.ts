@@ -1,14 +1,8 @@
-import {
-  BadRequestException,
-  NotFoundException,
-} from '@nestjs/common';
+import { BadRequestException, NotFoundException } from '@nestjs/common';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 
 import { CoreEventName } from '../event-bus/event-catalog';
-import {
-  InventoryAdjustmentEntity,
-  InventoryItemEntity,
-} from '../inventory/public';
+import { InventoryAdjustmentEntity, InventoryItemEntity } from '../inventory/public';
 import { PurchaseOrderLineEntity } from './entities/purchase-order-line.entity';
 import { PurchaseOrderEntity } from './entities/purchase-order.entity';
 import { PurchaseOrderService } from './purchase-order.service';
@@ -126,36 +120,32 @@ describe('PurchaseOrderService (unit)', () => {
           }),
           save: async (entityOrEntities: unknown) => {
             if (Array.isArray(entityOrEntities)) {
-              return (entityOrEntities as Array<Record<string, unknown>>).map(
-                (row) => {
-                  if (
-                    'purchaseOrderId' in row &&
-                    'variantId' in row &&
-                    'quantity' in row &&
-                    !('quantityOnHand' in row)
-                  ) {
-                    const line: LineRow = {
-                      id: (row.id as string) ?? `line-${lineStore.length + 1}`,
-                      purchaseOrderId: row.purchaseOrderId as string,
-                      variantId: row.variantId as string,
-                      quantity: row.quantity as number,
-                      quantityReceived: (row.quantityReceived as number) ?? 0,
-                      createdAt: now,
-                      updatedAt: now,
-                    };
-                    const existing = lineStore.findIndex(
-                      (l) => l.id === line.id,
-                    );
-                    if (existing >= 0) {
-                      lineStore[existing] = line;
-                      return line;
-                    }
-                    lineStore.push(line);
+              return (entityOrEntities as Array<Record<string, unknown>>).map((row) => {
+                if (
+                  'purchaseOrderId' in row &&
+                  'variantId' in row &&
+                  'quantity' in row &&
+                  !('quantityOnHand' in row)
+                ) {
+                  const line: LineRow = {
+                    id: (row.id as string) ?? `line-${lineStore.length + 1}`,
+                    purchaseOrderId: row.purchaseOrderId as string,
+                    variantId: row.variantId as string,
+                    quantity: row.quantity as number,
+                    quantityReceived: (row.quantityReceived as number) ?? 0,
+                    createdAt: now,
+                    updatedAt: now,
+                  };
+                  const existing = lineStore.findIndex((l) => l.id === line.id);
+                  if (existing >= 0) {
+                    lineStore[existing] = line;
                     return line;
                   }
-                  return row;
-                },
-              );
+                  lineStore.push(line);
+                  return line;
+                }
+                return row;
+              });
             }
             const row = entityOrEntities as Record<string, unknown>;
             if (
@@ -230,9 +220,7 @@ describe('PurchaseOrderService (unit)', () => {
               const lines = lineStore.filter(
                 (l) => l.purchaseOrderId === opts.where.purchaseOrderId,
               );
-              return [...lines].sort((a, b) =>
-                a.variantId.localeCompare(b.variantId),
-              );
+              return [...lines].sort((a, b) => a.variantId.localeCompare(b.variantId));
             }
             return [];
           },
@@ -276,9 +264,7 @@ describe('PurchaseOrderService (unit)', () => {
                     },
                     getOne: async () => {
                       if (state.id) {
-                        return (
-                          itemStore.find((r) => r.id === state.id) ?? null
-                        );
+                        return itemStore.find((r) => r.id === state.id) ?? null;
                       }
                       if (state.variantId && state.warehouseId) {
                         return (
@@ -363,9 +349,7 @@ describe('PurchaseOrderService (unit)', () => {
     expect(received.receivedAt).toBeTruthy();
     expect(received.lines[0]?.quantityReceived).toBe(7);
 
-    const item = itemStore.find(
-      (i) => i.variantId === variantId && i.warehouseId === warehouseId,
-    );
+    const item = itemStore.find((i) => i.variantId === variantId && i.warehouseId === warehouseId);
     expect(item?.quantityOnHand).toBe(7);
     expect(eventBus.publish).toHaveBeenCalledWith(
       expect.objectContaining({
@@ -394,14 +378,10 @@ describe('PurchaseOrderService (unit)', () => {
     expect(cancelled.status).toBe('cancelled');
 
     poStore[0]!.status = 'received';
-    await expect(service.cancel('po-1')).rejects.toBeInstanceOf(
-      BadRequestException,
-    );
+    await expect(service.cancel('po-1')).rejects.toBeInstanceOf(BadRequestException);
   });
 
   it('findById throws when missing', async () => {
-    await expect(service.findById('missing')).rejects.toBeInstanceOf(
-      NotFoundException,
-    );
+    await expect(service.findById('missing')).rejects.toBeInstanceOf(NotFoundException);
   });
 });

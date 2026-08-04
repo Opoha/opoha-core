@@ -7,9 +7,7 @@ export type ScheduledJobHandlerContext = {
   readonly queuedAt: Date;
 };
 
-export type ScheduledJobHandler = (
-  ctx: ScheduledJobHandlerContext,
-) => void | Promise<void>;
+export type ScheduledJobHandler = (ctx: ScheduledJobHandlerContext) => void | Promise<void>;
 
 export type RegisterScheduledJobInput = {
   /** Local code; host prefixes with plugin id when registered via PluginContext. */

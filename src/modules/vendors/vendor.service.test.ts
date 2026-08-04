@@ -1,8 +1,4 @@
-import {
-  BadRequestException,
-  ConflictException,
-  NotFoundException,
-} from '@nestjs/common';
+import { BadRequestException, ConflictException, NotFoundException } from '@nestjs/common';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 
 import { CoreEventName } from '../event-bus/event-catalog';
@@ -71,9 +67,7 @@ describe('VendorService (unit)', () => {
     ];
 
     vendorsRepo = {
-      find: vi.fn(async () =>
-        [...vendorStore].sort((a, b) => a.code.localeCompare(b.code)),
-      ),
+      find: vi.fn(async () => [...vendorStore].sort((a, b) => a.code.localeCompare(b.code))),
       findOne: vi.fn(async ({ where }: { where: Partial<VendorRow> }) => {
         if (where.id) {
           return vendorStore.find((r) => r.id === where.id) ?? null;
@@ -110,12 +104,11 @@ describe('VendorService (unit)', () => {
 
     productsRepo = {
       find: vi.fn(async ({ where }: { where: Partial<ProductRow> }) =>
-        productStore.filter((p) =>
-          where.vendorId ? p.vendorId === where.vendorId : true,
-        ),
+        productStore.filter((p) => (where.vendorId ? p.vendorId === where.vendorId : true)),
       ),
-      findOne: vi.fn(async ({ where }: { where: Partial<ProductRow> }) =>
-        productStore.find((p) => p.id === where.id) ?? null,
+      findOne: vi.fn(
+        async ({ where }: { where: Partial<ProductRow> }) =>
+          productStore.find((p) => p.id === where.id) ?? null,
       ),
       save: vi.fn(async (row: ProductRow) => {
         const idx = productStore.findIndex((p) => p.id === row.id);
@@ -124,18 +117,15 @@ describe('VendorService (unit)', () => {
         }
         return row;
       }),
-      count: vi.fn(async ({ where }: { where: Partial<ProductRow> }) =>
-        productStore.filter((p) => p.vendorId === where.vendorId).length,
+      count: vi.fn(
+        async ({ where }: { where: Partial<ProductRow> }) =>
+          productStore.filter((p) => p.vendorId === where.vendorId).length,
       ),
     };
 
     eventBus = { publish: vi.fn(async () => undefined) };
 
-    service = new VendorService(
-      vendorsRepo as never,
-      productsRepo as never,
-      eventBus as never,
-    );
+    service = new VendorService(vendorsRepo as never, productsRepo as never, eventBus as never);
   });
 
   it('creates a vendor and publishes VendorUpdated', async () => {
@@ -170,9 +160,7 @@ describe('VendorService (unit)', () => {
       vendorId: '11111111-1111-4111-8111-111111111111',
     });
     expect(assigned.vendorId).toBe('11111111-1111-4111-8111-111111111111');
-    expect(productStore[0]!.vendorId).toBe(
-      '11111111-1111-4111-8111-111111111111',
-    );
+    expect(productStore[0]!.vendorId).toBe('11111111-1111-4111-8111-111111111111');
 
     const cleared = await service.assignProductVendor({
       productId: '22222222-2222-4222-8222-222222222222',
@@ -183,15 +171,15 @@ describe('VendorService (unit)', () => {
 
   it('blocks delete when products still reference vendor', async () => {
     productStore[0]!.vendorId = '11111111-1111-4111-8111-111111111111';
-    await expect(
-      service.remove('11111111-1111-4111-8111-111111111111'),
-    ).rejects.toBeInstanceOf(BadRequestException);
+    await expect(service.remove('11111111-1111-4111-8111-111111111111')).rejects.toBeInstanceOf(
+      BadRequestException,
+    );
   });
 
   it('throws NotFound for missing vendor', async () => {
-    await expect(
-      service.findById('99999999-9999-4999-8999-999999999999'),
-    ).rejects.toBeInstanceOf(NotFoundException);
+    await expect(service.findById('99999999-9999-4999-8999-999999999999')).rejects.toBeInstanceOf(
+      NotFoundException,
+    );
   });
 
   it('throws Conflict on duplicate code', async () => {
@@ -201,8 +189,8 @@ describe('VendorService (unit)', () => {
         driverError: { code: '23505' },
       }),
     );
-    await expect(
-      service.create({ code: 'SHOP-A', name: 'Dup' }),
-    ).rejects.toBeInstanceOf(ConflictException);
+    await expect(service.create({ code: 'SHOP-A', name: 'Dup' })).rejects.toBeInstanceOf(
+      ConflictException,
+    );
   });
 });

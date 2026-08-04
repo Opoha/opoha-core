@@ -1,17 +1,9 @@
 import { UseGuards } from '@nestjs/common';
 import { Args, Query, Resolver } from '@nestjs/graphql';
 
-import {
-  GqlAuthGuard,
-  PermissionsGuard,
-  RequirePermission,
-} from '../auth/public';
+import { GqlAuthGuard, PermissionsGuard, RequirePermission } from '../auth/public';
 import { SearchEngine } from './search-engine.service';
-import {
-  SearchProductsInput,
-  SearchProductsResultType,
-  SearchProviderType,
-} from './search.types';
+import { SearchProductsInput, SearchProductsResultType, SearchProviderType } from './search.types';
 
 @Resolver(() => SearchProviderType)
 @UseGuards(GqlAuthGuard, PermissionsGuard)

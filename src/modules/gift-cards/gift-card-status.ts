@@ -1,12 +1,7 @@
 import { randomBytes } from 'node:crypto';
 
 /** Gift card lifecycle statuses (Phase 4 C-01). */
-export const GIFT_CARD_STATUSES = [
-  'active',
-  'redeemed',
-  'disabled',
-  'expired',
-] as const;
+export const GIFT_CARD_STATUSES = ['active', 'redeemed', 'disabled', 'expired'] as const;
 
 export type GiftCardStatus = (typeof GIFT_CARD_STATUSES)[number];
 
@@ -14,15 +9,9 @@ export function isGiftCardStatus(value: string): value is GiftCardStatus {
   return (GIFT_CARD_STATUSES as readonly string[]).includes(value);
 }
 
-export const GIFT_CARD_TRANSACTION_TYPES = [
-  'issue',
-  'purchase',
-  'redeem',
-  'adjust',
-] as const;
+export const GIFT_CARD_TRANSACTION_TYPES = ['issue', 'purchase', 'redeem', 'adjust'] as const;
 
-export type GiftCardTransactionType =
-  (typeof GIFT_CARD_TRANSACTION_TYPES)[number];
+export type GiftCardTransactionType = (typeof GIFT_CARD_TRANSACTION_TYPES)[number];
 
 /**
  * Allowed status transitions. `redeemed`, `disabled`, `expired` are terminal —
@@ -37,10 +26,7 @@ export const GIFT_CARD_STATUS_TRANSITIONS: Readonly<
   expired: [],
 };
 
-export function canTransitionGiftCardStatus(
-  from: GiftCardStatus,
-  to: GiftCardStatus,
-): boolean {
+export function canTransitionGiftCardStatus(from: GiftCardStatus, to: GiftCardStatus): boolean {
   return GIFT_CARD_STATUS_TRANSITIONS[from].includes(to);
 }
 

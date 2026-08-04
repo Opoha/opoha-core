@@ -1,9 +1,6 @@
 import { Injectable, OnModuleInit } from '@nestjs/common';
 
-import {
-  AuditAction,
-  AuditLogsService,
-} from '../auth/public';
+import { AuditAction, AuditLogsService } from '../auth/public';
 import type { DomainEvent } from '../event-bus/public';
 import { CoreEventName, EventBusService } from '../event-bus/public';
 
@@ -61,9 +58,7 @@ export class ActivityAuditListener implements OnModuleInit {
     );
   }
 
-  private async onWarehouseUpdated(
-    event: DomainEvent<WarehouseUpdatedData>,
-  ): Promise<void> {
+  private async onWarehouseUpdated(event: DomainEvent<WarehouseUpdatedData>): Promise<void> {
     const action =
       event.data.action === 'created'
         ? AuditAction.WAREHOUSE_CREATE
@@ -83,9 +78,7 @@ export class ActivityAuditListener implements OnModuleInit {
     });
   }
 
-  private async onShipmentCreated(
-    event: DomainEvent<ShipmentCreatedData>,
-  ): Promise<void> {
+  private async onShipmentCreated(event: DomainEvent<ShipmentCreatedData>): Promise<void> {
     await this.auditLogs.append({
       action: AuditAction.FULFILLMENT_SHIP,
       resourceType: 'fulfillment',
@@ -98,9 +91,7 @@ export class ActivityAuditListener implements OnModuleInit {
     });
   }
 
-  private async onReturnRequested(
-    event: DomainEvent<ReturnRequestedData>,
-  ): Promise<void> {
+  private async onReturnRequested(event: DomainEvent<ReturnRequestedData>): Promise<void> {
     await this.auditLogs.append({
       action: AuditAction.RETURN_CREATE,
       resourceType: 'return',
@@ -113,9 +104,7 @@ export class ActivityAuditListener implements OnModuleInit {
     });
   }
 
-  private async onRefundCompleted(
-    event: DomainEvent<RefundCompletedData>,
-  ): Promise<void> {
+  private async onRefundCompleted(event: DomainEvent<RefundCompletedData>): Promise<void> {
     await this.auditLogs.append({
       action: AuditAction.RETURN_REFUND,
       resourceType: 'return',

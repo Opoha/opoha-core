@@ -66,9 +66,7 @@ function normalizeName(name: string): string {
   return trimmed;
 }
 
-function normalizeRules(
-  rules: SegmentRules | null | undefined,
-): SegmentRules | null {
+function normalizeRules(rules: SegmentRules | null | undefined): SegmentRules | null {
   if (rules === undefined || rules === null) {
     return null;
   }
@@ -168,9 +166,7 @@ export class SegmentsService {
       return toSegmentType(saved);
     } catch (error) {
       if (isUniqueViolation(error)) {
-        throw new ConflictException(
-          `Customer segment code already exists: ${row.code}`,
-        );
+        throw new ConflictException(`Customer segment code already exists: ${row.code}`);
       }
       throw error;
     }
@@ -206,13 +202,9 @@ export class SegmentsService {
   /**
    * Return all active segments whose rules match `context`.
    */
-  async listMatchingSegments(
-    context: SegmentMembershipContext,
-  ): Promise<CustomerSegmentType[]> {
+  async listMatchingSegments(context: SegmentMembershipContext): Promise<CustomerSegmentType[]> {
     const active = await this.findActive();
-    return active.filter((segment) =>
-      evaluateSegmentRules(segment.rules, context),
-    );
+    return active.filter((segment) => evaluateSegmentRules(segment.rules, context));
   }
 
   /** Pure helper re-export for callers that already have rules. */

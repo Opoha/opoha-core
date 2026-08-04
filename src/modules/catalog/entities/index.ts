@@ -35,8 +35,4 @@ export {
   ProductVariantEntity,
 };
 export type { FulfillmentMode } from './fulfillment-mode';
-export {
-  FULFILLMENT_MODES,
-  assertFulfillmentMode,
-  isFulfillmentMode,
-} from './fulfillment-mode';
+export { FULFILLMENT_MODES, assertFulfillmentMode, isFulfillmentMode } from './fulfillment-mode';

@@ -15,12 +15,7 @@ import { RolePermissionEntity } from '../entities/role-permission.entity';
 import { UserEntity } from '../entities/user.entity';
 import { UserRoleEntity } from '../entities/user-role.entity';
 import { DEFAULT_ADMIN_ROLE_NAME } from '../seed/seed-auth';
-import type {
-  CreateRoleInput,
-  PermissionType,
-  RoleType,
-  UpdateRoleInput,
-} from './role.types';
+import type { CreateRoleInput, PermissionType, RoleType, UpdateRoleInput } from './role.types';
 
 function isUniqueViolation(error: unknown): boolean {
   return (
@@ -67,10 +62,7 @@ export class RolesService {
     return this.toRoleType(row);
   }
 
-  async create(
-    input: CreateRoleInput,
-    actorUserId?: string | null,
-  ): Promise<RoleType> {
+  async create(input: CreateRoleInput, actorUserId?: string | null): Promise<RoleType> {
     const name = input.name.trim().toLowerCase();
     if (!name) {
       throw new BadRequestException('Role name is required');
@@ -102,11 +94,7 @@ export class RolesService {
     }
   }
 
-  async update(
-    id: string,
-    input: UpdateRoleInput,
-    actorUserId?: string | null,
-  ): Promise<RoleType> {
+  async update(id: string, input: UpdateRoleInput, actorUserId?: string | null): Promise<RoleType> {
     const existing = await this.findById(id);
     const patch: Partial<RoleEntity> = {};
     if (input.name !== undefined) {
@@ -114,10 +102,7 @@ export class RolesService {
       if (!name) {
         throw new BadRequestException('Role name is required');
       }
-      if (
-        existing.name === DEFAULT_ADMIN_ROLE_NAME &&
-        name !== DEFAULT_ADMIN_ROLE_NAME
-      ) {
+      if (existing.name === DEFAULT_ADMIN_ROLE_NAME && name !== DEFAULT_ADMIN_ROLE_NAME) {
         throw new BadRequestException('Cannot rename the default admin role');
       }
       patch.name = name;
@@ -140,9 +125,7 @@ export class RolesService {
         resourceId: id,
         metadata: {
           name: updated.name,
-          fields: Object.keys(input).filter(
-            (k) => input[k as keyof UpdateRoleInput] !== undefined,
-          ),
+          fields: Object.keys(input).filter((k) => input[k as keyof UpdateRoleInput] !== undefined),
         },
       });
       return updated;
@@ -170,11 +153,7 @@ export class RolesService {
     return role;
   }
 
-  async assignRole(
-    userId: string,
-    roleId: string,
-    actorUserId?: string | null,
-  ): Promise<RoleType> {
+  async assignRole(userId: string, roleId: string, actorUserId?: string | null): Promise<RoleType> {
     const user = await this.users.findOne({ where: { id: userId } });
     if (!user) {
       throw new NotFoundException(`User ${userId} not found`);
@@ -194,11 +173,7 @@ export class RolesService {
     return role;
   }
 
-  async removeRole(
-    userId: string,
-    roleId: string,
-    actorUserId?: string | null,
-  ): Promise<RoleType> {
+  async removeRole(userId: string, roleId: string, actorUserId?: string | null): Promise<RoleType> {
     const role = await this.findById(roleId);
     const user = await this.users.findOne({ where: { id: userId } });
     if (!user) {
@@ -215,10 +190,7 @@ export class RolesService {
     return role;
   }
 
-  private async replacePermissions(
-    roleId: string,
-    permissionIds: string[],
-  ): Promise<void> {
+  private async replacePermissions(roleId: string, permissionIds: string[]): Promise<void> {
     const uniqueIds = [...new Set(permissionIds)];
     if (uniqueIds.length > 0) {
       const found = await this.permissions.find({
@@ -233,21 +205,17 @@ export class RolesService {
       return;
     }
     await this.rolePermissions.save(
-      uniqueIds.map((permissionId) =>
-        this.rolePermissions.create({ roleId, permissionId }),
-      ),
+      uniqueIds.map((permissionId) => this.rolePermissions.create({ roleId, permissionId })),
     );
   }
 
   private toRoleType(row: RoleEntity): RoleType {
-    const permissions: PermissionType[] = (row.rolePermissions ?? []).map(
-      (rp) => ({
-        id: rp.permission.id,
-        key: rp.permission.key,
-        description: rp.permission.description,
-        createdAt: rp.permission.createdAt,
-      }),
-    );
+    const permissions: PermissionType[] = (row.rolePermissions ?? []).map((rp) => ({
+      id: rp.permission.id,
+      key: rp.permission.key,
+      description: rp.permission.description,
+      createdAt: rp.permission.createdAt,
+    }));
     return {
       id: row.id,
       name: row.name,

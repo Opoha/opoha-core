@@ -2,10 +2,7 @@ import { describe, expect, it } from 'vitest';
 
 import { PromotionsEngine } from './promotions-engine.service';
 import { PromotionRuleRegistry } from './promotion-rule.registry';
-import type {
-  PromotionApplyInput,
-  PromotionRuleProvider,
-} from './promotion-rule';
+import type { PromotionApplyInput, PromotionRuleProvider } from './promotion-rule';
 
 const sampleInput: PromotionApplyInput = {
   currencyCode: 'USD',
@@ -44,24 +41,15 @@ describe('PromotionsEngine', () => {
 
   it('rejects duplicate codes from different plugins', () => {
     const registry = new PromotionRuleRegistry();
-    registry.register(
-      'a',
-      stubProvider({ code: 'coupon', displayName: 'A' }),
-    );
+    registry.register('a', stubProvider({ code: 'coupon', displayName: 'A' }));
     expect(() =>
-      registry.register(
-        'b',
-        stubProvider({ code: 'coupon', displayName: 'B' }),
-      ),
+      registry.register('b', stubProvider({ code: 'coupon', displayName: 'B' })),
     ).toThrow(/conflict/);
   });
 
   it('deactivates and removes by plugin', () => {
     const registry = new PromotionRuleRegistry();
-    registry.register(
-      'plugin-coupon',
-      stubProvider({ code: 'coupon', displayName: 'Coupon' }),
-    );
+    registry.register('plugin-coupon', stubProvider({ code: 'coupon', displayName: 'Coupon' }));
     registry.deactivatePlugin('plugin-coupon');
     expect(new PromotionsEngine(registry).get('coupon')).toBeUndefined();
     registry.activatePlugin('plugin-coupon');
@@ -127,9 +115,7 @@ describe('PromotionsEngine', () => {
           return {
             currencyCode: input.currencyCode,
             discountMinor: '9999',
-            applications: [
-              { code: 'HUGE', kind: 'coupon', discountMinor: '9999' },
-            ],
+            applications: [{ code: 'HUGE', kind: 'coupon', discountMinor: '9999' }],
           };
         },
       }),
@@ -177,9 +163,7 @@ describe('PromotionsEngine', () => {
 
   it('throws when no provider is registered for apply()', async () => {
     const engine = new PromotionsEngine(new PromotionRuleRegistry());
-    await expect(engine.apply(sampleInput)).rejects.toThrow(
-      /No active promotion rule provider/,
-    );
+    await expect(engine.apply(sampleInput)).rejects.toThrow(/No active promotion rule provider/);
   });
 
   it('rejects invalid apply input', async () => {

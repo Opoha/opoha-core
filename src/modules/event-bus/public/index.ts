@@ -24,10 +24,7 @@ export {
   ANALYTICS_STOREFRONT_MAP,
   isAnalyticsEventName,
 } from '../analytics-catalog';
-export type {
-  AnalyticsEventName,
-  AnalyticsStorefrontMapping,
-} from '../analytics-catalog';
+export type { AnalyticsEventName, AnalyticsStorefrontMapping } from '../analytics-catalog';
 export { AnalyticsSinkRegistry } from '../analytics-sink.registry';
 export { AnalyticsSinkDispatcher } from '../analytics-sink.dispatcher';
 export type { AnalyticsSink, RegisteredAnalyticsSink } from '../analytics-sink';

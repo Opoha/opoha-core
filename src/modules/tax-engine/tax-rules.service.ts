@@ -1,18 +1,10 @@
-import {
-  BadRequestException,
-  Injectable,
-  NotFoundException,
-} from '@nestjs/common';
+import { BadRequestException, Injectable, NotFoundException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { QueryFailedError, Repository } from 'typeorm';
 
 import { TaxClassEntity } from './entities/tax-class.entity';
 import { TaxRuleEntity } from './entities/tax-rule.entity';
-import type {
-  CreateTaxRuleInput,
-  TaxRuleType,
-  UpdateTaxRuleInput,
-} from './tax.types';
+import type { CreateTaxRuleInput, TaxRuleType, UpdateTaxRuleInput } from './tax.types';
 
 function isForeignKeyViolation(error: unknown): boolean {
   return (
@@ -86,9 +78,7 @@ export class TaxRulesService {
     }
     const countryCode = input.countryCode.trim().toUpperCase();
     if (!countryCode || countryCode.length !== 2) {
-      throw new BadRequestException(
-        'countryCode must be a 2-letter ISO 3166-1 alpha-2 code',
-      );
+      throw new BadRequestException('countryCode must be a 2-letter ISO 3166-1 alpha-2 code');
     }
     const rateBps = requireNonNegativeInt(input.rateBps, 'rateBps');
     const priority = requireNonNegativeInt(input.priority ?? 0, 'priority');
@@ -139,9 +129,7 @@ export class TaxRulesService {
     if (input.countryCode !== undefined) {
       const countryCode = input.countryCode.trim().toUpperCase();
       if (!countryCode || countryCode.length !== 2) {
-        throw new BadRequestException(
-          'countryCode must be a 2-letter ISO 3166-1 alpha-2 code',
-        );
+        throw new BadRequestException('countryCode must be a 2-letter ISO 3166-1 alpha-2 code');
       }
       row.countryCode = countryCode;
     }

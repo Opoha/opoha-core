@@ -8,9 +8,7 @@ import type { MigrationInterface, QueryRunner } from 'typeorm';
  *
  * Existing stores get default rows (UTC / US / shared catalog mode).
  */
-export class StoreChannelSettingsInit1722715900000
-  implements MigrationInterface
-{
+export class StoreChannelSettingsInit1722715900000 implements MigrationInterface {
   name = 'StoreChannelSettingsInit1722715900000';
 
   public async up(queryRunner: QueryRunner): Promise<void> {

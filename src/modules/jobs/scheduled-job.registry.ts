@@ -1,9 +1,6 @@
 import { Injectable } from '@nestjs/common';
 
-import type {
-  RegisteredScheduledJob,
-  ScheduledJobHandler,
-} from './scheduled-job';
+import type { RegisteredScheduledJob, ScheduledJobHandler } from './scheduled-job';
 
 /**
  * Registry for scheduled job handlers (Phase 8 A-03).
@@ -32,9 +29,7 @@ export class ScheduledJobRegistry {
     if (existing && existing.pluginId !== pluginId) {
       throw new Error(
         `Scheduled job conflict: code "${input.code}" already registered` +
-          (existing.pluginId
-            ? ` by plugin "${existing.pluginId}"`
-            : ' by core'),
+          (existing.pluginId ? ` by plugin "${existing.pluginId}"` : ' by core'),
       );
     }
     if (existing) {
@@ -65,9 +60,7 @@ export class ScheduledJobRegistry {
   }
 
   list(activeOnly = false): readonly RegisteredScheduledJob[] {
-    return activeOnly
-      ? this.entries.filter((e) => e.active)
-      : [...this.entries];
+    return activeOnly ? this.entries.filter((e) => e.active) : [...this.entries];
   }
 
   activatePlugin(pluginId: string): void {

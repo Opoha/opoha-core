@@ -12,9 +12,7 @@ export function isOrderSource(value: string): value is OrderSource {
 
 export function assertOrderSource(value: string): OrderSource {
   if (!isOrderSource(value)) {
-    throw new Error(
-      `Invalid orderSource "${value}"; expected one of: ${ORDER_SOURCES.join(', ')}`,
-    );
+    throw new Error(`Invalid orderSource "${value}"; expected one of: ${ORDER_SOURCES.join(', ')}`);
   }
   return value;
 }

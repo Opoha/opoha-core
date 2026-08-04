@@ -69,16 +69,12 @@ export class ShippingEngine {
     const method = methodCode.trim();
     const rate = rateCode.trim();
     if (!method || !rate) {
-      throw new BadRequestException(
-        'shipping methodCode and rateCode are required',
-      );
+      throw new BadRequestException('shipping methodCode and rateCode are required');
     }
 
     const provider = this.registry.get(method);
     if (!provider) {
-      throw new BadRequestException(
-        `Shipping method "${method}" is not registered or inactive`,
-      );
+      throw new BadRequestException(`Shipping method "${method}" is not registered or inactive`);
     }
 
     this.requireQuoteInput(input);
@@ -88,9 +84,7 @@ export class ShippingEngine {
       quoted = await provider.quoteRates(input);
     } catch (err) {
       throw new BadRequestException(
-        err instanceof Error
-          ? err.message
-          : `Shipping method "${method}" failed to quote`,
+        err instanceof Error ? err.message : `Shipping method "${method}" failed to quote`,
       );
     }
 
@@ -115,14 +109,10 @@ export class ShippingEngine {
       throw new BadRequestException('currencyCode is required for shipping quote');
     }
     if (!input.destination?.countryCode?.trim()) {
-      throw new BadRequestException(
-        'destination.countryCode is required for shipping quote',
-      );
+      throw new BadRequestException('destination.countryCode is required for shipping quote');
     }
     if (!Array.isArray(input.items) || input.items.length === 0) {
-      throw new BadRequestException(
-        'items are required for shipping quote',
-      );
+      throw new BadRequestException('items are required for shipping quote');
     }
   }
 
@@ -131,9 +121,7 @@ export class ShippingEngine {
     try {
       n = BigInt(value);
     } catch {
-      throw new BadRequestException(
-        `Invalid shipping amountMinor "${value}"`,
-      );
+      throw new BadRequestException(`Invalid shipping amountMinor "${value}"`);
     }
     if (n < 0n) {
       throw new BadRequestException('shipping amountMinor must be >= 0');

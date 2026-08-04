@@ -47,12 +47,11 @@ describe('JobsService (A-02/A-03)', () => {
 
     const definitionsRepo = {
       find: vi.fn(async () => [...definitions].sort((a, b) => a.code.localeCompare(b.code))),
-      findOne: vi.fn(async ({ where }: { where: Partial<DefinitionRow> }) =>
-        definitions.find((row) =>
-          Object.entries(where).every(
-            ([k, v]) => row[k as keyof DefinitionRow] === v,
-          ),
-        ) ?? null,
+      findOne: vi.fn(
+        async ({ where }: { where: Partial<DefinitionRow> }) =>
+          definitions.find((row) =>
+            Object.entries(where).every(([k, v]) => row[k as keyof DefinitionRow] === v),
+          ) ?? null,
       ),
       create: vi.fn((data: Partial<DefinitionRow>) => ({
         id: `def-${++defSeq}`,
@@ -76,11 +75,7 @@ describe('JobsService (A-02/A-03)', () => {
     const runsRepo = {
       find: vi.fn(async ({ where }: { where: Partial<RunRow> }) =>
         runs
-          .filter((row) =>
-            Object.entries(where).every(
-              ([k, v]) => row[k as keyof RunRow] === v,
-            ),
-          )
+          .filter((row) => Object.entries(where).every(([k, v]) => row[k as keyof RunRow] === v))
           .sort((a, b) => b.createdAt.getTime() - a.createdAt.getTime()),
       ),
       create: vi.fn((data: Partial<RunRow>) => ({
@@ -109,12 +104,7 @@ describe('JobsService (A-02/A-03)', () => {
     queue = new InMemoryJobQueueAdapter();
     const registry = new ScheduledJobRegistry();
 
-    const svc = new JobsService(
-      definitionsRepo as never,
-      runsRepo as never,
-      registry,
-      queue,
-    );
+    const svc = new JobsService(definitionsRepo as never, runsRepo as never, registry, queue);
     svc.onModuleInit();
     return svc;
   }

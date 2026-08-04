@@ -12,12 +12,9 @@ export const storeCurrencyConfigUpdatedDataSchema = z
   })
   .strict();
 
-export type StoreCurrencyConfigUpdatedData = z.infer<
-  typeof storeCurrencyConfigUpdatedDataSchema
->;
+export type StoreCurrencyConfigUpdatedData = z.infer<typeof storeCurrencyConfigUpdatedDataSchema>;
 
-export type StoreCurrencyConfigUpdatedEvent =
-  DomainEvent<StoreCurrencyConfigUpdatedData>;
+export type StoreCurrencyConfigUpdatedEvent = DomainEvent<StoreCurrencyConfigUpdatedData>;
 
 /** Register currency-config event payload schemas on the bus. */
 export function storeCurrencyConfigEventSchemas(): Array<{

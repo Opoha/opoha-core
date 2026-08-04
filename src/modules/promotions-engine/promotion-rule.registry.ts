@@ -1,9 +1,6 @@
 import { Injectable } from '@nestjs/common';
 
-import type {
-  PromotionRuleProvider,
-  RegisteredPromotionRuleProvider,
-} from './promotion-rule';
+import type { PromotionRuleProvider, RegisteredPromotionRuleProvider } from './promotion-rule';
 
 /**
  * Registry for promotion rule providers (Phase 2 D-01).
@@ -13,17 +10,11 @@ import type {
 export class PromotionRuleRegistry {
   private readonly entries: RegisteredPromotionRuleProvider[] = [];
 
-  register(
-    pluginId: string,
-    provider: PromotionRuleProvider,
-    active = true,
-  ): void {
+  register(pluginId: string, provider: PromotionRuleProvider, active = true): void {
     if (!provider.code || provider.code.trim().length === 0) {
       throw new Error('Promotion rule provider code is required');
     }
-    const existing = this.entries.find(
-      (e) => e.provider.code === provider.code,
-    );
+    const existing = this.entries.find((e) => e.provider.code === provider.code);
     if (existing && existing.pluginId !== pluginId) {
       throw new Error(
         `Promotion rule provider conflict: code "${provider.code}" already registered by plugin "${existing.pluginId}"`,
@@ -38,14 +29,11 @@ export class PromotionRuleRegistry {
   }
 
   get(id: string): PromotionRuleProvider | undefined {
-    return this.entries.find((e) => e.provider.code === id && e.active)
-      ?.provider;
+    return this.entries.find((e) => e.provider.code === id && e.active)?.provider;
   }
 
   list(activeOnly = false): readonly RegisteredPromotionRuleProvider[] {
-    return activeOnly
-      ? this.entries.filter((e) => e.active)
-      : [...this.entries];
+    return activeOnly ? this.entries.filter((e) => e.active) : [...this.entries];
   }
 
   activatePlugin(pluginId: string): void {

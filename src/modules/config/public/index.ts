@@ -5,10 +5,7 @@ export { ConfigModule } from '../config.module';
 export { ConfigService } from '../config.service';
 export { ConfigurationSettingsModule } from '../configuration-settings.module';
 export { StoreChannelSettingsService } from '../store-channel-settings.service';
-export {
-  StoreChannelSettingsEntity,
-  configurationEntities,
-} from '../entities';
+export { StoreChannelSettingsEntity, configurationEntities } from '../entities';
 export type { StoreCatalogMode } from '../entities';
 export { DEFAULT_STORE_CHANNEL_SETTINGS } from '../store-channel-settings.defaults';
 export {

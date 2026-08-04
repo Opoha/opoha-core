@@ -14,11 +14,8 @@ export const digitalFulfillmentIssuedDataSchema = z
   })
   .strict();
 
-export type DigitalFulfillmentIssuedData = z.infer<
-  typeof digitalFulfillmentIssuedDataSchema
->;
-export type DigitalFulfillmentIssuedEvent =
-  DomainEvent<DigitalFulfillmentIssuedData>;
+export type DigitalFulfillmentIssuedData = z.infer<typeof digitalFulfillmentIssuedDataSchema>;
+export type DigitalFulfillmentIssuedEvent = DomainEvent<DigitalFulfillmentIssuedData>;
 
 /** Register digital event payload schemas on the bus (call once at module init). */
 export function digitalEventSchemas(): Array<{

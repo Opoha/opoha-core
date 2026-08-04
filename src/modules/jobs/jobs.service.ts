@@ -12,10 +12,7 @@ import { assertCronExpression } from './cron-expression';
 import { JobDefinitionEntity } from './entities/job-definition.entity';
 import { JobRunEntity } from './entities/job-run.entity';
 import { InMemoryJobQueueAdapter } from './in-memory-job-queue.adapter';
-import {
-  JOB_QUEUE_ADAPTER,
-  type JobQueueAdapter,
-} from './job-queue.adapter';
+import { JOB_QUEUE_ADAPTER, type JobQueueAdapter } from './job-queue.adapter';
 import type { RegisterScheduledJobInput, ScheduledJobHandler } from './scheduled-job';
 import { ScheduledJobRegistry } from './scheduled-job.registry';
 import type { JobDefinitionType, JobRunType } from './jobs.types';
@@ -137,9 +134,7 @@ export class JobsService implements OnModuleInit {
     } else {
       this.registry.deactivatePlugin(pluginId);
     }
-    const jobs = this.registry
-      .list(false)
-      .filter((j) => j.pluginId === pluginId);
+    const jobs = this.registry.list(false).filter((j) => j.pluginId === pluginId);
     for (const job of jobs) {
       const row = await this.definitions.findOne({ where: { code: job.code } });
       if (row) {
@@ -187,15 +182,12 @@ export class JobsService implements OnModuleInit {
       );
     }
     const fired = await this.queue.runDueAt(at, attempt);
-    const out: Array<{ code: string; queueJobId: string; run: JobRunType }> =
-      [];
+    const out: Array<{ code: string; queueJobId: string; run: JobRunType }> = [];
     for (const [code, queueJobId] of fired) {
       const runs = await this.listRuns(code);
       const run = runs[0];
       if (!run) {
-        throw new Error(
-          `Job "${code}" fired but no job_runs observability row was recorded`,
-        );
+        throw new Error(`Job "${code}" fired but no job_runs observability row was recorded`);
       }
       out.push({ code, queueJobId, run });
     }

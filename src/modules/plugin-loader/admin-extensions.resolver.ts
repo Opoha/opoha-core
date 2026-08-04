@@ -18,8 +18,7 @@ export class AdminExtensionsResolver {
 
   @Query(() => AdminExtensionManifestType, {
     name: 'adminExtensionManifest',
-    description:
-      'Merged admin UI contributions from enabled plugins (no core→plugin imports)',
+    description: 'Merged admin UI contributions from enabled plugins (no core→plugin imports)',
   })
   @RequirePermission('plugin:read')
   adminExtensionManifest(): AdminExtensionManifestType {

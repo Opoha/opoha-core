@@ -113,9 +113,7 @@ export const orderStatusChangedDataSchema = z
   })
   .strict();
 
-export type OrderStatusChangedData = z.infer<
-  typeof orderStatusChangedDataSchema
->;
+export type OrderStatusChangedData = z.infer<typeof orderStatusChangedDataSchema>;
 export type OrderStatusChangedEvent = DomainEvent<OrderStatusChangedData>;
 
 export const orderTimelineDataSchema = z

@@ -90,16 +90,16 @@ describe('WebhookDeliveryWorker (D-02)', () => {
     };
 
     const endpointRepo = {
-      findOne: vi.fn(async ({ where }: { where: { id: string } }) =>
-        endpoints.find((e) => e.id === where.id) ?? null,
+      findOne: vi.fn(
+        async ({ where }: { where: { id: string } }) =>
+          endpoints.find((e) => e.id === where.id) ?? null,
       ),
     };
 
-    return new WebhookDeliveryWorker(
-      attemptRepo as never,
-      endpointRepo as never,
-      http,
-    ).configure({ maxAttempts: 3, backoffMs: [0, 0, 0] });
+    return new WebhookDeliveryWorker(attemptRepo as never, endpointRepo as never, http).configure({
+      maxAttempts: 3,
+      backoffMs: [0, 0, 0],
+    });
   }
 
   let worker: WebhookDeliveryWorker;
@@ -131,10 +131,7 @@ describe('WebhookDeliveryWorker (D-02)', () => {
     const result = await worker.deliverAttempt(row, now);
     expect(result.status).toBe('succeeded');
     expect(httpCalls).toHaveLength(1);
-    const expectedSig = signWebhookPayload(
-      'webhook-secret-1',
-      httpCalls[0]!.body,
-    );
+    const expectedSig = signWebhookPayload('webhook-secret-1', httpCalls[0]!.body);
     expect(httpCalls[0]!.headers[WEBHOOK_SIGNATURE_HEADER]).toBe(expectedSig);
     expect(attempts[0]!.status).toBe('succeeded');
     expect(attempts[0]!.signature).toBe(expectedSig);

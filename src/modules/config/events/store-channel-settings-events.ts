@@ -12,12 +12,9 @@ export const storeChannelSettingsUpdatedDataSchema = z
   })
   .strict();
 
-export type StoreChannelSettingsUpdatedData = z.infer<
-  typeof storeChannelSettingsUpdatedDataSchema
->;
+export type StoreChannelSettingsUpdatedData = z.infer<typeof storeChannelSettingsUpdatedDataSchema>;
 
-export type StoreChannelSettingsUpdatedEvent =
-  DomainEvent<StoreChannelSettingsUpdatedData>;
+export type StoreChannelSettingsUpdatedEvent = DomainEvent<StoreChannelSettingsUpdatedData>;
 
 /** Register channel-settings event payload schemas on the bus. */
 export function storeChannelSettingsEventSchemas(): Array<{

@@ -10,10 +10,7 @@ import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { createDomainEvent } from '../event-bus/domain-event';
 import { CoreEventName } from '../event-bus/event-catalog';
 import { EventBusService } from '../event-bus/event-bus.service';
-import {
-  customerTagStore,
-  notificationEmitStore,
-} from './action-stores';
+import { customerTagStore, notificationEmitStore } from './action-stores';
 import { RuleActionRegistry } from './rule-action.registry';
 import type { RuleActionRef, RuleConditions } from './rule-conditions';
 import { RulesEvaluatorService } from './rules-evaluator.service';
@@ -51,25 +48,22 @@ describe('Rules gate smoke (C-04)', () => {
     seq = 0;
 
     const repo = {
-      find: vi.fn(async ({ where, order: _order }: { where?: Partial<RuleRow>; order?: unknown } = {}) => {
-        let list = [...rows];
-        if (where) {
-          list = list.filter((row) =>
-            Object.entries(where).every(
-              ([k, v]) => row[k as keyof RuleRow] === v,
-            ),
-          );
-        }
-        return list.sort(
-          (a, b) => a.priority - b.priority || a.code.localeCompare(b.code),
-        );
-      }),
-      findOne: vi.fn(async ({ where }: { where: Partial<RuleRow> }) =>
-        rows.find((row) =>
-          Object.entries(where).every(
-            ([k, v]) => row[k as keyof RuleRow] === v,
-          ),
-        ) ?? null,
+      find: vi.fn(
+        async ({ where, order: _order }: { where?: Partial<RuleRow>; order?: unknown } = {}) => {
+          let list = [...rows];
+          if (where) {
+            list = list.filter((row) =>
+              Object.entries(where).every(([k, v]) => row[k as keyof RuleRow] === v),
+            );
+          }
+          return list.sort((a, b) => a.priority - b.priority || a.code.localeCompare(b.code));
+        },
+      ),
+      findOne: vi.fn(
+        async ({ where }: { where: Partial<RuleRow> }) =>
+          rows.find((row) =>
+            Object.entries(where).every(([k, v]) => row[k as keyof RuleRow] === v),
+          ) ?? null,
       ),
       create: vi.fn((data: Partial<RuleRow>) => ({
         id: `rule-${++seq}`,
@@ -96,11 +90,7 @@ describe('Rules gate smoke (C-04)', () => {
 
     rulesService = new RulesService(repo as never);
     eventBus = new EventBusService();
-    evaluator = new RulesEvaluatorService(
-      rulesService,
-      new RuleActionRegistry(),
-      eventBus,
-    );
+    evaluator = new RulesEvaluatorService(rulesService, new RuleActionRegistry(), eventBus);
     evaluator.onModuleInit();
   });
 
@@ -179,13 +169,8 @@ describe('Rules gate smoke (C-04)', () => {
 
     // Enabled rules are queryable regardless of condition outcome; the
     // disabled rule is excluded from the enabled set entirely.
-    const persisted = await rulesService.findEnabledByEventName(
-      CoreEventName.OrderPaid,
-    );
-    expect(persisted.map((r) => r.code).sort()).toEqual([
-      'tag-eur-orders',
-      'tag-vip-usd-orders',
-    ]);
+    const persisted = await rulesService.findEnabledByEventName(CoreEventName.OrderPaid);
+    expect(persisted.map((r) => r.code).sort()).toEqual(['tag-eur-orders', 'tag-vip-usd-orders']);
   });
 
   it('unknown action reference is skipped and observable, not a hard failure', async () => {

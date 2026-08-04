@@ -61,9 +61,7 @@ function walkTsFiles(dir: string, out: string[] = []): string[] {
  */
 describe('H-02 / D-10 core → plugin boundary', () => {
   it('package.json has no @opoha/plugin-* or provider SDK dependencies', () => {
-    const pkg = JSON.parse(
-      readFileSync(join(ROOT, 'package.json'), 'utf8'),
-    ) as {
+    const pkg = JSON.parse(readFileSync(join(ROOT, 'package.json'), 'utf8')) as {
       dependencies?: Record<string, string>;
       devDependencies?: Record<string, string>;
       optionalDependencies?: Record<string, string>;

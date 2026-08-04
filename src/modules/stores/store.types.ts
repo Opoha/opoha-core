@@ -1,9 +1,4 @@
-import {
-  Field,
-  ID,
-  InputType,
-  ObjectType,
-} from '@nestjs/graphql';
+import { Field, ID, InputType, ObjectType } from '@nestjs/graphql';
 
 @ObjectType('Store', {
   description: 'Application-level store / brand (multi-store scoping)',

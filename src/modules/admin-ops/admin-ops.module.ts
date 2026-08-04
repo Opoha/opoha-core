@@ -19,11 +19,7 @@ import { ReportsService } from './reports.service';
     EventBusModule,
     CatalogModule,
     InventoryModule,
-    TypeOrmModule.forFeature([
-      OrderEntity,
-      InventoryItemEntity,
-      FulfillmentEntity,
-    ]),
+    TypeOrmModule.forFeature([OrderEntity, InventoryItemEntity, FulfillmentEntity]),
   ],
   providers: [
     ReportsService,

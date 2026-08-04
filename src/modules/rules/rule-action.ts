@@ -12,9 +12,7 @@ export type RuleActionContext = {
   params: Record<string, unknown>;
 };
 
-export type RuleActionHandler = (
-  ctx: RuleActionContext,
-) => void | Promise<void>;
+export type RuleActionHandler = (ctx: RuleActionContext) => void | Promise<void>;
 
 export type RegisteredRuleAction = {
   /** Registry key (e.g. `customer.tag`). */

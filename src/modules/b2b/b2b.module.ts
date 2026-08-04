@@ -12,12 +12,7 @@ import { b2bEntities } from './entities';
 import { CompanyEventsRegistrar } from './events/company-events.registrar';
 
 @Module({
-  imports: [
-    AuthModule,
-    CustomerModule,
-    StoresModule,
-    TypeOrmModule.forFeature([...b2bEntities]),
-  ],
+  imports: [AuthModule, CustomerModule, StoresModule, TypeOrmModule.forFeature([...b2bEntities])],
   providers: [
     CompanyService,
     CompanyResolver,

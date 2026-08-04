@@ -36,10 +36,7 @@ describe('OrderPaidAnalyticsListener (F-02)', () => {
       });
     });
 
-    const listener = new OrderPaidAnalyticsListener(
-      eventBus,
-      orders as never,
-    );
+    const listener = new OrderPaidAnalyticsListener(eventBus, orders as never);
     listener.onModuleInit();
 
     const paymentPayload = {

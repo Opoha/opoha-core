@@ -43,8 +43,7 @@ describe('CmsHostResolver (H-02)', () => {
           ...current,
           ...input,
           status: input.status ?? current.status,
-          publishedAt:
-            input.status === 'published' ? new Date() : current.publishedAt,
+          publishedAt: input.status === 'published' ? new Date() : current.publishedAt,
         };
         pages.set(id, next);
         return next;
@@ -57,16 +56,10 @@ describe('CmsHostResolver (H-02)', () => {
         return null;
       },
       getPublishedBySlug(slug) {
-        return (
-          [...pages.values()].find(
-            (p) => p.slug === slug && p.status === 'published',
-          ) ?? null
-        );
+        return [...pages.values()].find((p) => p.slug === slug && p.status === 'published') ?? null;
       },
       listPages(status) {
-        return [...pages.values()].filter(
-          (p) => status == null || p.status === status,
-        );
+        return [...pages.values()].filter((p) => status == null || p.status === status);
       },
     };
 

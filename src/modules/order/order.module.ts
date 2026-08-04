@@ -42,11 +42,7 @@ import { OrdersService } from './orders.service';
     LoyaltyModule,
     StoresModule,
     CurrencyModule,
-    TypeOrmModule.forFeature([
-      ...orderEntities,
-      ProductVariantEntity,
-      ProductEntity,
-    ]),
+    TypeOrmModule.forFeature([...orderEntities, ProductVariantEntity, ProductEntity]),
   ],
   providers: [
     CartService,

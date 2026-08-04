@@ -1,8 +1,4 @@
-import {
-  BadRequestException,
-  Injectable,
-  NotFoundException,
-} from '@nestjs/common';
+import { BadRequestException, Injectable, NotFoundException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 
@@ -46,9 +42,7 @@ function assertRequiredText(value: string, field: string): string {
 function assertCountryCode(code: string): string {
   const normalized = code.trim().toUpperCase();
   if (!/^[A-Z]{2}$/.test(normalized)) {
-    throw new BadRequestException(
-      `countryCode must be ISO 3166-1 alpha-2 (got "${code}")`,
-    );
+    throw new BadRequestException(`countryCode must be ISO 3166-1 alpha-2 (got "${code}")`);
   }
   return normalized;
 }
@@ -174,10 +168,7 @@ export class CustomerAddressesService {
     }
   }
 
-  private async clearDefault(
-    customerId: string,
-    exceptId?: string,
-  ): Promise<void> {
+  private async clearDefault(customerId: string, exceptId?: string): Promise<void> {
     const defaults = await this.addresses.find({
       where: { customerId, isDefault: true },
     });

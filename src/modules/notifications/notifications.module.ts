@@ -16,10 +16,6 @@ import { NotificationsService } from './notifications.service';
     NotificationsService,
     NotificationsResolver,
   ],
-  exports: [
-    NotificationProviderRegistry,
-    NotificationTemplateRegistry,
-    NotificationsService,
-  ],
+  exports: [NotificationProviderRegistry, NotificationTemplateRegistry, NotificationsService],
 })
 export class NotificationsModule {}

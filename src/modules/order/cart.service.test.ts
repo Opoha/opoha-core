@@ -1,7 +1,4 @@
-import {
-  BadRequestException,
-  NotFoundException,
-} from '@nestjs/common';
+import { BadRequestException, NotFoundException } from '@nestjs/common';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 
 import { CoreEventName } from '../event-bus/event-catalog';
@@ -156,35 +153,23 @@ describe('CartService (unit)', () => {
         cartStore.push({ ...row });
         return row;
       }),
-      update: vi.fn(
-        async (
-          where: { id: string },
-          patch: Partial<CartRow>,
-        ) => {
-          const row = cartStore.find((r) => r.id === where.id);
-          if (row) Object.assign(row, patch);
-        },
-      ),
+      update: vi.fn(async (where: { id: string }, patch: Partial<CartRow>) => {
+        const row = cartStore.find((r) => r.id === where.id);
+        if (row) Object.assign(row, patch);
+      }),
     };
 
     linesRepo = {
-      find: vi.fn(
-        async ({
-          where,
-        }: {
-          where: Partial<LineRow>;
-          order?: unknown;
-        }) => lineStore.filter((r) => r.cartId === where.cartId),
+      find: vi.fn(async ({ where }: { where: Partial<LineRow>; order?: unknown }) =>
+        lineStore.filter((r) => r.cartId === where.cartId),
       ),
       findOne: vi.fn(async ({ where }: { where: Partial<LineRow> }) => {
         if (where.id) {
           return lineStore.find((r) => r.id === where.id) ?? null;
         }
         return (
-          lineStore.find(
-            (r) =>
-              r.cartId === where.cartId && r.variantId === where.variantId,
-          ) ?? null
+          lineStore.find((r) => r.cartId === where.cartId && r.variantId === where.variantId) ??
+          null
         );
       }),
       create: vi.fn((data: Partial<LineRow>) => ({
@@ -206,15 +191,10 @@ describe('CartService (unit)', () => {
       delete: vi.fn(async (id: string) => {
         lineStore = lineStore.filter((r) => r.id !== id);
       }),
-      update: vi.fn(
-        async (
-          where: { id: string },
-          patch: Partial<LineRow>,
-        ) => {
-          const row = lineStore.find((r) => r.id === where.id);
-          if (row) Object.assign(row, patch);
-        },
-      ),
+      update: vi.fn(async (where: { id: string }, patch: Partial<LineRow>) => {
+        const row = lineStore.find((r) => r.id === where.id);
+        if (row) Object.assign(row, patch);
+      }),
     };
 
     variantsRepo = {
@@ -269,11 +249,7 @@ describe('CartService (unit)', () => {
 
     companies = {
       resolveUnitPriceMinor: vi.fn(
-        async (
-          _companyId: string | null,
-          _variantId: string,
-          catalog: string,
-        ) => catalog,
+        async (_companyId: string | null, _variantId: string, catalog: string) => catalog,
       ),
     };
 
@@ -440,9 +416,7 @@ describe('CartService (unit)', () => {
       }),
     ).rejects.toBeInstanceOf(BadRequestException);
 
-    await expect(service.findById('missing')).rejects.toBeInstanceOf(
-      NotFoundException,
-    );
+    await expect(service.findById('missing')).rejects.toBeInstanceOf(NotFoundException);
   });
 
   it('rejects edits on locked carts', async () => {

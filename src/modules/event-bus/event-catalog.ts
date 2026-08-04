@@ -74,8 +74,7 @@ export const CoreEventName = {
   SubscriptionRenewed: 'SubscriptionRenewed',
 } as const;
 
-export type CoreEventName =
-  (typeof CoreEventName)[keyof typeof CoreEventName];
+export type CoreEventName = (typeof CoreEventName)[keyof typeof CoreEventName];
 
 /**
  * Auth module events implemented in MVP Phase D.

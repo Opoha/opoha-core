@@ -12,11 +12,7 @@ describe('BulkOpsService', () => {
     };
     const inventory = { adjust: vi.fn() };
     const auditLogs = { append: vi.fn().mockResolvedValue({}) };
-    const service = new BulkOpsService(
-      products as never,
-      inventory as never,
-      auditLogs as never,
-    );
+    const service = new BulkOpsService(products as never, inventory as never, auditLogs as never);
 
     const result = await service.bulkUpdateProducts(
       [
@@ -53,11 +49,7 @@ describe('BulkOpsService', () => {
         .mockRejectedValueOnce(new Error('bad delta')),
     };
     const auditLogs = { append: vi.fn().mockResolvedValue({}) };
-    const service = new BulkOpsService(
-      products as never,
-      inventory as never,
-      auditLogs as never,
-    );
+    const service = new BulkOpsService(products as never, inventory as never, auditLogs as never);
 
     const result = await service.bulkAdjustInventory(
       [
@@ -79,13 +71,15 @@ describe('BulkOpsService', () => {
   });
 
   it('rejects empty or oversized batches', async () => {
-    const service = new BulkOpsService({} as never, {} as never, {
-      append: vi.fn(),
-    } as never);
-
-    await expect(service.bulkUpdateProducts([])).rejects.toThrow(
-      /non-empty/,
+    const service = new BulkOpsService(
+      {} as never,
+      {} as never,
+      {
+        append: vi.fn(),
+      } as never,
     );
+
+    await expect(service.bulkUpdateProducts([])).rejects.toThrow(/non-empty/);
     await expect(
       service.bulkAdjustInventory(
         Array.from({ length: 101 }, (_, i) => ({

@@ -27,5 +27,4 @@ export const AuditAction = {
   BULK_INVENTORY_ADJUST: 'bulk.inventory.adjust',
 } as const;
 
-export type AuditActionValue =
-  (typeof AuditAction)[keyof typeof AuditAction];
+export type AuditActionValue = (typeof AuditAction)[keyof typeof AuditAction];

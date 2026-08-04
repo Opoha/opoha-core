@@ -67,15 +67,11 @@ function normalizeValue(kind: AttrValueKind, raw: string): string {
     const lower = trimmed.toLowerCase();
     if (lower === 'true' || lower === '1') return 'true';
     if (lower === 'false' || lower === '0') return 'false';
-    throw new BadRequestException(
-      `Boolean attribute value must be true/false, got "${raw}"`,
-    );
+    throw new BadRequestException(`Boolean attribute value must be true/false, got "${raw}"`);
   }
   if (kind === 'number') {
     if (!/^-?\d+(\.\d+)?$/.test(trimmed)) {
-      throw new BadRequestException(
-        `Number attribute value must be numeric, got "${raw}"`,
-      );
+      throw new BadRequestException(`Number attribute value must be numeric, got "${raw}"`);
     }
     return trimmed;
   }
@@ -85,15 +81,10 @@ function normalizeValue(kind: AttrValueKind, raw: string): string {
   return trimmed;
 }
 
-function assertAppliesTo(
-  appliesTo: AttributeAppliesTo,
-  target: 'product' | 'variant',
-): void {
+function assertAppliesTo(appliesTo: AttributeAppliesTo, target: 'product' | 'variant'): void {
   if (appliesTo === 'both') return;
   if (appliesTo !== target) {
-    throw new BadRequestException(
-      `Attribute applies to ${appliesTo}, not ${target}`,
-    );
+    throw new BadRequestException(`Attribute applies to ${appliesTo}, not ${target}`);
   }
 }
 
@@ -123,9 +114,7 @@ export class AttributesService {
     return toDefinitionType(row);
   }
 
-  async createDefinition(
-    input: CreateAttributeDefinitionInput,
-  ): Promise<AttributeDefinitionType> {
+  async createDefinition(input: CreateAttributeDefinitionInput): Promise<AttributeDefinitionType> {
     const row = this.definitions.create({
       code: input.code.trim(),
       name: input.name.trim(),
@@ -138,9 +127,7 @@ export class AttributesService {
       return this.findDefinitionById(saved.id);
     } catch (error) {
       if (isUniqueViolation(error)) {
-        throw new ConflictException(
-          `Attribute code "${row.code}" already exists`,
-        );
+        throw new ConflictException(`Attribute code "${row.code}" already exists`);
       }
       throw error;
     }
@@ -168,9 +155,7 @@ export class AttributesService {
       return this.findDefinitionById(id);
     } catch (error) {
       if (isUniqueViolation(error)) {
-        throw new ConflictException(
-          `Attribute code "${row.code}" already exists`,
-        );
+        throw new ConflictException(`Attribute code "${row.code}" already exists`);
       }
       throw error;
     }
@@ -206,9 +191,7 @@ export class AttributesService {
     return rows.map(toValueType);
   }
 
-  async setProductAttribute(
-    input: SetProductAttributeInput,
-  ): Promise<AttributeValueType> {
+  async setProductAttribute(input: SetProductAttributeInput): Promise<AttributeValueType> {
     const product = await this.products.findOne({
       where: { id: input.productId },
     });
@@ -219,9 +202,7 @@ export class AttributesService {
       where: { id: input.attributeDefinitionId },
     });
     if (!def) {
-      throw new NotFoundException(
-        `Attribute definition ${input.attributeDefinitionId} not found`,
-      );
+      throw new NotFoundException(`Attribute definition ${input.attributeDefinitionId} not found`);
     }
     assertAppliesTo(def.appliesTo, 'product');
     const value = normalizeValue(def.valueType, input.value);
@@ -247,17 +228,13 @@ export class AttributesService {
       return toValueType(saved);
     } catch (error) {
       if (isUniqueViolation(error)) {
-        throw new ConflictException(
-          'Attribute already set on this product',
-        );
+        throw new ConflictException('Attribute already set on this product');
       }
       throw error;
     }
   }
 
-  async setVariantAttribute(
-    input: SetVariantAttributeInput,
-  ): Promise<AttributeValueType> {
+  async setVariantAttribute(input: SetVariantAttributeInput): Promise<AttributeValueType> {
     const variant = await this.variants.findOne({
       where: { id: input.variantId },
     });
@@ -268,9 +245,7 @@ export class AttributesService {
       where: { id: input.attributeDefinitionId },
     });
     if (!def) {
-      throw new NotFoundException(
-        `Attribute definition ${input.attributeDefinitionId} not found`,
-      );
+      throw new NotFoundException(`Attribute definition ${input.attributeDefinitionId} not found`);
     }
     assertAppliesTo(def.appliesTo, 'variant');
     const value = normalizeValue(def.valueType, input.value);
@@ -296,9 +271,7 @@ export class AttributesService {
       return toValueType(saved);
     } catch (error) {
       if (isUniqueViolation(error)) {
-        throw new ConflictException(
-          'Attribute already set on this variant',
-        );
+        throw new ConflictException('Attribute already set on this variant');
       }
       throw error;
     }

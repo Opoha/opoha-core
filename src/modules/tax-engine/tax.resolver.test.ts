@@ -13,10 +13,7 @@ import { TaxResolver } from './tax.resolver';
  * C-05 — tax GraphQL permission metadata + resolver behavior.
  */
 describe('TaxResolver RBAC (resolver metadata + PermissionsGuard deny)', () => {
-  function gqlContext(
-    req: { user?: unknown },
-    handler: (...args: never[]) => unknown,
-  ) {
+  function gqlContext(req: { user?: unknown }, handler: (...args: never[]) => unknown) {
     return {
       getType: () => 'graphql',
       getArgs: () => [{}, {}, { req }, {}],
@@ -27,42 +24,42 @@ describe('TaxResolver RBAC (resolver metadata + PermissionsGuard deny)', () => {
 
   it('declares tax:read/create/update/delete permission keys', () => {
     const reflector = new Reflector();
-    expect(
-      reflector.get(REQUIRE_PERMISSION_KEY, TaxResolver.prototype.taxProviders),
-    ).toEqual(['tax:read']);
-    expect(
-      reflector.get(REQUIRE_PERMISSION_KEY, TaxResolver.prototype.taxClassesList),
-    ).toEqual(['tax:read']);
-    expect(
-      reflector.get(REQUIRE_PERMISSION_KEY, TaxResolver.prototype.taxClass),
-    ).toEqual(['tax:read']);
-    expect(
-      reflector.get(REQUIRE_PERMISSION_KEY, TaxResolver.prototype.taxRulesList),
-    ).toEqual(['tax:read']);
-    expect(
-      reflector.get(REQUIRE_PERMISSION_KEY, TaxResolver.prototype.taxRule),
-    ).toEqual(['tax:read']);
-    expect(
-      reflector.get(REQUIRE_PERMISSION_KEY, TaxResolver.prototype.calculateTax),
-    ).toEqual(['tax:read']);
-    expect(
-      reflector.get(REQUIRE_PERMISSION_KEY, TaxResolver.prototype.createTaxClass),
-    ).toEqual(['tax:create']);
-    expect(
-      reflector.get(REQUIRE_PERMISSION_KEY, TaxResolver.prototype.createTaxRule),
-    ).toEqual(['tax:create']);
-    expect(
-      reflector.get(REQUIRE_PERMISSION_KEY, TaxResolver.prototype.updateTaxClass),
-    ).toEqual(['tax:update']);
-    expect(
-      reflector.get(REQUIRE_PERMISSION_KEY, TaxResolver.prototype.updateTaxRule),
-    ).toEqual(['tax:update']);
-    expect(
-      reflector.get(REQUIRE_PERMISSION_KEY, TaxResolver.prototype.deleteTaxClass),
-    ).toEqual(['tax:delete']);
-    expect(
-      reflector.get(REQUIRE_PERMISSION_KEY, TaxResolver.prototype.deleteTaxRule),
-    ).toEqual(['tax:delete']);
+    expect(reflector.get(REQUIRE_PERMISSION_KEY, TaxResolver.prototype.taxProviders)).toEqual([
+      'tax:read',
+    ]);
+    expect(reflector.get(REQUIRE_PERMISSION_KEY, TaxResolver.prototype.taxClassesList)).toEqual([
+      'tax:read',
+    ]);
+    expect(reflector.get(REQUIRE_PERMISSION_KEY, TaxResolver.prototype.taxClass)).toEqual([
+      'tax:read',
+    ]);
+    expect(reflector.get(REQUIRE_PERMISSION_KEY, TaxResolver.prototype.taxRulesList)).toEqual([
+      'tax:read',
+    ]);
+    expect(reflector.get(REQUIRE_PERMISSION_KEY, TaxResolver.prototype.taxRule)).toEqual([
+      'tax:read',
+    ]);
+    expect(reflector.get(REQUIRE_PERMISSION_KEY, TaxResolver.prototype.calculateTax)).toEqual([
+      'tax:read',
+    ]);
+    expect(reflector.get(REQUIRE_PERMISSION_KEY, TaxResolver.prototype.createTaxClass)).toEqual([
+      'tax:create',
+    ]);
+    expect(reflector.get(REQUIRE_PERMISSION_KEY, TaxResolver.prototype.createTaxRule)).toEqual([
+      'tax:create',
+    ]);
+    expect(reflector.get(REQUIRE_PERMISSION_KEY, TaxResolver.prototype.updateTaxClass)).toEqual([
+      'tax:update',
+    ]);
+    expect(reflector.get(REQUIRE_PERMISSION_KEY, TaxResolver.prototype.updateTaxRule)).toEqual([
+      'tax:update',
+    ]);
+    expect(reflector.get(REQUIRE_PERMISSION_KEY, TaxResolver.prototype.deleteTaxClass)).toEqual([
+      'tax:delete',
+    ]);
+    expect(reflector.get(REQUIRE_PERMISSION_KEY, TaxResolver.prototype.deleteTaxRule)).toEqual([
+      'tax:delete',
+    ]);
   });
 
   it('PermissionsGuard denies createTaxClass without tax:create', async () => {
@@ -187,9 +184,7 @@ describe('TaxResolver behavior', () => {
   });
 
   it('taxProviders lists registered providers', () => {
-    expect(resolver.taxProviders()).toEqual([
-      { code: 'standard', displayName: 'Standard tax' },
-    ]);
+    expect(resolver.taxProviders()).toEqual([{ code: 'standard', displayName: 'Standard tax' }]);
   });
 
   it('taxClassesList delegates to TaxClassesService', async () => {

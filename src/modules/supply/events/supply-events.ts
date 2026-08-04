@@ -25,9 +25,7 @@ export const purchaseOrderCreatedDataSchema = z
   })
   .strict();
 
-export type PurchaseOrderCreatedData = z.infer<
-  typeof purchaseOrderCreatedDataSchema
->;
+export type PurchaseOrderCreatedData = z.infer<typeof purchaseOrderCreatedDataSchema>;
 
 export const purchaseOrderReceivedDataSchema = z
   .object({
@@ -40,9 +38,7 @@ export const purchaseOrderReceivedDataSchema = z
   })
   .strict();
 
-export type PurchaseOrderReceivedData = z.infer<
-  typeof purchaseOrderReceivedDataSchema
->;
+export type PurchaseOrderReceivedData = z.infer<typeof purchaseOrderReceivedDataSchema>;
 
 export const purchaseOrderCancelledDataSchema = z
   .object({
@@ -53,15 +49,12 @@ export const purchaseOrderCancelledDataSchema = z
   })
   .strict();
 
-export type PurchaseOrderCancelledData = z.infer<
-  typeof purchaseOrderCancelledDataSchema
->;
+export type PurchaseOrderCancelledData = z.infer<typeof purchaseOrderCancelledDataSchema>;
 
 export type SupplierUpdatedEvent = DomainEvent<SupplierUpdatedData>;
 export type PurchaseOrderCreatedEvent = DomainEvent<PurchaseOrderCreatedData>;
 export type PurchaseOrderReceivedEvent = DomainEvent<PurchaseOrderReceivedData>;
-export type PurchaseOrderCancelledEvent =
-  DomainEvent<PurchaseOrderCancelledData>;
+export type PurchaseOrderCancelledEvent = DomainEvent<PurchaseOrderCancelledData>;
 
 /** Register supply event payload schemas on the bus (call once at module init). */
 export function supplyEventSchemas(): Array<{

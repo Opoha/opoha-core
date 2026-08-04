@@ -8,9 +8,5 @@ export const supplyEntities = [
   PurchaseOrderLineEntity,
 ] as const;
 
-export {
-  PurchaseOrderEntity,
-  PurchaseOrderLineEntity,
-  SupplierEntity,
-};
+export { PurchaseOrderEntity, PurchaseOrderLineEntity, SupplierEntity };
 export type { PurchaseOrderStatus } from './purchase-order.entity';

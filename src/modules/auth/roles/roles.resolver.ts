@@ -6,12 +6,7 @@ import { CurrentUser } from '../jwt/current-user.decorator';
 import { GqlAuthGuard } from '../jwt/gql-auth.guard';
 import { PermissionsGuard } from '../permissions/permissions.guard';
 import { RequirePermission } from '../permissions/require-permission.decorator';
-import {
-  AssignRoleInput,
-  CreateRoleInput,
-  RoleType,
-  UpdateRoleInput,
-} from './role.types';
+import { AssignRoleInput, CreateRoleInput, RoleType, UpdateRoleInput } from './role.types';
 import { RolesService } from './roles.service';
 
 @Resolver(() => RoleType)
@@ -83,11 +78,7 @@ export class RolesResolver {
     @CurrentUser() actor: AuthUser,
     @Args('input', { type: () => AssignRoleInput }) input: AssignRoleInput,
   ): Promise<RoleType> {
-    return this.rolesService.assignRole(
-      input.userId,
-      input.roleId,
-      actor.userId,
-    );
+    return this.rolesService.assignRole(input.userId, input.roleId, actor.userId);
   }
 
   @Mutation(() => RoleType, {
@@ -99,10 +90,6 @@ export class RolesResolver {
     @CurrentUser() actor: AuthUser,
     @Args('input', { type: () => AssignRoleInput }) input: AssignRoleInput,
   ): Promise<RoleType> {
-    return this.rolesService.removeRole(
-      input.userId,
-      input.roleId,
-      actor.userId,
-    );
+    return this.rolesService.removeRole(input.userId, input.roleId, actor.userId);
   }
 }

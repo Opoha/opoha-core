@@ -1,9 +1,6 @@
 import { BadRequestException, Injectable } from '@nestjs/common';
 
-import {
-  AuditAction,
-  AuditLogsService,
-} from '../auth/public';
+import { AuditAction, AuditLogsService } from '../auth/public';
 import { ProductsService } from '../catalog/public';
 import { InventoryService } from '../inventory/public';
 import type {
@@ -42,9 +39,7 @@ export class BulkOpsService {
           patch.description === undefined &&
           patch.isActive === undefined
         ) {
-          throw new BadRequestException(
-            'At least one product field must be provided',
-          );
+          throw new BadRequestException('At least one product field must be provided');
         }
         await this.products.update(id, patch);
         results.push({ id, ok: true, error: null });
@@ -134,9 +129,7 @@ export class BulkOpsService {
       throw new BadRequestException('items must be a non-empty array');
     }
     if (count > MAX_BULK_ITEMS) {
-      throw new BadRequestException(
-        `Bulk batch size ${count} exceeds max ${MAX_BULK_ITEMS}`,
-      );
+      throw new BadRequestException(`Bulk batch size ${count} exceeds max ${MAX_BULK_ITEMS}`);
     }
   }
 }

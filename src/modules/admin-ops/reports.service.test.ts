@@ -16,11 +16,7 @@ describe('ReportsService', () => {
         ]),
       }),
     };
-    const service = new ReportsService(
-      orders as never,
-      {} as never,
-      {} as never,
-    );
+    const service = new ReportsService(orders as never, {} as never, {} as never);
 
     const report = await service.ordersReport({});
     expect(report.orderCount).toBe(3);
@@ -29,11 +25,7 @@ describe('ReportsService', () => {
   });
 
   it('rejects inverted report windows', async () => {
-    const service = new ReportsService(
-      {} as never,
-      {} as never,
-      {} as never,
-    );
+    const service = new ReportsService({} as never, {} as never, {} as never);
     await expect(
       service.ordersReport({
         from: new Date('2026-08-02T00:00:00.000Z'),
@@ -64,11 +56,7 @@ describe('ReportsService', () => {
         ]),
       }),
     };
-    const service = new ReportsService(
-      {} as never,
-      inventoryItems as never,
-      {} as never,
-    );
+    const service = new ReportsService({} as never, inventoryItems as never, {} as never);
 
     const rows = await service.inventoryByWarehouse();
     expect(rows).toEqual([
@@ -101,16 +89,9 @@ describe('ReportsService', () => {
       getCount: vi.fn().mockResolvedValue(2),
     };
     const fulfillments = {
-      createQueryBuilder: vi
-        .fn()
-        .mockReturnValueOnce(statusQb)
-        .mockReturnValueOnce(shippedQb),
+      createQueryBuilder: vi.fn().mockReturnValueOnce(statusQb).mockReturnValueOnce(shippedQb),
     };
-    const service = new ReportsService(
-      {} as never,
-      {} as never,
-      fulfillments as never,
-    );
+    const service = new ReportsService({} as never, {} as never, fulfillments as never);
 
     const report = await service.fulfillmentThroughput({});
     expect(report.createdCount).toBe(3);

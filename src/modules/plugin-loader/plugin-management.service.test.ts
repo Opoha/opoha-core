@@ -4,10 +4,7 @@ import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { AuditAction } from '../auth/audit/audit-actions';
 import { AdminExtensionRegistry } from './admin-extension-registry';
 import { PLUGIN_CONTRACT_VERSION } from './plugin-manifest';
-import {
-  normalizeConfigJson,
-  PluginManagementService,
-} from './plugin-management.service';
+import { normalizeConfigJson, PluginManagementService } from './plugin-management.service';
 
 function createService() {
   const loader = {
@@ -78,9 +75,7 @@ describe('PluginManagementService', () => {
     const { service, loader, states, admin } = createService();
     loader.listRecords.mockReturnValue([sampleRecord('installed')]);
     loader.getRecord.mockReturnValue(sampleRecord('installed'));
-    states.find.mockResolvedValue([
-      { pluginId: 'sample', enabled: true, configJson: '{"x":1}' },
-    ]);
+    states.find.mockResolvedValue([{ pluginId: 'sample', enabled: true, configJson: '{"x":1}' }]);
     admin.register({
       pluginId: 'sample',
       settings: [
@@ -103,9 +98,7 @@ describe('PluginManagementService', () => {
   it('installs then enables from discovered and audits', async () => {
     const { service, loader, audit, states } = createService();
     loader.getRecord.mockReturnValue(sampleRecord('discovered'));
-    loader.getState
-      .mockReturnValueOnce('discovered')
-      .mockReturnValueOnce('installed');
+    loader.getState.mockReturnValueOnce('discovered').mockReturnValueOnce('installed');
     loader.install.mockResolvedValue('installed');
     loader.enable.mockResolvedValue('enabled');
     states.findOne.mockResolvedValue(null);
@@ -155,11 +148,7 @@ describe('PluginManagementService', () => {
         configJson: '{"instructions":"Pay cash"}',
       });
 
-    const result = await service.updateConfig(
-      'sample',
-      '{"instructions":"Pay cash"}',
-      'user-1',
-    );
+    const result = await service.updateConfig('sample', '{"instructions":"Pay cash"}', 'user-1');
     expect(result.configJson).toBe('{"instructions":"Pay cash"}');
     expect(audit.append).toHaveBeenCalledWith(
       expect.objectContaining({ action: AuditAction.PLUGIN_CONFIGURE }),

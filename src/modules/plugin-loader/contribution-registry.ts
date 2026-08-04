@@ -46,9 +46,7 @@ export class ContributionRegistry {
 
   constructor(private readonly eventBus: EventBusService) {}
 
-  registerGraphQL(
-    contribution: Omit<GraphQLContribution, 'active'> & { active?: boolean },
-  ): void {
+  registerGraphQL(contribution: Omit<GraphQLContribution, 'active'> & { active?: boolean }): void {
     const existing = this.graphql.find(
       (g) => g.name === contribution.name && g.kind === contribution.kind,
     );
@@ -95,8 +93,7 @@ export class ContributionRegistry {
     options: SubscribeOptions = {},
     active = true,
   ): void {
-    const listenerId =
-      options.id ?? `${pluginId}:${eventName}:${this.listeners.length + 1}`;
+    const listenerId = options.id ?? `${pluginId}:${eventName}:${this.listeners.length + 1}`;
     const stored: StoredListener = {
       pluginId,
       eventName,
@@ -106,11 +103,7 @@ export class ContributionRegistry {
       active,
     };
     if (active) {
-      stored.unsubscribe = this.eventBus.subscribe(
-        eventName,
-        handler,
-        stored.options,
-      );
+      stored.unsubscribe = this.eventBus.subscribe(eventName, handler, stored.options);
     }
     this.listeners.push(stored);
   }
@@ -130,11 +123,7 @@ export class ContributionRegistry {
       if (l.pluginId !== pluginId || l.active) {
         continue;
       }
-      l.unsubscribe = this.eventBus.subscribe(
-        l.eventName,
-        l.handler,
-        l.options,
-      );
+      l.unsubscribe = this.eventBus.subscribe(l.eventName, l.handler, l.options);
       l.active = true;
     }
   }
@@ -184,20 +173,16 @@ export class ContributionRegistry {
   }
 
   listProviders(activeOnly = false): readonly ProviderContribution[] {
-    return activeOnly
-      ? this.providers.filter((p) => p.active)
-      : [...this.providers];
+    return activeOnly ? this.providers.filter((p) => p.active) : [...this.providers];
   }
 
   listListeners(activeOnly = false): readonly ListenerContribution[] {
-    const mapped = this.listeners.map(
-      ({ pluginId, eventName, listenerId, active }) => ({
-        pluginId,
-        eventName,
-        listenerId,
-        active,
-      }),
-    );
+    const mapped = this.listeners.map(({ pluginId, eventName, listenerId, active }) => ({
+      pluginId,
+      eventName,
+      listenerId,
+      active,
+    }));
     return activeOnly ? mapped.filter((l) => l.active) : mapped;
   }
 

@@ -11,10 +11,7 @@ import { NotificationsService } from './notifications.service';
  * F-05 — notification GraphQL permission metadata + resolver behavior.
  */
 describe('NotificationsResolver RBAC (resolver metadata + PermissionsGuard deny)', () => {
-  function gqlContext(
-    req: { user?: unknown },
-    handler: (...args: never[]) => unknown,
-  ) {
+  function gqlContext(req: { user?: unknown }, handler: (...args: never[]) => unknown) {
     return {
       getType: () => 'graphql',
       getArgs: () => [{}, {}, { req }, {}],
@@ -26,16 +23,10 @@ describe('NotificationsResolver RBAC (resolver metadata + PermissionsGuard deny)
   it('declares notification:read permission keys', () => {
     const reflector = new Reflector();
     expect(
-      reflector.get(
-        REQUIRE_PERMISSION_KEY,
-        NotificationsResolver.prototype.notificationProviders,
-      ),
+      reflector.get(REQUIRE_PERMISSION_KEY, NotificationsResolver.prototype.notificationProviders),
     ).toEqual(['notification:read']);
     expect(
-      reflector.get(
-        REQUIRE_PERMISSION_KEY,
-        NotificationsResolver.prototype.notificationTemplates,
-      ),
+      reflector.get(REQUIRE_PERMISSION_KEY, NotificationsResolver.prototype.notificationTemplates),
     ).toEqual(['notification:read']);
   });
 
@@ -100,9 +91,7 @@ describe('NotificationsResolver behavior', () => {
       list: vi.fn(),
       listTemplates: vi.fn(),
     };
-    resolver = new NotificationsResolver(
-      service as unknown as NotificationsService,
-    );
+    resolver = new NotificationsResolver(service as unknown as NotificationsService);
   });
 
   it('notificationProviders lists registered providers with default email channel', () => {

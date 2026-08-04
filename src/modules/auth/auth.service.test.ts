@@ -134,9 +134,9 @@ describe('AuthService.login', () => {
       mockAudit() as never,
       eventBus as never,
     );
-    await expect(
-      service.login('admin@example.com', 'good-pass'),
-    ).rejects.toBeInstanceOf(UnauthorizedException);
+    await expect(service.login('admin@example.com', 'good-pass')).rejects.toBeInstanceOf(
+      UnauthorizedException,
+    );
     expect(eventBus.publish).toHaveBeenCalledWith(
       expect.objectContaining({
         eventName: 'LoginFailed',
@@ -208,8 +208,6 @@ describe('AuthService.refresh', () => {
       mockAudit() as never,
       mockEventBus() as never,
     );
-    await expect(service.refresh('opr_old')).rejects.toBeInstanceOf(
-      UnauthorizedException,
-    );
+    await expect(service.refresh('opr_old')).rejects.toBeInstanceOf(UnauthorizedException);
   });
 });

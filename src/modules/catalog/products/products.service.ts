@@ -12,10 +12,7 @@ import type { StoreCatalogMode } from '../../config/public';
 import { StoreChannelSettingsService } from '../../config/public';
 import { EventBusService } from '../../event-bus/event-bus.service';
 import { CoreEventName } from '../../event-bus/event-catalog';
-import {
-  assertFulfillmentMode,
-  type FulfillmentMode,
-} from '../entities/fulfillment-mode';
+import { assertFulfillmentMode, type FulfillmentMode } from '../entities/fulfillment-mode';
 import { ProductVariantEntity } from '../entities/product-variant.entity';
 import { ProductEntity } from '../entities/product.entity';
 import { catalogStoreWhere } from '../store-catalog-scope';
@@ -104,9 +101,7 @@ function assertMinorUnits(value: string): string {
   return value;
 }
 
-function normalizeStoreId(
-  value: string | null | undefined,
-): string | null | undefined {
+function normalizeStoreId(value: string | null | undefined): string | null | undefined {
   if (value === undefined) {
     return undefined;
   }
@@ -173,10 +168,7 @@ export class ProductsService {
     return 'shared';
   }
 
-  async findById(
-    id: string,
-    locale?: string | null,
-  ): Promise<ProductType> {
+  async findById(id: string, locale?: string | null): Promise<ProductType> {
     const row = await this.products.findOne({
       where: { id },
       relations: { variants: true },
@@ -216,15 +208,11 @@ export class ProductsService {
     } catch (error) {
       if (isFkViolation(error)) {
         throw new BadRequestException(
-          storeId || vendorId
-            ? `Store or vendor reference not found`
-            : `Foreign key violation`,
+          storeId || vendorId ? `Store or vendor reference not found` : `Foreign key violation`,
         );
       }
       if (isUniqueViolation(error)) {
-        throw new ConflictException(
-          `Product slug or variant SKU already exists`,
-        );
+        throw new ConflictException(`Product slug or variant SKU already exists`);
       }
       throw error;
     }
@@ -263,9 +251,7 @@ export class ProductsService {
       return updated;
     } catch (error) {
       if (isFkViolation(error)) {
-        throw new BadRequestException(
-          `Store or vendor reference not found`,
-        );
+        throw new BadRequestException(`Store or vendor reference not found`);
       }
       if (isUniqueViolation(error)) {
         throw new ConflictException(`Product slug "${row.slug}" already exists`);
@@ -292,9 +278,7 @@ export class ProductsService {
   }
 
   private async publishProductEvent(
-    eventName:
-      | typeof CoreEventName.ProductCreated
-      | typeof CoreEventName.ProductUpdated,
+    eventName: typeof CoreEventName.ProductCreated | typeof CoreEventName.ProductUpdated,
     product: ProductType,
   ): Promise<void> {
     if (!this.eventBus) {
@@ -328,10 +312,7 @@ export class ProductsService {
         name: input.name?.trim() ?? null,
         priceMinor: assertMinorUnits(input.priceMinor),
         currencyCode: (input.currencyCode ?? 'USD').trim().toUpperCase(),
-        fulfillmentMode: parseFulfillmentMode(
-          input.fulfillmentMode,
-          productFulfillmentMode,
-        ),
+        fulfillmentMode: parseFulfillmentMode(input.fulfillmentMode, productFulfillmentMode),
         isActive: input.isActive ?? true,
       }),
     );

@@ -47,11 +47,7 @@ export type {
   UpdateCollectionInput,
   CollectionType,
 } from '../collections/collection.types';
-export type {
-  CreateBrandInput,
-  UpdateBrandInput,
-  BrandType,
-} from '../brands/brand.types';
+export type { CreateBrandInput, UpdateBrandInput, BrandType } from '../brands/brand.types';
 export type {
   CreateAttributeDefinitionInput,
   UpdateAttributeDefinitionInput,

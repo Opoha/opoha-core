@@ -27,9 +27,7 @@ export class RuleActionRegistry {
     if (existing && existing.pluginId !== pluginId) {
       throw new Error(
         `Rule action conflict: "${name}" already registered` +
-          (existing.pluginId
-            ? ` by plugin "${existing.pluginId}"`
-            : ' by core'),
+          (existing.pluginId ? ` by plugin "${existing.pluginId}"` : ' by core'),
       );
     }
     if (existing) {
@@ -58,9 +56,7 @@ export class RuleActionRegistry {
   }
 
   list(activeOnly = false): readonly RegisteredRuleAction[] {
-    return activeOnly
-      ? this.entries.filter((e) => e.active)
-      : [...this.entries];
+    return activeOnly ? this.entries.filter((e) => e.active) : [...this.entries];
   }
 
   activatePlugin(pluginId: string): void {

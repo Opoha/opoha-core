@@ -116,9 +116,7 @@ describe('CompanyService (F-01 / F-02 / F-04)', () => {
       findOne: vi.fn(async ({ where }: { where: Partial<MembershipRow> }) => {
         return (
           memberships.find(
-            (m) =>
-              m.companyId === where.companyId &&
-              m.customerId === where.customerId,
+            (m) => m.companyId === where.companyId && m.customerId === where.customerId,
           ) ?? null
         );
       }),
@@ -135,10 +133,7 @@ describe('CompanyService (F-01 / F-02 / F-04)', () => {
           return row;
         }
         if (
-          memberships.some(
-            (m) =>
-              m.companyId === row.companyId && m.customerId === row.customerId,
-          )
+          memberships.some((m) => m.companyId === row.companyId && m.customerId === row.customerId)
         ) {
           throw uniqueViolation();
         }
@@ -157,9 +152,7 @@ describe('CompanyService (F-01 / F-02 / F-04)', () => {
       findOne: vi.fn(async ({ where }: { where: Partial<PriceListRow> }) => {
         return (
           priceListRows.find(
-            (r) =>
-              r.companyId === where.companyId &&
-              r.variantId === where.variantId,
+            (r) => r.companyId === where.companyId && r.variantId === where.variantId,
           ) ?? null
         );
       }),
@@ -225,9 +218,9 @@ describe('CompanyService (F-01 / F-02 / F-04)', () => {
   });
 
   it('rejects empty company name', async () => {
-    await expect(
-      service.create({ storeId, name: '   ' }),
-    ).rejects.toBeInstanceOf(BadRequestException);
+    await expect(service.create({ storeId, name: '   ' })).rejects.toBeInstanceOf(
+      BadRequestException,
+    );
   });
 
   it('adds buyer membership and publishes CompanyMembershipUpdated', async () => {
@@ -307,14 +300,12 @@ describe('CompanyService (F-01 / F-02 / F-04)', () => {
       updatedAt: now,
     });
 
-    await expect(
-      service.assertCanBuy('company-1', customerId),
-    ).rejects.toBeInstanceOf(ForbiddenException);
+    await expect(service.assertCanBuy('company-1', customerId)).rejects.toBeInstanceOf(
+      ForbiddenException,
+    );
 
     memberships[0]!.role = 'buyer';
-    await expect(
-      service.assertCanBuy('company-1', customerId),
-    ).resolves.toBeUndefined();
+    await expect(service.assertCanBuy('company-1', customerId)).resolves.toBeUndefined();
   });
 
   it('assertCanApprove allows approver/admin and denies buyer-only', async () => {
@@ -336,20 +327,16 @@ describe('CompanyService (F-01 / F-02 / F-04)', () => {
       updatedAt: now,
     });
 
-    await expect(
-      service.assertCanApprove('company-1', customerId),
-    ).rejects.toBeInstanceOf(ForbiddenException);
+    await expect(service.assertCanApprove('company-1', customerId)).rejects.toBeInstanceOf(
+      ForbiddenException,
+    );
 
     memberships[0]!.role = 'admin';
-    await expect(
-      service.assertCanApprove('company-1', customerId),
-    ).resolves.toBeUndefined();
+    await expect(service.assertCanApprove('company-1', customerId)).resolves.toBeUndefined();
   });
 
   it('throws when company missing', async () => {
-    await expect(service.findById('missing')).rejects.toBeInstanceOf(
-      NotFoundException,
-    );
+    await expect(service.findById('missing')).rejects.toBeInstanceOf(NotFoundException);
   });
 
   it('setPriceListItem + resolveUnitPriceMinor apply negotiated price (F-04)', async () => {
@@ -370,15 +357,13 @@ describe('CompanyService (F-01 / F-02 / F-04)', () => {
     });
     expect(item.priceMinor).toBe('750');
 
-    await expect(
-      service.resolveUnitPriceMinor('company-1', variantId, '1999'),
-    ).resolves.toBe('750');
-    await expect(
-      service.resolveUnitPriceMinor(null, variantId, '1999'),
-    ).resolves.toBe('1999');
-    await expect(
-      service.resolveUnitPriceMinor('company-1', 'other-variant', '1999'),
-    ).resolves.toBe('1999');
+    await expect(service.resolveUnitPriceMinor('company-1', variantId, '1999')).resolves.toBe(
+      '750',
+    );
+    await expect(service.resolveUnitPriceMinor(null, variantId, '1999')).resolves.toBe('1999');
+    await expect(service.resolveUnitPriceMinor('company-1', 'other-variant', '1999')).resolves.toBe(
+      '1999',
+    );
   });
 
   it('assertWithinCreditLimit rejects totals above limit (F-04)', async () => {
@@ -392,12 +377,10 @@ describe('CompanyService (F-01 / F-02 / F-04)', () => {
       updatedAt: now,
     });
 
-    await expect(
-      service.assertWithinCreditLimit('company-1', '1000'),
-    ).resolves.toBeUndefined();
-    await expect(
-      service.assertWithinCreditLimit('company-1', '1001'),
-    ).rejects.toBeInstanceOf(BadRequestException);
+    await expect(service.assertWithinCreditLimit('company-1', '1000')).resolves.toBeUndefined();
+    await expect(service.assertWithinCreditLimit('company-1', '1001')).rejects.toBeInstanceOf(
+      BadRequestException,
+    );
   });
 
   it('assertWithinCreditLimit no-ops when limit unset (F-04)', async () => {
@@ -410,8 +393,6 @@ describe('CompanyService (F-01 / F-02 / F-04)', () => {
       createdAt: now,
       updatedAt: now,
     });
-    await expect(
-      service.assertWithinCreditLimit('company-1', '999999'),
-    ).resolves.toBeUndefined();
+    await expect(service.assertWithinCreditLimit('company-1', '999999')).resolves.toBeUndefined();
   });
 });

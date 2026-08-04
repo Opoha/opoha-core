@@ -17,10 +17,7 @@ function createMemoryStore(): SeedAuthStore & {
   };
 } {
   const roles = new Map<string, { id: string; name: string; description: string }>();
-  const permissions = new Map<
-    string,
-    { id: string; key: string; description: string }
-  >();
+  const permissions = new Map<string, { id: string; key: string; description: string }>();
   const rolePermissions = new Set<string>();
   const users = new Map<string, { id: string; email: string; passwordHash: string }>();
   const userRoles = new Set<string>();

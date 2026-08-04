@@ -12,10 +12,7 @@ import { REQUIRE_PERMISSION_KEY } from './permissions/require-permission.decorat
  * Maps to AC-MVP-016 / AC-MVP-019 / AC-MVP-020.
  */
 describe('auth integration (guards + RBAC + API key)', () => {
-  function gqlContext(req: {
-    headers: Record<string, unknown>;
-    user?: unknown;
-  }) {
+  function gqlContext(req: { headers: Record<string, unknown>; user?: unknown }) {
     return {
       getType: () => 'graphql',
       getArgs: () => [{}, {}, { req }, {}],
@@ -27,9 +24,7 @@ describe('auth integration (guards + RBAC + API key)', () => {
 
   it('GqlAuthGuard rejects unauthenticated GraphQL requests via handleRequest', () => {
     const guard = new GqlAuthGuard({ authenticate: vi.fn() } as never);
-    expect(() => guard.handleRequest(null, false)).toThrow(
-      UnauthorizedException,
-    );
+    expect(() => guard.handleRequest(null, false)).toThrow(UnauthorizedException);
   });
 
   it('GqlAuthGuard authenticates X-API-Key and PermissionsGuard enforces scoped allow', async () => {
@@ -60,9 +55,7 @@ describe('auth integration (guards + RBAC + API key)', () => {
       } as unknown as Reflector,
       { listKeysForUser: vi.fn() } as never,
     );
-    await expect(permissionsGuard.canActivate(ctx as never)).resolves.toBe(
-      true,
-    );
+    await expect(permissionsGuard.canActivate(ctx as never)).resolves.toBe(true);
   });
 
   it('PermissionsGuard denies when API key lacks required permission (RBAC deny)', async () => {
@@ -81,9 +74,9 @@ describe('auth integration (guards + RBAC + API key)', () => {
       } as unknown as Reflector,
       { listKeysForUser: vi.fn() } as never,
     );
-    await expect(
-      permissionsGuard.canActivate(gqlContext(req) as never),
-    ).rejects.toBeInstanceOf(ForbiddenException);
+    await expect(permissionsGuard.canActivate(gqlContext(req) as never)).rejects.toBeInstanceOf(
+      ForbiddenException,
+    );
   });
 
   it('PermissionsGuard loads role permissions for JWT users and denies missing ones', async () => {
@@ -98,9 +91,9 @@ describe('auth integration (guards + RBAC + API key)', () => {
       } as unknown as Reflector,
       { listKeysForUser } as never,
     );
-    await expect(
-      permissionsGuard.canActivate(gqlContext(req) as never),
-    ).rejects.toBeInstanceOf(ForbiddenException);
+    await expect(permissionsGuard.canActivate(gqlContext(req) as never)).rejects.toBeInstanceOf(
+      ForbiddenException,
+    );
     expect(listKeysForUser).toHaveBeenCalledWith('u1');
   });
 });

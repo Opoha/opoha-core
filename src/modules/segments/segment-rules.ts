@@ -65,10 +65,7 @@ function parseMinor(raw: string | undefined): bigint | null {
   }
 }
 
-function evaluateTags(
-  rules: SegmentTagRules,
-  tags: readonly string[] | undefined,
-): boolean {
+function evaluateTags(rules: SegmentTagRules, tags: readonly string[] | undefined): boolean {
   const customerTags = new Set((tags ?? []).map(normalizeTag).filter(Boolean));
   const any = (rules.any ?? []).map(normalizeTag).filter(Boolean);
   const all = (rules.all ?? []).map(normalizeTag).filter(Boolean);
@@ -92,10 +89,7 @@ function evaluateOrderCount(
   return true;
 }
 
-function evaluateSpend(
-  rules: SegmentSpendRules,
-  spendMinor: string | undefined,
-): boolean {
+function evaluateSpend(rules: SegmentSpendRules, spendMinor: string | undefined): boolean {
   const spend = parseMinor(spendMinor) ?? 0n;
   const min = parseMinor(rules.min);
   const max = parseMinor(rules.max);
@@ -106,9 +100,7 @@ function evaluateSpend(
 
 function hasConditionGroup(rules: SegmentRules): boolean {
   return (
-    rules.tags !== undefined ||
-    rules.orderCount !== undefined ||
-    rules.spendMinor !== undefined
+    rules.tags !== undefined || rules.orderCount !== undefined || rules.spendMinor !== undefined
   );
 }
 

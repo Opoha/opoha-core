@@ -127,9 +127,7 @@ export class WebhookDispatcherService implements OnModuleInit {
         await this.worker.processDue(now);
       } catch (err: unknown) {
         this.logger?.warn(
-          `Webhook auto-deliver failed: ${
-            err instanceof Error ? err.message : String(err)
-          }`,
+          `Webhook auto-deliver failed: ${err instanceof Error ? err.message : String(err)}`,
           'WebhookDispatcherService',
         );
       }

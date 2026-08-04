@@ -6,9 +6,7 @@ import type { MigrationInterface, QueryRunner } from 'typeorm';
  * OWNER: catalog module — plugins must not alter these tables.
  * Pattern: base row = default locale; translation rows = locale overrides.
  */
-export class CatalogTranslationsInit1722717000000
-  implements MigrationInterface
-{
+export class CatalogTranslationsInit1722717000000 implements MigrationInterface {
   name = 'CatalogTranslationsInit1722717000000';
 
   public async up(queryRunner: QueryRunner): Promise<void> {

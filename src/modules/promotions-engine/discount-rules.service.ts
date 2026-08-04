@@ -124,10 +124,7 @@ export class DiscountRulesService {
     }
   }
 
-  async update(
-    id: string,
-    input: UpdateDiscountRuleInput,
-  ): Promise<DiscountRuleType> {
+  async update(id: string, input: UpdateDiscountRuleInput): Promise<DiscountRuleType> {
     const row = await this.rules.findOne({ where: { id } });
     if (!row) {
       throw new NotFoundException(`Discount rule ${id} not found`);
@@ -180,8 +177,7 @@ export class DiscountRulesService {
       row.isActive = input.isActive;
     }
     if (input.conditionsJson !== undefined) {
-      row.conditions =
-        parseJsonObject(input.conditionsJson, 'conditionsJson') ?? null;
+      row.conditions = parseJsonObject(input.conditionsJson, 'conditionsJson') ?? null;
     }
     if (input.metadataJson !== undefined) {
       row.metadata = parseJsonObject(input.metadataJson, 'metadataJson') ?? null;
@@ -191,9 +187,7 @@ export class DiscountRulesService {
       return this.findById(id);
     } catch (error) {
       if (isUniqueViolation(error)) {
-        throw new ConflictException(
-          `Discount rule code "${row.code}" already exists`,
-        );
+        throw new ConflictException(`Discount rule code "${row.code}" already exists`);
       }
       throw error;
     }

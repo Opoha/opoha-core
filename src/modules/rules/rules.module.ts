@@ -14,22 +14,8 @@ import { RulesService } from './rules.service';
  * Declarative conditions → registered actions on cataloged domain events.
  */
 @Module({
-  imports: [
-    AuthModule,
-    EventBusModule,
-    TypeOrmModule.forFeature([...ruleEntities]),
-  ],
-  providers: [
-    RulesService,
-    RuleActionRegistry,
-    RulesEvaluatorService,
-    RulesResolver,
-  ],
-  exports: [
-    RulesService,
-    RuleActionRegistry,
-    RulesEvaluatorService,
-    TypeOrmModule,
-  ],
+  imports: [AuthModule, EventBusModule, TypeOrmModule.forFeature([...ruleEntities])],
+  providers: [RulesService, RuleActionRegistry, RulesEvaluatorService, RulesResolver],
+  exports: [RulesService, RuleActionRegistry, RulesEvaluatorService, TypeOrmModule],
 })
 export class RulesModule {}

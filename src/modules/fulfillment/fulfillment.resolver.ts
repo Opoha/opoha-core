@@ -1,11 +1,7 @@
 import { UseGuards } from '@nestjs/common';
 import { Args, ID, Mutation, Query, Resolver } from '@nestjs/graphql';
 
-import {
-  GqlAuthGuard,
-  PermissionsGuard,
-  RequirePermission,
-} from '../auth/public';
+import { GqlAuthGuard, PermissionsGuard, RequirePermission } from '../auth/public';
 import { FulfillmentService } from './fulfillment.service';
 import {
   CreateFulfillmentInput,
@@ -29,13 +25,7 @@ export class FulfillmentResolver {
     status?: string,
   ): Promise<FulfillmentType[]> {
     return this.fulfillmentService.findAll(
-      status as
-        | 'pending'
-        | 'picked'
-        | 'packed'
-        | 'shipped'
-        | 'cancelled'
-        | undefined,
+      status as 'pending' | 'picked' | 'packed' | 'shipped' | 'cancelled' | undefined,
     );
   }
 
@@ -44,9 +34,7 @@ export class FulfillmentResolver {
     description: 'Get a fulfillment by id',
   })
   @RequirePermission('fulfillment:read')
-  fulfillment(
-    @Args('id', { type: () => ID }) id: string,
-  ): Promise<FulfillmentType> {
+  fulfillment(@Args('id', { type: () => ID }) id: string): Promise<FulfillmentType> {
     return this.fulfillmentService.findById(id);
   }
 
@@ -78,9 +66,7 @@ export class FulfillmentResolver {
     description: 'Mark a pending fulfillment as picked',
   })
   @RequirePermission('fulfillment:pick')
-  pickFulfillment(
-    @Args('id', { type: () => ID }) id: string,
-  ): Promise<FulfillmentType> {
+  pickFulfillment(@Args('id', { type: () => ID }) id: string): Promise<FulfillmentType> {
     return this.fulfillmentService.pick(id);
   }
 
@@ -99,8 +85,7 @@ export class FulfillmentResolver {
 
   @Mutation(() => FulfillmentType, {
     name: 'shipFulfillment',
-    description:
-      'Ship a packed fulfillment; may call ShippingMethodProvider.createLabel',
+    description: 'Ship a packed fulfillment; may call ShippingMethodProvider.createLabel',
   })
   @RequirePermission('fulfillment:ship')
   shipFulfillment(
@@ -116,9 +101,7 @@ export class FulfillmentResolver {
     description: 'Cancel a pending or picked fulfillment',
   })
   @RequirePermission('fulfillment:cancel')
-  cancelFulfillment(
-    @Args('id', { type: () => ID }) id: string,
-  ): Promise<FulfillmentType> {
+  cancelFulfillment(@Args('id', { type: () => ID }) id: string): Promise<FulfillmentType> {
     return this.fulfillmentService.cancel(id);
   }
 }

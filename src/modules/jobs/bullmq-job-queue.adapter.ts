@@ -2,10 +2,7 @@ import { Injectable, Optional } from '@nestjs/common';
 
 import { ConfigService } from '../config/config.service';
 import { AppLogger } from '../logging/app-logger';
-import type {
-  JobQueueAdapter,
-  UpsertCronJobInput,
-} from './job-queue.adapter';
+import type { JobQueueAdapter, UpsertCronJobInput } from './job-queue.adapter';
 import { InMemoryJobQueueAdapter } from './in-memory-job-queue.adapter';
 import type { ScheduledJobHandler } from './scheduled-job';
 

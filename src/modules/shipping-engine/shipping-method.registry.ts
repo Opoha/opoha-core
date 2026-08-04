@@ -1,9 +1,6 @@
 import { Injectable } from '@nestjs/common';
 
-import type {
-  RegisteredShippingMethod,
-  ShippingMethodProvider,
-} from './shipping-method';
+import type { RegisteredShippingMethod, ShippingMethodProvider } from './shipping-method';
 
 /**
  * Registry for shipping methods (D-08 / AC-MVP-027 / Phase 2 B-01+B-02).
@@ -13,11 +10,7 @@ import type {
 export class ShippingMethodRegistry {
   private readonly entries: RegisteredShippingMethod[] = [];
 
-  register(
-    pluginId: string,
-    method: ShippingMethodProvider,
-    active = true,
-  ): void {
+  register(pluginId: string, method: ShippingMethodProvider, active = true): void {
     if (!method.code || method.code.trim().length === 0) {
       throw new Error('Shipping method code is required');
     }
@@ -40,9 +33,7 @@ export class ShippingMethodRegistry {
   }
 
   list(activeOnly = false): readonly RegisteredShippingMethod[] {
-    return activeOnly
-      ? this.entries.filter((e) => e.active)
-      : [...this.entries];
+    return activeOnly ? this.entries.filter((e) => e.active) : [...this.entries];
   }
 
   activatePlugin(pluginId: string): void {

@@ -38,10 +38,7 @@ const __dirname = dirname(fileURLToPath(import.meta.url));
 const ROOT = resolve(__dirname, '..');
 const SIBLING = resolve(ROOT, '..');
 
-const BASE_URL = (process.env.BASE_URL ?? 'http://127.0.0.1:4000').replace(
-  /\/$/,
-  '',
-);
+const BASE_URL = (process.env.BASE_URL ?? 'http://127.0.0.1:4000').replace(/\/$/, '');
 const PORT = process.env.WALKING_SKELETON_PORT ?? process.env.PORT ?? '4000';
 const SKIP_DOCKER = process.env.SKIP_DOCKER === '1';
 const SKIP_PLUGIN = process.env.SKIP_PLUGIN === '1';
@@ -70,16 +67,12 @@ const OPS_FLAT_RATE_AMOUNT = process.env.OPOHA_FLAT_RATE_AMOUNT ?? '500';
 const OPS_TAX_RATE_BPS = process.env.OPOHA_TAX_STANDARD_DEFAULT_RATE_BPS ?? '1000';
 
 function resolveOpsPluginPaths() {
-  return OPS_PLUGIN_DIRS.map((name) => join(SIBLING, name)).filter((p) =>
-    existsSync(p),
-  );
+  return OPS_PLUGIN_DIRS.map((name) => join(SIBLING, name)).filter((p) => existsSync(p));
 }
 
 function resolveContentPluginPaths() {
   if (SKIP_CONTENT_MARKETING) return [];
-  return CONTENT_PLUGIN_DIRS.map((name) => join(SIBLING, name)).filter((p) =>
-    existsSync(p),
-  );
+  return CONTENT_PLUGIN_DIRS.map((name) => join(SIBLING, name)).filter((p) => existsSync(p));
 }
 
 function log(step, msg) {
@@ -100,11 +93,7 @@ function run(cmd, args, opts = {}) {
       env: { ...process.env, ...opts.env },
     });
   } catch (err) {
-    if (
-      cmd === 'pnpm' &&
-      args[0] === 'install' &&
-      args.includes('--frozen-lockfile')
-    ) {
+    if (cmd === 'pnpm' && args[0] === 'install' && args.includes('--frozen-lockfile')) {
       log('deps', 'frozen-lockfile failed; retrying without');
       execFileSync('pnpm', ['install'], {
         cwd,
@@ -128,10 +117,7 @@ function loadDotEnv() {
     if (eq < 0) continue;
     const key = trimmed.slice(0, eq).trim();
     let val = trimmed.slice(eq + 1).trim();
-    if (
-      (val.startsWith('"') && val.endsWith('"')) ||
-      (val.startsWith("'") && val.endsWith("'"))
-    ) {
+    if ((val.startsWith('"') && val.endsWith('"')) || (val.startsWith("'") && val.endsWith("'"))) {
       val = val.slice(1, -1);
     }
     out[key] = val;
@@ -178,14 +164,9 @@ function ensureEnvFile(dot) {
     copyFileSync(example, envPath);
     log('env', 'copied .env.example → .env');
   }
-  const email =
-    process.env.SEED_ADMIN_EMAIL ??
-    dot.SEED_ADMIN_EMAIL ??
-    'admin@example.com';
+  const email = process.env.SEED_ADMIN_EMAIL ?? dot.SEED_ADMIN_EMAIL ?? 'admin@example.com';
   const password =
-    process.env.SEED_ADMIN_PASSWORD ??
-    dot.SEED_ADMIN_PASSWORD ??
-    'change-me-in-local-dev';
+    process.env.SEED_ADMIN_PASSWORD ?? dot.SEED_ADMIN_PASSWORD ?? 'change-me-in-local-dev';
   return { email, password };
 }
 
@@ -229,8 +210,7 @@ async function main() {
 
   // Clear plugin settings so env bootstrap (amount/rate) is not overridden by stale rows.
   try {
-    const databaseUrl =
-      process.env.DATABASE_URL ?? dot.DATABASE_URL ?? '';
+    const databaseUrl = process.env.DATABASE_URL ?? dot.DATABASE_URL ?? '';
     if (databaseUrl.includes('postgresql')) {
       execFileSync(
         'psql',
@@ -272,8 +252,7 @@ async function main() {
     pluginEnv.OPOHA_PLUGINS = allPluginPaths.join(',');
     // Always pin ops smoke amounts (override .env / parent) so quotes are non-zero.
     if (hasFlatRate) {
-      pluginEnv.OPOHA_FLAT_RATE_AMOUNT =
-        process.env.OPOHA_FLAT_RATE_AMOUNT ?? OPS_FLAT_RATE_AMOUNT;
+      pluginEnv.OPOHA_FLAT_RATE_AMOUNT = process.env.OPOHA_FLAT_RATE_AMOUNT ?? OPS_FLAT_RATE_AMOUNT;
     }
     if (hasTaxStandard) {
       pluginEnv.OPOHA_TAX_STANDARD_DEFAULT_RATE_BPS =
@@ -417,9 +396,7 @@ async function main() {
           `expected fulfillmentMode=physical, got ${productData.createProduct.fulfillmentMode}`,
         );
       }
-      if (
-        productData.createProduct.variants?.[0]?.fulfillmentMode !== 'physical'
-      ) {
+      if (productData.createProduct.variants?.[0]?.fulfillmentMode !== 'physical') {
         fail(
           'commerce',
           `expected variant fulfillmentMode=physical, got ${productData.createProduct.variants?.[0]?.fulfillmentMode}`,
@@ -456,10 +433,7 @@ async function main() {
         token,
       );
       if (dig.createProduct?.fulfillmentMode !== 'digital') {
-        fail(
-          'omnichannel',
-          `expected digital product, got ${JSON.stringify(dig.createProduct)}`,
-        );
+        fail('omnichannel', `expected digital product, got ${JSON.stringify(dig.createProduct)}`);
       }
       if (dig.createProduct.variants?.[0]?.fulfillmentMode !== 'digital') {
         fail(
@@ -507,10 +481,7 @@ async function main() {
         if (!eastWarehouseId) {
           fail('store-mgmt', 'createWarehouse returned no id');
         }
-        log(
-          'store-mgmt',
-          `warehouses default=${defaultWarehouseId} east=${eastWarehouseId}`,
-        );
+        log('store-mgmt', `warehouses default=${defaultWarehouseId} east=${eastWarehouseId}`);
       }
 
       log('commerce', 'createInventoryItem');
@@ -533,14 +504,8 @@ async function main() {
         },
         token,
       );
-      if (
-        invData.createInventoryItem.quantityOnHand !==
-        (SKIP_STORE_MGMT ? 5 : 10)
-      ) {
-        fail(
-          'commerce',
-          `unexpected on-hand ${invData.createInventoryItem.quantityOnHand}`,
-        );
+      if (invData.createInventoryItem.quantityOnHand !== (SKIP_STORE_MGMT ? 5 : 10)) {
+        fail('commerce', `unexpected on-hand ${invData.createInventoryItem.quantityOnHand}`);
       }
 
       if (!SKIP_STORE_MGMT) {
@@ -569,10 +534,7 @@ async function main() {
           fail('store-mgmt', 'createStockTransfer returned no id');
         }
         if (transfer.createStockTransfer.status !== 'draft') {
-          fail(
-            'store-mgmt',
-            `expected draft transfer, got ${transfer.createStockTransfer.status}`,
-          );
+          fail('store-mgmt', `expected draft transfer, got ${transfer.createStockTransfer.status}`);
         }
 
         const shippedXfer = await gql(
@@ -583,10 +545,7 @@ async function main() {
           token,
         );
         if (shippedXfer.shipStockTransfer.status !== 'in_transit') {
-          fail(
-            'store-mgmt',
-            `expected in_transit, got ${shippedXfer.shipStockTransfer.status}`,
-          );
+          fail('store-mgmt', `expected in_transit, got ${shippedXfer.shipStockTransfer.status}`);
         }
 
         const receivedXfer = await gql(
@@ -613,13 +572,9 @@ async function main() {
           { variantId, warehouseId: eastWarehouseId },
           token,
         );
-        const eastQty =
-          eastInv.inventoryItemByVariant?.quantityOnHand;
+        const eastQty = eastInv.inventoryItemByVariant?.quantityOnHand;
         if (eastQty !== 2) {
-          fail(
-            'store-mgmt',
-            `east warehouse on-hand expected 2, got ${eastQty}`,
-          );
+          fail('store-mgmt', `east warehouse on-hand expected 2, got ${eastQty}`);
         }
         log('store-mgmt', 'stock transfer default→east qty=2 OK');
       }
@@ -644,8 +599,7 @@ async function main() {
         token,
       );
 
-      const wantOps =
-        !SKIP_COMMERCE_OPS && (hasManual || hasFlatRate || hasTaxStandard);
+      const wantOps = !SKIP_COMMERCE_OPS && (hasManual || hasFlatRate || hasTaxStandard);
 
       if (!SKIP_COMMERCE_OPS && (!hasManual || !hasFlatRate || !hasTaxStandard)) {
         fail(
@@ -709,15 +663,9 @@ async function main() {
           );
           const shipAmt = shipped.selectCartShipping.shippingMinor;
           if (shipAmt !== OPS_FLAT_RATE_AMOUNT) {
-            fail(
-              'commerce-ops',
-              `expected shippingMinor=${OPS_FLAT_RATE_AMOUNT}, got ${shipAmt}`,
-            );
+            fail('commerce-ops', `expected shippingMinor=${OPS_FLAT_RATE_AMOUNT}, got ${shipAmt}`);
           }
-          log(
-            'commerce-ops',
-            `selectCartShipping OK shippingMinor=${shipAmt}`,
-          );
+          log('commerce-ops', `selectCartShipping OK shippingMinor=${shipAmt}`);
         }
 
         if (hasTaxStandard) {
@@ -829,10 +777,7 @@ async function main() {
         fail('commerce', `expected confirmed order, got ${order.status}`);
       }
       if (order.orderSource !== 'web') {
-        fail(
-          'omnichannel',
-          `expected orderSource=web, got ${order.orderSource}`,
-        );
+        fail('omnichannel', `expected orderSource=web, got ${order.orderSource}`);
       }
       log('omnichannel', `placeOrder orderSource=${order.orderSource} (A-04)`);
       if (wantOps && hasFlatRate) {
@@ -852,10 +797,7 @@ async function main() {
       if (wantOps && hasTaxStandard) {
         const orderTax = BigInt(String(order.taxMinor ?? '0'));
         if (orderTax <= 0n) {
-          fail(
-            'commerce-ops',
-            `order.taxMinor expected > 0, got ${order.taxMinor}`,
-          );
+          fail('commerce-ops', `order.taxMinor expected > 0, got ${order.taxMinor}`);
         }
       }
       log(
@@ -910,10 +852,7 @@ async function main() {
           token,
         );
         if (picked.pickFulfillment.status !== 'picked') {
-          fail(
-            'store-mgmt',
-            `expected picked, got ${picked.pickFulfillment.status}`,
-          );
+          fail('store-mgmt', `expected picked, got ${picked.pickFulfillment.status}`);
         }
 
         const packed = await gql(
@@ -924,10 +863,7 @@ async function main() {
           token,
         );
         if (packed.packFulfillment.status !== 'packed') {
-          fail(
-            'store-mgmt',
-            `expected packed, got ${packed.packFulfillment.status}`,
-          );
+          fail('store-mgmt', `expected packed, got ${packed.packFulfillment.status}`);
         }
 
         const shipped = await gql(
@@ -941,10 +877,7 @@ async function main() {
           token,
         );
         if (shipped.shipFulfillment.status !== 'shipped') {
-          fail(
-            'store-mgmt',
-            `expected shipped, got ${shipped.shipFulfillment.status}`,
-          );
+          fail('store-mgmt', `expected shipped, got ${shipped.shipFulfillment.status}`);
         }
         log('store-mgmt', `fulfillment ${fulfillmentId} shipped OK`);
 
@@ -1003,10 +936,7 @@ async function main() {
         const returnId = rma.createReturn?.id;
         if (!returnId) fail('store-mgmt', 'createReturn returned no id');
         if (rma.createReturn.status !== 'requested') {
-          fail(
-            'store-mgmt',
-            `expected requested RMA, got ${rma.createReturn.status}`,
-          );
+          fail('store-mgmt', `expected requested RMA, got ${rma.createReturn.status}`);
         }
 
         const approved = await gql(
@@ -1017,10 +947,7 @@ async function main() {
           token,
         );
         if (approved.approveReturn.status !== 'approved') {
-          fail(
-            'store-mgmt',
-            `expected approved, got ${approved.approveReturn.status}`,
-          );
+          fail('store-mgmt', `expected approved, got ${approved.approveReturn.status}`);
         }
 
         const received = await gql(
@@ -1031,10 +958,7 @@ async function main() {
           token,
         );
         if (received.receiveReturn.status !== 'received') {
-          fail(
-            'store-mgmt',
-            `expected received RMA, got ${received.receiveReturn.status}`,
-          );
+          fail('store-mgmt', `expected received RMA, got ${received.receiveReturn.status}`);
         }
 
         const refunded = await gql(
@@ -1049,10 +973,7 @@ async function main() {
           token,
         );
         if (refunded.completeReturnRefund.status !== 'refunded') {
-          fail(
-            'store-mgmt',
-            `expected refunded, got ${refunded.completeReturnRefund.status}`,
-          );
+          fail('store-mgmt', `expected refunded, got ${refunded.completeReturnRefund.status}`);
         }
         log(
           'store-mgmt',
@@ -1144,10 +1065,7 @@ async function main() {
             `cmsPageBySlug expected published ${cmsSlug}, got ${JSON.stringify(published.cmsPageBySlug)}`,
           );
         }
-        log(
-          'content-marketing',
-          `CMS page ${pageId} slug=${cmsSlug} published OK`,
-        );
+        log('content-marketing', `CMS page ${pageId} slug=${cmsSlug} published OK`);
       } else {
         log(
           'content-marketing',
@@ -1257,16 +1175,9 @@ async function main() {
         fail('enterprise', 'second store must not be default');
       }
 
-      const storesList = await gql(
-        `query { stores { id code } }`,
-        undefined,
-        token,
-      );
+      const storesList = await gql(`query { stores { id code } }`, undefined, token);
       if ((storesList.stores ?? []).length < 2) {
-        fail(
-          'enterprise',
-          `expected ≥2 stores, got ${JSON.stringify(storesList.stores)}`,
-        );
+        fail('enterprise', `expected ≥2 stores, got ${JSON.stringify(storesList.stores)}`);
       }
       log(
         'enterprise',
@@ -1377,11 +1288,7 @@ async function main() {
         token,
       );
 
-      const entWh = await gql(
-        `query { defaultWarehouse { id code } }`,
-        undefined,
-        token,
-      );
+      const entWh = await gql(`query { defaultWarehouse { id code } }`, undefined, token);
       const entWarehouseId = entWh.defaultWarehouse?.id;
       if (!entWarehouseId) {
         fail('enterprise', 'defaultWarehouse missing for inventory');
@@ -1454,10 +1361,7 @@ async function main() {
       );
       const dt = displayTotals.cartDisplayTotals;
       if (dt?.displayCurrencyCode !== 'EUR') {
-        fail(
-          'enterprise',
-          `cartDisplayTotals display expected EUR, got ${JSON.stringify(dt)}`,
-        );
+        fail('enterprise', `cartDisplayTotals display expected EUR, got ${JSON.stringify(dt)}`);
       }
       if (dt.settlementCurrencyCode !== 'USD') {
         fail(
@@ -1584,10 +1488,7 @@ async function main() {
       const b2bCartId = b2bCart.createCart?.id;
       if (!b2bCartId) fail('enterprise', 'createCart (B2B) returned no id');
       if (b2bCart.createCart.companyId !== companyId) {
-        fail(
-          'enterprise',
-          `B2B cart companyId mismatch: ${b2bCart.createCart.companyId}`,
-        );
+        fail('enterprise', `B2B cart companyId mismatch: ${b2bCart.createCart.companyId}`);
       }
 
       await gql(
@@ -1659,10 +1560,7 @@ async function main() {
           `approveB2bOrder expected approved, got ${JSON.stringify(approved.approveB2bOrder)}`,
         );
       }
-      log(
-        'enterprise',
-        `B2B approve path order ${draftOrderId} → approved OK`,
-      );
+      log('enterprise', `B2B approve path order ${draftOrderId} → approved OK`);
     } else {
       log('enterprise', 'skipped (SKIP_ENTERPRISE=1)');
     }

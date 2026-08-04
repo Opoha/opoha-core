@@ -1,11 +1,7 @@
 import { UseGuards } from '@nestjs/common';
 import { Args, ID, Mutation, Query, Resolver } from '@nestjs/graphql';
 
-import {
-  GqlAuthGuard,
-  PermissionsGuard,
-  RequirePermission,
-} from '../auth/public';
+import { GqlAuthGuard, PermissionsGuard, RequirePermission } from '../auth/public';
 import { InventoryService } from './inventory.service';
 import {
   AdjustInventoryInput,
@@ -38,9 +34,7 @@ export class InventoryResolver {
     description: 'Get inventory item by id',
   })
   @RequirePermission('inventory:read')
-  inventoryItem(
-    @Args('id', { type: () => ID }) id: string,
-  ): Promise<InventoryItemType> {
+  inventoryItem(@Args('id', { type: () => ID }) id: string): Promise<InventoryItemType> {
     return this.inventoryService.findById(id);
   }
 
@@ -71,8 +65,7 @@ export class InventoryResolver {
 
   @Mutation(() => InventoryItemType, {
     name: 'createInventoryItem',
-    description:
-      'Create an inventory item for a product variant at a warehouse',
+    description: 'Create an inventory item for a product variant at a warehouse',
   })
   @RequirePermission('inventory:create')
   createInventoryItem(
@@ -96,8 +89,7 @@ export class InventoryResolver {
 
   @Mutation(() => InventoryReservationType, {
     name: 'reserveInventory',
-    description:
-      'Reserve available stock for a variant at a warehouse (transactional)',
+    description: 'Reserve available stock for a variant at a warehouse (transactional)',
   })
   @RequirePermission('inventory:reserve')
   reserveInventory(

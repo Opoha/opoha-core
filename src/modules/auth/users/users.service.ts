@@ -1,8 +1,4 @@
-import {
-  ConflictException,
-  Injectable,
-  NotFoundException,
-} from '@nestjs/common';
+import { ConflictException, Injectable, NotFoundException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { QueryFailedError, Repository } from 'typeorm';
 
@@ -92,19 +88,14 @@ export class UsersService {
     return toUserType(row);
   }
 
-  async findByEmailWithHash(
-    email: string,
-  ): Promise<(UserRow & { passwordHash: string }) | null> {
+  async findByEmailWithHash(email: string): Promise<(UserRow & { passwordHash: string }) | null> {
     return this.users.findOne({
       where: { email },
       select: ['id', 'email', 'isActive', 'createdAt', 'updatedAt', 'passwordHash'],
     });
   }
 
-  async create(
-    input: CreateUserInput,
-    actorUserId?: string | null,
-  ): Promise<UserType> {
+  async create(input: CreateUserInput, actorUserId?: string | null): Promise<UserType> {
     const email = input.email.trim().toLowerCase();
     const existing = await this.users.findOne({ where: { email } });
     if (existing) {
@@ -146,11 +137,7 @@ export class UsersService {
     }
   }
 
-  async update(
-    id: string,
-    input: UpdateUserInput,
-    actorUserId?: string | null,
-  ): Promise<UserType> {
+  async update(id: string, input: UpdateUserInput, actorUserId?: string | null): Promise<UserType> {
     await this.findById(id);
     const patch: Partial<UserEntity> = {};
     if (input.email !== undefined) {

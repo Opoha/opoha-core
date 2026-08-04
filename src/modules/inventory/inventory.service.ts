@@ -57,9 +57,7 @@ function toItemType(row: InventoryItemEntity): InventoryItemType {
   };
 }
 
-function toReservationType(
-  row: InventoryReservationEntity,
-): InventoryReservationType {
+function toReservationType(row: InventoryReservationEntity): InventoryReservationType {
   return {
     id: row.id,
     inventoryItemId: row.inventoryItemId,
@@ -71,9 +69,7 @@ function toReservationType(
   };
 }
 
-function toAdjustmentType(
-  row: InventoryAdjustmentEntity,
-): InventoryAdjustmentType {
+function toAdjustmentType(row: InventoryAdjustmentEntity): InventoryAdjustmentType {
   return {
     id: row.id,
     inventoryItemId: row.inventoryItemId,
@@ -110,9 +106,7 @@ export class InventoryService {
         throw new NotFoundException(`Warehouse ${warehouseId} not found`);
       }
       if (!row.isActive) {
-        throw new BadRequestException(
-          `Warehouse ${warehouseId} is not active`,
-        );
+        throw new BadRequestException(`Warehouse ${warehouseId} is not active`);
       }
       return row.id;
     }
@@ -144,10 +138,7 @@ export class InventoryService {
   /**
    * Stock for a variant at a warehouse (default warehouse when omitted).
    */
-  async findByVariantId(
-    variantId: string,
-    warehouseId?: string,
-  ): Promise<InventoryItemType> {
+  async findByVariantId(variantId: string, warehouseId?: string): Promise<InventoryItemType> {
     const resolvedWarehouseId = await this.resolveWarehouseId(warehouseId);
     const row = await this.items.findOne({
       where: { variantId, warehouseId: resolvedWarehouseId },
@@ -205,10 +196,10 @@ export class InventoryService {
         .getRepository(InventoryItemEntity)
         .createQueryBuilder('item')
         .setLock('pessimistic_write')
-        .where(
-          'item.variantId = :variantId AND item.warehouseId = :warehouseId',
-          { variantId: input.variantId, warehouseId },
-        )
+        .where('item.variantId = :variantId AND item.warehouseId = :warehouseId', {
+          variantId: input.variantId,
+          warehouseId,
+        })
         .getOne();
 
       if (!item) {
@@ -289,16 +280,12 @@ export class InventoryService {
    * Reserve stock preferring warehouses linked to the store (Phase 5 E-02).
    * Tries allow-list in primary-first order; never allocates outside the store.
    */
-  async reserveForStore(
-    input: ReserveInventoryForStoreInput,
-  ): Promise<InventoryReservationType> {
+  async reserveForStore(input: ReserveInventoryForStoreInput): Promise<InventoryReservationType> {
     if (!Number.isInteger(input.quantity) || input.quantity <= 0) {
       throw new BadRequestException('quantity must be a positive integer');
     }
 
-    const allowed = await this.storeWarehouses.listWarehouseIdsForStore(
-      input.storeId,
-    );
+    const allowed = await this.storeWarehouses.listWarehouseIdsForStore(input.storeId);
     if (allowed.length === 0) {
       throw new BadRequestException(
         `Store ${input.storeId} has no associated warehouses; link a warehouse before checkout`,
@@ -306,10 +293,7 @@ export class InventoryService {
     }
 
     if (input.warehouseId) {
-      await this.storeWarehouses.assertWarehouseAllowedForStore(
-        input.storeId,
-        input.warehouseId,
-      );
+      await this.storeWarehouses.assertWarehouseAllowedForStore(input.storeId, input.warehouseId);
       return this.reserve({
         variantId: input.variantId,
         quantity: input.quantity,
@@ -353,9 +337,7 @@ export class InventoryService {
    * Reserve stock for a variant at a warehouse; fails if available qty is insufficient.
    * Omitting warehouseId uses the default warehouse (admin / explicit path).
    */
-  async reserve(
-    input: ReserveInventoryInput,
-  ): Promise<InventoryReservationType> {
+  async reserve(input: ReserveInventoryInput): Promise<InventoryReservationType> {
     if (!Number.isInteger(input.quantity) || input.quantity <= 0) {
       throw new BadRequestException('quantity must be a positive integer');
     }
@@ -367,10 +349,10 @@ export class InventoryService {
         .getRepository(InventoryItemEntity)
         .createQueryBuilder('item')
         .setLock('pessimistic_write')
-        .where(
-          'item.variantId = :variantId AND item.warehouseId = :warehouseId',
-          { variantId: input.variantId, warehouseId },
-        )
+        .where('item.variantId = :variantId AND item.warehouseId = :warehouseId', {
+          variantId: input.variantId,
+          warehouseId,
+        })
         .getOne();
 
       if (!item) {
@@ -445,9 +427,7 @@ export class InventoryService {
       where: { id: snapshot.reservationId },
     });
     if (!row) {
-      throw new NotFoundException(
-        `Reservation ${snapshot.reservationId} not found`,
-      );
+      throw new NotFoundException(`Reservation ${snapshot.reservationId} not found`);
     }
     return toReservationType(row);
   }
@@ -481,15 +461,10 @@ export class InventoryService {
         .getOne();
 
       if (!item) {
-        throw new NotFoundException(
-          `Inventory item ${reservation.inventoryItemId} not found`,
-        );
+        throw new NotFoundException(`Inventory item ${reservation.inventoryItemId} not found`);
       }
 
-      item.quantityReserved = Math.max(
-        0,
-        item.quantityReserved - reservation.quantity,
-      );
+      item.quantityReserved = Math.max(0, item.quantityReserved - reservation.quantity);
       await manager.save(item);
 
       reservation.status = 'released';
@@ -552,9 +527,7 @@ export class InventoryService {
         .getOne();
 
       if (!item) {
-        throw new NotFoundException(
-          `Inventory item ${reservation.inventoryItemId} not found`,
-        );
+        throw new NotFoundException(`Inventory item ${reservation.inventoryItemId} not found`);
       }
 
       if (item.quantityOnHand < reservation.quantity) {
@@ -564,10 +537,7 @@ export class InventoryService {
       }
 
       item.quantityOnHand -= reservation.quantity;
-      item.quantityReserved = Math.max(
-        0,
-        item.quantityReserved - reservation.quantity,
-      );
+      item.quantityReserved = Math.max(0, item.quantityReserved - reservation.quantity);
       await manager.save(item);
 
       reservation.status = 'committed';
@@ -609,9 +579,7 @@ export class InventoryService {
     return toReservationType(row);
   }
 
-  async listAdjustments(
-    inventoryItemId: string,
-  ): Promise<InventoryAdjustmentType[]> {
+  async listAdjustments(inventoryItemId: string): Promise<InventoryAdjustmentType[]> {
     const rows = await this.adjustments.find({
       where: { inventoryItemId },
       order: { createdAt: 'DESC' },

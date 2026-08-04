@@ -1,19 +1,11 @@
 import { UseGuards } from '@nestjs/common';
 import { Args, Context, ID, Mutation, Query, Resolver } from '@nestjs/graphql';
 
-import {
-  GqlAuthGuard,
-  PermissionsGuard,
-  RequirePermission,
-} from '../../auth/public';
+import { GqlAuthGuard, PermissionsGuard, RequirePermission } from '../../auth/public';
 import { StoreCatalogModeGql } from '../../config/public';
 import type { StoreCatalogMode } from '../../config/public';
 import { resolveLocalePreference } from '../translations/locale';
-import {
-  CategoryType,
-  CreateCategoryInput,
-  UpdateCategoryInput,
-} from './category.types';
+import { CategoryType, CreateCategoryInput, UpdateCategoryInput } from './category.types';
 import { CategoriesService } from './categories.service';
 
 type GqlRequestContext = {
@@ -106,9 +98,7 @@ export class CategoriesResolver {
     description: 'Delete a catalog category',
   })
   @RequirePermission('category:delete')
-  deleteCategory(
-    @Args('id', { type: () => ID }) id: string,
-  ): Promise<CategoryType> {
+  deleteCategory(@Args('id', { type: () => ID }) id: string): Promise<CategoryType> {
     return this.categoriesService.remove(id);
   }
 }

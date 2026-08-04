@@ -8,9 +8,7 @@ import type { MigrationInterface, QueryRunner } from 'typeorm';
  *
  * Existing stores inherit `default_currency_code` for both display and settlement.
  */
-export class StoreCurrencyConfigInit1722718100000
-  implements MigrationInterface
-{
+export class StoreCurrencyConfigInit1722718100000 implements MigrationInterface {
   name = 'StoreCurrencyConfigInit1722718100000';
 
   public async up(queryRunner: QueryRunner): Promise<void> {

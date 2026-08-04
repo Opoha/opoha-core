@@ -1,11 +1,4 @@
-import {
-  Body,
-  Controller,
-  Headers,
-  HttpCode,
-  Param,
-  Post,
-} from '@nestjs/common';
+import { Body, Controller, Headers, HttpCode, Param, Post } from '@nestjs/common';
 
 import { PaymentEngine } from './payment-engine.service';
 import type { PaymentWebhookResult } from './payment-provider';

@@ -3,9 +3,7 @@ import type { DataSource } from 'typeorm';
 import { LocalizationSettingsEntity } from '../entities/localization-settings.entity';
 import type { SeedLocalizationStore } from './seed-localization';
 
-export function createTypeOrmLocalizationSeedStore(
-  dataSource: DataSource,
-): SeedLocalizationStore {
+export function createTypeOrmLocalizationSeedStore(dataSource: DataSource): SeedLocalizationStore {
   const settings = dataSource.getRepository(LocalizationSettingsEntity);
 
   return {

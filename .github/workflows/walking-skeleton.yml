@@ -21,7 +21,7 @@ jobs:
         uses: actions/checkout@v4
         with:
           path: opoha-core
-      - name: Checkout toolkit (file: deps)
+      - name: 'Checkout toolkit (file: deps)'
         uses: actions/checkout@v4
         with:
           repository: ${{ github.repository_owner }}/opoha-devkit
@@ -82,7 +82,7 @@ jobs:
         uses: actions/checkout@v4
         with:
           path: opoha-core
-      - name: Checkout toolkit (file: deps)
+      - name: 'Checkout toolkit (file: deps)'
         uses: actions/checkout@v4
         with:
           repository: ${{ github.repository_owner }}/opoha-devkit

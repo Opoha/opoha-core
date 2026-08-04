@@ -11,11 +11,7 @@ import { StockTransferResolver } from './stock-transfer.resolver';
 import { StockTransferService } from './stock-transfer.service';
 
 @Module({
-  imports: [
-    AuthModule,
-    WarehousesModule,
-    TypeOrmModule.forFeature([...inventoryEntities]),
-  ],
+  imports: [AuthModule, WarehousesModule, TypeOrmModule.forFeature([...inventoryEntities])],
   providers: [
     InventoryService,
     InventoryResolver,

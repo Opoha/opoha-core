@@ -1,23 +1,11 @@
 import { UseGuards } from '@nestjs/common';
 import { Args, Context, ID, Mutation, Query, Resolver } from '@nestjs/graphql';
 
-import {
-  GqlAuthGuard,
-  PermissionsGuard,
-  RequirePermission,
-} from '../auth/public';
-import {
-  ApproveB2bOrderInput,
-  ConfirmB2bOrderInput,
-  ConvertB2bQuoteInput,
-} from '../b2b/public';
+import { GqlAuthGuard, PermissionsGuard, RequirePermission } from '../auth/public';
+import { ApproveB2bOrderInput, ConfirmB2bOrderInput, ConvertB2bQuoteInput } from '../b2b/public';
 import type { StoreContextRef } from '../stores/public';
 import { OrdersService } from './orders.service';
-import {
-  OrderType,
-  PlaceOrderInput,
-  UpdateOrderStatusInput,
-} from './order.types';
+import { OrderType, PlaceOrderInput, UpdateOrderStatusInput } from './order.types';
 
 type GqlStoreContext = {
   storeContext?: StoreContextRef;
@@ -30,8 +18,7 @@ export class OrdersResolver {
 
   @Query(() => [OrderType], {
     name: 'orders',
-    description:
-      'List orders. Optional storeId filters to that store channel.',
+    description: 'List orders. Optional storeId filters to that store channel.',
   })
   @RequirePermission('order:read')
   orders(
@@ -67,9 +54,7 @@ export class OrdersResolver {
     description: 'Transition order status along the allowed state machine',
   })
   @RequirePermission('order:update')
-  updateOrderStatus(
-    @Args('input') input: UpdateOrderStatusInput,
-  ): Promise<OrderType> {
+  updateOrderStatus(@Args('input') input: UpdateOrderStatusInput): Promise<OrderType> {
     return this.ordersService.updateStatus(input);
   }
 
@@ -87,8 +72,7 @@ export class OrdersResolver {
 
   @Mutation(() => OrderType, {
     name: 'confirmB2bOrder',
-    description:
-      'Confirm an approved B2B order with payment (approved → confirmed) (F-03 / F-06)',
+    description: 'Confirm an approved B2B order with payment (approved → confirmed) (F-03 / F-06)',
   })
   @RequirePermission('b2b:approve')
   confirmB2bOrder(
@@ -100,8 +84,7 @@ export class OrdersResolver {
 
   @Mutation(() => OrderType, {
     name: 'convertB2bQuote',
-    description:
-      'Convert an accepted B2B quote to a draft company order (F-05 foundation)',
+    description: 'Convert an accepted B2B quote to a draft company order (F-05 foundation)',
   })
   @RequirePermission('b2b:convert')
   convertB2bQuote(

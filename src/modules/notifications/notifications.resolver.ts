@@ -1,15 +1,8 @@
 import { UseGuards } from '@nestjs/common';
 import { Query, Resolver } from '@nestjs/graphql';
 
-import {
-  GqlAuthGuard,
-  PermissionsGuard,
-  RequirePermission,
-} from '../auth/public';
-import {
-  NotificationProviderType,
-  NotificationTemplateType,
-} from './notification.types';
+import { GqlAuthGuard, PermissionsGuard, RequirePermission } from '../auth/public';
+import { NotificationProviderType, NotificationTemplateType } from './notification.types';
 import { NotificationsService } from './notifications.service';
 
 @Resolver(() => NotificationProviderType)
@@ -26,9 +19,7 @@ export class NotificationsResolver {
     return this.notifications.list().map((provider) => ({
       code: provider.code,
       displayName: provider.displayName,
-      channels: provider.channels?.length
-        ? [...provider.channels]
-        : ['email'],
+      channels: provider.channels?.length ? [...provider.channels] : ['email'],
     }));
   }
 

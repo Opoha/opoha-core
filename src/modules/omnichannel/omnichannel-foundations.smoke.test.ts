@@ -22,9 +22,7 @@ describe('Omnichannel foundations smoke (A-04)', () => {
       products = new Map();
       variantsByProduct = new Map();
       const productRepo = {
-        create: vi.fn(
-          (data: Partial<ProductEntity>) => ({ ...data }) as ProductEntity,
-        ),
+        create: vi.fn((data: Partial<ProductEntity>) => ({ ...data }) as ProductEntity),
         save: vi.fn(async (row: ProductEntity) => {
           if (!row.id) {
             row.id = `prod-${products.size + 1}`;
@@ -47,25 +45,22 @@ describe('Omnichannel foundations smoke (A-04)', () => {
       };
       const variantRepo = {
         create: vi.fn(
-          (data: Partial<ProductVariantEntity>) =>
-            ({ ...data }) as ProductVariantEntity,
+          (data: Partial<ProductVariantEntity>) => ({ ...data }) as ProductVariantEntity,
         ),
-        save: vi.fn(
-          async (rows: ProductVariantEntity | ProductVariantEntity[]) => {
-            const list = Array.isArray(rows) ? rows : [rows];
-            for (const row of list) {
-              if (!row.id) {
-                row.id = `var-${Math.random().toString(36).slice(2, 8)}`;
-                row.createdAt = new Date('2026-08-04T00:00:00Z');
-                row.updatedAt = row.createdAt;
-              }
-              const bucket = variantsByProduct.get(row.productId) ?? [];
-              bucket.push(row);
-              variantsByProduct.set(row.productId, bucket);
+        save: vi.fn(async (rows: ProductVariantEntity | ProductVariantEntity[]) => {
+          const list = Array.isArray(rows) ? rows : [rows];
+          for (const row of list) {
+            if (!row.id) {
+              row.id = `var-${Math.random().toString(36).slice(2, 8)}`;
+              row.createdAt = new Date('2026-08-04T00:00:00Z');
+              row.updatedAt = row.createdAt;
             }
-            return list;
-          },
-        ),
+            const bucket = variantsByProduct.get(row.productId) ?? [];
+            bucket.push(row);
+            variantsByProduct.set(row.productId, bucket);
+          }
+          return list;
+        }),
       };
       service = new ProductsService(productRepo as never, variantRepo as never);
     });

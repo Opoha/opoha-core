@@ -23,10 +23,7 @@ export type StoreJwtClaim = {
 
 type HeaderMap = Record<string, string | string[] | undefined>;
 
-function headerValue(
-  headers: HeaderMap,
-  name: string,
-): string | undefined {
+function headerValue(headers: HeaderMap, name: string): string | undefined {
   const raw = headers[name] ?? headers[name.toLowerCase()];
   const value = Array.isArray(raw) ? raw[0] : raw;
   if (typeof value !== 'string') {
@@ -39,9 +36,7 @@ function headerValue(
 /**
  * Extract store identifiers from HTTP headers.
  */
-export function extractStoreContextFromHeaders(
-  headers: HeaderMap,
-): StoreContextRef {
+export function extractStoreContextFromHeaders(headers: HeaderMap): StoreContextRef {
   const storeId = headerValue(headers, STORE_ID_HEADER);
   const storeCode = headerValue(headers, STORE_CODE_HEADER);
   if (!storeId && !storeCode) {

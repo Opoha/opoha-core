@@ -1,17 +1,9 @@
 import { UseGuards } from '@nestjs/common';
 import { Args, ID, Mutation, Query, Resolver } from '@nestjs/graphql';
 
-import {
-  GqlAuthGuard,
-  PermissionsGuard,
-  RequirePermission,
-} from '../auth/public';
+import { GqlAuthGuard, PermissionsGuard, RequirePermission } from '../auth/public';
 import { WarehouseService } from './warehouse.service';
-import {
-  CreateWarehouseInput,
-  UpdateWarehouseInput,
-  WarehouseType,
-} from './warehouse.types';
+import { CreateWarehouseInput, UpdateWarehouseInput, WarehouseType } from './warehouse.types';
 
 @Resolver(() => WarehouseType)
 @UseGuards(GqlAuthGuard, PermissionsGuard)
@@ -32,9 +24,7 @@ export class WarehouseResolver {
     description: 'Get warehouse by id',
   })
   @RequirePermission('warehouse:read')
-  warehouse(
-    @Args('id', { type: () => ID }) id: string,
-  ): Promise<WarehouseType> {
+  warehouse(@Args('id', { type: () => ID }) id: string): Promise<WarehouseType> {
     return this.warehouseService.findById(id);
   }
 
@@ -43,9 +33,7 @@ export class WarehouseResolver {
     description: 'Get warehouse by stable code',
   })
   @RequirePermission('warehouse:read')
-  warehouseByCode(
-    @Args('code', { type: () => String }) code: string,
-  ): Promise<WarehouseType> {
+  warehouseByCode(@Args('code', { type: () => String }) code: string): Promise<WarehouseType> {
     return this.warehouseService.findByCode(code);
   }
 
@@ -89,9 +77,7 @@ export class WarehouseResolver {
     description: 'Delete a non-default warehouse',
   })
   @RequirePermission('warehouse:delete')
-  deleteWarehouse(
-    @Args('id', { type: () => ID }) id: string,
-  ): Promise<WarehouseType> {
+  deleteWarehouse(@Args('id', { type: () => ID }) id: string): Promise<WarehouseType> {
     return this.warehouseService.remove(id);
   }
 }

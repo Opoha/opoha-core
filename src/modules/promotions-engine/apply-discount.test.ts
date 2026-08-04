@@ -29,12 +29,7 @@ function rule(
 describe('apply-discount helpers (D-03)', () => {
   it('isWithinSchedule respects active flag and window', () => {
     const now = new Date('2026-08-03T12:00:00Z');
-    expect(
-      isWithinSchedule(
-        { isActive: true, startsAt: null, endsAt: null },
-        now,
-      ),
-    ).toBe(true);
+    expect(isWithinSchedule({ isActive: true, startsAt: null, endsAt: null }, now)).toBe(true);
     expect(
       isWithinSchedule(
         {
@@ -164,9 +159,7 @@ describe('apply-discount helpers (D-03)', () => {
       },
     ] as DiscountRuleEntity[];
 
-    expect(selectAutomaticRules(rules).map((r) => r.code)).toEqual([
-      'EXCLUSIVE',
-    ]);
+    expect(selectAutomaticRules(rules).map((r) => r.code)).toEqual(['EXCLUSIVE']);
   });
 
   it('selectAutomaticRules stacks when stackables outrank non-stackable', () => {
@@ -197,9 +190,6 @@ describe('apply-discount helpers (D-03)', () => {
       },
     ] as DiscountRuleEntity[];
 
-    expect(selectAutomaticRules(rules).map((r) => r.code)).toEqual([
-      'STACK_A',
-      'STACK_B',
-    ]);
+    expect(selectAutomaticRules(rules).map((r) => r.code)).toEqual(['STACK_A', 'STACK_B']);
   });
 });

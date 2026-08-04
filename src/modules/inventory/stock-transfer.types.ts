@@ -1,10 +1,4 @@
-import {
-  Field,
-  ID,
-  InputType,
-  Int,
-  ObjectType,
-} from '@nestjs/graphql';
+import { Field, ID, InputType, Int, ObjectType } from '@nestjs/graphql';
 
 @ObjectType({ description: 'Line item on a stock transfer' })
 export class StockTransferLineType {
@@ -81,8 +75,7 @@ export class CreateStockTransferInput {
 
   @Field(() => ID, {
     nullable: true,
-    description:
-      'Optional store scope — both warehouses must be linked to this store (E-03)',
+    description: 'Optional store scope — both warehouses must be linked to this store (E-03)',
   })
   storeId?: string;
 

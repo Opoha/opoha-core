@@ -22,28 +22,16 @@ describe('inventory RBAC (resolver metadata + PermissionsGuard deny)', () => {
   it('InventoryResolver declares inventory:* permission keys', () => {
     const reflector = new Reflector();
     expect(
-      reflector.get(
-        REQUIRE_PERMISSION_KEY,
-        InventoryResolver.prototype.inventoryItems,
-      ),
+      reflector.get(REQUIRE_PERMISSION_KEY, InventoryResolver.prototype.inventoryItems),
     ).toEqual(['inventory:read']);
     expect(
-      reflector.get(
-        REQUIRE_PERMISSION_KEY,
-        InventoryResolver.prototype.createInventoryItem,
-      ),
+      reflector.get(REQUIRE_PERMISSION_KEY, InventoryResolver.prototype.createInventoryItem),
     ).toEqual(['inventory:create']);
     expect(
-      reflector.get(
-        REQUIRE_PERMISSION_KEY,
-        InventoryResolver.prototype.adjustInventory,
-      ),
+      reflector.get(REQUIRE_PERMISSION_KEY, InventoryResolver.prototype.adjustInventory),
     ).toEqual(['inventory:adjust']);
     expect(
-      reflector.get(
-        REQUIRE_PERMISSION_KEY,
-        InventoryResolver.prototype.reserveInventory,
-      ),
+      reflector.get(REQUIRE_PERMISSION_KEY, InventoryResolver.prototype.reserveInventory),
     ).toEqual(['inventory:reserve']);
     expect(
       reflector.get(
@@ -72,9 +60,9 @@ describe('inventory RBAC (resolver metadata + PermissionsGuard deny)', () => {
       { listKeysForUser: vi.fn() } as never,
     );
 
-    await expect(
-      permissionsGuard.canActivate(gqlContext(req) as never),
-    ).rejects.toBeInstanceOf(ForbiddenException);
+    await expect(permissionsGuard.canActivate(gqlContext(req) as never)).rejects.toBeInstanceOf(
+      ForbiddenException,
+    );
   });
 
   it('PermissionsGuard allows adjustInventory when inventory:adjust is granted', async () => {
@@ -94,8 +82,6 @@ describe('inventory RBAC (resolver metadata + PermissionsGuard deny)', () => {
       { listKeysForUser: vi.fn() } as never,
     );
 
-    await expect(
-      permissionsGuard.canActivate(gqlContext(req) as never),
-    ).resolves.toBe(true);
+    await expect(permissionsGuard.canActivate(gqlContext(req) as never)).resolves.toBe(true);
   });
 });

@@ -1,11 +1,7 @@
 import { UseGuards } from '@nestjs/common';
 import { Args, ID, Mutation, Query, Resolver } from '@nestjs/graphql';
 
-import {
-  GqlAuthGuard,
-  PermissionsGuard,
-  RequirePermission,
-} from '../auth/public';
+import { GqlAuthGuard, PermissionsGuard, RequirePermission } from '../auth/public';
 import { GiftCardService } from './gift-cards.service';
 import {
   GiftCardLedgerEntryType,
@@ -36,9 +32,7 @@ export class GiftCardsResolver {
     description: 'Get a gift card by code',
   })
   @RequirePermission('giftcard:read')
-  giftCardByCode(
-    @Args('code', { type: () => String }) code: string,
-  ): Promise<GiftCardType> {
+  giftCardByCode(@Args('code', { type: () => String }) code: string): Promise<GiftCardType> {
     return this.giftCards.findByCode(code);
   }
 
@@ -55,8 +49,7 @@ export class GiftCardsResolver {
 
   @Query(() => QuoteGiftCardRedeemResult, {
     name: 'quoteGiftCardRedeem',
-    description:
-      'Preview how much of a gift card can apply toward a total (no mutation)',
+    description: 'Preview how much of a gift card can apply toward a total (no mutation)',
   })
   @RequirePermission('giftcard:read')
   quoteGiftCardRedeem(
@@ -92,8 +85,7 @@ export class GiftCardsResolver {
 
   @Mutation(() => GiftCardType, {
     name: 'redeemGiftCard',
-    description:
-      'Redeem a gift card balance against an order (publishes GiftCardRedeemed)',
+    description: 'Redeem a gift card balance against an order (publishes GiftCardRedeemed)',
   })
   @RequirePermission('giftcard:redeem')
   redeemGiftCard(

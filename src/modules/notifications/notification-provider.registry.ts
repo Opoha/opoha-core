@@ -1,9 +1,6 @@
 import { Injectable } from '@nestjs/common';
 
-import type {
-  NotificationProvider,
-  RegisteredNotificationProvider,
-} from './notification-provider';
+import type { NotificationProvider, RegisteredNotificationProvider } from './notification-provider';
 
 /**
  * Registry for notification providers (Phase 2 E-01).
@@ -13,17 +10,11 @@ import type {
 export class NotificationProviderRegistry {
   private readonly entries: RegisteredNotificationProvider[] = [];
 
-  register(
-    pluginId: string,
-    provider: NotificationProvider,
-    active = true,
-  ): void {
+  register(pluginId: string, provider: NotificationProvider, active = true): void {
     if (!provider.code || provider.code.trim().length === 0) {
       throw new Error('Notification provider code is required');
     }
-    const existing = this.entries.find(
-      (e) => e.provider.code === provider.code,
-    );
+    const existing = this.entries.find((e) => e.provider.code === provider.code);
     if (existing && existing.pluginId !== pluginId) {
       throw new Error(
         `Notification provider conflict: code "${provider.code}" already registered by plugin "${existing.pluginId}"`,
@@ -38,14 +29,11 @@ export class NotificationProviderRegistry {
   }
 
   get(id: string): NotificationProvider | undefined {
-    return this.entries.find((e) => e.provider.code === id && e.active)
-      ?.provider;
+    return this.entries.find((e) => e.provider.code === id && e.active)?.provider;
   }
 
   list(activeOnly = false): readonly RegisteredNotificationProvider[] {
-    return activeOnly
-      ? this.entries.filter((e) => e.active)
-      : [...this.entries];
+    return activeOnly ? this.entries.filter((e) => e.active) : [...this.entries];
   }
 
   activatePlugin(pluginId: string): void {

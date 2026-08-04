@@ -20,11 +20,7 @@ import { FulfillmentService } from './fulfillment.service';
     ShippingEngineModule,
     TypeOrmModule.forFeature([...fulfillmentEntities]),
   ],
-  providers: [
-    FulfillmentService,
-    FulfillmentResolver,
-    FulfillmentEventsRegistrar,
-  ],
+  providers: [FulfillmentService, FulfillmentResolver, FulfillmentEventsRegistrar],
   exports: [FulfillmentService, TypeOrmModule],
 })
 export class FulfillmentModule {}

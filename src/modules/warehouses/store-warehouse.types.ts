@@ -1,9 +1,4 @@
-import {
-  Field,
-  ID,
-  InputType,
-  ObjectType,
-} from '@nestjs/graphql';
+import { Field, ID, InputType, ObjectType } from '@nestjs/graphql';
 
 @ObjectType('StoreWarehouse', {
   description: 'Association between a store channel and an allowed warehouse',

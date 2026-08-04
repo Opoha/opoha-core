@@ -1,23 +1,13 @@
-import {
-  BadRequestException,
-  Injectable,
-  NotFoundException,
-} from '@nestjs/common';
+import { BadRequestException, Injectable, NotFoundException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { DataSource, QueryFailedError, Repository } from 'typeorm';
 
 import { CoreEventName } from '../event-bus/event-catalog';
 import { EventBusService } from '../event-bus/event-bus.service';
-import {
-  InventoryAdjustmentEntity,
-  InventoryItemEntity,
-} from '../inventory/public';
+import { InventoryAdjustmentEntity, InventoryItemEntity } from '../inventory/public';
 import { WarehouseEntity } from '../warehouses/public';
 import { PurchaseOrderLineEntity } from './entities/purchase-order-line.entity';
-import {
-  PurchaseOrderEntity,
-  type PurchaseOrderStatus,
-} from './entities/purchase-order.entity';
+import { PurchaseOrderEntity, type PurchaseOrderStatus } from './entities/purchase-order.entity';
 import { SupplierEntity } from './entities/supplier.entity';
 import type {
   CreatePurchaseOrderInput,
@@ -105,9 +95,7 @@ export class PurchaseOrderService {
     const variantIds = new Set<string>();
     for (const line of input.lines) {
       if (!Number.isInteger(line.quantity) || line.quantity <= 0) {
-        throw new BadRequestException(
-          'Each line quantity must be a positive integer',
-        );
+        throw new BadRequestException('Each line quantity must be a positive integer');
       }
       if (variantIds.has(line.variantId)) {
         throw new BadRequestException(
@@ -145,9 +133,7 @@ export class PurchaseOrderService {
       });
     } catch (error) {
       if (isForeignKeyViolation(error)) {
-        throw new BadRequestException(
-          'Invalid supplier, warehouse, or product variant reference',
-        );
+        throw new BadRequestException('Invalid supplier, warehouse, or product variant reference');
       }
       throw error;
     }
@@ -194,9 +180,7 @@ export class PurchaseOrderService {
         throw new NotFoundException(`Purchase order ${id} not found`);
       }
       if (po.status !== 'draft') {
-        throw new BadRequestException(
-          `Purchase order ${id} is ${po.status}, expected draft`,
-        );
+        throw new BadRequestException(`Purchase order ${id} is ${po.status}, expected draft`);
       }
 
       const lines = await manager.find(PurchaseOrderLineEntity, {
@@ -212,13 +196,10 @@ export class PurchaseOrderService {
           .getRepository(InventoryItemEntity)
           .createQueryBuilder('item')
           .setLock('pessimistic_write')
-          .where(
-            'item.variantId = :variantId AND item.warehouseId = :warehouseId',
-            {
-              variantId: line.variantId,
-              warehouseId: po.warehouseId,
-            },
-          )
+          .where('item.variantId = :variantId AND item.warehouseId = :warehouseId', {
+            variantId: line.variantId,
+            warehouseId: po.warehouseId,
+          })
           .getOne();
 
         if (!item) {

@@ -1,23 +1,12 @@
-import {
-  BadRequestException,
-  Injectable,
-  Optional,
-} from '@nestjs/common';
+import { BadRequestException, Injectable, Optional } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import {
-  DataSource,
-  type EntityManager,
-  Repository,
-} from 'typeorm';
+import { DataSource, type EntityManager, Repository } from 'typeorm';
 
 import { CoreEventName } from '../event-bus/event-catalog';
 import { EventBusService } from '../event-bus/event-bus.service';
 import { LoyaltyAccountEntity } from './entities/loyalty-account.entity';
 import { LoyaltyTransactionEntity } from './entities/loyalty-transaction.entity';
-import {
-  computeAccrualPoints,
-  computeRedemptionValueMinor,
-} from './loyalty-status';
+import { computeAccrualPoints, computeRedemptionValueMinor } from './loyalty-status';
 import type {
   AccrueLoyaltyInput,
   LoyaltyAccountType,
@@ -74,9 +63,7 @@ export class LoyaltyService {
     @Optional() private readonly eventBus?: EventBusService,
   ) {}
 
-  async findByCustomerId(
-    customerId: string,
-  ): Promise<LoyaltyAccountType | null> {
+  async findByCustomerId(customerId: string): Promise<LoyaltyAccountType | null> {
     const row = await this.accounts.findOne({ where: { customerId } });
     return row ? toAccountType(row) : null;
   }
@@ -101,9 +88,7 @@ export class LoyaltyService {
     return toAccountType(created);
   }
 
-  async listTransactions(
-    customerId: string,
-  ): Promise<LoyaltyLedgerEntryType[]> {
+  async listTransactions(customerId: string): Promise<LoyaltyLedgerEntryType[]> {
     const rows = await this.transactions.find({
       where: { customerId },
       order: { createdAt: 'ASC' },
@@ -115,9 +100,7 @@ export class LoyaltyService {
    * Quote how many points can apply toward a checkout total.
    * Does not mutate balances.
    */
-  async quoteRedeem(
-    input: QuoteLoyaltyRedeemInput,
-  ): Promise<QuoteLoyaltyRedeemResult> {
+  async quoteRedeem(input: QuoteLoyaltyRedeemInput): Promise<QuoteLoyaltyRedeemResult> {
     const customerId = input.customerId?.trim();
     if (!customerId) {
       return {
@@ -132,9 +115,7 @@ export class LoyaltyService {
     try {
       maxAmount = BigInt(String(input.maxAmountMinor));
     } catch {
-      throw new BadRequestException(
-        'maxAmountMinor must be an integer minor amount',
-      );
+      throw new BadRequestException('maxAmountMinor must be an integer minor amount');
     }
     if (maxAmount < 0n) {
       throw new BadRequestException('maxAmountMinor must be >= 0');
@@ -155,9 +136,7 @@ export class LoyaltyService {
 
     // 1 point = 1 minor unit (LOYALTY_REDEMPTION_MINOR_UNITS_PER_POINT).
     const maxByTotal = Number(
-      maxAmount > BigInt(Number.MAX_SAFE_INTEGER)
-        ? BigInt(Number.MAX_SAFE_INTEGER)
-        : maxAmount,
+      maxAmount > BigInt(Number.MAX_SAFE_INTEGER) ? BigInt(Number.MAX_SAFE_INTEGER) : maxAmount,
     );
     const pointsToRedeem = Math.min(requested, available, maxByTotal);
     return {
@@ -270,9 +249,7 @@ export class LoyaltyService {
     const saved = await this.dataSource.transaction(async (manager) => {
       const account = await this.lockAccount(manager, customerId);
       if (!account) {
-        throw new BadRequestException(
-          `No loyalty account for customer ${customerId}`,
-        );
+        throw new BadRequestException(`No loyalty account for customer ${customerId}`);
       }
       if (account.pointsBalance < points) {
         throw new BadRequestException(
@@ -293,9 +270,7 @@ export class LoyaltyService {
           points: -points,
           balanceAfter: next,
           orderId,
-          note:
-            input.note ??
-            (orderId ? `Redeemed on order ${orderId}` : 'Redeemed at checkout'),
+          note: input.note ?? (orderId ? `Redeemed on order ${orderId}` : 'Redeemed at checkout'),
         }),
       );
 

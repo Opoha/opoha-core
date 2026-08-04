@@ -16,7 +16,9 @@ export class RolePermissionEntity {
   @JoinColumn({ name: 'role_id' })
   role!: RoleEntity;
 
-  @ManyToOne(() => PermissionEntity, (permission) => permission.rolePermissions, { onDelete: 'CASCADE' })
+  @ManyToOne(() => PermissionEntity, (permission) => permission.rolePermissions, {
+    onDelete: 'CASCADE',
+  })
   @JoinColumn({ name: 'permission_id' })
   permission!: PermissionEntity;
 }

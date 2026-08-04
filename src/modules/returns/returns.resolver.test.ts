@@ -24,10 +24,7 @@ describe('ReturnsResolver RBAC (resolver metadata + PermissionsGuard)', () => {
   };
   let resolver: ReturnsResolver;
 
-  function gqlContext(
-    req: { user?: unknown },
-    handler: (...args: never[]) => unknown,
-  ) {
+  function gqlContext(req: { user?: unknown }, handler: (...args: never[]) => unknown) {
     return {
       getType: () => 'graphql',
       getArgs: () => [{}, {}, { req }, {}],
@@ -53,57 +50,33 @@ describe('ReturnsResolver RBAC (resolver metadata + PermissionsGuard)', () => {
 
   it('declares return:* permission keys', () => {
     const reflector = new Reflector();
+    expect(reflector.get(REQUIRE_PERMISSION_KEY, ReturnsResolver.prototype.returns)).toEqual([
+      'return:read',
+    ]);
+    expect(reflector.get(REQUIRE_PERMISSION_KEY, ReturnsResolver.prototype.returnById)).toEqual([
+      'return:read',
+    ]);
+    expect(reflector.get(REQUIRE_PERMISSION_KEY, ReturnsResolver.prototype.returnsByOrder)).toEqual(
+      ['return:read'],
+    );
+    expect(reflector.get(REQUIRE_PERMISSION_KEY, ReturnsResolver.prototype.createReturn)).toEqual([
+      'return:create',
+    ]);
+    expect(reflector.get(REQUIRE_PERMISSION_KEY, ReturnsResolver.prototype.approveReturn)).toEqual([
+      'return:approve',
+    ]);
+    expect(reflector.get(REQUIRE_PERMISSION_KEY, ReturnsResolver.prototype.receiveReturn)).toEqual([
+      'return:receive',
+    ]);
     expect(
-      reflector.get(REQUIRE_PERMISSION_KEY, ReturnsResolver.prototype.returns),
-    ).toEqual(['return:read']);
-    expect(
-      reflector.get(
-        REQUIRE_PERMISSION_KEY,
-        ReturnsResolver.prototype.returnById,
-      ),
-    ).toEqual(['return:read']);
-    expect(
-      reflector.get(
-        REQUIRE_PERMISSION_KEY,
-        ReturnsResolver.prototype.returnsByOrder,
-      ),
-    ).toEqual(['return:read']);
-    expect(
-      reflector.get(
-        REQUIRE_PERMISSION_KEY,
-        ReturnsResolver.prototype.createReturn,
-      ),
-    ).toEqual(['return:create']);
-    expect(
-      reflector.get(
-        REQUIRE_PERMISSION_KEY,
-        ReturnsResolver.prototype.approveReturn,
-      ),
-    ).toEqual(['return:approve']);
-    expect(
-      reflector.get(
-        REQUIRE_PERMISSION_KEY,
-        ReturnsResolver.prototype.receiveReturn,
-      ),
-    ).toEqual(['return:receive']);
-    expect(
-      reflector.get(
-        REQUIRE_PERMISSION_KEY,
-        ReturnsResolver.prototype.completeReturnRefund,
-      ),
+      reflector.get(REQUIRE_PERMISSION_KEY, ReturnsResolver.prototype.completeReturnRefund),
     ).toEqual(['return:refund']);
     expect(
-      reflector.get(
-        REQUIRE_PERMISSION_KEY,
-        ReturnsResolver.prototype.completeReturnExchange,
-      ),
+      reflector.get(REQUIRE_PERMISSION_KEY, ReturnsResolver.prototype.completeReturnExchange),
     ).toEqual(['return:exchange']);
-    expect(
-      reflector.get(
-        REQUIRE_PERMISSION_KEY,
-        ReturnsResolver.prototype.cancelReturn,
-      ),
-    ).toEqual(['return:cancel']);
+    expect(reflector.get(REQUIRE_PERMISSION_KEY, ReturnsResolver.prototype.cancelReturn)).toEqual([
+      'return:cancel',
+    ]);
   });
 
   it('PermissionsGuard denies completeReturnRefund without return:refund', async () => {

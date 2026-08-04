@@ -2,10 +2,7 @@ import { describe, expect, it } from 'vitest';
 
 import { ShippingEngine } from './shipping-engine.service';
 import { ShippingMethodRegistry } from './shipping-method.registry';
-import type {
-  ShippingMethodProvider,
-  ShippingQuoteInput,
-} from './shipping-method';
+import type { ShippingMethodProvider, ShippingQuoteInput } from './shipping-method';
 
 const sampleQuoteInput: ShippingQuoteInput = {
   currencyCode: 'USD',
@@ -41,10 +38,7 @@ describe('ShippingEngine', () => {
     const registry = new ShippingMethodRegistry();
     registry.register('a', stubMethod({ code: 'flat-rate', displayName: 'A' }));
     expect(() =>
-      registry.register(
-        'b',
-        stubMethod({ code: 'flat-rate', displayName: 'B' }),
-      ),
+      registry.register('b', stubMethod({ code: 'flat-rate', displayName: 'B' })),
     ).toThrow(/conflict/);
   });
 
@@ -289,11 +283,7 @@ describe('ShippingEngine', () => {
       }),
     );
 
-    const rate = await engine.findQuotedRate(
-      sampleQuoteInput,
-      'flat-rate',
-      'flat-rate',
-    );
+    const rate = await engine.findQuotedRate(sampleQuoteInput, 'flat-rate', 'flat-rate');
     expect(rate.methodCode).toBe('flat-rate');
     expect(rate.code).toBe('flat-rate');
     expect(rate.amount.amountMinor).toBe('799');
@@ -317,8 +307,8 @@ describe('ShippingEngine', () => {
       }),
     );
 
-    await expect(
-      engine.findQuotedRate(sampleQuoteInput, 'flat-rate', 'overnight'),
-    ).rejects.toThrow(/not available/);
+    await expect(engine.findQuotedRate(sampleQuoteInput, 'flat-rate', 'overnight')).rejects.toThrow(
+      /not available/,
+    );
   });
 });

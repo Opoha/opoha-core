@@ -37,10 +37,7 @@ export class PromotionsEngine {
    * Apply promotions via all active providers (or a single code when passed).
    * Discounts are summed and capped at merchandise subtotal.
    */
-  async apply(
-    input: PromotionApplyInput,
-    providerCode?: string,
-  ): Promise<PromotionApplyResult> {
+  async apply(input: PromotionApplyInput, providerCode?: string): Promise<PromotionApplyResult> {
     this.requireApplyInput(input);
     const providers = this.resolveProviders(providerCode);
 
@@ -66,10 +63,7 @@ export class PromotionsEngine {
         );
       }
 
-      const providerDiscount = this.requireNonNegativeMinor(
-        result.discountMinor,
-        'discountMinor',
-      );
+      const providerDiscount = this.requireNonNegativeMinor(result.discountMinor, 'discountMinor');
       discount += BigInt(providerDiscount);
       if (result.freeShipping) {
         freeShipping = true;
@@ -129,18 +123,14 @@ export class PromotionsEngine {
 
     const active = this.registry.list(true);
     if (active.length === 0) {
-      throw new BadRequestException(
-        'No active promotion rule provider is registered',
-      );
+      throw new BadRequestException('No active promotion rule provider is registered');
     }
     return active.map((e) => e.provider);
   }
 
   private requireApplyInput(input: PromotionApplyInput): void {
     if (!input.currencyCode?.trim()) {
-      throw new BadRequestException(
-        'currencyCode is required for promotion apply',
-      );
+      throw new BadRequestException('currencyCode is required for promotion apply');
     }
     if (!Array.isArray(input.items) || input.items.length === 0) {
       throw new BadRequestException('items are required for promotion apply');
