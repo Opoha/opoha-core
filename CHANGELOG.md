@@ -4,6 +4,13 @@ All notable changes to `@opoha/core` are documented in this file.
 
 The format is based on [Keep a Changelog](https://keepachangelog.com/), and this project adheres to [Semantic Versioning](https://semver.org/).
 
+## [1.0.5] — 2026-08-04
+
+### Fixed
+
+- Load `.env` / `.env.local` only from the app root (nearest `opoha.config.json`) — no bare `dotenv.config()` from `node_modules/@opoha/core` cwd (avoids confusing `injected env … ../../../../../../.env` logs).
+- `db:migrate` prints a Docker Compose / `DATABASE_URL` hint when the connection is refused.
+
 ## [1.0.4] — 2026-08-04
 
 ### Fixed

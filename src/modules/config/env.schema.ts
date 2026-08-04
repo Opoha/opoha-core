@@ -1,5 +1,6 @@
-import { config as loadDotenv } from 'dotenv';
 import { z } from 'zod';
+
+import { loadAppEnv } from '../../database/load-app-env';
 
 /** Dev/test-only default — production must set JWT_SECRET explicitly. */
 export const DEV_JWT_SECRET_FALLBACK = 'dev-only-insecure-jwt-secret-change-me';
@@ -54,11 +55,11 @@ export type AppEnv = z.infer<typeof envSchema> & {
 
 /**
  * Load and Zod-validate process env. Fail-fast on invalid values.
- * When `source` is omitted, loads `.env` via dotenv then reads `process.env`.
+ * When `source` is omitted, loads app-root `.env` / `.env.local` then reads `process.env`.
  */
 export function loadEnv(source?: NodeJS.ProcessEnv): AppEnv {
   if (source === undefined) {
-    loadDotenv();
+    loadAppEnv();
   }
   const parsed = envSchema.safeParse(source ?? process.env);
   if (!parsed.success) {

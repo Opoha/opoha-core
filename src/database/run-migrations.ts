@@ -22,22 +22,37 @@ async function main(): Promise<void> {
   }
 }
 
-main().catch((error: unknown) => {
-  let message: string;
+function formatMigrationError(error: unknown): string {
   if (error instanceof AggregateError) {
     const parts = error.errors.map((e) =>
       e instanceof Error ? e.message || (e as NodeJS.ErrnoException).code || String(e) : String(e),
     );
-    message =
+    return (
       error.message ||
       (error as NodeJS.ErrnoException).code ||
       parts.filter(Boolean).join('; ') ||
-      'connection failed';
-  } else if (error instanceof Error) {
-    message = error.message || (error as NodeJS.ErrnoException).code || String(error);
-  } else {
-    message = String(error);
+      'connection failed'
+    );
   }
+  if (error instanceof Error) {
+    return error.message || (error as NodeJS.ErrnoException).code || String(error);
+  }
+  return String(error);
+}
+
+function isConnectionRefused(message: string): boolean {
+  return /ECONNREFUSED|ENOTFOUND|EAI_AGAIN|connect\s+ECONNREFUSED/i.test(message);
+}
+
+main().catch((error: unknown) => {
+  const message = formatMigrationError(error);
   process.stderr.write(`Migration failed: ${message}\n`);
+  if (isConnectionRefused(message)) {
+    process.stderr.write(
+      'Hint: Postgres is not reachable. From your app root run `docker compose up -d`,\n' +
+        'wait until healthy (`docker compose ps`), then check DATABASE_URL in `.env`\n' +
+        '(default: postgresql://opoha:opoha@localhost:5433/opoha).\n',
+    );
+  }
   process.exitCode = 1;
 });
