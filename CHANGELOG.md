@@ -4,6 +4,18 @@ All notable changes to `@opoha/core` are documented in this file.
 
 The format is based on [Keep a Changelog](https://keepachangelog.com/), and this project adheres to [Semantic Versioning](https://semver.org/).
 
+## [1.0.3] — 2026-08-04
+
+### Fixed
+
+- Consumer DX: `dev` / `db:migrate` / `db:seed` no longer require `tsx` or `typescript` (devDependencies). Published `dist` includes compiled TypeORM data-source, migrations, and seed entrypoints; `dev` runs prebuilt `node --watch dist/main.js`.
+- Load `.env` from the nearest app root (`opoha.config.json`) so migrate/seed/start work when core is installed under `node_modules`.
+
+### Changed
+
+- Moved TypeORM CLI sources to `src/database/` (ships in `dist/database/`).
+- Monorepo rebuild-on-start: use `pnpm dev:rebuild` or `pnpm db:migrate:ts` when iterating on TypeScript sources.
+
 ## [1.0.2] — 2026-08-04
 
 ### Changed

@@ -178,7 +178,7 @@ curl -H 'X-API-Version: 1' http://localhost:4000/graphql
 
 ## TypeORM
 
-Auth-owned entities under `src/modules/auth/entities/`; CLI DataSource at `database/data-source.ts`. Spike writeup:
+Auth-owned entities under `src/modules/auth/entities/`; CLI DataSource at `src/database/data-source.ts`. Spike writeup:
 
 - Workspace: `opoha-workspace/docs/research/2026-08-03-typeorm-ownership-spike.md`
 - Local mirror: `database/spikes/typeorm-ownership-spike.md`

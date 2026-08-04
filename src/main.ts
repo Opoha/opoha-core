@@ -1,13 +1,13 @@
 import 'reflect-metadata';
-import { config as loadDotenv } from 'dotenv';
-
-loadDotenv();
 
 import { NestFactory } from '@nestjs/core';
 
 import { AppModule } from './app.module';
+import { loadAppEnv } from './database/load-app-env';
 import { ConfigService } from './modules/config/config.service';
 import { AppLogger } from './modules/logging/app-logger';
+
+loadAppEnv();
 
 async function bootstrap(): Promise<void> {
   const app = await NestFactory.create(AppModule, { bufferLogs: true });

@@ -1,15 +1,14 @@
 /**
- * TypeORM seed entry — run via `pnpm db:seed`.
+ * TypeORM seed entry — run via `pnpm db:seed` / `node dist/database/seed.js`.
  */
-import { config as loadDotenv } from 'dotenv';
-
-import { resolveSeedAdminFromEnv, seedAuth } from '../src/modules/auth/seed/seed-auth';
-import { createTypeOrmSeedStore } from '../src/modules/auth/seed/typeorm-seed-store';
-import { seedLocalization } from '../src/modules/localization/seed/seed-localization';
-import { createTypeOrmLocalizationSeedStore } from '../src/modules/localization/seed/typeorm-localization-seed-store';
+import { resolveSeedAdminFromEnv, seedAuth } from '../modules/auth/seed/seed-auth';
+import { createTypeOrmSeedStore } from '../modules/auth/seed/typeorm-seed-store';
+import { seedLocalization } from '../modules/localization/seed/seed-localization';
+import { createTypeOrmLocalizationSeedStore } from '../modules/localization/seed/typeorm-localization-seed-store';
 import dataSource from './data-source';
+import { loadAppEnv } from './load-app-env';
 
-loadDotenv();
+loadAppEnv();
 
 async function main(): Promise<void> {
   await dataSource.initialize();

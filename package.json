@@ -1,6 +1,6 @@
 {
   "name": "@opoha/core",
-  "version": "1.0.2",
+  "version": "1.0.3",
   "description": "Opoha commerce engine — NestJS modular monolith runtime",
   "license": "MIT",
   "type": "commonjs",
@@ -12,7 +12,8 @@
   ],
   "scripts": {
     "build": "tsc -p tsconfig.build.json",
-    "dev": "tsc -p tsconfig.build.json && node --enable-source-maps --watch dist/main.js",
+    "dev": "node --enable-source-maps --watch dist/main.js",
+    "dev:rebuild": "tsc -p tsconfig.build.json && node --enable-source-maps --watch dist/main.js",
     "start": "node dist/main.js",
     "start:prod": "node dist/main.js",
     "test": "vitest run",
@@ -35,11 +36,14 @@
     "docker:up": "docker compose up -d",
     "docker:down": "docker compose down",
     "typecheck": "tsc -p tsconfig.json --noEmit",
-    "db:migrate": "tsx ./node_modules/typeorm/cli.js migration:run -d database/data-source.ts",
-    "db:seed": "tsx database/seed.ts",
+    "db:migrate": "node dist/database/run-migrations.js",
+    "db:seed": "node dist/database/seed.js",
+    "db:migrate:revert": "node dist/database/run-migrate-revert.js",
+    "db:migrate:ts": "tsx ./node_modules/typeorm/cli.js migration:run -d src/database/data-source.ts",
+    "db:seed:ts": "tsx src/database/seed.ts",
+    "db:migrate:revert:ts": "tsx ./node_modules/typeorm/cli.js migration:revert -d src/database/data-source.ts",
     "dev:tsx": "tsx watch src/main.ts",
-    "typeorm": "tsx ./node_modules/typeorm/cli.js",
-    "db:migrate:revert": "tsx ./node_modules/typeorm/cli.js migration:revert -d database/data-source.ts"
+    "typeorm": "tsx ./node_modules/typeorm/cli.js"
   },
   "engines": {
     "node": ">=20"
