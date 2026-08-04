@@ -5,3 +5,9 @@ allowBuilds:
   esbuild: true
   '@apollo/protobufjs': true
   protobufjs: true
+
+minimumReleaseAgeExclude:
+  - '@opoha/eslint-config@1.0.0'
+  - '@opoha/prettier-config@1.0.0'
+  - '@opoha/typescript-config@1.0.0'
+  - '@opoha/vitest-config@1.0.0'
