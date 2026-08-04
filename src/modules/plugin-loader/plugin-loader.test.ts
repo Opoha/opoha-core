@@ -1,6 +1,6 @@
 import { mkdirSync, mkdtempSync, writeFileSync } from 'node:fs';
 import { tmpdir } from 'node:os';
-import { join } from 'node:path';
+import { join, resolve } from 'node:path';
 
 import { describe, expect, it } from 'vitest';
 
@@ -23,7 +23,12 @@ import {
   discoverPluginsInDirectory,
   parsePluginPathsEnv,
 } from './plugin-discovery';
-import { findOpohaAppConfig, parsePluginsField, resolvePluginSpecifier } from './opoha-app-config';
+import {
+  findOpohaAppConfig,
+  parsePluginsField,
+  resolveAppConfigStartDir,
+  resolvePluginSpecifier,
+} from './opoha-app-config';
 import { canBootPlugin, transitionPluginState } from './plugin-lifecycle';
 import { PluginLoaderService } from './plugin-loader.service';
 import { PLUGIN_CONTRACT_VERSION, parsePluginManifest } from './plugin-manifest';
@@ -240,6 +245,51 @@ describe('plugin discovery', () => {
       expect(ordered.map((p) => p.manifest.id)).toEqual(['alpha', 'beta']);
     } finally {
       process.chdir(cwd);
+    }
+  });
+
+  it('loads app opoha.config.json via OPOHA_APP_ROOT when cwd is linked core', () => {
+    const parent = mkdtempSync(join(tmpdir(), 'opoha-link-app-root-'));
+    const app = join(parent, 'my-app');
+    const coreLike = join(parent, 'opoha-core');
+    mkdirSync(app, { recursive: true });
+    mkdirSync(coreLike, { recursive: true });
+    const plugs = join(app, 'plugins');
+    const alpha = pluginDir(plugs, 'alpha');
+    writeFileSync(
+      join(app, 'opoha.config.json'),
+      JSON.stringify({ name: 'linked-app', plugins: ['./plugins/alpha'] }),
+    );
+    writeFileSync(
+      join(coreLike, 'package.json'),
+      JSON.stringify({ name: '@opoha/core', version: '0.0.0' }),
+    );
+
+    expect(resolveAppConfigStartDir(coreLike, { OPOHA_APP_ROOT: app })).toBe(resolve(app));
+
+    const cwd = process.cwd();
+    const prev = process.env.OPOHA_APP_ROOT;
+    try {
+      process.chdir(coreLike);
+      process.env.OPOHA_APP_ROOT = app;
+      // cwd has no opoha.config.json and walking parents never reaches sibling app
+      expect(discoverPluginsFromAppConfig(process.cwd())).toEqual([]);
+      const { loader } = createLoader((key) => {
+        if (key === 'OPOHA_PLUGINS' || key === 'OPOHA_PLUGINS_PATH') {
+          return '';
+        }
+        return undefined;
+      });
+      const ordered = loader.reload();
+      expect(ordered.map((p) => p.manifest.id)).toEqual(['alpha']);
+      expect(ordered[0]?.rootPath).toBe(alpha);
+    } finally {
+      process.chdir(cwd);
+      if (prev === undefined) {
+        delete process.env.OPOHA_APP_ROOT;
+      } else {
+        process.env.OPOHA_APP_ROOT = prev;
+      }
     }
   });
 

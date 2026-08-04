@@ -20,6 +20,7 @@ import { TaxProviderRegistry } from '../tax-engine/public';
 import { AdminExtensionRegistry } from './admin-extension-registry';
 import { ContributionRegistry } from './contribution-registry';
 import { orderPluginsByDependency } from './dependency-order';
+import { resolveAppConfigStartDir } from './opoha-app-config';
 import {
   discoverPlugins,
   discoverPluginsFromAppConfig,
@@ -341,9 +342,10 @@ export class PluginLoaderService implements OnModuleInit {
   /**
    * Config-first discovery: `opoha.config.json` plugins, then optional env overrides.
    * Env (`OPOHA_PLUGINS` / `OPOHA_PLUGINS_PATH`) wins on duplicate plugin ids (CI/advanced).
+   * Uses `OPOHA_APP_ROOT` when set so linked cores (cwd = package root) still find the app.
    */
   private discoverConfigured(): DiscoveredPlugin[] {
-    const startDir = process.cwd();
+    const startDir = resolveAppConfigStartDir();
     const fromConfig = discoverPluginsFromAppConfig(startDir);
 
     const envPaths = parsePluginPathsEnv(this.config.get('OPOHA_PLUGINS'));

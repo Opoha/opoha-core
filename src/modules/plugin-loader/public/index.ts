@@ -29,7 +29,9 @@ export {
 } from '../plugin-discovery';
 export {
   findOpohaAppConfig,
+  OPOHA_APP_ROOT_ENV,
   parsePluginsField,
+  resolveAppConfigStartDir,
   resolvePluginSpecifier,
   isPluginRootDirectory,
 } from '../opoha-app-config';

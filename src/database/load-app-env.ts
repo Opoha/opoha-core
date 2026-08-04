@@ -3,7 +3,10 @@ import { join, resolve } from 'node:path';
 
 import { config as loadDotenv } from 'dotenv';
 
-import { findOpohaAppConfig } from '../modules/plugin-loader/opoha-app-config';
+import {
+  findOpohaAppConfig,
+  resolveAppConfigStartDir,
+} from '../modules/plugin-loader/opoha-app-config';
 
 const DOTENV_QUIET = { quiet: true } as const;
 
@@ -14,10 +17,12 @@ const DOTENV_QUIET = { quiet: true } as const;
  *
  * Order: `.env` then `.env.local` (later does not override already-set keys).
  * Does not override variables already set in `process.env` (e.g. by the CLI).
+ * Honors `OPOHA_APP_ROOT` when set (linked `file:` core / `opoha dev`).
  */
-export function loadAppEnv(startDir: string = process.cwd()): void {
-  const app = findOpohaAppConfig(startDir);
-  const root = app?.root ?? resolve(startDir);
+export function loadAppEnv(startDir?: string): void {
+  const resolvedStart = resolveAppConfigStartDir(startDir ?? process.cwd());
+  const app = findOpohaAppConfig(resolvedStart);
+  const root = app?.root ?? resolve(resolvedStart);
 
   for (const name of ['.env', '.env.local'] as const) {
     const envPath = join(root, name);

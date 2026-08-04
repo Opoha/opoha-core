@@ -3,6 +3,13 @@ import { createRequire } from 'node:module';
 import { dirname, isAbsolute, join, resolve } from 'node:path';
 
 /**
+ * Env set by `@opoha/cli` when it runs core scripts with `cwd` at the core
+ * package root (common with `file:` / `--link` installs). Points at the
+ * consumer app that owns `opoha.config.json`.
+ */
+export const OPOHA_APP_ROOT_ENV = 'OPOHA_APP_ROOT' as const;
+
+/**
  * App-level `opoha.config.json` shape used for plugin discovery (config-first).
  */
 export type OpohaAppConfigFile = {
@@ -18,6 +25,22 @@ export type FoundOpohaAppConfig = {
   configPath: string;
   config: OpohaAppConfigFile;
 };
+
+/**
+ * Directory to start config/env discovery from.
+ * Prefer `OPOHA_APP_ROOT` (CLI) over `process.cwd()` so linked `file:` cores
+ * that nest with cwd=`opoha-core` still load the app's `opoha.config.json`.
+ */
+export function resolveAppConfigStartDir(
+  fallbackDir: string = process.cwd(),
+  env: NodeJS.ProcessEnv = process.env,
+): string {
+  const fromEnv = env[OPOHA_APP_ROOT_ENV]?.trim();
+  if (fromEnv && fromEnv.length > 0) {
+    return resolve(fromEnv);
+  }
+  return resolve(fallbackDir);
+}
 
 /**
  * Walk parents from `startDir` looking for `opoha.config.json`.

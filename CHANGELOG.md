@@ -4,6 +4,12 @@ All notable changes to `@opoha/core` are documented in this file.
 
 The format is based on [Keep a Changelog](https://keepachangelog.com/), and this project adheres to [Semantic Versioning](https://semver.org/).
 
+## [1.0.8] — 2026-08-04
+
+### Fixed
+
+- Plugin / env discovery honors `OPOHA_APP_ROOT` so linked `file:` cores (CLI runs with `cwd` at `opoha-core`) still load the consumer app's `opoha.config.json` and `.env`.
+
 ## [1.0.6] — 2026-08-04
 
 ### Fixed
