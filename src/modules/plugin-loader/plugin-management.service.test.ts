@@ -23,15 +23,17 @@ function createService() {
     save: vi.fn(async (row: object) => row),
   };
   const audit = { append: vi.fn().mockResolvedValue({ id: 'aud' }) };
+  const graphqlBridge = { sync: vi.fn() };
 
   const service = new PluginManagementService(
     loader as never,
     admin,
+    graphqlBridge as never,
     states as never,
     audit as never,
   );
 
-  return { service, loader, admin, states, audit };
+  return { service, loader, admin, states, audit, graphqlBridge };
 }
 
 function sampleRecord(state: string = 'discovered') {
@@ -96,7 +98,7 @@ describe('PluginManagementService', () => {
   });
 
   it('installs then enables from discovered and audits', async () => {
-    const { service, loader, audit, states } = createService();
+    const { service, loader, audit, states, graphqlBridge } = createService();
     loader.getRecord.mockReturnValue(sampleRecord('discovered'));
     loader.getState.mockReturnValueOnce('discovered').mockReturnValueOnce('installed');
     loader.install.mockResolvedValue('installed');
@@ -110,6 +112,7 @@ describe('PluginManagementService', () => {
     expect(loader.install).toHaveBeenCalledWith('sample');
     expect(loader.enable).toHaveBeenCalledWith('sample');
     expect(states.save).toHaveBeenCalled();
+    expect(graphqlBridge.sync).toHaveBeenCalled();
     expect(audit.append).toHaveBeenCalledWith(
       expect.objectContaining({
         action: AuditAction.PLUGIN_ENABLE,
@@ -121,13 +124,14 @@ describe('PluginManagementService', () => {
   });
 
   it('disables an enabled plugin', async () => {
-    const { service, loader, audit } = createService();
+    const { service, loader, audit, graphqlBridge } = createService();
     loader.getRecord.mockReturnValue(sampleRecord('enabled'));
     loader.getState.mockReturnValue('enabled');
     loader.disable.mockResolvedValue('disabled');
 
     await service.disable('sample', 'user-1');
     expect(loader.disable).toHaveBeenCalledWith('sample');
+    expect(graphqlBridge.sync).toHaveBeenCalled();
     expect(audit.append).toHaveBeenCalledWith(
       expect.objectContaining({ action: AuditAction.PLUGIN_DISABLE }),
     );

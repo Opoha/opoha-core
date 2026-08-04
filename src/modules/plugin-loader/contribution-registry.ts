@@ -8,7 +8,7 @@ export type GraphQLContribution = {
   /** Logical name for conflict detection (e.g. query field). */
   name: string;
   kind: 'type' | 'query' | 'mutation' | 'resolver';
- /** Opaque descriptor — Nest wiring lands with sample plugin. */
+  /** Opaque descriptor — see `PluginGraphQLFieldDescriptor` in plugin-graphql-merge. */
   descriptor?: unknown;
   active: boolean;
 };

@@ -3,6 +3,7 @@ import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 
 import { PluginStateEntity } from './entities/plugin-state.entity';
+import { PluginGraphQLBridgeService } from './plugin-graphql-bridge.service';
 import { PluginLoaderService } from './plugin-loader.service';
 import { PluginManagementService } from './plugin-management.service';
 
@@ -11,6 +12,9 @@ import { PluginManagementService } from './plugin-management.service';
  * Discovers plugins from opoha.config.json (and optional env) on module init; here we dynamically import
  * definitions and restore durable enable state so Payment/Shipping/Tax
  * registries are populated before GraphQL serves traffic.
+ *
+ * After `bootAll`, merges `registerGraphQL` query/mutation contributions into the
+ * live Apollo schema (Nest builds the code-first schema before plugins boot).
  */
 @Injectable()
 export class PluginBootstrapService implements OnApplicationBootstrap {
@@ -19,6 +23,7 @@ export class PluginBootstrapService implements OnApplicationBootstrap {
   constructor(
     private readonly loader: PluginLoaderService,
     private readonly management: PluginManagementService,
+    private readonly graphqlBridge: PluginGraphQLBridgeService,
     @InjectRepository(PluginStateEntity)
     private readonly states: Repository<PluginStateEntity>,
   ) {}
@@ -26,6 +31,7 @@ export class PluginBootstrapService implements OnApplicationBootstrap {
   async onApplicationBootstrap(): Promise<void> {
     const result = await this.loader.loadDefinitions();
     if (result.loaded.length === 0) {
+      this.graphqlBridge.sync();
       return;
     }
 
@@ -55,5 +61,6 @@ export class PluginBootstrapService implements OnApplicationBootstrap {
     }
 
     await this.loader.bootAll();
+    this.graphqlBridge.sync();
   }
 }

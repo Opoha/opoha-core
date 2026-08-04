@@ -23,6 +23,7 @@ export type PluginRegistrationContext = {
   registerGraphQL(input: {
     name: string;
     kind: 'type' | 'query' | 'mutation' | 'resolver';
+    /** For query/mutation: `{ resolve?, type? }` — merged into Apollo at boot/enable. */
     descriptor?: unknown;
   }): void;
   registerProvider(input: { token: string; provider: unknown }): void;

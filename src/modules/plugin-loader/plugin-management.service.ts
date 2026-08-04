@@ -5,6 +5,7 @@ import { Repository } from 'typeorm';
 import { AuditAction, AuditLogsService } from '../auth/public';
 import { AdminExtensionRegistry } from './admin-extension-registry';
 import { PluginStateEntity } from './entities/plugin-state.entity';
+import { PluginGraphQLBridgeService } from './plugin-graphql-bridge.service';
 import { PluginLoaderService } from './plugin-loader.service';
 import type { PluginType } from './plugins.types';
 
@@ -16,6 +17,7 @@ export class PluginManagementService {
   constructor(
     private readonly loader: PluginLoaderService,
     private readonly adminExtensions: AdminExtensionRegistry,
+    private readonly graphqlBridge: PluginGraphQLBridgeService,
     @InjectRepository(PluginStateEntity)
     private readonly states: Repository<PluginStateEntity>,
     private readonly auditLogs: AuditLogsService,
@@ -50,6 +52,7 @@ export class PluginManagementService {
       await this.loader.enable(pluginId);
     }
     await this.upsertState(pluginId, { enabled: true });
+    this.graphqlBridge.sync();
     await this.auditLogs.append({
       action: AuditAction.PLUGIN_ENABLE,
       actorUserId: actorUserId ?? null,
@@ -66,6 +69,7 @@ export class PluginManagementService {
       await this.loader.disable(pluginId);
     }
     await this.upsertState(pluginId, { enabled: false });
+    this.graphqlBridge.sync();
     await this.auditLogs.append({
       action: AuditAction.PLUGIN_DISABLE,
       actorUserId: actorUserId ?? null,

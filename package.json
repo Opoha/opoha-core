@@ -1,6 +1,6 @@
 {
   "name": "@opoha/core",
-  "version": "1.0.6",
+  "version": "1.0.7",
   "description": "Opoha commerce engine — NestJS modular monolith runtime",
   "license": "MIT",
   "type": "commonjs",

@@ -20,6 +20,7 @@ import { CmsHostResolver } from './cms-host.resolver';
 import { ContributionRegistry } from './contribution-registry';
 import { PluginStateEntity } from './entities/plugin-state.entity';
 import { PluginBootstrapService } from './plugin-bootstrap.service';
+import { PluginGraphQLBridgeService } from './plugin-graphql-bridge.service';
 import { PluginLoaderService } from './plugin-loader.service';
 import { PluginManagementService } from './plugin-management.service';
 import { PluginsResolver } from './plugins.resolver';
@@ -46,6 +47,7 @@ import { WorkflowHostResolver } from './workflow-host.resolver';
     ContributionRegistry,
     AdminExtensionRegistry,
     PluginLoaderService,
+    PluginGraphQLBridgeService,
     PluginManagementService,
     PluginBootstrapService,
     AdminExtensionsResolver,
