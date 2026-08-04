@@ -1,7 +1,7 @@
 import type { MigrationInterface, QueryRunner } from 'typeorm';
 
 /**
- * Phase 7 A-03 — orders.order_source (web | pos | marketplace).
+ * orders.order_source (web | pos | marketplace).
  * Default web for existing checkout orders.
  *
  * OWNER: order module — plugins must not alter this table.

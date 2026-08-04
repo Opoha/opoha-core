@@ -1,7 +1,7 @@
 import type { MigrationInterface, QueryRunner } from 'typeorm';
 
 /**
- * Core tax classes + jurisdiction rules (Phase 2 C-02) — ownership: tax-engine.
+ * Core tax classes + jurisdiction rules — ownership: tax-engine.
  */
 export class TaxClassesRulesInit1722697200000 implements MigrationInterface {
   name = 'TaxClassesRulesInit1722697200000';

@@ -1,7 +1,7 @@
 import type { MigrationInterface, QueryRunner } from 'typeorm';
 
 /**
- * Phase 7 E-01 — subscription plans + customer subscription schedule state.
+ * Subscription plans + customer subscription schedule state.
  *
  * OWNER notes (ADR-0005 / ADR-0010):
  * - `subscription_plans` — subscriptions module

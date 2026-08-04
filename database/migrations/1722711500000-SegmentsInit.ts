@@ -1,7 +1,7 @@
 import type { MigrationInterface, QueryRunner } from 'typeorm';
 
 /**
- * Phase 4 E-01 — customer segments (rule-based membership for promotions).
+ * Customer segments (rule-based membership for promotions).
  */
 export class SegmentsInit1722711500000 implements MigrationInterface {
   name = 'SegmentsInit1722711500000';

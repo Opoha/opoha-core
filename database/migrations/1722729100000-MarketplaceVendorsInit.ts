@@ -1,7 +1,7 @@
 import type { MigrationInterface, QueryRunner } from 'typeorm';
 
 /**
- * Phase 7 C-01 / C-02 — marketplace vendors + product/order routing columns.
+ * Marketplace vendors + product/order routing columns.
  *
  * OWNER notes (ADR-0005 / ADR-0010):
  * - `vendors` — vendors module

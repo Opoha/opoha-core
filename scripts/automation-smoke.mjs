@@ -1,6 +1,6 @@
 #!/usr/bin/env node
 /**
- * Phase 8 F-02 — automation smoke:
+ * Automation smoke:
  * Jobs + workflow (OrderPaid) + rules + webhooks retry + boundary.
  * Orchestrates existing gate smokes across sibling packages + core boundary.
  * Exit non-zero on failure.
@@ -62,7 +62,7 @@ function runPnpm(cwd, args) {
   };
 }
 
-console.log('Automation smoke (Phase 8 F-02) — starting');
+console.log('Automation smoke — starting');
 
 for (const step of steps) {
   console.log(`\n→ ${step.label}`);

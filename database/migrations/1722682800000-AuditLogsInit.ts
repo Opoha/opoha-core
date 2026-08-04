@@ -1,7 +1,7 @@
 import type { MigrationInterface, QueryRunner } from 'typeorm';
 
 /**
- * Append-only audit_logs table for auth, user, role, and API key events (C-07 / AC-MVP-021).
+ * Append-only audit_logs table for auth, user, role, and API key events.
  */
 export class AuditLogsInit1722682800000 implements MigrationInterface {
   name = 'AuditLogsInit1722682800000';

@@ -1,7 +1,7 @@
 import type { MigrationInterface, QueryRunner } from 'typeorm';
 
 /**
- * Phase 5 F-03 / H-02 — allow B2B order statuses `draft` and `approved`
+ * Allow B2B order statuses `draft` and `approved`.
  * on `orders.status` check constraint (was pending|confirmed|fulfilled|cancelled).
  *
  * OWNER: order module (ADR-0005 / ADR-0010).

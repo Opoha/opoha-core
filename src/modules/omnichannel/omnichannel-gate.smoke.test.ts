@@ -1,5 +1,5 @@
 /**
- * Phase 7 G-02 — Omnichannel gate event contracts on the bus catalog.
+ * Omnichannel gate event contracts on the bus catalog.
  * Channel smokes live in plugin-* / digital-gate; this file locks the
  * PRD exit “events from POS/subscription (and peers) published on event bus”.
  */
@@ -7,7 +7,7 @@ import { describe, expect, it } from 'vitest';
 
 import { CoreEventName } from '../event-bus/event-catalog';
 
-describe('Omnichannel gate smoke (G-02) — event bus contracts', () => {
+describe('Omnichannel gate smoke — event bus contracts', () => {
   it('registers POS / marketplace / digital / subscription channel events', () => {
     expect(CoreEventName.PosSaleCompleted).toBe('PosSaleCompleted');
     expect(CoreEventName.VendorOrderRouted).toBe('VendorOrderRouted');

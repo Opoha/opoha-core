@@ -1,7 +1,7 @@
 import type { MigrationInterface, QueryRunner } from 'typeorm';
 
 /**
- * Phase 7 D-01 — digital download tokens + license keys.
+ * Digital download tokens + license keys.
  *
  * OWNER notes (ADR-0005 / ADR-0010):
  * - `digital_download_tokens` — digital module

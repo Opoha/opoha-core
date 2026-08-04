@@ -1,7 +1,7 @@
 import type { MigrationInterface, QueryRunner } from 'typeorm';
 
 /**
- * Core coupons + automatic discount rules (Phase 2 D-02) — ownership: promotions-engine.
+ * Core coupons + automatic discount rules — ownership: promotions-engine.
  */
 export class CouponsDiscountRulesInit1722700500000 implements MigrationInterface {
   name = 'CouponsDiscountRulesInit1722700500000';

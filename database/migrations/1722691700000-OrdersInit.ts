@@ -1,7 +1,7 @@
 import type { MigrationInterface, QueryRunner } from 'typeorm';
 
 /**
- * Carts, cart lines, orders, order lines (Phase 1 D-01–D-03).
+ * Carts, cart lines, orders, and order lines.
  */
 export class OrdersInit1722691700000 implements MigrationInterface {
   name = 'OrdersInit1722691700000';

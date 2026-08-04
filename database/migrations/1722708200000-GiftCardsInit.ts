@@ -1,7 +1,7 @@
 import type { MigrationInterface, QueryRunner } from 'typeorm';
 
 /**
- * Phase 4 C-01 — gift cards header + ledger transactions.
+ * Gift cards header + ledger transactions.
  */
 export class GiftCardsInit1722708200000 implements MigrationInterface {
   name = 'GiftCardsInit1722708200000';

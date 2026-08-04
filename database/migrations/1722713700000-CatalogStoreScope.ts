@@ -1,7 +1,7 @@
 import type { MigrationInterface, QueryRunner } from 'typeorm';
 
 /**
- * Phase 5 B-01 — store association for catalog products/categories.
+ * Store association for catalog products/categories.
  *
  * Model (auto-decide):
  * - `store_id` NULL  → shared catalog row (visible to every store)

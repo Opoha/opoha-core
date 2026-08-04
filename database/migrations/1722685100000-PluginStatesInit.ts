@@ -1,7 +1,7 @@
 import type { MigrationInterface, QueryRunner } from 'typeorm';
 
 /**
- * Durable plugin enable flag + opaque config JSON for admin management (F-07).
+ * Durable plugin enable flag + opaque config JSON for admin management.
  */
 export class PluginStatesInit1722685100000 implements MigrationInterface {
   name = 'PluginStatesInit1722685100000';

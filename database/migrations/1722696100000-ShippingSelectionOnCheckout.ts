@@ -1,7 +1,7 @@
 import type { MigrationInterface, QueryRunner } from 'typeorm';
 
 /**
- * Persist selected shipping method/rate on carts and orders (Phase 2 B-02).
+ * Persist selected shipping method/rate on carts and orders.
  * OWNER: order module tables — shipping-engine orchestrates quotes only.
  */
 export class ShippingSelectionOnCheckout1722696100000 implements MigrationInterface {

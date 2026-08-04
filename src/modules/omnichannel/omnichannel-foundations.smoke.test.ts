@@ -1,5 +1,5 @@
 /**
- * Phase 7 A-04 — informal foundations gate smoke.
+ * Omnichannel foundations gate smoke.
  * Core can represent digital fulfillment modes and non-web order sources
  * without importing `@opoha/plugin-*` (ADR-0003 / ADR-0010).
  */
@@ -12,7 +12,7 @@ import { CoreEventName } from '../event-bus/event-catalog';
 import { OrdersService } from '../order/orders.service';
 import type { CartService } from '../order/cart.service';
 
-describe('Omnichannel foundations smoke (A-04)', () => {
+describe('Omnichannel foundations smoke', () => {
   describe('create product with fulfillment modes', () => {
     let products: Map<string, ProductEntity>;
     let variantsByProduct: Map<string, ProductVariantEntity[]>;

@@ -1,7 +1,7 @@
 import type { MigrationInterface, QueryRunner } from 'typeorm';
 
 /**
- * Phase 5 F-03 — B2B company scope on carts/orders + draft/approved statuses.
+ * B2B company scope on carts/orders + draft/approved statuses.
  *
  * OWNER: order module tables — `company_id` references b2b `companies.id`
  * by FK only (ADR-0005 / ADR-0010).

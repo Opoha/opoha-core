@@ -1,7 +1,7 @@
 import type { MigrationInterface, QueryRunner } from 'typeorm';
 
 /**
- * Phase 3 E-01 — returns / RMA header + lines with status machine.
+ * Returns / RMA header + lines with status machine.
  */
 export class ReturnsInit1722707100000 implements MigrationInterface {
   name = 'ReturnsInit1722707100000';

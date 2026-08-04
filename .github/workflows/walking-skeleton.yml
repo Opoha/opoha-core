@@ -1,6 +1,6 @@
 name: Walking skeleton
 
-# H-01 / H-04 — MVP walking skeleton + doctor/plugin in CI; H-02 boundary audit.
+# CI: walking skeleton + doctor/plugin; separate job for core dependency boundary.
 # Expects sibling repos under the same GitHub owner (file: deps).
 
 on:
@@ -11,7 +11,7 @@ on:
 
 jobs:
   boundary:
-    name: H-02 core dependency boundary
+    name: Core dependency boundary
     runs-on: ubuntu-latest
     defaults:
       run:
@@ -40,7 +40,7 @@ jobs:
         run: pnpm test:boundary
 
   walking-skeleton:
-    name: H-01/H-04 walking skeleton + doctor
+    name: Walking skeleton + doctor
     runs-on: ubuntu-latest
     defaults:
       run:
@@ -146,6 +146,8 @@ jobs:
           pnpm install
           pnpm build
       - name: Build plugin-sdk + ops + content plugins
+        # Sibling checkouts live next to opoha-core; override job default working-directory.
+        working-directory: .
         run: |
           pnpm install --dir opoha-plugin-sdk
           pnpm --dir opoha-plugin-sdk build

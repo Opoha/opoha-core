@@ -1,7 +1,7 @@
 import type { MigrationInterface, QueryRunner } from 'typeorm';
 
 /**
- * Phase 5 D-01 — store-scoped display vs settlement currency config.
+ * Store-scoped display vs settlement currency config.
  *
  * OWNER: currency module — plugins must not alter this table.
  * Cross-module FK to `stores.id` only (ADR-0005 / ADR-0010).

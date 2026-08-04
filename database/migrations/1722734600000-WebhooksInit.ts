@@ -1,7 +1,7 @@
 import type { MigrationInterface, QueryRunner } from 'typeorm';
 
 /**
- * Phase 8 D-01 — outbound webhook endpoints + delivery attempts.
+ * Outbound webhook endpoints + delivery attempts.
  *
  * OWNER notes (ADR-0005 / ADR-0010):
  * - `webhook_endpoints` — webhooks module

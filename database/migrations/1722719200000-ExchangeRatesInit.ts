@@ -1,7 +1,7 @@
 import type { MigrationInterface, QueryRunner } from 'typeorm';
 
 /**
- * Phase 5 D-02 — manual / provider-written FX rates.
+ * Manual / provider-written FX rates.
  *
  * OWNER: currency module — plugins must not alter this table.
  * Semantics: 1 from_currency_code = rate × to_currency_code.

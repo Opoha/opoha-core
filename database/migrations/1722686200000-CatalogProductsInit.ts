@@ -1,7 +1,7 @@
 import type { MigrationInterface, QueryRunner } from 'typeorm';
 
 /**
- * Catalog products + variants (Phase 1 A-02).
+ * Catalog products + variants.
  * Money stored as integer minor units + ISO currency code.
  */
 export class CatalogProductsInit1722686200000 implements MigrationInterface {

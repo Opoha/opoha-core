@@ -1,7 +1,7 @@
 import type { MigrationInterface, QueryRunner } from 'typeorm';
 
 /**
- * Phase 8 A-02 — scheduled job definitions + run history.
+ * Scheduled job definitions + run history.
  *
  * OWNER notes (ADR-0005 / ADR-0010):
  * - `job_definitions` — jobs module

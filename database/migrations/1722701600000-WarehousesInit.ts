@@ -1,7 +1,7 @@
 import type { MigrationInterface, QueryRunner } from 'typeorm';
 
 /**
- * Warehouses / inventory locations (Phase 3 A-01).
+ * Warehouses / inventory locations.
  */
 export class WarehousesInit1722701600000 implements MigrationInterface {
   name = 'WarehousesInit1722701600000';

@@ -1,7 +1,7 @@
 import type { MigrationInterface, QueryRunner } from 'typeorm';
 
 /**
- * Phase 5 F-04 — B2B customer-specific price list items.
+ * B2B customer-specific price list items.
  *
  * OWNER: b2b module — plugins must not alter this table.
  * Cross-module FKs to `companies.id` and `product_variants.id`

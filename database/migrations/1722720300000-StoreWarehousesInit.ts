@@ -1,13 +1,13 @@
 import type { MigrationInterface, QueryRunner } from 'typeorm';
 
 /**
- * Phase 5 E-01 — store ↔ warehouse many-to-many association.
+ * Store ↔ warehouse many-to-many association.
  *
  * OWNER: warehouses module — plugins must not alter this table.
  * Cross-module FK to `stores.id`; warehouse FK within warehouses (ADR-0005 / ADR-0010).
  *
  * Backfill: every existing store is linked to every existing warehouse so single-store
- * and pre-E-01 deployments keep global allocation behavior. Default warehouses are
+ * and older deployments keep global allocation behavior. Default warehouses are
  * marked primary per store.
  */
 export class StoreWarehousesInit1722720300000 implements MigrationInterface {

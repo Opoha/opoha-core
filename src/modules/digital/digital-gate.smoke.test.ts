@@ -1,5 +1,5 @@
 /**
- * Phase 7 D-04 — Digital gate smoke.
+ * Digital gate smoke.
  * Purchase of a digital SKU yields a secure download link (and license key)
  * without shipping / stock reservation (ADR-0010 TypeORM; core-owned).
  */
@@ -42,7 +42,7 @@ type LicenseRow = {
   updatedAt: Date;
 };
 
-describe('Digital gate smoke (D-04)', () => {
+describe('Digital gate smoke', () => {
   const now = new Date('2026-08-04T03:30:00Z');
   const orderId = 'aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa';
   const cartId = 'bbbbbbbb-bbbb-4bbb-8bbb-bbbbbbbbbbbb';

@@ -1,7 +1,7 @@
 import type { MigrationInterface, QueryRunner } from 'typeorm';
 
 /**
- * Catalog categories (hierarchical), collections, and brands (Phase 1 A-04/A-05).
+ * Catalog categories (hierarchical), collections, and brands.
  */
 export class CatalogTaxonomyInit1722687300000 implements MigrationInterface {
   name = 'CatalogTaxonomyInit1722687300000';

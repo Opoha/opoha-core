@@ -1,6 +1,6 @@
 #!/usr/bin/env node
 /**
- * Phase 7 G-02 — omnichannel smoke:
+ * Omnichannel smoke:
  * POS sale + marketplace vendor order + digital download + subscription renew stub.
  * Orchestrates existing gate smokes across sibling packages + core event/boundary checks.
  * Exit non-zero on failure.
@@ -75,7 +75,7 @@ function runPnpm(cwd, args) {
   };
 }
 
-console.log('Omnichannel smoke (Phase 7 G-02) — starting');
+console.log('Omnichannel smoke — starting');
 
 for (const step of steps) {
   console.log(`\n→ ${step.label}`);

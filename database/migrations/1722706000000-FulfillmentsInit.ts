@@ -1,7 +1,7 @@
 import type { MigrationInterface, QueryRunner } from 'typeorm';
 
 /**
- * Phase 3 D-01 — fulfillments (pick → pack → ship) with lines + packages.
+ * Fulfillments (pick → pack → ship) with lines + packages.
  */
 export class FulfillmentsInit1722706000000 implements MigrationInterface {
   name = 'FulfillmentsInit1722706000000';

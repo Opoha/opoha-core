@@ -1,5 +1,5 @@
 /**
- * Phase 8 D-04 — Webhooks gate smoke.
+ * Webhooks gate smoke.
  * Persist a webhook endpoint (TypeORM repo, ADR-0010), publish a cataloged
  * domain event through the real event bus → dispatcher enqueues a delivery →
  * worker posts an HMAC-SHA256-signed payload. Transient HTTP failure retries
@@ -51,7 +51,7 @@ type AttemptRow = {
   createdAt: Date;
 };
 
-describe('Webhooks gate smoke (D-04)', () => {
+describe('Webhooks gate smoke', () => {
   const now = new Date('2026-08-04T06:00:00Z');
   const orderId = 'aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa';
   const secret = 'gate-webhook-secret';

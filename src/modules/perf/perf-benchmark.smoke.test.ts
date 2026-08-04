@@ -1,5 +1,5 @@
 /**
- * Phase 9 C-02 — runnable performance harness (local/CI; no cloud).
+ * Runnable performance harness (local/CI; no cloud).
  * Scenarios + SLOs: workspace docs/readiness/performance-benchmarks.md
  */
 import { describe, expect, it, vi } from 'vitest';
@@ -585,7 +585,7 @@ function buildOrdersService(): OrdersService {
   );
 }
 
-describe('Performance benchmark harness (C-02/C-03)', () => {
+describe('Performance benchmark harness', () => {
   it('runs catalog/cart/checkout/orders scenarios under SLO ceilings', async () => {
     const results: ScenarioResult[] = [];
 

@@ -1,5 +1,5 @@
 /**
- * Phase 8 C-04 — Rules gate smoke.
+ * Rules gate smoke.
  * A rule persisted via `RulesService` (TypeORM repo, ADR-0010) whose
  * conditions match an incoming cataloged domain event applies its
  * registered action end-to-end through the real event bus. A non-matching
@@ -30,7 +30,7 @@ type RuleRow = {
   updatedAt: Date;
 };
 
-describe('Rules gate smoke (C-04)', () => {
+describe('Rules gate smoke', () => {
   const now = new Date('2026-08-04T04:00:00Z');
   const customerId = '99999999-9999-4999-8999-999999999999';
   const orderId = '88888888-8888-4888-8888-888888888888';

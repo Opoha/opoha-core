@@ -1,7 +1,7 @@
 import type { MigrationInterface, QueryRunner } from 'typeorm';
 
 /**
- * Catalog attribute definitions/values + product media links (Phase 1 A-06/A-07).
+ * Catalog attribute definitions/values + product media links.
  */
 export class CatalogAttributesMediaInit1722688400000 implements MigrationInterface {
   name = 'CatalogAttributesMediaInit1722688400000';

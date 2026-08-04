@@ -1,7 +1,7 @@
 import type { MigrationInterface, QueryRunner } from 'typeorm';
 
 /**
- * Phase 4 C-03 — loyalty accounts + ledger transactions.
+ * Loyalty accounts + ledger transactions.
  */
 export class LoyaltyInit1722709300000 implements MigrationInterface {
   name = 'LoyaltyInit1722709300000';

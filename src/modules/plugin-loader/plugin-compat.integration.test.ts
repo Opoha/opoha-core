@@ -84,14 +84,14 @@ function createLoader(pluginPaths: string) {
 }
 
 /**
- * Phase 9 E-02 — official plugin compatibility integration suite.
+ * Official plugin compatibility integration suite.
  *
  * Loads the entire certified matrix (`docs/readiness/official-plugin-matrix.md`)
  * together through the production `PluginLoaderService` path — discovery,
  * manifest contractVersion checks, dynamic import, install/boot/enable —
  * without core statically importing any `@opoha/plugin-*` package (ADR-0003).
  */
-describe('Phase 9 E-02 official plugin compatibility', () => {
+describe('Official plugin compatibility', () => {
   it('every matrix entry has an existing sibling repo with a built entry', () => {
     for (const entry of OFFICIAL_PLUGIN_MATRIX) {
       const root = pluginRoot(entry.repoDir);

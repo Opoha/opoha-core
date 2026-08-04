@@ -1,7 +1,7 @@
 import type { MigrationInterface, QueryRunner } from 'typeorm';
 
 /**
- * Core payments table (Phase 2 A-02) — ownership: payment-engine.
+ * Core payments table — ownership: payment-engine.
  */
 export class PaymentsInit1722693900000 implements MigrationInterface {
   name = 'PaymentsInit1722693900000';

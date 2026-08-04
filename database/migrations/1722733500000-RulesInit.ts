@@ -1,7 +1,7 @@
 import type { MigrationInterface, QueryRunner } from 'typeorm';
 
 /**
- * Phase 8 C-01 — declarative automation rule definitions.
+ * Declarative automation rule definitions.
  *
  * OWNER notes (ADR-0005 / ADR-0010):
  * - `rule_definitions` — rules module

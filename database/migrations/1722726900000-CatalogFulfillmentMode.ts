@@ -1,7 +1,7 @@
 import type { MigrationInterface, QueryRunner } from 'typeorm';
 
 /**
- * Phase 7 A-02 — products and variants carry fulfillment_mode
+ * Products and variants carry fulfillment_mode (physical | digital | service).
  * (physical | digital | service). Default physical for existing rows.
  *
  * OWNER: catalog module — plugins must not alter these tables.

@@ -1,7 +1,7 @@
 import type { MigrationInterface, QueryRunner } from 'typeorm';
 
 /**
- * Phase 3 B-01 — per-location inventory stock.
+ * Per-location inventory stock.
  * Composite unique (variant_id, warehouse_id); backfill default warehouse.
  */
 export class InventoryPerLocation1722702700000 implements MigrationInterface {

@@ -1,7 +1,7 @@
 import type { MigrationInterface, QueryRunner } from 'typeorm';
 
 /**
- * Persist loyalty redeem intent + applied amount on carts/orders (Phase 4 C-03).
+ * Persist loyalty redeem intent + applied amount on carts/orders.
  * OWNER: order module tables — loyalty module owns points balances only.
  */
 export class CartLoyaltyOnCheckout1722710400000 implements MigrationInterface {

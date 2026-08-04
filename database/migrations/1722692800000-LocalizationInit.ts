@@ -1,7 +1,7 @@
 import type { MigrationInterface, QueryRunner } from 'typeorm';
 
 /**
- * Singleton localization settings (Phase 1 E-01).
+ * Singleton localization settings.
  */
 export class LocalizationInit1722692800000 implements MigrationInterface {
   name = 'LocalizationInit1722692800000';

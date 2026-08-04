@@ -1,7 +1,7 @@
 import type { MigrationInterface, QueryRunner } from 'typeorm';
 
 /**
- * Files metadata table — blob I/O deferred to storage plugins (D-09).
+ * Files metadata table — blob I/O deferred to storage plugins.
  */
 export class FilesInit1722684000000 implements MigrationInterface {
   name = 'FilesInit1722684000000';

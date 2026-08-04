@@ -1,7 +1,7 @@
 import type { MigrationInterface, QueryRunner } from 'typeorm';
 
 /**
- * Inventory items, reservations, and adjustments (Phase 1 B-01/B-02).
+ * Inventory items, reservations, and adjustments.
  */
 export class InventoryInit1722689500000 implements MigrationInterface {
   name = 'InventoryInit1722689500000';

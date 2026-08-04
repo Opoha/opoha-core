@@ -1,5 +1,5 @@
 /**
- * Phase 8 A-04 — Jobs gate smoke.
+ * Jobs gate smoke.
  * Cron expression runs (memory adapter `runDueAt`) and is observable via
  * TypeORM `job_definitions` / `job_runs` (ADR-0010). BullMQ/Redis live
  * wiring remains optional per work plan (test double for CI).
@@ -35,7 +35,7 @@ type RunRow = {
   createdAt: Date;
 };
 
-describe('Jobs gate smoke (A-04)', () => {
+describe('Jobs gate smoke', () => {
   const now = new Date('2026-08-04T04:00:00Z');
   let definitions: DefinitionRow[];
   let runs: RunRow[];

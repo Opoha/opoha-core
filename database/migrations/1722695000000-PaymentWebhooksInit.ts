@@ -1,7 +1,7 @@
 import type { MigrationInterface, QueryRunner } from 'typeorm';
 
 /**
- * Webhook event dedupe table (Phase 2 A-05) — ownership: payment-engine.
+ * Webhook event dedupe table — ownership: payment-engine.
  */
 export class PaymentWebhooksInit1722695000000 implements MigrationInterface {
   name = 'PaymentWebhooksInit1722695000000';

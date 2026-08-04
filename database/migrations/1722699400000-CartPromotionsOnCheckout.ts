@@ -1,7 +1,7 @@
 import type { MigrationInterface, QueryRunner } from 'typeorm';
 
 /**
- * Persist coupon code + discount snapshot on carts/orders for PromotionsEngine (Phase 2 D-01).
+ * Persist coupon code + discount snapshot on carts/orders for PromotionsEngine.
  * OWNER: order module tables — promotions-engine orchestrates calculation only.
  */
 export class CartPromotionsOnCheckout1722699400000 implements MigrationInterface {

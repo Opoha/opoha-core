@@ -1,7 +1,7 @@
 import type { MigrationInterface, QueryRunner } from 'typeorm';
 
 /**
- * Phase 3 C-01 — stock transfers between warehouses (draft → ship → receive).
+ * Stock transfers between warehouses (draft → ship → receive).
  */
 export class StockTransfersInit1722703800000 implements MigrationInterface {
   name = 'StockTransfersInit1722703800000';

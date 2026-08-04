@@ -1,7 +1,7 @@
 import type { MigrationInterface, QueryRunner } from 'typeorm';
 
 /**
- * Application-level stores / brands (Phase 5 A-01).
+ * Application-level stores / brands.
  * OWNER: stores module — plugins must not alter this table.
  */
 export class StoresInit1722712600000 implements MigrationInterface {

@@ -1,7 +1,7 @@
 import type { MigrationInterface, QueryRunner } from 'typeorm';
 
 /**
- * Phase 5 F-01 — B2B company accounts + buyer memberships.
+ * B2B company accounts + buyer memberships.
  *
  * OWNER: b2b module — plugins must not alter these tables.
  * Cross-module FKs to `stores.id` and `customers.id` (ADR-0005 / ADR-0010).

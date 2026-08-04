@@ -1,13 +1,13 @@
 #!/usr/bin/env node
 /**
- * MVP + Phase 1–5 walking skeleton.
+ * End-to-end walking skeleton for core commerce runtime.
  *
  * Proves: docker deps → migrate → seed → boot → health → staff login → me
  *   → catalog product+variant → multi-location inventory/transfer
  *   → cart → (ops) select shipping + tax → prepareCheckout → placeOrder
- *   → (store-mgmt) fulfillment pick/pack/ship → RMA refund path (Phase 3 H-02)
- *   → (content-marketing) searchProducts + CMS page read + gift-card redeem (Phase 4 H-02)
- *   → (enterprise) two stores + locale product + multi-currency cart + B2B approve (Phase 5 H-02).
+ *   → (store-mgmt) fulfillment pick/pack/ship → RMA refund path
+ *   → (content-marketing) searchProducts + CMS page read + gift-card redeem
+ *   → (enterprise) two stores + locale product + multi-currency cart + B2B approve.
  * When sibling CLI + plugin paths exist (local multi-repo), also:
  *   opoha plugin install, plugin GraphQL probe, opoha doctor.
  *
@@ -20,11 +20,11 @@
  *   SKIP_DOCKER=1     skip `docker compose up`
  *   SKIP_PLUGIN=1     skip plugin install / GraphQL probe
  *   SKIP_DOCTOR=1     skip opoha doctor
- *   SKIP_COMMERCE=1   skip catalog→order smoke (G-02)
- *   SKIP_COMMERCE_OPS=1  skip payment+shipping+tax assertions (Phase 2 G-02)
- *   SKIP_STORE_MGMT=1    skip multi-location + fulfillment + RMA (Phase 3 H-02)
- *   SKIP_CONTENT_MARKETING=1  skip search + CMS + gift-card redeem (Phase 4 H-02)
- *   SKIP_ENTERPRISE=1  skip multi-store / i18n / FX cart / B2B approve (Phase 5 H-02)
+ *   SKIP_COMMERCE=1   skip catalog→order smoke
+ *   SKIP_COMMERCE_OPS=1  skip payment+shipping+tax assertions
+ *   SKIP_STORE_MGMT=1    skip multi-location + fulfillment + RMA
+ *   SKIP_CONTENT_MARKETING=1  skip search + CMS + gift-card redeem
+ *   SKIP_ENTERPRISE=1  skip multi-store / i18n / FX cart / B2B approve
  *   OPOHA_FLAT_RATE_AMOUNT / OPOHA_TAX_STANDARD_DEFAULT_RATE_BPS  ops smoke defaults
  *   WALKING_SKELETON_PORT  override listen port for spawned core (default 4000)
  */
@@ -49,13 +49,13 @@ const SKIP_STORE_MGMT = process.env.SKIP_STORE_MGMT === '1';
 const SKIP_CONTENT_MARKETING = process.env.SKIP_CONTENT_MARKETING === '1';
 const SKIP_ENTERPRISE = process.env.SKIP_ENTERPRISE === '1';
 
-/** Phase 2 G-02 ops plugins (payment + shipping + tax). */
+/** Ops plugins (payment + shipping + tax). */
 const OPS_PLUGIN_DIRS = [
   'plugin-manual-payment',
   'plugin-shipping-flat-rate',
   'plugin-tax-standard',
 ];
-/** Phase 4 H-02 content plugins (CMS). Search works without Meilisearch (empty hits). */
+/** Content plugins (CMS). Search works without Meilisearch (empty hits). */
 const CONTENT_PLUGIN_DIRS = ['plugin-cms'];
 const PLUGIN_PATH = join(SIBLING, 'plugin-manual-payment');
 const FLAT_RATE_PLUGIN_PATH = join(SIBLING, 'plugin-shipping-flat-rate');
@@ -171,7 +171,7 @@ function ensureEnvFile(dot) {
 }
 
 function ensurePluginBuilt(pluginRoot) {
-  // Always rebuild so ops smoke is not tripped by stale dist (e.g. Phase 2
+  // Always rebuild so ops smoke is not tripped by stale dist (e.g.
   // authorize/capture added after an older dist/index.js existed).
   log('plugin', `building ${pluginRoot}`);
   run('pnpm', ['install'], { cwd: pluginRoot });
@@ -371,7 +371,7 @@ async function main() {
           input: {
             name: `Walking Skeleton ${stamp}`,
             slug,
-            description: 'G-02 commerce smoke product',
+            description: 'commerce smoke product',
             fulfillmentMode: 'physical',
             variants: [
               {
@@ -404,8 +404,8 @@ async function main() {
       }
       log('commerce', `product ${productData.createProduct.id} variant ${variantId}`);
 
-      // Phase 7 A-04: digital mode create (no checkout) — foundations smoke.
-      log('omnichannel', 'createProduct fulfillmentMode=digital (A-04)');
+      // Digital mode create (no checkout) — foundations smoke.
+      log('omnichannel', 'createProduct fulfillmentMode=digital');
       const digSlug = `ws-digital-${stamp}`;
       const dig = await gql(
         `mutation($input: CreateProductInput!) {
@@ -447,7 +447,7 @@ async function main() {
       let eastWarehouseId = null;
 
       if (!SKIP_STORE_MGMT) {
-        log('store-mgmt', 'multi-location stock smoke (Phase 3 H-02)');
+        log('store-mgmt', 'multi-location stock smoke');
         const defaultWh = await gql(
           `query { defaultWarehouse { id code isDefault } }`,
           undefined,
@@ -604,12 +604,12 @@ async function main() {
       if (!SKIP_COMMERCE_OPS && (!hasManual || !hasFlatRate || !hasTaxStandard)) {
         fail(
           'commerce-ops',
-          'Phase 2 G-02 requires sibling plugins plugin-manual-payment, plugin-shipping-flat-rate, and plugin-tax-standard (set SKIP_COMMERCE_OPS=1 to skip)',
+          'Commerce ops smoke requires sibling plugins plugin-manual-payment, plugin-shipping-flat-rate, and plugin-tax-standard (set SKIP_COMMERCE_OPS=1 to skip)',
         );
       }
 
       if (wantOps) {
-        log('commerce-ops', 'payment + shipping + tax smoke (Phase 2 G-02)');
+        log('commerce-ops', 'payment + shipping + tax smoke');
 
         if (hasManual) {
           const providers = await gql(
@@ -779,7 +779,7 @@ async function main() {
       if (order.orderSource !== 'web') {
         fail('omnichannel', `expected orderSource=web, got ${order.orderSource}`);
       }
-      log('omnichannel', `placeOrder orderSource=${order.orderSource} (A-04)`);
+      log('omnichannel', `placeOrder orderSource=${order.orderSource}`);
       if (wantOps && hasFlatRate) {
         if (order.shippingMinor !== OPS_FLAT_RATE_AMOUNT) {
           fail(
@@ -809,7 +809,7 @@ async function main() {
         if (!hasManual) {
           fail(
             'store-mgmt',
-            'Phase 3 H-02 RMA refund requires plugin-manual-payment (set SKIP_STORE_MGMT=1 to skip)',
+            'RMA refund smoke requires plugin-manual-payment (set SKIP_STORE_MGMT=1 to skip)',
           );
         }
         const orderLineId = order.lines?.[0]?.id;
@@ -987,7 +987,7 @@ async function main() {
     }
 
     if (!SKIP_CONTENT_MARKETING) {
-      log('content-marketing', 'Phase 4 H-02 search + CMS + gift-card redeem');
+      log('content-marketing', 'search + CMS + gift-card redeem');
 
       const searchData = await gql(
         `query($input: SearchProductsInput!) {
@@ -1088,7 +1088,7 @@ async function main() {
             currencyCode: 'USD',
             amountMinor: '2500',
             code: gcCode,
-            note: 'Phase 4 H-02 walking skeleton',
+            note: 'content marketing walking skeleton',
           },
         },
         token,
@@ -1109,7 +1109,7 @@ async function main() {
           input: {
             code: gcCode,
             amountMinor: '1000',
-            note: 'Phase 4 H-02 redeem smoke',
+            note: 'gift card redeem smoke',
           },
         },
         token,
@@ -1131,7 +1131,7 @@ async function main() {
     if (!SKIP_ENTERPRISE) {
       log(
         'enterprise',
-        'Phase 5 H-02 two stores + locale product + multi-currency cart + B2B approve',
+        'two stores + locale product + multi-currency cart + B2B approve',
       );
       const estamp = Date.now().toString(36);
       const thaiName = `สินค้าองค์กร ${estamp}`;
@@ -1196,7 +1196,7 @@ async function main() {
           input: {
             name: `Enterprise Widget ${estamp}`,
             slug: `ent-widget-${estamp}`,
-            description: 'Phase 5 H-02 enterprise smoke product',
+            description: 'enterprise smoke product',
             variants: [
               {
                 sku: `ENT-SKU-${estamp}`,

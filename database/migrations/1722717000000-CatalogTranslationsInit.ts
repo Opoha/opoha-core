@@ -1,7 +1,7 @@
 import type { MigrationInterface, QueryRunner } from 'typeorm';
 
 /**
- * Phase 5 C-01 — product/category translation storage (TypeORM).
+ * Product/category translation storage (TypeORM).
  *
  * OWNER: catalog module — plugins must not alter these tables.
  * Pattern: base row = default locale; translation rows = locale overrides.

@@ -1,7 +1,7 @@
 import type { MigrationInterface, QueryRunner } from 'typeorm';
 
 /**
- * Phase 3 C-03/C-04 — suppliers + purchase orders (draft → receive into location stock).
+ * Suppliers + purchase orders (draft → receive into location stock).
  */
 export class SuppliersPurchaseOrdersInit1722704900000 implements MigrationInterface {
   name = 'SuppliersPurchaseOrdersInit1722704900000';

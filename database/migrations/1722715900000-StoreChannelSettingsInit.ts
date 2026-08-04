@@ -1,7 +1,7 @@
 import type { MigrationInterface, QueryRunner } from 'typeorm';
 
 /**
- * Phase 5 B-03 — store-scoped channel settings via configuration module.
+ * Store-scoped channel settings via configuration module.
  *
  * OWNER: configuration module — plugins must not alter this table.
  * Cross-module FK to `stores.id` only (ADR-0005 / ADR-0010).

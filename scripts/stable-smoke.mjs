@@ -1,6 +1,6 @@
 #!/usr/bin/env node
 /**
- * Phase 9 G-02 — stable aggregate smoke:
+ * Stable aggregate smoke:
  * walking-skeleton + plugin-compat + perf-bench + boundary.
  * Exit non-zero on failure.
  */
@@ -57,7 +57,7 @@ function runPnpm(cwd, args, env) {
   };
 }
 
-console.log('Stable smoke (Phase 9 G-02) — starting');
+console.log('Stable smoke — starting');
 
 for (const step of steps) {
   console.log(`\n→ ${step.label}`);

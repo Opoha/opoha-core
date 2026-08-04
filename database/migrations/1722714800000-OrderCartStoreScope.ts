@@ -1,7 +1,7 @@
 import type { MigrationInterface, QueryRunner } from 'typeorm';
 
 /**
- * Phase 5 B-02 — carts and orders carry `store_id`; checkout validates store.
+ * Carts and orders carry `store_id`; checkout validates store.
  *
  * Migration strategy for existing single-store data:
  * - Ensure a default store exists (idempotent; mirrors CatalogStoreScope)

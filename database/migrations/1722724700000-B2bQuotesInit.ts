@@ -1,7 +1,7 @@
 import type { MigrationInterface, QueryRunner } from 'typeorm';
 
 /**
- * Phase 5 F-05 — B2B buyer quote / purchase-order foundation.
+ * B2B buyer quote / purchase-order foundation.
  *
  * Distinct from supply `purchase_orders` (supplier inbound).
  * OWNER: b2b module — plugins must not alter these tables.

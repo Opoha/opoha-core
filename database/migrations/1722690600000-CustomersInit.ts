@@ -1,7 +1,7 @@
 import type { MigrationInterface, QueryRunner } from 'typeorm';
 
 /**
- * Customers, addresses, groups, and memberships (Phase 1 C-01/C-03).
+ * Customers, addresses, groups, and memberships.
  */
 export class CustomersInit1722690600000 implements MigrationInterface {
   name = 'CustomersInit1722690600000';
