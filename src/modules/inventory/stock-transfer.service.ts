@@ -216,7 +216,7 @@ export class StockTransferService {
       }
 
       for (const line of lines) {
-        let item = await manager
+        const item = await manager
           .getRepository(InventoryItemEntity)
           .createQueryBuilder('item')
           .setLock('pessimistic_write')
