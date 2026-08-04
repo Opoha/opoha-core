@@ -252,7 +252,7 @@ describe('ExchangeRateService (unit)', () => {
     expect(pair[0]?.rate).toBe(1.1);
   });
 
-  describe('syncFromProvider (D-04)', () => {
+  describe('syncFromProvider', () => {
     const provider: FXRateProvider = {
       code: 'openexchangerates',
       displayName: 'Open Exchange Rates',

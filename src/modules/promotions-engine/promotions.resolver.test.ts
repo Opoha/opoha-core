@@ -10,7 +10,7 @@ import { PromotionsEngine } from './promotions-engine.service';
 import { PromotionsResolver } from './promotions.resolver';
 
 /**
- * D-05 — promotions GraphQL permission metadata + resolver behavior.
+ * promotions GraphQL permission metadata + resolver behavior.
  */
 describe('PromotionsResolver RBAC (resolver metadata + PermissionsGuard deny)', () => {
   function gqlContext(req: { user?: unknown }, handler: (...args: never[]) => unknown) {

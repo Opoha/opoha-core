@@ -7,7 +7,7 @@ import { REQUIRE_PERMISSION_KEY } from '../../auth/permissions/require-permissio
 import { ProductsResolver } from './products.resolver';
 
 /**
- * A-08 — product CRUD service coverage lives in products.service.test.ts;
+ * product CRUD service coverage lives in products.service.test.ts;
  * this file asserts ProductsResolver permission metadata + RBAC deny path.
  */
 describe('catalog product RBAC (resolver metadata + PermissionsGuard deny)', () => {

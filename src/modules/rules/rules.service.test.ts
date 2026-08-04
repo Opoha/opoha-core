@@ -18,7 +18,7 @@ type RuleRow = {
   updatedAt: Date;
 };
 
-describe('RulesService (C-01/C-03)', () => {
+describe('RulesService', () => {
   const now = new Date('2026-08-04T04:00:00Z');
   let rows: RuleRow[];
   let seq = 0;

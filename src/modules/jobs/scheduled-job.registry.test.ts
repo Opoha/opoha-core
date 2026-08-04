@@ -6,7 +6,7 @@ function noopHandler(): void {
   // test double
 }
 
-describe('ScheduledJobRegistry (A-03)', () => {
+describe('ScheduledJobRegistry', () => {
   it('registers a core job (no pluginId) and lists it active', () => {
     const registry = new ScheduledJobRegistry();
     const entry = registry.register(null, {

@@ -6,7 +6,7 @@ import { CoreEventName } from './event-catalog';
 import { EventBusService } from './event-bus.service';
 import type { DomainEvent } from './domain-event';
 
-describe('AnalyticsSinkDispatcher (F-04)', () => {
+describe('AnalyticsSinkDispatcher', () => {
   let eventBus: EventBusService;
   let registry: AnalyticsSinkRegistry;
 

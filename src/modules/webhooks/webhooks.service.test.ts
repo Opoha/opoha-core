@@ -33,7 +33,7 @@ type AttemptRow = {
   createdAt: Date;
 };
 
-describe('WebhooksService (D-01/D-03)', () => {
+describe('WebhooksService', () => {
   const now = new Date('2026-08-04T04:00:00Z');
   let endpoints: EndpointRow[];
   let attempts: AttemptRow[];

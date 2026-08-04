@@ -8,7 +8,7 @@ import { ShippingEngine } from './shipping-engine.service';
 import { ShippingResolver } from './shipping.resolver';
 
 /**
- * B-05 — shipping GraphQL permission metadata + resolver behavior.
+ * shipping GraphQL permission metadata + resolver behavior.
  */
 describe('ShippingResolver RBAC (resolver metadata + PermissionsGuard deny)', () => {
   function gqlContext(req: { user?: unknown }, handler: (...args: never[]) => unknown) {

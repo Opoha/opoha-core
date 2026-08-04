@@ -10,11 +10,11 @@ import type { NotificationSendInput } from '../../notifications/notification-pro
 import { OrderNotificationsListener } from './order-notifications.listener';
 
 /**
- * E-05: event → template → provider mock.
+ * event → template → provider mock.
  * Drives OrderNotificationsListener via EventBusService with stubbed
  * Orders/Customers and a capturing NotificationProvider.
  */
-describe('OrderNotificationsListener (E-03 / E-05)', () => {
+describe('OrderNotificationsListener', () => {
   function setup(opts?: {
     customerId?: string | null;
     customerEmail?: string;

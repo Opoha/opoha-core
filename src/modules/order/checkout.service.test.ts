@@ -257,7 +257,7 @@ describe('CheckoutService (unit)', () => {
     expect(promotions.applyOrZero).toHaveBeenCalled();
   });
 
-  it('includes selected shippingMinor in prepareCheckout totals (B-03)', async () => {
+  it('includes selected shippingMinor in prepareCheckout totals', async () => {
     cartService.getEntityWithLines.mockResolvedValueOnce({
       cart: {
         ...baseCart,
@@ -288,7 +288,7 @@ describe('CheckoutService (unit)', () => {
     expect(preview.totals.totalMinor).toBe('2500');
   });
 
-  it('adds exclusive tax on top of subtotal + shipping (C-03)', async () => {
+  it('adds exclusive tax on top of subtotal + shipping', async () => {
     tax.calculateOrZero.mockResolvedValueOnce({
       currencyCode: 'USD',
       pricingMode: 'exclusive',
@@ -325,7 +325,7 @@ describe('CheckoutService (unit)', () => {
     expect(cartService.persistTaxResult).toHaveBeenCalledWith('cart-1', '250');
   });
 
-  it('subtracts promotion discount from prepareCheckout totals (D-01)', async () => {
+  it('subtracts promotion discount from prepareCheckout totals', async () => {
     promotions.applyOrZero.mockResolvedValueOnce({
       currencyCode: 'USD',
       discountMinor: '300',
@@ -362,7 +362,7 @@ describe('CheckoutService (unit)', () => {
     expect(cartService.persistDiscountResult).toHaveBeenCalledWith('cart-1', '300');
   });
 
-  it('does not double-count inclusive tax in total (C-03)', async () => {
+  it('does not double-count inclusive tax in total', async () => {
     tax.calculateOrZero.mockResolvedValueOnce({
       currencyCode: 'USD',
       pricingMode: 'inclusive',

@@ -77,7 +77,7 @@ export const CoreEventName = {
 export type CoreEventName = (typeof CoreEventName)[keyof typeof CoreEventName];
 
 /**
- * Auth module events implemented in MVP Phase D.
+ * Auth module events implemented in auth MVP.
  * Aligns with audit actions (auth.login.*, user.*, api-key.*) where sensible.
  */
 export const AUTH_EVENT_NAMES = [

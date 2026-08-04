@@ -10,7 +10,7 @@ import {
   resolveContextStoreId,
 } from './store-scope';
 
-describe('order store-scope helpers (B-02)', () => {
+describe('order store-scope helpers', () => {
   it('normalizeStoreId trims and drops empty', () => {
     expect(normalizeStoreId('  abc  ')).toBe('abc');
     expect(normalizeStoreId('')).toBeUndefined();

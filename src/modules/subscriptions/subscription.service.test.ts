@@ -159,7 +159,7 @@ describe('SubscriptionService (unit)', () => {
     );
   });
 
-  it('creates a plan with defaults (E-01)', async () => {
+  it('creates a plan with defaults', async () => {
     const plan = await service.createPlan({
       code: 'PRO-MONTHLY',
       name: 'Pro Monthly',
@@ -214,7 +214,7 @@ describe('SubscriptionService (unit)', () => {
     ).rejects.toBeInstanceOf(BadRequestException);
   });
 
-  it('subscribes a customer to an active plan and computes the period (E-02)', async () => {
+  it('subscribes a customer to an active plan and computes the period', async () => {
     const plan = await service.createPlan({
       code: 'PRO-MONTHLY',
       name: 'Pro Monthly',
@@ -271,7 +271,7 @@ describe('SubscriptionService (unit)', () => {
     );
   });
 
-  it('renews an active subscription via the payment engine and publishes SubscriptionRenewed (E-03)', async () => {
+  it('renews an active subscription via the payment engine and publishes SubscriptionRenewed', async () => {
     planStore.push({
       id: planId,
       code: 'PRO-MONTHLY',

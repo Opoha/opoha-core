@@ -25,7 +25,7 @@ function mockRepo<T>(rows: T[] = []) {
   };
 }
 
-describe('TypeOrmPromotionProvider (D-03)', () => {
+describe('TypeOrmPromotionProvider', () => {
   it('applies coupon + automatic discount into totals', async () => {
     const coupon: CouponEntity = {
       id: 'c1',
@@ -157,7 +157,7 @@ describe('TypeOrmPromotionProvider (D-03)', () => {
     expect(result.discountMinor).toBe('0');
   });
 
-  it('rejects coupon when customer fails segment restriction (E-03)', async () => {
+  it('rejects coupon when customer fails segment restriction', async () => {
     const coupon: CouponEntity = {
       id: 'c1',
       code: 'VIP10',
@@ -211,7 +211,7 @@ describe('TypeOrmPromotionProvider (D-03)', () => {
     ).rejects.toThrow(/not available for this customer segment/);
   });
 
-  it('applies coupon when customer matches segment restriction (E-03)', async () => {
+  it('applies coupon when customer matches segment restriction', async () => {
     const coupon: CouponEntity = {
       id: 'c1',
       code: 'VIP10',
@@ -265,7 +265,7 @@ describe('TypeOrmPromotionProvider (D-03)', () => {
     expect(segments.evaluateRules).toHaveBeenCalled();
   });
 
-  it('skips automatic discount when segment restriction fails (E-03)', async () => {
+  it('skips automatic discount when segment restriction fails', async () => {
     const auto: DiscountRuleEntity = {
       id: 'd1',
       code: 'VIPAUTO',

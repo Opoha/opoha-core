@@ -7,7 +7,7 @@ import { REQUIRE_PERMISSION_KEY } from '../auth/permissions/require-permission.d
 import { LocalizationResolver } from './localization.resolver';
 
 /**
- * E-02 — localization GraphQL permission metadata + RBAC deny path.
+ * localization GraphQL permission metadata + RBAC deny path.
  */
 describe('localization RBAC (resolver metadata + PermissionsGuard deny)', () => {
   function gqlContext(req: { user?: unknown }, handler: (...args: never[]) => unknown) {

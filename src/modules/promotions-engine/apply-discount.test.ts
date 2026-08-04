@@ -26,7 +26,7 @@ function rule(
   };
 }
 
-describe('apply-discount helpers (D-03)', () => {
+describe('apply-discount helpers', () => {
   it('isWithinSchedule respects active flag and window', () => {
     const now = new Date('2026-08-03T12:00:00Z');
     expect(isWithinSchedule({ isActive: true, startsAt: null, endsAt: null }, now)).toBe(true);

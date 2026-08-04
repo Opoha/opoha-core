@@ -115,7 +115,7 @@ describe('ProductsService', () => {
     expect(created.variants?.[0]?.fulfillmentMode).toBe('physical');
   });
 
-  it('creates digital product/SKU fulfillment modes (A-02)', async () => {
+  it('creates digital product/SKU fulfillment modes', async () => {
     const created = await service.create({
       name: 'Ebook',
       slug: 'ebook',

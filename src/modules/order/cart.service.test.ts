@@ -302,7 +302,7 @@ describe('CartService (unit)', () => {
     ).rejects.toThrow(BadRequestException);
   });
 
-  it('setTaxContext persists pricing mode and jurisdiction (C-03)', async () => {
+  it('setTaxContext persists pricing mode and jurisdiction', async () => {
     await service.create({});
     const cart = await service.setTaxContext({
       cartId: 'cart-1',
@@ -317,7 +317,7 @@ describe('CartService (unit)', () => {
     expect(cart.taxProvince).toBe('Bangkok');
   });
 
-  it('selectShipping persists method/rate from ShippingEngine (B-02)', async () => {
+  it('selectShipping persists method/rate from ShippingEngine', async () => {
     await service.create({});
     await service.addLine({
       cartId: 'cart-1',

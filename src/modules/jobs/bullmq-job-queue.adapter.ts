@@ -15,7 +15,7 @@ import type { ScheduledJobHandler } from './scheduled-job';
  *
  * Jobs gate uses the memory adapter + `runDueAt` (work plan: test
  * double for CI). Optional live Redis/BullMQ integration smoke is deferred
- * to the Phase F automation walking-skeleton.
+ * to the automation walking-skeleton.
  */
 @Injectable()
 export class BullMqJobQueueAdapter implements JobQueueAdapter {
@@ -29,7 +29,7 @@ export class BullMqJobQueueAdapter implements JobQueueAdapter {
     this.fallback = new InMemoryJobQueueAdapter();
     const requested = this.config.get('OPOHA_JOB_QUEUE');
     if (requested === 'bullmq') {
-      // Production path reserved: Queue/Worker against REDIS_URL (Phase F opt-in).
+      // Production path reserved: Queue/Worker against REDIS_URL (Redis opt-in).
       // Keep memory delegate so boot never hangs when Redis is absent.
       this.mode = 'memory';
       this.logger?.warn(

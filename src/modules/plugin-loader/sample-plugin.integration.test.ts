@@ -69,7 +69,7 @@ function createLoader(pluginPath: string) {
   return { loader, contributions, admin, eventBus };
 }
 
-describe('D-11 sample plugin integration', () => {
+describe('sample plugin integration', () => {
   it('discovers and boots @opoha/plugin-sample without static core imports', async () => {
     expect(existsSync(SAMPLE_PLUGIN_ROOT)).toBe(true);
     ensureSamplePluginBuilt();

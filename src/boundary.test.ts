@@ -5,7 +5,7 @@ import { describe, expect, it } from 'vitest';
 
 const ROOT = join(__dirname, '..');
 
-/** Packages core must never depend on (D-10 / ADR-0003). */
+/** Packages core must never depend on (ADR-0003). */
 const FORBIDDEN_DEP_PATTERNS: RegExp[] = [
   /^@opoha\/plugin-/,
   /^stripe$/,
@@ -56,10 +56,10 @@ function walkTsFiles(dir: string, out: string[] = []): string[] {
 }
 
 /**
- * H-02 / D-10 — core dependency boundary audit.
+ * core dependency boundary audit.
  * Core must never depend on `@opoha/plugin-*` or provider SDKs (ADR-0003).
  */
-describe('H-02 / D-10 core → plugin boundary', () => {
+describe('core → plugin boundary', () => {
   it('package.json has no @opoha/plugin-* or provider SDK dependencies', () => {
     const pkg = JSON.parse(readFileSync(join(ROOT, 'package.json'), 'utf8')) as {
       dependencies?: Record<string, string>;

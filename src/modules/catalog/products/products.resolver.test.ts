@@ -5,7 +5,7 @@ import { ProductsResolver, REVIEW_AGGREGATE_PROVIDER_TOKEN } from './products.re
 import type { ProductType } from './product.types';
 import type { ProductsService } from './products.service';
 
-describe('ProductsResolver.reviewAggregate (Phase 4 D-04)', () => {
+describe('ProductsResolver.reviewAggregate', () => {
   let contributions: ContributionRegistry;
   let resolver: ProductsResolver;
 

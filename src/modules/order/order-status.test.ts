@@ -7,8 +7,8 @@ import {
   isOrderStatus,
 } from './entities/order-status';
 
-describe('OrderStatus (D-03 / D-05 / F-03)', () => {
-  it('exposes the Phase 1 + B2B status enum', () => {
+describe('OrderStatus', () => {
+  it('exposes the commerce + B2B status enum', () => {
     expect(ORDER_STATUSES).toEqual([
       'pending',
       'confirmed',
@@ -26,7 +26,7 @@ describe('OrderStatus (D-03 / D-05 / F-03)', () => {
     expect(isOrderStatus('shipped')).toBe(false);
   });
 
-  it('allows the Phase 1 + B2B transition graph', () => {
+  it('allows the commerce + B2B transition graph', () => {
     expect(canTransitionOrderStatus('pending', 'confirmed')).toBe(true);
     expect(canTransitionOrderStatus('pending', 'cancelled')).toBe(true);
     expect(canTransitionOrderStatus('confirmed', 'fulfilled')).toBe(true);

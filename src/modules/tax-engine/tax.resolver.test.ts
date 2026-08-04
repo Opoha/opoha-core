@@ -10,7 +10,7 @@ import { TaxRulesService } from './tax-rules.service';
 import { TaxResolver } from './tax.resolver';
 
 /**
- * C-05 — tax GraphQL permission metadata + resolver behavior.
+ * tax GraphQL permission metadata + resolver behavior.
  */
 describe('TaxResolver RBAC (resolver metadata + PermissionsGuard deny)', () => {
   function gqlContext(req: { user?: unknown }, handler: (...args: never[]) => unknown) {

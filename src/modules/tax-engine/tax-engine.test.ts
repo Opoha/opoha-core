@@ -66,7 +66,7 @@ describe('TaxEngine', () => {
     expect(registry.list()).toHaveLength(0);
   });
 
-  it('invokes calculateTax for exclusive pricing (C-01)', async () => {
+  it('invokes calculateTax for exclusive pricing', async () => {
     const engine = new TaxEngine(new TaxProviderRegistry());
     engine.register(
       stubProvider({
@@ -116,7 +116,7 @@ describe('TaxEngine', () => {
     });
   });
 
-  it('invokes calculateTax for inclusive pricing (C-01)', async () => {
+  it('invokes calculateTax for inclusive pricing', async () => {
     const engine = new TaxEngine(new TaxProviderRegistry());
     engine.register(
       stubProvider({
@@ -167,7 +167,7 @@ describe('TaxEngine', () => {
     await expect(engine.calculate(sampleExclusiveInput)).rejects.toThrow(/No active tax provider/);
   });
 
-  it('calculateOrZero returns zero tax when no provider (C-03)', async () => {
+  it('calculateOrZero returns zero tax when no provider', async () => {
     const engine = new TaxEngine(new TaxProviderRegistry());
     const result = await engine.calculateOrZero(sampleExclusiveInput);
     expect(result.taxMinor).toBe('0');

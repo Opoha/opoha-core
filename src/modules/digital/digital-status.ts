@@ -32,7 +32,7 @@ export function generateLicenseKey(): string {
   return `${raw.slice(0, 4)}-${raw.slice(4, 8)}-${raw.slice(8, 12)}-${raw.slice(12, 16)}`;
 }
 
-/** Default stub asset path until storage adapter wiring (Phase D foundation). */
+/** Default stub asset path until storage adapter wiring (until storage adapters). */
 export function defaultDigitalAssetUrl(variantId: string, token: string): string {
   return `/digital/assets/${variantId}?token=${token}`;
 }

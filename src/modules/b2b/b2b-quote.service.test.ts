@@ -30,7 +30,7 @@ type LineRow = {
   updatedAt: Date;
 };
 
-describe('B2bQuoteService (F-05)', () => {
+describe('B2bQuoteService', () => {
   const now = new Date('2026-08-04T01:00:00Z');
   const companyId = 'aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa';
   const storeId = 'bbbbbbbb-bbbb-4bbb-8bbb-bbbbbbbbbbbb';

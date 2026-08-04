@@ -33,9 +33,9 @@ function matchStoreWhere(rowStoreId: string | null, where: unknown): boolean {
 }
 
 /**
- * Phase 5 B-04 — two-store isolated vs shared catalog GraphQL/service scenarios.
+ * two-store isolated vs shared catalog GraphQL/service scenarios.
  */
-describe('multi-store catalog (B-04)', () => {
+describe('multi-store catalog', () => {
   describe('catalogStoreWhere helper', () => {
     it('returns undefined for global listing', () => {
       expect(catalogStoreWhere(undefined)).toBeUndefined();

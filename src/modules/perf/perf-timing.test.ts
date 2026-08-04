@@ -2,7 +2,7 @@ import { describe, expect, it } from 'vitest';
 
 import { evaluateScenario, measureAsync, summarizeSamples } from './perf-timing';
 
-describe('perf-timing helpers (C-02)', () => {
+describe('perf-timing helpers', () => {
   it('computes p50/p95 from samples', () => {
     const stats = summarizeSamples([10, 20, 30, 40, 50, 60, 70, 80, 90, 100]);
     expect(stats.p50).toBe(50);

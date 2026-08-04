@@ -8,7 +8,7 @@ import { FulfillmentResolver } from './fulfillment.resolver';
 import { FulfillmentService } from './fulfillment.service';
 
 /**
- * D-05 — fulfillment GraphQL permission metadata + resolver wiring.
+ * fulfillment GraphQL permission metadata + resolver wiring.
  */
 describe('FulfillmentResolver RBAC (resolver metadata + PermissionsGuard)', () => {
   let service: {

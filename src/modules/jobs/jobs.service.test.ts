@@ -30,7 +30,7 @@ type RunRow = {
   createdAt: Date;
 };
 
-describe('JobsService (A-02/A-03)', () => {
+describe('JobsService', () => {
   const now = new Date('2026-08-04T04:00:00Z');
   let definitions: DefinitionRow[];
   let runs: RunRow[];

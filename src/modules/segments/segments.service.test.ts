@@ -134,7 +134,7 @@ describe('SegmentsService (unit)', () => {
     );
   });
 
-  it('evaluates membership against stored rules (E-02)', async () => {
+  it('evaluates membership against stored rules', async () => {
     const vip = await service.create({
       code: 'vip',
       name: 'VIP',

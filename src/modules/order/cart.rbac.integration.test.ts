@@ -9,7 +9,7 @@ import { CheckoutResolver } from './checkout.resolver';
 import { OrdersResolver } from './orders.resolver';
 
 /**
- * D-01 / D-02 — cart/checkout GraphQL permission metadata + RBAC deny path.
+ * cart/checkout GraphQL permission metadata + RBAC deny path.
  */
 describe('cart/order RBAC (resolver metadata + PermissionsGuard deny)', () => {
   function gqlContext(

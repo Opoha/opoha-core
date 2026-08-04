@@ -139,7 +139,7 @@ describe('DigitalFulfillmentService (unit)', () => {
     );
   });
 
-  it('issues download token + license key per quantity unit (D-01/D-02)', async () => {
+  it('issues download token + license key per quantity unit', async () => {
     const result = await service.issueForLine({
       orderId,
       orderLineId: lineId,
@@ -231,7 +231,7 @@ describe('DigitalFulfillmentService (unit)', () => {
     expect(eventBus.publish).not.toHaveBeenCalled();
   });
 
-  it('lists tokens/licenses by order and customer (D-03)', async () => {
+  it('lists tokens/licenses by order and customer', async () => {
     await service.issueForLine({
       orderId,
       orderLineId: lineId,

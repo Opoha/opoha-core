@@ -5,7 +5,7 @@ import { CoreEventName } from '../event-bus/event-catalog';
 import { OrdersService } from './orders.service';
 import type { CartService } from './cart.service';
 
-describe('OrdersService place + status (D-04 / D-05 / D-06 / A-04)', () => {
+describe('OrdersService place + status', () => {
   const now = new Date('2026-08-03T12:00:00Z');
   const orderId = '11111111-1111-1111-1111-111111111111';
   const cartId = '22222222-2222-2222-2222-222222222222';
@@ -371,7 +371,7 @@ describe('OrdersService place + status (D-04 / D-05 / D-06 / A-04)', () => {
     );
   });
 
-  it('placeOrder records orderSource=pos and publishes PosSaleCompleted (A-03/B-02)', async () => {
+  it('placeOrder records orderSource=pos and publishes PosSaleCompleted', async () => {
     const order = await service.placeOrder({
       cartId,
       paymentMethod: 'manual',
@@ -394,7 +394,7 @@ describe('OrdersService place + status (D-04 / D-05 / D-06 / A-04)', () => {
     });
   });
 
-  it('placeOrder stamps vendorId and publishes VendorOrderRouted (C-02/C-04)', async () => {
+  it('placeOrder stamps vendorId and publishes VendorOrderRouted', async () => {
     const vendorId = 'aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa';
     const products = {
       find: vi.fn(async () => [{ id: 'prod-1', vendorId }]),
@@ -599,7 +599,7 @@ describe('OrdersService place + status (D-04 / D-05 / D-06 / A-04)', () => {
     );
   });
 
-  it('copies selected shipping method from cart onto order (B-02)', async () => {
+  it('copies selected shipping method from cart onto order', async () => {
     carts.getEntityWithLines.mockResolvedValueOnce({
       cart: {
         id: cartId,
@@ -661,7 +661,7 @@ describe('OrdersService place + status (D-04 / D-05 / D-06 / A-04)', () => {
     expect(order.shippingRateCode).toBe('flat-rate');
   });
 
-  it('placeOrder adds exclusive tax to authorize amount (C-03)', async () => {
+  it('placeOrder adds exclusive tax to authorize amount', async () => {
     tax.calculateOrZero.mockResolvedValueOnce({
       currencyCode: 'USD',
       pricingMode: 'exclusive',
@@ -694,7 +694,7 @@ describe('OrdersService place + status (D-04 / D-05 / D-06 / A-04)', () => {
     );
   });
 
-  it('placeOrder inclusive tax does not inflate authorize amount (C-03)', async () => {
+  it('placeOrder inclusive tax does not inflate authorize amount', async () => {
     carts.getEntityWithLines.mockResolvedValueOnce({
       cart: {
         id: cartId,
@@ -855,7 +855,7 @@ describe('OrdersService place + status (D-04 / D-05 / D-06 / A-04)', () => {
     await expect(service.findById('missing')).rejects.toBeInstanceOf(NotFoundException);
   });
 
-  it('B2B placeOrder creates draft without payment (F-03)', async () => {
+  it('B2B placeOrder creates draft without payment', async () => {
     const companyId = 'cccccccc-cccc-4ccc-8ccc-cccccccccccc';
     const customerId = 'dddddddd-dddd-4ddd-8ddd-dddddddddddd';
     carts.getEntityWithLines.mockResolvedValue({
@@ -913,7 +913,7 @@ describe('OrdersService place + status (D-04 / D-05 / D-06 / A-04)', () => {
     expect(carts.setStatus).toHaveBeenCalledWith(cartId, 'converted');
   });
 
-  it('B2B approve then confirm reaches confirmed (F-03)', async () => {
+  it('B2B approve then confirm reaches confirmed', async () => {
     const companyId = 'cccccccc-cccc-4ccc-8ccc-cccccccccccc';
     const approverId = 'eeeeeeee-eeee-4eee-8eee-eeeeeeeeeeee';
     orderRow.status = 'draft';
@@ -943,7 +943,7 @@ describe('OrdersService place + status (D-04 / D-05 / D-06 / A-04)', () => {
     );
   });
 
-  it('convertB2bQuote creates draft order from accepted quote (F-05)', async () => {
+  it('convertB2bQuote creates draft order from accepted quote', async () => {
     const companyId = 'cccccccc-cccc-4ccc-8ccc-cccccccccccc';
     const customerId = 'bbbbbbbb-bbbb-4bbb-8bbb-bbbbbbbbbbbb';
     orderRow = {

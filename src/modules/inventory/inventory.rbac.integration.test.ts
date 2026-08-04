@@ -7,7 +7,7 @@ import { REQUIRE_PERMISSION_KEY } from '../auth/permissions/require-permission.d
 import { InventoryResolver } from './inventory.resolver';
 
 /**
- * B-03 — inventory GraphQL permission metadata + RBAC deny path.
+ * inventory GraphQL permission metadata + RBAC deny path.
  */
 describe('inventory RBAC (resolver metadata + PermissionsGuard deny)', () => {
   function gqlContext(req: { user?: unknown }) {

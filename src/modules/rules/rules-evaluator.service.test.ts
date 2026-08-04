@@ -9,7 +9,7 @@ import { RulesEvaluatorService } from './rules-evaluator.service';
 import type { RulesService } from './rules.service';
 import type { RuleDefinitionType } from './rules.types';
 
-describe('RulesEvaluatorService (C-02/C-03)', () => {
+describe('RulesEvaluatorService', () => {
   let rulesByEvent: Map<string, RuleDefinitionType[]>;
   let rulesService: RulesService;
   let registry: RuleActionRegistry;

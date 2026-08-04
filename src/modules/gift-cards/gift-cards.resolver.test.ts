@@ -8,7 +8,7 @@ import { GiftCardsResolver } from './gift-cards.resolver';
 import { GiftCardService } from './gift-cards.service';
 
 /**
- * C-04 — gift card GraphQL permission metadata + resolver wiring.
+ * gift card GraphQL permission metadata + resolver wiring.
  */
 describe('GiftCardsResolver RBAC (resolver metadata + PermissionsGuard)', () => {
   let service: {

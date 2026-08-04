@@ -125,7 +125,7 @@ describe('NotificationsService', () => {
   });
 });
 
-describe('NotificationTemplateRegistry (E-02)', () => {
+describe('NotificationTemplateRegistry', () => {
   it('ships default order / payment / shipment templates', () => {
     const registry = new NotificationTemplateRegistry();
     expect(

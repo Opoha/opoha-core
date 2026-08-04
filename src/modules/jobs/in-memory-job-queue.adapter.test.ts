@@ -2,7 +2,7 @@ import { beforeEach, describe, expect, it, vi } from 'vitest';
 
 import { InMemoryJobQueueAdapter } from './in-memory-job-queue.adapter';
 
-describe('InMemoryJobQueueAdapter (A-03)', () => {
+describe('InMemoryJobQueueAdapter', () => {
   let adapter: InMemoryJobQueueAdapter;
 
   beforeEach(() => {

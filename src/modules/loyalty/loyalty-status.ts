@@ -9,7 +9,7 @@ export function isLoyaltyTransactionType(value: string): value is LoyaltyTransac
 
 /**
  * MVP accrual/redemption rates (v0.5 simplification — not yet per-store
- * configurable; revisit alongside Phase E segments / promotions tuning).
+ * configurable; revisit alongside customer segments / promotions tuning).
  */
 export const LOYALTY_ACCRUAL_MINOR_UNITS_PER_POINT = 100n;
 export const LOYALTY_REDEMPTION_MINOR_UNITS_PER_POINT = 1n;

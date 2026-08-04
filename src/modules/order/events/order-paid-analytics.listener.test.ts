@@ -5,7 +5,7 @@ import { CoreEventName } from '../../event-bus/event-catalog';
 import { orderEventSchemas } from './order-events';
 import { OrderPaidAnalyticsListener } from './order-paid-analytics.listener';
 
-describe('OrderPaidAnalyticsListener (F-02)', () => {
+describe('OrderPaidAnalyticsListener', () => {
   const orderId = '11111111-1111-4111-8111-111111111111';
   const paymentId = 'pay-1';
   const customerId = '22222222-2222-4222-8222-222222222222';

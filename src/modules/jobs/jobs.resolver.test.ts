@@ -3,7 +3,7 @@ import { describe, expect, it, vi } from 'vitest';
 import { JobsResolver } from './jobs.resolver';
 import type { JobsService } from './jobs.service';
 
-describe('JobsResolver (E-03)', () => {
+describe('JobsResolver', () => {
   it('lists definitions and runs; triggers by code', async () => {
     const now = new Date('2026-08-04T00:00:00.000Z');
     const jobs = {

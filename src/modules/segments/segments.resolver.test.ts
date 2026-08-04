@@ -14,7 +14,7 @@ const sample: CustomerSegmentType = {
   updatedAt: new Date('2026-01-02T00:00:00Z'),
 };
 
-describe('SegmentsResolver (E-04)', () => {
+describe('SegmentsResolver', () => {
   it('lists and maps rulesJson', async () => {
     const segments = {
       findAll: vi.fn(async () => [sample]),

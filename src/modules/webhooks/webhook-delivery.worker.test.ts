@@ -28,7 +28,7 @@ type AttemptRow = {
   createdAt: Date;
 };
 
-describe('WebhookDeliveryWorker (D-02)', () => {
+describe('WebhookDeliveryWorker', () => {
   const now = new Date('2026-08-04T05:00:00Z');
   let endpoints: EndpointRow[];
   let attempts: AttemptRow[];

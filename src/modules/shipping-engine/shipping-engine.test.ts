@@ -56,7 +56,7 @@ describe('ShippingEngine', () => {
     expect(registry.list()).toHaveLength(0);
   });
 
-  it('invokes quoteRates on registered method (B-01)', async () => {
+  it('invokes quoteRates on registered method', async () => {
     const engine = new ShippingEngine(new ShippingMethodRegistry());
     engine.register(
       stubMethod({
@@ -120,7 +120,7 @@ describe('ShippingEngine', () => {
     expect(voided.status).toBe('voided');
   });
 
-  it('quote aggregates rates from all active methods (B-02)', async () => {
+  it('quote aggregates rates from all active methods', async () => {
     const engine = new ShippingEngine(new ShippingMethodRegistry());
     engine.register(
       stubMethod({
@@ -175,7 +175,7 @@ describe('ShippingEngine', () => {
     });
   });
 
-  it('quote returns rates from flat-rate and DHL carrier (shipping gate / B-05)', async () => {
+  it('quote returns rates from flat-rate and DHL carrier (shipping gate)', async () => {
     const engine = new ShippingEngine(new ShippingMethodRegistry());
     engine.register(
       stubMethod({

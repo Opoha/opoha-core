@@ -2,7 +2,7 @@ import { describe, expect, it } from 'vitest';
 
 import { signWebhookPayload, verifyWebhookSignature } from './webhook-signing';
 
-describe('webhook-signing (D-02)', () => {
+describe('webhook-signing', () => {
   it('signs payload deterministically and verifies', () => {
     const body = JSON.stringify({ eventName: 'OrderPaid', data: { id: '1' } });
     const sig = signWebhookPayload('test-secret-key', body);

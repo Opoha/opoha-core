@@ -7,7 +7,7 @@ import {
 } from './analytics-catalog';
 import { CoreEventName } from './event-catalog';
 
-describe('analytics catalog (F-01)', () => {
+describe('analytics catalog', () => {
   it('includes cart/checkout/order lifecycle events', () => {
     expect(ANALYTICS_EVENT_NAMES).toContain(CoreEventName.CartCreated);
     expect(ANALYTICS_EVENT_NAMES).toContain(CoreEventName.CartLineAdded);

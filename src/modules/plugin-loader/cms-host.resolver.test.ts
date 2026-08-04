@@ -22,7 +22,7 @@ function page(partial: Partial<CmsPageLike> & Pick<CmsPageLike, 'id' | 'slug'>):
   };
 }
 
-describe('CmsHostResolver (H-02)', () => {
+describe('CmsHostResolver', () => {
   it('createCmsPage / cmsPageBySlug via cms.content provider', () => {
     const pages = new Map<string, CmsPageLike>();
     const provider: CmsContentProvider = {

@@ -2,7 +2,7 @@ import { describe, expect, it } from 'vitest';
 
 import { assertCronExpression, cronMatchesAt, isValidCronExpression } from './cron-expression';
 
-describe('cron-expression (A-01/A-04)', () => {
+describe('cron-expression', () => {
   it('accepts standard 5-field crontab expressions', () => {
     const valid = ['*/5 * * * *', '0 * * * *', '0 0 * * *', '30 2 * * 1', '*   *   *   *   *'];
     for (const expr of valid) {

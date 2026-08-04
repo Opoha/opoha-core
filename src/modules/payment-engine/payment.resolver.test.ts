@@ -8,7 +8,7 @@ import { PaymentEngine } from './payment-engine.service';
 import { PaymentResolver } from './payment.resolver';
 
 /**
- * A-06 — payment GraphQL permission metadata + resolver behavior.
+ * payment GraphQL permission metadata + resolver behavior.
  */
 describe('PaymentResolver RBAC (resolver metadata + PermissionsGuard deny)', () => {
   function gqlContext(req: { user?: unknown }, handler: (...args: never[]) => unknown) {

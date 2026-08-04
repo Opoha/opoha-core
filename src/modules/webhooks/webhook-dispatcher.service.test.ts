@@ -6,7 +6,7 @@ import { WebhookDispatcherService } from './webhook-dispatcher.service';
 import type { WebhooksService } from './webhooks.service';
 import type { WebhookDeliveryWorker } from './webhook-delivery.worker';
 
-describe('WebhookDispatcherService (D-03)', () => {
+describe('WebhookDispatcherService', () => {
   let attempts: Array<Record<string, unknown>>;
   let dispatcher: WebhookDispatcherService;
   let processDue: ReturnType<typeof vi.fn>;

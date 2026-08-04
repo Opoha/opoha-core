@@ -8,7 +8,7 @@ import { LoyaltyResolver } from './loyalty.resolver';
 import { LoyaltyService } from './loyalty.service';
 
 /**
- * C-04 — loyalty GraphQL permission metadata + resolver wiring.
+ * loyalty GraphQL permission metadata + resolver wiring.
  */
 describe('LoyaltyResolver RBAC (resolver metadata + PermissionsGuard)', () => {
   let service: {

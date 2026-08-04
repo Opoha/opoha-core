@@ -7,9 +7,8 @@ import { PermissionsGuard } from './permissions/permissions.guard';
 import { REQUIRE_PERMISSION_KEY } from './permissions/require-permission.decorator';
 
 /**
- * C-09 — integration-style coverage for auth guard, RBAC deny, and API key auth
+ * integration-style coverage for auth guard, RBAC deny, and API key auth
  * without requiring a live Postgres (guards + permission resolution path).
- * Maps to AC-MVP-016 / AC-MVP-019 / AC-MVP-020.
  */
 describe('auth integration (guards + RBAC + API key)', () => {
   function gqlContext(req: { headers: Record<string, unknown>; user?: unknown }) {

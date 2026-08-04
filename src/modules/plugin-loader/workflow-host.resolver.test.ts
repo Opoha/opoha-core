@@ -9,7 +9,7 @@ import {
   type WorkflowRunLike,
 } from './workflow-host.resolver';
 
-describe('WorkflowHostResolver (E-03)', () => {
+describe('WorkflowHostResolver', () => {
   it('lists and upserts definitions via workflow.engine', async () => {
     const defs = new Map<string, WorkflowDefinitionLike>();
     const now = new Date('2026-08-04T00:00:00.000Z');

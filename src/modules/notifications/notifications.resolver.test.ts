@@ -8,7 +8,7 @@ import { NotificationsResolver } from './notifications.resolver';
 import { NotificationsService } from './notifications.service';
 
 /**
- * F-05 — notification GraphQL permission metadata + resolver behavior.
+ * notification GraphQL permission metadata + resolver behavior.
  */
 describe('NotificationsResolver RBAC (resolver metadata + PermissionsGuard deny)', () => {
   function gqlContext(req: { user?: unknown }, handler: (...args: never[]) => unknown) {

@@ -8,9 +8,9 @@ import { CatalogTranslationsResolver } from './catalog-translations.resolver';
 import type { CatalogTranslationsService } from './catalog-translations.service';
 
 /**
- * C-03 — translation GraphQL permission metadata + PermissionsGuard deny path.
+ * translation GraphQL permission metadata + PermissionsGuard deny path.
  */
-describe('CatalogTranslationsResolver RBAC (C-03)', () => {
+describe('CatalogTranslationsResolver RBAC', () => {
   function gqlContext(req: { user?: unknown }, handler: (...args: never[]) => unknown) {
     return {
       getType: () => 'graphql',

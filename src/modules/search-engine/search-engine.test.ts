@@ -55,7 +55,7 @@ describe('SearchEngine', () => {
     expect(registry.list()).toHaveLength(0);
   });
 
-  it('indexes and searches via registered provider (A-01/A-02)', async () => {
+  it('indexes and searches via registered provider', async () => {
     const indexed: string[] = [];
     const engine = new SearchEngine(new SearchProviderRegistry());
     engine.register(

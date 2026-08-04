@@ -58,7 +58,7 @@ describe('PromotionsEngine', () => {
     expect(registry.list()).toHaveLength(0);
   });
 
-  it('aggregates discounts from multiple providers and caps at subtotal (D-01)', async () => {
+  it('aggregates discounts from multiple providers and caps at subtotal', async () => {
     const engine = new PromotionsEngine(new PromotionRuleRegistry());
     engine.register(
       stubProvider({
@@ -153,7 +153,7 @@ describe('PromotionsEngine', () => {
     expect(result.freeShipping).toBe(true);
   });
 
-  it('applyOrZero returns zero discount when no provider (D-01)', async () => {
+  it('applyOrZero returns zero discount when no provider', async () => {
     const engine = new PromotionsEngine(new PromotionRuleRegistry());
     const result = await engine.applyOrZero(sampleInput);
     expect(result.discountMinor).toBe('0');

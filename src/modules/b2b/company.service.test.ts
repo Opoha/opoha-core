@@ -43,7 +43,7 @@ function uniqueViolation(): QueryFailedError {
   return new QueryFailedError('INSERT', [], { code: '23505' } as never);
 }
 
-describe('CompanyService (F-01 / F-02 / F-04)', () => {
+describe('CompanyService', () => {
   const now = new Date('2026-08-03T20:00:00Z');
   const storeId = 'aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa';
   const customerId = 'bbbbbbbb-bbbb-4bbb-8bbb-bbbbbbbbbbbb';
@@ -339,7 +339,7 @@ describe('CompanyService (F-01 / F-02 / F-04)', () => {
     await expect(service.findById('missing')).rejects.toBeInstanceOf(NotFoundException);
   });
 
-  it('setPriceListItem + resolveUnitPriceMinor apply negotiated price (F-04)', async () => {
+  it('setPriceListItem + resolveUnitPriceMinor apply negotiated price', async () => {
     companies.push({
       id: 'company-1',
       storeId,
@@ -366,7 +366,7 @@ describe('CompanyService (F-01 / F-02 / F-04)', () => {
     );
   });
 
-  it('assertWithinCreditLimit rejects totals above limit (F-04)', async () => {
+  it('assertWithinCreditLimit rejects totals above limit', async () => {
     companies.push({
       id: 'company-1',
       storeId,
@@ -383,7 +383,7 @@ describe('CompanyService (F-01 / F-02 / F-04)', () => {
     );
   });
 
-  it('assertWithinCreditLimit no-ops when limit unset (F-04)', async () => {
+  it('assertWithinCreditLimit no-ops when limit unset', async () => {
     companies.push({
       id: 'company-1',
       storeId,

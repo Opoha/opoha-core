@@ -9,7 +9,7 @@ import { CustomersResolver } from './customers.resolver';
 import { CustomerGroupsResolver } from './customer-groups.resolver';
 
 /**
- * C-02 / C-05 — customer GraphQL permission metadata + RBAC deny path.
+ * customer GraphQL permission metadata + RBAC deny path.
  */
 describe('customer RBAC (resolver metadata + PermissionsGuard deny)', () => {
   function gqlContext(

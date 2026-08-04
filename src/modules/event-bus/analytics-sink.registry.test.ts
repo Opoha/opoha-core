@@ -11,7 +11,7 @@ function makeSink(code: string): AnalyticsSink {
   };
 }
 
-describe('AnalyticsSinkRegistry (F-04)', () => {
+describe('AnalyticsSinkRegistry', () => {
   it('registers, lists, and resolves active sinks by code', () => {
     const registry = new AnalyticsSinkRegistry();
     const sink = makeSink('ga4');

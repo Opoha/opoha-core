@@ -659,7 +659,7 @@ describe('FulfillmentService (unit)', () => {
     await expect(service.ship(created.id)).rejects.toBeInstanceOf(BadRequestException);
   });
 
-  it('create rejects warehouse not linked to the order store (E-03)', async () => {
+  it('create rejects warehouse not linked to the order store', async () => {
     storeWarehouses.assertWarehouseAllowedForStore = vi
       .fn()
       .mockRejectedValue(

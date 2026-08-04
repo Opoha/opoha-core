@@ -2,7 +2,7 @@ import { describe, expect, it, vi } from 'vitest';
 
 import { AuthResolver } from './auth.resolver';
 
-describe('AuthResolver (G-05 myPermissions)', () => {
+describe('AuthResolver', () => {
   it('returns API-key scoped permissions when present on AuthUser', async () => {
     const permissionsService = {
       listKeysForUser: vi.fn(),

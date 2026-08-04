@@ -8,7 +8,7 @@ import { ReturnsResolver } from './returns.resolver';
 import { ReturnsService } from './returns.service';
 
 /**
- * E-03 — returns GraphQL permission metadata + resolver wiring.
+ * returns GraphQL permission metadata + resolver wiring.
  */
 describe('ReturnsResolver RBAC (resolver metadata + PermissionsGuard)', () => {
   let service: {

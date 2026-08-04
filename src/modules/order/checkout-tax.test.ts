@@ -11,7 +11,7 @@ import {
 import type { CartEntity } from './entities/cart.entity';
 import type { CartLineEntity } from './entities/cart-line.entity';
 
-describe('checkout-tax helpers (C-03 / D-01)', () => {
+describe('checkout-tax helpers', () => {
   const cart = {
     id: 'c1',
     currencyCode: 'USD',
@@ -61,7 +61,7 @@ describe('checkout-tax helpers (C-03 / D-01)', () => {
     ]);
   });
 
-  it('buildPromotionApplyInput maps lines + coupon (D-01)', () => {
+  it('buildPromotionApplyInput maps lines + coupon', () => {
     const input = buildPromotionApplyInput(cart, lines);
     expect(input.currencyCode).toBe('USD');
     expect(input.subtotalMinor).toBe('2000');
@@ -99,7 +99,7 @@ describe('checkout-tax helpers (C-03 / D-01)', () => {
     expect(totals.taxMinor).toBe('181');
   });
 
-  it('totalsWithTax subtracts discount and honors freeShipping (D-01)', () => {
+  it('totalsWithTax subtracts discount and honors freeShipping', () => {
     const totals = totalsWithTax({
       currencyCode: 'USD',
       subtotalMinor: 2000n,
@@ -114,7 +114,7 @@ describe('checkout-tax helpers (C-03 / D-01)', () => {
     expect(totals.totalMinor).toBe('1700');
   });
 
-  it('applyGiftCardToTotals reduces payable total (C-02)', () => {
+  it('applyGiftCardToTotals reduces payable total', () => {
     const base = totalsWithTax({
       currencyCode: 'USD',
       subtotalMinor: 2000n,
@@ -130,7 +130,7 @@ describe('checkout-tax helpers (C-03 / D-01)', () => {
     expect(capped.totalMinor).toBe('0');
   });
 
-  it('applyLoyaltyToTotals reduces payable total after gift card (C-03)', () => {
+  it('applyLoyaltyToTotals reduces payable total after gift card', () => {
     const base = totalsWithTax({
       currencyCode: 'USD',
       subtotalMinor: 2000n,

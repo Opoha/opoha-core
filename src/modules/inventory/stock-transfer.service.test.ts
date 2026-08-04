@@ -385,7 +385,7 @@ describe('StockTransferService (unit)', () => {
     await expect(service.findById('missing')).rejects.toBeInstanceOf(NotFoundException);
   });
 
-  it('create rejects when store warehouse guard fails (E-03)', async () => {
+  it('create rejects when store warehouse guard fails', async () => {
     const storeWarehouses = {
       assertTransferAllowed: vi
         .fn()
