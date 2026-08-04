@@ -1,5 +1,5 @@
 /**
- * Public gift-cards module surface (Phase 4 C-01/C-02/C-04).
+ * Public gift-cards module surface.
  */
 export { GiftCardsModule } from '../gift-cards.module';
 export { GiftCardService } from '../gift-cards.service';

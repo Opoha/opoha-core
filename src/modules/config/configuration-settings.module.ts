@@ -10,7 +10,7 @@ import { StoreChannelSettingsService } from './store-channel-settings.service';
 import { StoreCreatedChannelSettingsListener } from './store-created-channel-settings.listener';
 
 /**
- * Store-scoped channel settings (Phase 5 B-03).
+ * Store-scoped channel settings.
  * Separate from env ConfigModule to avoid DatabaseModule circular imports.
  */
 @Module({

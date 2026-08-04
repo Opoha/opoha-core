@@ -33,7 +33,7 @@ export class FulfillmentPackageEntity {
   @Column({ name: 'carrier_code', type: 'text', nullable: true })
   carrierCode!: string | null;
 
-  /** Label URL from ShippingMethodProvider.createLabel (D-04). */
+ /** Label URL from ShippingMethodProvider.createLabel. */
   @Column({ name: 'label_url', type: 'text', nullable: true })
   labelUrl!: string | null;
 

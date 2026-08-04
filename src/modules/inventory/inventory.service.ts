@@ -193,14 +193,14 @@ export class InventoryService {
 
     const snapshot = await this.dataSource.transaction(async (manager) => {
       let item = await manager
-        .getRepository(InventoryItemEntity)
-        .createQueryBuilder('item')
-        .setLock('pessimistic_write')
-        .where('item.variantId = :variantId AND item.warehouseId = :warehouseId', {
+.getRepository(InventoryItemEntity)
+.createQueryBuilder('item')
+.setLock('pessimistic_write')
+.where('item.variantId = :variantId AND item.warehouseId = :warehouseId', {
           variantId: input.variantId,
           warehouseId,
         })
-        .getOne();
+.getOne();
 
       if (!item) {
         try {
@@ -221,11 +221,11 @@ export class InventoryService {
           throw error;
         }
         item = await manager
-          .getRepository(InventoryItemEntity)
-          .createQueryBuilder('item')
-          .setLock('pessimistic_write')
-          .where('item.id = :id', { id: item.id })
-          .getOne();
+.getRepository(InventoryItemEntity)
+.createQueryBuilder('item')
+.setLock('pessimistic_write')
+.where('item.id = :id', { id: item.id })
+.getOne();
         if (!item) {
           throw new NotFoundException(
             `Inventory item for variant ${input.variantId} at warehouse ${warehouseId} not found`,
@@ -277,7 +277,7 @@ export class InventoryService {
   }
 
   /**
-   * Reserve stock preferring warehouses linked to the store (Phase 5 E-02).
+ * Reserve stock preferring warehouses linked to the store.
    * Tries allow-list in primary-first order; never allocates outside the store.
    */
   async reserveForStore(input: ReserveInventoryForStoreInput): Promise<InventoryReservationType> {
@@ -346,14 +346,14 @@ export class InventoryService {
 
     const snapshot = await this.dataSource.transaction(async (manager) => {
       let item = await manager
-        .getRepository(InventoryItemEntity)
-        .createQueryBuilder('item')
-        .setLock('pessimistic_write')
-        .where('item.variantId = :variantId AND item.warehouseId = :warehouseId', {
+.getRepository(InventoryItemEntity)
+.createQueryBuilder('item')
+.setLock('pessimistic_write')
+.where('item.variantId = :variantId AND item.warehouseId = :warehouseId', {
           variantId: input.variantId,
           warehouseId,
         })
-        .getOne();
+.getOne();
 
       if (!item) {
         try {
@@ -374,11 +374,11 @@ export class InventoryService {
           throw error;
         }
         item = await manager
-          .getRepository(InventoryItemEntity)
-          .createQueryBuilder('item')
-          .setLock('pessimistic_write')
-          .where('item.id = :id', { id: item.id })
-          .getOne();
+.getRepository(InventoryItemEntity)
+.createQueryBuilder('item')
+.setLock('pessimistic_write')
+.where('item.id = :id', { id: item.id })
+.getOne();
         if (!item) {
           throw new NotFoundException(
             `Inventory item for variant ${input.variantId} at warehouse ${warehouseId} not found`,
@@ -438,11 +438,11 @@ export class InventoryService {
   async release(reservationId: string): Promise<InventoryReservationType> {
     const snapshot = await this.dataSource.transaction(async (manager) => {
       const reservation = await manager
-        .getRepository(InventoryReservationEntity)
-        .createQueryBuilder('res')
-        .setLock('pessimistic_write')
-        .where('res.id = :id', { id: reservationId })
-        .getOne();
+.getRepository(InventoryReservationEntity)
+.createQueryBuilder('res')
+.setLock('pessimistic_write')
+.where('res.id = :id', { id: reservationId })
+.getOne();
 
       if (!reservation) {
         throw new NotFoundException(`Reservation ${reservationId} not found`);
@@ -454,11 +454,11 @@ export class InventoryService {
       }
 
       const item = await manager
-        .getRepository(InventoryItemEntity)
-        .createQueryBuilder('item')
-        .setLock('pessimistic_write')
-        .where('item.id = :id', { id: reservation.inventoryItemId })
-        .getOne();
+.getRepository(InventoryItemEntity)
+.createQueryBuilder('item')
+.setLock('pessimistic_write')
+.where('item.id = :id', { id: reservation.inventoryItemId })
+.getOne();
 
       if (!item) {
         throw new NotFoundException(`Inventory item ${reservation.inventoryItemId} not found`);
@@ -504,11 +504,11 @@ export class InventoryService {
   async commit(reservationId: string): Promise<InventoryReservationType> {
     const snapshot = await this.dataSource.transaction(async (manager) => {
       const reservation = await manager
-        .getRepository(InventoryReservationEntity)
-        .createQueryBuilder('res')
-        .setLock('pessimistic_write')
-        .where('res.id = :id', { id: reservationId })
-        .getOne();
+.getRepository(InventoryReservationEntity)
+.createQueryBuilder('res')
+.setLock('pessimistic_write')
+.where('res.id = :id', { id: reservationId })
+.getOne();
 
       if (!reservation) {
         throw new NotFoundException(`Reservation ${reservationId} not found`);
@@ -520,11 +520,11 @@ export class InventoryService {
       }
 
       const item = await manager
-        .getRepository(InventoryItemEntity)
-        .createQueryBuilder('item')
-        .setLock('pessimistic_write')
-        .where('item.id = :id', { id: reservation.inventoryItemId })
-        .getOne();
+.getRepository(InventoryItemEntity)
+.createQueryBuilder('item')
+.setLock('pessimistic_write')
+.where('item.id = :id', { id: reservation.inventoryItemId })
+.getOne();
 
       if (!item) {
         throw new NotFoundException(`Inventory item ${reservation.inventoryItemId} not found`);

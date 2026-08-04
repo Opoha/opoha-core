@@ -1,5 +1,5 @@
 /**
- * 5-field crontab validation + due matching (Phase 8 A-01 / A-04).
+ * 5-field crontab validation + due matching.
  * minute hour day-of-month month day-of-week
  */
 const CRON_FIELD = String.raw`(?:\*|(?:\*/\d+)|(?:\d+(?:-\d+)?(?:,\d+(?:-\d+)?)*)|(?:\d+/\d+))`;

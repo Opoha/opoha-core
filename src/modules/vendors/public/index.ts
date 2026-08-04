@@ -1,5 +1,5 @@
 /**
- * Public marketplace vendors module surface (Phase 7 C).
+ * Public marketplace vendors module surface.
  */
 export { VendorsModule } from '../vendors.module';
 export { VendorService } from '../vendor.service';

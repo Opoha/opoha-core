@@ -2,7 +2,7 @@ import type { DomainEvent } from './domain-event';
 
 /**
  * Analytics sink port — plugins / storefront adapters implement; core never
- * imports GA/Meta/provider SDKs (Phase 4 F-04).
+ * imports GA/Meta/provider SDKs.
  */
 export type AnalyticsSink = {
   readonly code: string;

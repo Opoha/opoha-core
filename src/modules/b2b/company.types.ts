@@ -1,6 +1,6 @@
 import { Field, ID, InputType, ObjectType } from '@nestjs/graphql';
 
-@ObjectType({ description: 'B2B company account (Phase 5 F)' })
+@ObjectType({ description: 'B2B company account' })
 export class CompanyType {
   @Field(() => ID)
   id!: string;
@@ -13,7 +13,7 @@ export class CompanyType {
 
   @Field(() => String, {
     nullable: true,
-    description: 'Credit limit in minor units; null = unset (F-04)',
+ description: 'Credit limit in minor units; null = unset',
   })
   creditLimitMinor!: string | null;
 
@@ -115,7 +115,7 @@ export class RemoveCompanyMemberInput {
   customerId!: string;
 }
 
-@ObjectType({ description: 'Customer-specific price list item (Phase 5 F-04)' })
+@ObjectType({ description: 'Customer-specific price list item' })
 export class CompanyPriceListItemType {
   @Field(() => ID)
   id!: string;

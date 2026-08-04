@@ -25,7 +25,7 @@ import {
 } from './segment-eligibility';
 
 /**
- * Core TypeORM promotion provider (D-03 + Phase 4 E-03).
+ * Core TypeORM promotion provider.
  * Reads Coupon / DiscountRule entities and applies coupon + automatic discounts
  * into checkout totals. Segment restrictions live on coupon.metadata /
  * discount_rules.conditions (`segmentIds` / `segmentCodes`).

@@ -230,7 +230,7 @@ export class DigitalFulfillmentService {
   }
 
   /**
-   * Issue digital fulfillment for all digital lines on a placed/paid order (D-02).
+ * Issue digital fulfillment for all digital lines on a placed/paid order.
    * Non-digital lines are ignored. Shipping is never required for digital SKUs.
    */
   async issueForOrder(input: {

@@ -1,7 +1,7 @@
 import { Field, ID, InputType, ObjectType } from '@nestjs/graphql';
 
 /**
- * Catalog translation GraphQL + service DTOs (Phase 5 C-01–C-03).
+ * Catalog translation GraphQL + service DTOs.
  * Base product/category row = default locale; translation rows hold overlays.
  */
 

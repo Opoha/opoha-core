@@ -3,7 +3,7 @@ import { Injectable } from '@nestjs/common';
 import type { NotificationProvider, RegisteredNotificationProvider } from './notification-provider';
 
 /**
- * Registry for notification providers (Phase 2 E-01).
+ * Registry for notification providers.
  * Plugins register; NotificationsService orchestrates send.
  */
 @Injectable()

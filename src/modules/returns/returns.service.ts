@@ -56,7 +56,7 @@ function toReturnType(row: ReturnEntity): ReturnType {
 /**
  * Core RMA workflow: requested → approved → received → refunded|exchanged.
  * Restocks on receive; refunds via PaymentEngine; exchange creates a pending
- * replacement order stub (E-02 undetermined-item decision).
+ * replacement order stub (undetermined-item decision).
  */
 @Injectable()
 export class ReturnsService {
@@ -461,11 +461,11 @@ export class ReturnsService {
 
   private async lockReturn(manager: EntityManager, id: string): Promise<ReturnEntity> {
     const rma = await manager
-      .getRepository(ReturnEntity)
-      .createQueryBuilder('rma')
-      .setLock('pessimistic_write')
-      .where('rma.id = :id', { id })
-      .getOne();
+.getRepository(ReturnEntity)
+.createQueryBuilder('rma')
+.setLock('pessimistic_write')
+.where('rma.id = :id', { id })
+.getOne();
     if (!rma) {
       throw new NotFoundException(`Return ${id} not found`);
     }

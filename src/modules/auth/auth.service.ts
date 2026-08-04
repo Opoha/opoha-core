@@ -36,7 +36,7 @@ export class AuthService {
         data: {
           email: normalized,
           reason: 'invalid_credentials' as const,
-          ...(user ? { userId: user.id } : {}),
+...(user ? { userId: user.id } : {}),
         },
       });
       throw new UnauthorizedException('Invalid email or password');

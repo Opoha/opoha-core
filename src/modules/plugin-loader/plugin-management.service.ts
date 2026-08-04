@@ -9,7 +9,7 @@ import { PluginLoaderService } from './plugin-loader.service';
 import type { PluginType } from './plugins.types';
 
 /**
- * Admin-facing plugin list / enable / disable / configure (F-07 / AC-MVP-031).
+ * Admin-facing plugin list / enable / disable / configure.
  */
 @Injectable()
 export class PluginManagementService {
@@ -25,8 +25,8 @@ export class PluginManagementService {
     const rows = await this.states.find();
     const byId = new Map(rows.map((row) => [row.pluginId, row]));
     return this.loader
-      .listRecords()
-      .map((record) =>
+.listRecords()
+.map((record) =>
         this.toType(record.discovered.manifest.id, byId.get(record.discovered.manifest.id)),
       );
   }

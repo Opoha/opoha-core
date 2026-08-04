@@ -1,7 +1,7 @@
 import { Field, ID, InputType, ObjectType } from '@nestjs/graphql';
 
 @ObjectType('StoreCurrencyConfig', {
-  description: 'Store-scoped display vs settlement currency configuration (Phase 5 D-01)',
+ description: 'Store-scoped display vs settlement currency configuration',
 })
 export class StoreCurrencyConfigType {
   @Field(() => ID, { description: 'Store channel id' })

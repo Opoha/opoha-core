@@ -9,7 +9,7 @@ import {
 } from 'typeorm';
 
 /**
- * Customer-specific (company) price list item (Phase 5 F-04).
+ * Customer-specific (company) price list item.
  * OWNER: b2b module — plugins must not alter this table.
  * Cross-module FKs to `companies.id` (same module) and `product_variants.id`
  * by id only (ADR-0005 / ADR-0010) — no TypeORM relation into catalog.

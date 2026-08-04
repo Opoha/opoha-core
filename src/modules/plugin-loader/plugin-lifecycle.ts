@@ -1,5 +1,5 @@
 /**
- * Plugin lifecycle state machine (AC-MVP-024 / AC-MVP-026).
+ * Plugin lifecycle state machine.
  * `boot` is an action, not a durable state — it runs for installed plugins at app start.
  */
 

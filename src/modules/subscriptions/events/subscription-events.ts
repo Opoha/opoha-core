@@ -4,7 +4,7 @@ import { CoreEventName } from '../../event-bus/event-catalog';
 import type { DomainEvent } from '../../event-bus/domain-event';
 
 export const subscriptionRenewedDataSchema = z
-  .object({
+.object({
     subscriptionId: z.string().uuid(),
     planId: z.string().uuid(),
     customerId: z.string().uuid(),
@@ -15,7 +15,7 @@ export const subscriptionRenewedDataSchema = z
     periodEnd: z.string().min(1),
     renewedAt: z.string().min(1),
   })
-  .strict();
+.strict();
 
 export type SubscriptionRenewedData = z.infer<typeof subscriptionRenewedDataSchema>;
 export type SubscriptionRenewedEvent = DomainEvent<SubscriptionRenewedData>;

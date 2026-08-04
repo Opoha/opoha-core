@@ -93,7 +93,7 @@ export class SubscriptionResolver {
   @Mutation(() => SubscriptionRenewalResultType, {
     name: 'renewSubscription',
     description:
-      'Charge a subscription for its current period via the payment engine (renewal job/path stub, E-03)',
+ 'Charge a subscription for its current period via the payment engine (renewal job/path stub)',
   })
   @RequirePermission('subscription:manage')
   async renewSubscription(

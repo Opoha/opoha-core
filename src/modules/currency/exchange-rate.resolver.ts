@@ -87,7 +87,7 @@ export class ExchangeRateResolver {
   @Mutation(() => [ExchangeRateType], {
     name: 'syncExchangeRatesFromProvider',
     description:
-      'Fetch live quotes from a registered FX provider (Phase 5 D-04, optional) ' +
+ 'Fetch live quotes from a registered FX provider ' +
       'and upsert them with source=providerCode; core never calls a provider SDK directly.',
   })
   @RequirePermission('currency:update')

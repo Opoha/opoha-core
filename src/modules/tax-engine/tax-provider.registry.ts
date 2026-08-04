@@ -3,7 +3,7 @@ import { Injectable } from '@nestjs/common';
 import type { RegisteredTaxProvider, TaxProvider } from './tax-provider';
 
 /**
- * Registry for tax providers (Phase 2 C-01).
+ * Registry for tax providers.
  * Plugins register; TaxEngine orchestrates calculateTax.
  */
 @Injectable()

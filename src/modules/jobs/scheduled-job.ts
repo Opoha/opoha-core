@@ -1,5 +1,5 @@
 /**
- * In-process scheduled job handler contract (Phase 8 A-01/A-03).
+ * In-process scheduled job handler contract.
  */
 export type ScheduledJobHandlerContext = {
   readonly jobCode: string;

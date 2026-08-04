@@ -1,5 +1,5 @@
 /**
- * Channel / order source (Phase 7 A-03).
+ * Channel / order source.
  * Identifies which sales channel created the order.
  */
 export const ORDER_SOURCES = ['web', 'pos', 'marketplace'] as const;

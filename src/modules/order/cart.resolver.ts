@@ -50,7 +50,7 @@ export class CartResolver {
     name: 'cartDisplayTotals',
     description:
       'Convert cart line/shipping/tax/discount amounts to a store-enabled ' +
-      'display currency using configured exchange rates (Phase 5 D-03). ' +
+ 'display currency using configured exchange rates. ' +
       'Settlement currency remains cart.currencyCode. Rounding: half_up.',
   })
   @RequirePermission('cart:read')
@@ -70,7 +70,7 @@ export class CartResolver {
     name: 'createCart',
     description:
       'Create an empty shopping cart bound to a store (input, header, or default). ' +
-      'currencyCode is settlement currency; defaults to store settlement config (D-03).',
+ 'currencyCode is settlement currency; defaults to store settlement config.',
   })
   @RequirePermission('cart:create')
   createCart(
@@ -139,7 +139,7 @@ export class CartResolver {
 
   @Mutation(() => CartType, {
     name: 'setCartCoupon',
-    description: 'Set or clear a coupon code on a cart for PromotionsEngine (D-01)',
+ description: 'Set or clear a coupon code on a cart for PromotionsEngine',
   })
   @RequirePermission('cart:update')
   setCartCoupon(
@@ -151,7 +151,7 @@ export class CartResolver {
 
   @Mutation(() => CartType, {
     name: 'setCartGiftCard',
-    description: 'Set or clear a gift card code on a cart for GiftCardService (C-02)',
+ description: 'Set or clear a gift card code on a cart for GiftCardService',
   })
   @RequirePermission('cart:update')
   setCartGiftCard(
@@ -163,7 +163,7 @@ export class CartResolver {
 
   @Mutation(() => CartType, {
     name: 'setCartLoyaltyPoints',
-    description: 'Set loyalty points to redeem on a cart for LoyaltyService (C-03)',
+ description: 'Set loyalty points to redeem on a cart for LoyaltyService',
   })
   @RequirePermission('cart:update')
   setCartLoyaltyPoints(

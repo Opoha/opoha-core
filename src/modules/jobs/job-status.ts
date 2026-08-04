@@ -1,5 +1,5 @@
 /**
- * Job run lifecycle statuses (Phase 8 A-01/A-02).
+ * Job run lifecycle statuses.
  * See docs/readiness/jobs-cron-contracts.md
  */
 export const JOB_RUN_STATUSES = ['pending', 'running', 'succeeded', 'failed', 'canceled'] as const;

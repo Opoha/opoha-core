@@ -30,7 +30,7 @@ export class FulfillmentLineType {
 }
 
 @ObjectType('FulfillmentPackage', {
-  description: 'Shipped package on a fulfillment (tracking + label, D-04)',
+ description: 'Shipped package on a fulfillment (tracking + label)',
 })
 export class FulfillmentPackageType {
   @Field(() => ID)

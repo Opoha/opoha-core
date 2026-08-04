@@ -36,7 +36,7 @@ function toRunGql(row: JobRunType): JobRunGqlType {
 }
 
 /**
- * Admin GraphQL for jobs observability (Phase 8 E-03).
+ * Admin GraphQL for jobs observability.
  */
 @Resolver(() => JobDefinitionGqlType)
 @UseGuards(GqlAuthGuard, PermissionsGuard)

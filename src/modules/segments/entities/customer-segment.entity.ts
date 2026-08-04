@@ -10,7 +10,7 @@ import {
 import type { SegmentRules } from '../segment-rules';
 
 /**
- * Rule-based customer segment for promotions (Phase 4 E-01).
+ * Rule-based customer segment for promotions.
  * OWNER: segments module — plugins must not alter this table.
  * Distinct from manual {@link CustomerGroupEntity} membership lists.
  */

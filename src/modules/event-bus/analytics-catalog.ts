@@ -1,7 +1,7 @@
 import { CoreEventName } from './event-catalog';
 
 /**
- * Analytics-oriented subset of core domain events (Phase 4 F-01).
+ * Analytics-oriented subset of core domain events.
  * Past-tense domain facts only — no provider SDKs in core.
  * Storefront/plugin sinks map these to GA4 / Meta Pixel (see workspace design docs).
  */

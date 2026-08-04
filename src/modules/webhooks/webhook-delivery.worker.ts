@@ -31,7 +31,7 @@ export type DeliverResult = {
 
 /**
  * Delivers pending/failed webhook attempts with HMAC signing + retry backoff
- * (Phase 8 D-02). HTTP is injectable for Vitest mocks.
+ *. HTTP is injectable for Vitest mocks.
  */
 @Injectable()
 export class WebhookDeliveryWorker {
@@ -75,16 +75,16 @@ export class WebhookDeliveryWorker {
    */
   async processDue(now: Date = new Date(), limit = 50): Promise<DeliverResult[]> {
     const due = await this.attempts
-      .createQueryBuilder('a')
-      .where('a.status IN (:...statuses)', {
+.createQueryBuilder('a')
+.where('a.status IN (:...statuses)', {
         statuses: ['pending', 'failed'],
       })
-      .andWhere('(a.nextAttemptAt IS NULL OR a.nextAttemptAt <= :now)', {
+.andWhere('(a.nextAttemptAt IS NULL OR a.nextAttemptAt <= :now)', {
         now,
       })
-      .orderBy('a.createdAt', 'ASC')
-      .take(limit)
-      .getMany();
+.orderBy('a.createdAt', 'ASC')
+.take(limit)
+.getMany();
 
     const results: DeliverResult[] = [];
     for (const row of due) {

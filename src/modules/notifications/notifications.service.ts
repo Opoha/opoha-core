@@ -14,7 +14,7 @@ import type { NotificationTemplate, NotificationTemplateRendered } from './notif
 
 /**
  * Notifications orchestration — providers, templates, and send.
- * Event listeners (E-03) build on sendTemplated / sendOrSkip.
+ * Event listeners build on sendTemplated / sendOrSkip.
  */
 @Injectable()
 export class NotificationsService {
@@ -190,7 +190,7 @@ export class NotificationsService {
     }
     const rendered = this.templates.render(code, input.data ?? {});
     return {
-      ...input,
+...input,
       subject: needsSubject ? rendered.subject : input.subject,
       bodyText: needsBodyText ? rendered.bodyText : input.bodyText,
       bodyHtml: needsBodyHtml ? rendered.bodyHtml : input.bodyHtml,

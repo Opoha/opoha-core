@@ -115,7 +115,7 @@ export class CartService {
   }
 
   /**
-   * Convert cart's last persisted money fields to a display currency (D-03).
+ * Convert cart's last persisted money fields to a display currency.
    * Uses settlement amounts on the cart (not a full checkout recompute).
    */
   async getDisplayTotals(
@@ -178,7 +178,7 @@ export class CartService {
     });
     await requireActiveStore(this.stores, storeId);
 
-    // Settlement currency is authoritative on the cart (D-01/D-03).
+ // Settlement currency is authoritative on the cart.
     // Prefer explicit input, else store settlement config, else USD.
     let currency: string;
     if (input.currencyCode?.trim()) {
@@ -373,7 +373,7 @@ export class CartService {
   }
 
   /**
-   * Validate a rate via ShippingEngine and persist selection on the cart (B-02).
+ * Validate a rate via ShippingEngine and persist selection on the cart.
    * Allowed on open or locked carts (checkout may select after prepare).
    */
   async selectShipping(input: SelectCartShippingInput): Promise<CartType> {
@@ -430,7 +430,7 @@ export class CartService {
   }
 
   /**
-   * Re-apply company price list overrides to open/locked cart lines (F-04).
+ * Re-apply company price list overrides to open/locked cart lines.
    * No-op when cart has no companyId. Used by checkout prepare.
    */
   async applyCompanyPriceList(cartId: string): Promise<void> {
@@ -466,7 +466,7 @@ export class CartService {
   }
 
   /**
-   * Persist tax pricing mode + jurisdiction on the cart (C-03).
+ * Persist tax pricing mode + jurisdiction on the cart.
    * Allowed on open or locked carts (checkout may set after prepare).
    */
   async setTaxContext(input: SetCartTaxContextInput): Promise<CartType> {
@@ -497,7 +497,7 @@ export class CartService {
   }
 
   /**
-   * Set or clear coupon code on the cart (D-01).
+ * Set or clear coupon code on the cart.
    * Invalidates prior discount snapshot until prepareCheckout recalculates.
    */
   async setCoupon(input: SetCartCouponInput): Promise<CartType> {
@@ -510,7 +510,7 @@ export class CartService {
   }
 
   /**
-   * Set or clear gift card code on the cart (C-02).
+ * Set or clear gift card code on the cart.
    * Invalidates prior gift card snapshot until prepareCheckout recalculates.
    */
   async setGiftCard(input: SetCartGiftCardInput): Promise<CartType> {
@@ -523,7 +523,7 @@ export class CartService {
   }
 
   /**
-   * Set loyalty points to redeem on the cart (C-03).
+ * Set loyalty points to redeem on the cart.
    * Invalidates prior loyalty snapshot until prepareCheckout recalculates.
    */
   async setLoyaltyPoints(input: SetCartLoyaltyPointsInput): Promise<CartType> {

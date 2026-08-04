@@ -29,8 +29,8 @@ export class JwtStrategy extends PassportStrategy(Strategy, 'jwt') {
     return {
       userId: user.id,
       email: user.email,
-      ...(payload.storeId ? { storeId: payload.storeId } : {}),
-      ...(payload.storeCode ? { storeCode: payload.storeCode } : {}),
+...(payload.storeId ? { storeId: payload.storeId } : {}),
+...(payload.storeCode ? { storeCode: payload.storeCode } : {}),
     };
   }
 }

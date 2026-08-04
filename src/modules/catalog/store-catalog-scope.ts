@@ -3,7 +3,7 @@ import { IsNull, type FindOptionsWhere } from 'typeorm';
 import type { StoreCatalogMode } from '../config/public';
 
 /**
- * Build TypeORM `where` for store-scoped catalog listing (Phase 5 B-04).
+ * Build TypeORM `where` for store-scoped catalog listing.
  *
  * - No store → global/admin list (undefined where).
  * - `shared` (default) → shared rows (`storeId` null) ∪ store-owned for scope.

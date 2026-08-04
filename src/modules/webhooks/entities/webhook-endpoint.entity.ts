@@ -8,7 +8,7 @@ import {
 } from 'typeorm';
 
 /**
- * Outbound webhook endpoint subscription (Phase 8 D-01).
+ * Outbound webhook endpoint subscription.
  * OWNER: webhooks module — plugins must not alter this table.
  */
 @Entity({ name: 'webhook_endpoints' })

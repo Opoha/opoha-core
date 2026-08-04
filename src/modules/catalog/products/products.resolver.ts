@@ -27,7 +27,7 @@ import { ProductsService } from './products.service';
  * Documented contract for the optional `product-review.reviews` provider
  * (see `@opoha/plugin-product-review`). Core never imports the plugin —
  * this shape is a duck-typed agreement resolved by string token only
- * (Phase 4 D-04 hook; ADR core-never-imports-plugins).
+ *.
  */
 export type ReviewAggregateProvider = {
   aggregate(productId: string):
@@ -54,7 +54,7 @@ export class ProductsResolver {
   ) {}
 
   /**
-   * Review-aggregate hook (Phase 4 D-04) — looks up the generic
+ * Review-aggregate hook — looks up the generic
    * `product-review.reviews` provider token via ContributionRegistry.
    * Returns null when no (active) review plugin is installed.
    */

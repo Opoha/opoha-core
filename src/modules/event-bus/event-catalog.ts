@@ -64,11 +64,11 @@ export const CoreEventName = {
   B2bQuoteCreated: 'B2bQuoteCreated',
   B2bQuoteStatusChanged: 'B2bQuoteStatusChanged',
   B2bQuoteConverted: 'B2bQuoteConverted',
-  /** Phase 7 omnichannel — PosSaleCompleted published on placeOrder(orderSource=pos). */
+ /** omnichannel — PosSaleCompleted published on placeOrder(orderSource=pos). */
   PosSaleCompleted: 'PosSaleCompleted',
-  /** Phase 7 C-01 — marketplace vendor CRUD. */
+ /** marketplace vendor CRUD. */
   VendorUpdated: 'VendorUpdated',
-  /** Phase 7 C-02 — order lines routed to marketplace vendor(s). */
+ /** order lines routed to marketplace vendor(s). */
   VendorOrderRouted: 'VendorOrderRouted',
   DigitalFulfillmentIssued: 'DigitalFulfillmentIssued',
   SubscriptionRenewed: 'SubscriptionRenewed',

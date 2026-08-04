@@ -1,7 +1,7 @@
 import { Column, Entity, PrimaryColumn, UpdateDateColumn } from 'typeorm';
 
 /**
- * OWNER: plugin-loader — durable enable/disable + opaque admin config (F-07 / ADR-0010).
+ * OWNER: plugin-loader — durable enable/disable + opaque admin config (/ ADR-0010).
  * Plugin-owned domain tables remain in plugin packages (ADR-0005).
  */
 @Entity({ name: 'plugin_states' })

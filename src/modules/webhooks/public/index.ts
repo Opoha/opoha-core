@@ -1,5 +1,5 @@
 /**
- * Public webhooks module surface (Phase 8 D-01–D-03).
+ * Public webhooks module surface.
  */
 export { WebhooksModule } from '../webhooks.module';
 export { WebhooksService } from '../webhooks.service';

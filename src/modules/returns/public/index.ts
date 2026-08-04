@@ -1,5 +1,5 @@
 /**
- * Phase 3 E-01–E-03 — core RMA (returns) public surface.
+ * – — core RMA (returns) public surface.
  */
 export { ReturnsModule } from '../returns.module';
 export { ReturnsService } from '../returns.service';

@@ -14,8 +14,8 @@ import { StoreCurrencyConfigResolver } from './store-currency-config.resolver';
 import { StoreCurrencyConfigService } from './store-currency-config.service';
 
 /**
- * Currency module — store display/settlement config (D-01), exchange rates (D-02),
- * cart/checkout display conversion (D-03), and optional FX provider port (D-04).
+ * Currency module — store display/settlement config, exchange rates,
+ * cart/checkout display conversion, and optional FX provider port.
  */
 @Module({
   imports: [AuthModule, StoresModule, TypeOrmModule.forFeature([...currencyEntities])],

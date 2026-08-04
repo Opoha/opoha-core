@@ -38,7 +38,7 @@ export type PluginLoadResult = {
   ordered: DiscoveredPlugin[];
   /** Manifest + entry path checks that passed without executing plugin code. */
   validated: Array<{ id: string; entryPath: string }>;
-  /** Definitions imported from plugin entry modules (D-11). */
+ /** Definitions imported from plugin entry modules. */
   loaded: Array<{ id: string; entryPath: string }>;
 };
 
@@ -50,7 +50,7 @@ export type PluginRuntimeRecord = {
 };
 
 /**
- * Discovers plugins, runs lifecycle hooks, and wires registration surfaces (D-03–D-06).
+ * Discovers plugins, runs lifecycle hooks, and wires registration surfaces (–).
  */
 @Injectable()
 export class PluginLoaderService implements OnModuleInit {
@@ -125,7 +125,7 @@ export class PluginLoaderService implements OnModuleInit {
 
   /**
    * Discover plugins, dynamically import entry modules, and register definitions.
-   * Core never statically imports plugin packages (D-10 / D-11).
+ * Core never statically imports plugin packages.
    */
   async loadDefinitions(): Promise<PluginLoadResult> {
     const result = this.load();

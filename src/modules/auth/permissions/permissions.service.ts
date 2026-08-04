@@ -27,14 +27,14 @@ export class PermissionsService {
 
   async listKeysForUser(userId: string): Promise<string[]> {
     const rows = await this.permissions
-      .createQueryBuilder('p')
-      .innerJoin('p.rolePermissions', 'rp')
-      .innerJoin('rp.role', 'r')
-      .innerJoin('r.userRoles', 'ur')
-      .where('ur.userId = :userId', { userId })
-      .select('DISTINCT p.key', 'key')
-      .orderBy('p.key', 'ASC')
-      .getRawMany<{ key: string }>();
+.createQueryBuilder('p')
+.innerJoin('p.rolePermissions', 'rp')
+.innerJoin('rp.role', 'r')
+.innerJoin('r.userRoles', 'ur')
+.where('ur.userId = :userId', { userId })
+.select('DISTINCT p.key', 'key')
+.orderBy('p.key', 'ASC')
+.getRawMany<{ key: string }>();
     return rows.map((row) => row.key);
   }
 

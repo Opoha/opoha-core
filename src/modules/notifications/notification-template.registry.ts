@@ -81,7 +81,7 @@ function paymentFailedTemplate(): NotificationTemplate {
 function shipmentCreatedTemplate(): NotificationTemplate {
   return {
     code: NotificationTemplateCode.ShipmentCreated,
-    description: 'Sent when a shipment is created for an order (reserved for Phase 3 fulfillment).',
+ description: 'Sent when a shipment is created for an order (reserved for fulfillment).',
     render(data) {
       const orderId = String(data.orderId ?? '');
       const trackingNumber = data.trackingNumber ? String(data.trackingNumber) : undefined;
@@ -99,7 +99,7 @@ function shipmentCreatedTemplate(): NotificationTemplate {
 }
 
 /**
- * Registry of transactional notification templates (Phase 2 E-02).
+ * Registry of transactional notification templates.
  * Preloaded with the core order/payment/shipment set; core code (not plugins)
  * may register additional or override templates via `register`.
  */

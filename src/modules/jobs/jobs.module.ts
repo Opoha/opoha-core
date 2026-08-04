@@ -10,7 +10,7 @@ import { JobsService } from './jobs.service';
 import { ScheduledJobRegistry } from './scheduled-job.registry';
 
 /**
- * Core `jobs` module (Phase 8 A-02/A-03 + E-03 GraphQL observability).
+ * Core `jobs` module.
  *
  * `JOB_QUEUE_ADAPTER` resolves to {@link BullMqJobQueueAdapter}, which
  * delegates to the in-memory bridge until a real Redis/BullMQ worker is

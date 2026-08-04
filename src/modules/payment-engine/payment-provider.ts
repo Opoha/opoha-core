@@ -1,6 +1,6 @@
 /**
  * Payment provider port — plugins implement; core never imports provider SDKs.
- * Phase 2: authorize / capture / refund / optional webhook.
+ *: authorize / capture / refund / optional webhook.
  */
 
 /** Minor-unit money amount (bigint as decimal string). */

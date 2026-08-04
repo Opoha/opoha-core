@@ -1,5 +1,5 @@
 /**
- * Public jobs module surface (Phase 8 A-01–A-04).
+ * Public jobs module surface.
  */
 export { JobsModule } from '../jobs.module';
 export { JobsService } from '../jobs.service';

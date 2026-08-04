@@ -1,4 +1,4 @@
-/** RMA lifecycle statuses (Phase 3 E-01). */
+/** RMA lifecycle statuses. */
 export const RETURN_STATUSES = [
   'requested',
   'approved',

@@ -70,7 +70,7 @@ function overlayFields<T extends { name: string; slug: string; description: stri
     return base;
   }
   return {
-    ...base,
+...base,
     name: tr.name,
     slug: tr.slug?.trim() ? tr.slug.trim() : base.slug,
     description:
@@ -79,7 +79,7 @@ function overlayFields<T extends { name: string; slug: string; description: stri
 }
 
 /**
- * Core translation storage for catalog entities (Phase 5 C-01).
+ * Core translation storage for catalog entities.
  *
  * Pattern: base product/category row = default locale; translation rows hold
  * locale-specific name/slug/description. Resolve overlays for locale-aware reads.

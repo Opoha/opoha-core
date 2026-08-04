@@ -4,13 +4,13 @@ import { CoreEventName } from '../../event-bus/event-catalog';
 import type { DomainEvent } from '../../event-bus/domain-event';
 
 export const storeCurrencyConfigUpdatedDataSchema = z
-  .object({
+.object({
     storeId: z.string().uuid(),
     settlementCurrencyCode: z.string().min(1),
     displayCurrencyCode: z.string().min(1),
     enabledDisplayCurrencies: z.array(z.string().min(1)),
   })
-  .strict();
+.strict();
 
 export type StoreCurrencyConfigUpdatedData = z.infer<typeof storeCurrencyConfigUpdatedDataSchema>;
 

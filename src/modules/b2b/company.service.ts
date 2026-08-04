@@ -356,7 +356,7 @@ export class CompanyService {
   }
 
   /**
-   * Enforce credit limit at checkout (F-04).
+ * Enforce credit limit at checkout.
    * Null creditLimitMinor = no limit. Full AR aging is out of scope for v0.6.
    */
   async assertWithinCreditLimit(companyId: string, orderTotalMinor: string): Promise<void> {
@@ -373,7 +373,7 @@ export class CompanyService {
     }
   }
 
-  /** List customer-specific price list items for a company (F-04). */
+ /** List customer-specific price list items for a company. */
   async listPriceListItems(companyId: string): Promise<CompanyPriceListItemType[]> {
     await this.requireCompany(companyId);
     const rows = await this.prices.find({
@@ -383,7 +383,7 @@ export class CompanyService {
     return rows.map(toPriceListItemType);
   }
 
-  /** Create or update a company's negotiated price for a variant (F-04). */
+ /** Create or update a company's negotiated price for a variant. */
   async setPriceListItem(input: SetCompanyPriceListItemInput): Promise<CompanyPriceListItemType> {
     await this.requireCompany(input.companyId);
     const priceMinor = assertNonNegativeIntegerString(input.priceMinor, 'priceMinor');
@@ -418,7 +418,7 @@ export class CompanyService {
     return toPriceListItemType(saved);
   }
 
-  /** Remove a company's price list item for a variant (F-04). */
+ /** Remove a company's price list item for a variant. */
   async removePriceListItem(input: RemoveCompanyPriceListItemInput): Promise<boolean> {
     await this.requireCompany(input.companyId);
     const row = await this.prices.findOne({
@@ -434,7 +434,7 @@ export class CompanyService {
   }
 
   /**
-   * Resolve unit price for a company cart line (F-04).
+ * Resolve unit price for a company cart line.
    * Company-specific price wins when present; otherwise catalog fallback.
    */
   async resolveUnitPriceMinor(

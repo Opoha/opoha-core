@@ -1,7 +1,7 @@
 /**
  * FX rate provider port — plugins implement; core never imports FX provider SDKs.
- * Phase 5 D-04: optional live rate source. Manual rates via ExchangeRateService
- * (D-02) remain exit-critical; a registered provider only supplies rates when
+ *: optional live rate source. Manual rates via ExchangeRateService
+ * remain exit-critical; a registered provider only supplies rates when
  * explicitly synced via ExchangeRateService.syncFromProvider.
  */
 

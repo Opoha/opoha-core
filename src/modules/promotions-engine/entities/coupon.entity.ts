@@ -11,7 +11,7 @@ import {
 export type CouponKind = 'percentage' | 'fixed_amount' | 'free_shipping';
 
 /**
- * Merchant coupon code (Phase 2 D-02).
+ * Merchant coupon code.
  * OWNER: promotions-engine module — plugins must not alter this table.
  */
 @Entity({ name: 'coupons' })
@@ -19,7 +19,7 @@ export class CouponEntity {
   @PrimaryGeneratedColumn('uuid')
   id!: string;
 
-  /** Customer-facing code (unique; normalize to uppercase at write time in D-03+). */
+ /** Customer-facing code (unique; normalize to uppercase at write time in +). */
   @Index('coupons_code_uidx', { unique: true })
   @Column({ type: 'text' })
   code!: string;
@@ -80,7 +80,7 @@ export class CouponEntity {
   isActive!: boolean;
 
   /**
-   * Opaque metadata. Phase 4 E-03: may include `segmentIds` / `segmentCodes`
+ * Opaque metadata.: may include `segmentIds` / `segmentCodes`
    * to restrict redemption to matching customer segments.
    */
   @Column({ type: 'jsonb', nullable: true })

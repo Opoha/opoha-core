@@ -13,7 +13,7 @@ import {
 /**
  * OWNER: catalog module — plugins must not alter this table.
  *
- * Store scope (Phase 5 B-01):
+ * Store scope:
  * - `storeId` null → shared catalog (visible to all stores)
  * - `storeId` set → store-owned (isolated to that store)
  */

@@ -12,7 +12,7 @@ import { WebhooksService } from './webhooks.service';
 
 /**
  * Cataloged commerce events that enqueue outbound webhook deliveries
- * (Phase 8 D-03). Endpoints still filter by their `eventNames` list.
+ *. Endpoints still filter by their `eventNames` list.
  */
 export const WEBHOOK_TRIGGER_EVENTS: readonly string[] = [
   CoreEventName.OrderCreated,

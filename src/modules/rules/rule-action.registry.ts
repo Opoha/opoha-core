@@ -7,7 +7,7 @@ import type {
 } from './rule-action';
 
 /**
- * Registry for rule action handlers (Phase 8 C-02/C-03).
+ * Registry for rule action handlers.
  * Core built-ins and plugins register; RulesEvaluatorService resolves by name.
  */
 @Injectable()

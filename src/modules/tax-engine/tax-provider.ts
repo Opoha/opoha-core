@@ -1,6 +1,6 @@
 /**
  * Tax provider port — plugins implement; core never imports tax jurisdiction SDKs.
- * Phase 2 C-01: calculateTax with inclusive / exclusive pricing modes.
+ *: calculateTax with inclusive / exclusive pricing modes.
  */
 
 /** Minor-unit money amount (bigint as decimal string). */
@@ -26,7 +26,7 @@ export type TaxCalculateLineItem = {
   sku?: string;
   productId?: string;
   variantId?: string;
-  /** Core tax class code (resolved by provider / C-02 entities). */
+ /** Core tax class code (resolved by provider / entities). */
   taxClassCode?: string;
   quantity: number;
   /** Unit price in minor units (decimal string). */
@@ -76,7 +76,7 @@ export type TaxCalculateResult = {
 
 /**
  * Tax provider registered with the tax engine.
- * Plugins must implement calculateTax; class/rule data may live in core (C-02) or plugin storage.
+ * Plugins must implement calculateTax; class/rule data may live in core or plugin storage.
  */
 export type TaxProvider = {
   readonly code: string;

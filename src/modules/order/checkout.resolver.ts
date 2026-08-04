@@ -19,8 +19,8 @@ export class CheckoutResolver {
     name: 'prepareCheckout',
     description:
       'Validate stock via reservations and return settlement + display totals; ' +
-      'enforces cart store vs request store context (B-02). ' +
-      'displayCurrencyCode must be enabled for the store (D-03); defaults to primary display.',
+ 'enforces cart store vs request store context. ' +
+ 'displayCurrencyCode must be enabled for the store; defaults to primary display.',
   })
   @RequirePermission('cart:checkout')
   prepareCheckout(

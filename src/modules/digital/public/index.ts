@@ -1,5 +1,5 @@
 /**
- * Public digital fulfillment module surface (Phase 7 D-01/D-02/D-03).
+ * Public digital fulfillment module surface.
  */
 export { DigitalModule } from '../digital.module';
 export {

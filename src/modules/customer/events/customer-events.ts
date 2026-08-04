@@ -4,11 +4,11 @@ import { CoreEventName } from '../../event-bus/event-catalog';
 import type { DomainEvent } from '../../event-bus/domain-event';
 
 export const customerCreatedDataSchema = z
-  .object({
+.object({
     customerId: z.string().uuid(),
     email: z.string().email(),
   })
-  .strict();
+.strict();
 
 export type CustomerCreatedData = z.infer<typeof customerCreatedDataSchema>;
 

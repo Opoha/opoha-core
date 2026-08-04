@@ -10,7 +10,7 @@ import {
 import type { BillingIntervalUnit } from '../subscription-status';
 
 /**
- * Recurring billing plan (Phase 7 E-01).
+ * Recurring billing plan.
  * OWNER: subscriptions module — plugins must not alter this table.
  */
 @Entity({ name: 'subscription_plans' })

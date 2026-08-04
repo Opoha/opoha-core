@@ -3,7 +3,7 @@ import { Injectable } from '@nestjs/common';
 import type { RegisteredScheduledJob, ScheduledJobHandler } from './scheduled-job';
 
 /**
- * Registry for scheduled job handlers (Phase 8 A-03).
+ * Registry for scheduled job handlers.
  * Plugins register; JobsService persists definitions and bridges the queue.
  */
 @Injectable()

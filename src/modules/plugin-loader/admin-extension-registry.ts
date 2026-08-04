@@ -2,7 +2,7 @@ import { Injectable } from '@nestjs/common';
 import { z } from 'zod';
 
 const navItemSchema = z
-  .object({
+.object({
     id: z.string().min(1),
     label: z.string().min(1),
     path: z.string().min(1),
@@ -10,60 +10,60 @@ const navItemSchema = z
     order: z.number().int().optional(),
     permission: z.string().optional(),
   })
-  .strict();
+.strict();
 
 const pageContributionSchema = z
-  .object({
+.object({
     id: z.string().min(1),
     path: z.string().min(1),
     title: z.string().min(1),
     permission: z.string().optional(),
   })
-  .strict();
+.strict();
 
 const widgetContributionSchema = z
-  .object({
+.object({
     id: z.string().min(1),
     title: z.string().min(1),
     permission: z.string().optional(),
   })
-  .strict();
+.strict();
 
 const settingsContributionSchema = z
-  .object({
+.object({
     id: z.string().min(1),
     title: z.string().min(1),
     path: z.string().min(1),
     permission: z.string().optional(),
   })
-  .strict();
+.strict();
 
 const tabContributionSchema = z
-  .object({
+.object({
     id: z.string().min(1),
     label: z.string().min(1),
     permission: z.string().optional(),
   })
-  .strict();
+.strict();
 
 export const adminContributionSchema = z
-  .object({
+.object({
     pluginId: z.string().min(1),
     navigation: z.array(navItemSchema).default([]),
     pages: z.array(pageContributionSchema).default([]),
     widgets: z.array(widgetContributionSchema).default([]),
     settings: z.array(settingsContributionSchema).default([]),
     tabs: z
-      .object({
+.object({
         product: z.array(tabContributionSchema).optional(),
         order: z.array(tabContributionSchema).optional(),
         customer: z.array(tabContributionSchema).optional(),
       })
-      .strict()
-      .optional(),
+.strict()
+.optional(),
     permissions: z.array(z.string().min(1)).default([]),
   })
-  .strict();
+.strict();
 
 export type AdminContribution = z.infer<typeof adminContributionSchema>;
 
@@ -72,7 +72,7 @@ export type AdminExtensionManifest = {
 };
 
 /**
- * Server-side admin extension registration (ADR-0006 / D-06).
+ * Server-side admin extension registration (ADR-0006 /).
  * Only enabled plugins are included in the merged manifest.
  */
 @Injectable()

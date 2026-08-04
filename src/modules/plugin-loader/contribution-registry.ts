@@ -8,7 +8,7 @@ export type GraphQLContribution = {
   /** Logical name for conflict detection (e.g. query field). */
   name: string;
   kind: 'type' | 'query' | 'mutation' | 'resolver';
-  /** Opaque descriptor — Nest wiring lands with sample plugin (D-11). */
+ /** Opaque descriptor — Nest wiring lands with sample plugin. */
   descriptor?: unknown;
   active: boolean;
 };
@@ -36,7 +36,7 @@ type StoredListener = ListenerContribution & {
 
 /**
  * Host-side registration surfaces for GraphQL descriptors, DI providers, and event listeners.
- * Disabled plugins keep records but deactivate runtime wiring (AC-MVP-025).
+ * Disabled plugins keep records but deactivate runtime wiring.
  */
 @Injectable()
 export class ContributionRegistry {
@@ -61,7 +61,7 @@ export class ContributionRegistry {
       return;
     }
     this.graphql.push({
-      ...contribution,
+...contribution,
       active: contribution.active ?? true,
     });
   }
@@ -81,7 +81,7 @@ export class ContributionRegistry {
       return;
     }
     this.providers.push({
-      ...contribution,
+...contribution,
       active: contribution.active ?? true,
     });
   }

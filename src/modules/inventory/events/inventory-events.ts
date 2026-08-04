@@ -4,7 +4,7 @@ import { CoreEventName } from '../../event-bus/event-catalog';
 import type { DomainEvent } from '../../event-bus/domain-event';
 
 export const inventoryUpdatedDataSchema = z
-  .object({
+.object({
     inventoryItemId: z.string().uuid(),
     variantId: z.string().uuid(),
     warehouseId: z.string().uuid(),
@@ -13,12 +13,12 @@ export const inventoryUpdatedDataSchema = z
     quantityReserved: z.number().int().nonnegative(),
     reason: z.string().nullable(),
   })
-  .strict();
+.strict();
 
 export type InventoryUpdatedData = z.infer<typeof inventoryUpdatedDataSchema>;
 
 export const inventoryReservationCreatedDataSchema = z
-  .object({
+.object({
     reservationId: z.string().uuid(),
     inventoryItemId: z.string().uuid(),
     variantId: z.string().uuid(),
@@ -28,12 +28,12 @@ export const inventoryReservationCreatedDataSchema = z
     quantityReserved: z.number().int().nonnegative(),
     quantityAvailable: z.number().int().nonnegative(),
   })
-  .strict();
+.strict();
 
 export type InventoryReservationCreatedData = z.infer<typeof inventoryReservationCreatedDataSchema>;
 
 export const inventoryReservationReleasedDataSchema = z
-  .object({
+.object({
     reservationId: z.string().uuid(),
     inventoryItemId: z.string().uuid(),
     variantId: z.string().uuid(),
@@ -42,26 +42,26 @@ export const inventoryReservationReleasedDataSchema = z
     quantityReserved: z.number().int().nonnegative(),
     quantityAvailable: z.number().int().nonnegative(),
   })
-  .strict();
+.strict();
 
 export type InventoryReservationReleasedData = z.infer<
   typeof inventoryReservationReleasedDataSchema
 >;
 
 export const stockTransferCreatedDataSchema = z
-  .object({
+.object({
     transferId: z.string().uuid(),
     fromWarehouseId: z.string().uuid(),
     toWarehouseId: z.string().uuid(),
     status: z.string().min(1),
     lineCount: z.number().int().nonnegative(),
   })
-  .strict();
+.strict();
 
 export type StockTransferCreatedData = z.infer<typeof stockTransferCreatedDataSchema>;
 
 export const stockTransferShippedDataSchema = z
-  .object({
+.object({
     transferId: z.string().uuid(),
     fromWarehouseId: z.string().uuid(),
     toWarehouseId: z.string().uuid(),
@@ -69,12 +69,12 @@ export const stockTransferShippedDataSchema = z
     shippedAt: z.string().min(1),
     lineCount: z.number().int().nonnegative(),
   })
-  .strict();
+.strict();
 
 export type StockTransferShippedData = z.infer<typeof stockTransferShippedDataSchema>;
 
 export const stockTransferReceivedDataSchema = z
-  .object({
+.object({
     transferId: z.string().uuid(),
     fromWarehouseId: z.string().uuid(),
     toWarehouseId: z.string().uuid(),
@@ -82,18 +82,18 @@ export const stockTransferReceivedDataSchema = z
     receivedAt: z.string().min(1),
     lineCount: z.number().int().nonnegative(),
   })
-  .strict();
+.strict();
 
 export type StockTransferReceivedData = z.infer<typeof stockTransferReceivedDataSchema>;
 
 export const stockTransferCancelledDataSchema = z
-  .object({
+.object({
     transferId: z.string().uuid(),
     fromWarehouseId: z.string().uuid(),
     toWarehouseId: z.string().uuid(),
     status: z.string().min(1),
   })
-  .strict();
+.strict();
 
 export type StockTransferCancelledData = z.infer<typeof stockTransferCancelledDataSchema>;
 

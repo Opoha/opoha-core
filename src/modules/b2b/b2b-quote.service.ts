@@ -94,7 +94,7 @@ export class B2bQuoteService {
   }
 
   /**
-   * Create a draft B2B quote with lines (F-05 foundation).
+ * Create a draft B2B quote with lines (foundation).
    * Optional `poNumber` holds the buyer's external purchase-order reference.
    */
   async create(input: CreateB2bQuoteInput): Promise<B2bQuoteType> {

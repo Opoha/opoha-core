@@ -1,5 +1,5 @@
 /**
- * Rule-based segment membership (Phase 4 E-02).
+ * Rule-based segment membership.
  * Order count / spend use caller-supplied stubs for v0.5 — live aggregation can wire later.
  */
 

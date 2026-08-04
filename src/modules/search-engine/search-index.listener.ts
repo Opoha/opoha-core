@@ -26,7 +26,7 @@ type ProductDeletedData = {
 };
 
 /**
- * Enqueues product index / delete jobs from catalog events (Phase 4 A-03).
+ * Enqueues product index / delete jobs from catalog events.
  * Soft no-op when no SearchProvider is registered; handlers are idempotent
  * by product id (providers should upsert / delete by document id).
  */

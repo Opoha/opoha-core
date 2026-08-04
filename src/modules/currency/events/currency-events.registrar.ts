@@ -11,8 +11,8 @@ export class CurrencyEventsRegistrar implements OnModuleInit {
 
   onModuleInit(): void {
     for (const { eventName, schema } of [
-      ...storeCurrencyConfigEventSchemas(),
-      ...exchangeRateEventSchemas(),
+...storeCurrencyConfigEventSchemas(),
+...exchangeRateEventSchemas(),
     ]) {
       this.eventBus.registerSchema(eventName, schema);
     }

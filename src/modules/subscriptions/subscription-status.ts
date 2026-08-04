@@ -22,7 +22,7 @@ export function isBillingIntervalUnit(value: string): value is BillingIntervalUn
 
 /**
  * Advance `from` by `count` billing intervals of `unit` (schedule math for
- * plan subscribe / renewal — Phase 7 E-01/E-03). UTC calendar arithmetic via
+ * plan subscribe / renewal — /). UTC calendar arithmetic via
  * `Date` setters; DST-agnostic by design (no wall-clock zone applied).
  */
 export function addBillingInterval(from: Date, unit: BillingIntervalUnit, count: number): Date {

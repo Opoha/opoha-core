@@ -1,6 +1,6 @@
 /**
  * Shipping method port — plugins implement; core never imports carrier SDKs.
- * Phase 2: quoteRates + optional label hooks (create/void).
+ *: quoteRates + optional label hooks (create/void).
  */
 
 /** Minor-unit money amount (bigint as decimal string). */

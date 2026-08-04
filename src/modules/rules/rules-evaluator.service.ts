@@ -11,7 +11,7 @@ import { RulesService } from './rules.service';
 
 /**
  * Cataloged cart / order / customer events that the rule evaluator
- * listens on (Phase 8 C-02). Rules with other event names still persist
+ * listens on. Rules with other event names still persist
  * but are not auto-subscribed until listed here.
  */
 export const RULE_TRIGGER_EVENTS: readonly string[] = [

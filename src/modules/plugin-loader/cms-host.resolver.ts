@@ -9,7 +9,7 @@ import { CmsPageType, CreateCmsPageInput, UpdateCmsPageInput } from './cms-host.
  * Documented contract for the optional `cms.content` provider
  * (see `@opoha/plugin-cms`). Core never imports the plugin —
  * this shape is a duck-typed agreement resolved by string token only
- * (Phase 4 H-02 host bridge; ADR core-never-imports-plugins).
+ *.
  */
 export type CmsContentProvider = {
   createPage(input: {

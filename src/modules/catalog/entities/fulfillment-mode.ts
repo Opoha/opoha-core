@@ -1,5 +1,5 @@
 /**
- * Product / SKU fulfillment mode (Phase 7 A-02).
+ * Product / SKU fulfillment mode.
  * Variant mode is authoritative at purchase; product mode is the default for new variants.
  */
 export const FULFILLMENT_MODES = ['physical', 'digital', 'service'] as const;

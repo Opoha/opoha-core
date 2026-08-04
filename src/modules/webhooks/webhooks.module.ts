@@ -11,7 +11,7 @@ import { WebhooksResolver } from './webhooks.resolver';
 import { WebhooksService } from './webhooks.service';
 
 /**
- * Core `webhooks` module (Phase 8 D-01–D-03).
+ * Core `webhooks` module.
  * Outbound subscriptions, HMAC signing, retries, dead-letter, GraphQL CRUD.
  */
 @Module({

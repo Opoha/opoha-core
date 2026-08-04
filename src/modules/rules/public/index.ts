@@ -1,5 +1,5 @@
 /**
- * Public rules module surface (Phase 8 C-01–C-03).
+ * Public rules module surface.
  */
 export { RulesModule } from '../rules.module';
 export { RulesService } from '../rules.service';

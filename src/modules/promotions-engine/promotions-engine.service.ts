@@ -10,7 +10,7 @@ import type {
 
 /**
  * Promotions rules engine — register / get / list providers + aggregate apply.
- * Checkout wiring uses {@link PromotionsEngine.applyOrZero} (D-01).
+ * Checkout wiring uses {@link PromotionsEngine.applyOrZero}.
  */
 @Injectable()
 export class PromotionsEngine {
@@ -89,7 +89,7 @@ export class PromotionsEngine {
   }
 
   /**
-   * Checkout helper (D-01 / D-03): when no provider is registered, discount is
+ * Checkout helper: when no provider is registered, discount is
    * zero so prepareCheckout / placeOrder still succeed. With the core TypeORM
    * provider registered on boot, coupon + automatic discounts apply from
    * Coupon / DiscountRule entities; plugins may register additional providers.

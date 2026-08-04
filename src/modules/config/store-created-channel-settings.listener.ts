@@ -6,7 +6,7 @@ import type { StoreCreatedEvent } from '../stores/public';
 import { StoreChannelSettingsService } from './store-channel-settings.service';
 
 /**
- * Seed default channel settings when a store is created (Phase 5 B-03).
+ * Seed default channel settings when a store is created.
  */
 @Injectable()
 export class StoreCreatedChannelSettingsListener implements OnModuleInit {

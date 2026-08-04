@@ -8,7 +8,7 @@ import { AppLogger } from '../logging/app-logger';
 
 /**
  * Forwards cataloged analytics events (ANALYTICS_EVENT_NAMES) to every active
- * AnalyticsSinkRegistry sink (Phase 4 F-04). Soft no-op with zero registered
+ * AnalyticsSinkRegistry sink. Soft no-op with zero registered
  * sinks. Per-sink failures are isolated — never fails the originating event.
  * Delivery is at-least-once (matches EventBusService); sinks must dedupe
  * using the idempotency keys documented in analytics-events-design.md.

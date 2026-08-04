@@ -1,4 +1,4 @@
-/** Loyalty ledger transaction kinds (Phase 4 C-03). */
+/** Loyalty ledger transaction kinds. */
 export const LOYALTY_TRANSACTION_TYPES = ['accrue', 'redeem', 'adjust'] as const;
 
 export type LoyaltyTransactionType = (typeof LOYALTY_TRANSACTION_TYPES)[number];

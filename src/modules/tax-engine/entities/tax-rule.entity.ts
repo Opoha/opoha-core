@@ -44,7 +44,7 @@ export class TaxRuleEntity {
   @Column({ name: 'rate_bps', type: 'integer' })
   rateBps!: number;
 
-  /** Higher priority wins when multiple rules match (provider / C-04). */
+ /** Higher priority wins when multiple rules match (provider /). */
   @Column({ type: 'integer', default: 0 })
   priority!: number;
 

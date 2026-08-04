@@ -54,7 +54,7 @@ export class CompanyResolver {
 
   @Query(() => [CompanyPriceListItemType], {
     name: 'companyPriceListItems',
-    description: 'List customer-specific price list items for a company (F-04)',
+ description: 'List customer-specific price list items for a company',
   })
   @RequirePermission('b2b:read')
   companyPriceListItems(
@@ -125,7 +125,7 @@ export class CompanyResolver {
 
   @Mutation(() => CompanyPriceListItemType, {
     name: 'setCompanyPriceListItem',
-    description: 'Create or update a customer-specific negotiated price for a variant (F-04)',
+ description: 'Create or update a customer-specific negotiated price for a variant',
   })
   @RequirePermission('b2b:update')
   setCompanyPriceListItem(
@@ -137,7 +137,7 @@ export class CompanyResolver {
 
   @Mutation(() => Boolean, {
     name: 'removeCompanyPriceListItem',
-    description: "Remove a company's negotiated price for a variant (F-04)",
+ description: "Remove a company's negotiated price for a variant",
   })
   @RequirePermission('b2b:update')
   removeCompanyPriceListItem(

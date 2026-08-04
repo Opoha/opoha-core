@@ -16,9 +16,9 @@ function asStringArray(value: unknown): string[] {
     return [];
   }
   return value
-    .filter((v): v is string => typeof v === 'string')
-    .map((v) => v.trim())
-    .filter(Boolean);
+.filter((v): v is string => typeof v === 'string')
+.map((v) => v.trim())
+.filter(Boolean);
 }
 
 /**

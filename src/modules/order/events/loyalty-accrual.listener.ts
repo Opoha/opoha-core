@@ -10,7 +10,7 @@ import type { PaymentCapturedData } from '../../payment-engine/events/payment-ev
 import { OrderEntity } from '../entities/order.entity';
 
 /**
- * Accrue loyalty points when payment is captured (C-03).
+ * Accrue loyalty points when payment is captured.
  * Uses order totalMinor (payable after gift card / loyalty redeem).
  */
 @Injectable()

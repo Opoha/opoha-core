@@ -51,9 +51,9 @@ export function discoverPluginAt(rootPath: string): DiscoveredPlugin {
  */
 export function discoverPlugins(paths: string[]): DiscoveredPlugin[] {
   return paths
-    .map((p) => p.trim())
-    .filter((p) => p.length > 0)
-    .map((p) => discoverPluginAt(p));
+.map((p) => p.trim())
+.filter((p) => p.length > 0)
+.map((p) => discoverPluginAt(p));
 }
 
 /**
@@ -102,7 +102,7 @@ export function parsePluginPathsEnv(raw: string | undefined): string[] {
     return parsed;
   }
   return trimmed
-    .split(',')
-    .map((p) => p.trim())
-    .filter((p) => p.length > 0);
+.split(',')
+.map((p) => p.trim())
+.filter((p) => p.length > 0);
 }

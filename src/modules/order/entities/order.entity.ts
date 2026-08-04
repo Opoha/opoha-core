@@ -15,7 +15,7 @@ import { OrderLineEntity } from './order-line.entity';
 /**
  * OWNER: order module — plugins must not alter this table.
  *
- * Store scope (Phase 5 B-02): `storeId` is copied from the source cart at
+ * Store scope: `storeId` is copied from the source cart at
  * `placeOrder`.
  */
 @Entity({ name: 'orders' })
@@ -37,25 +37,25 @@ export class OrderEntity {
   customerId!: string | null;
 
   /**
-   * Optional B2B company copied from the cart (Phase 5 F-03).
+ * Optional B2B company copied from the cart.
    * FK to `companies.id` (cross-module ID reference only).
    */
   @Column({ name: 'company_id', type: 'uuid', nullable: true })
   companyId!: string | null;
 
-  /** Source cart when placed via checkout (D-04). */
+ /** Source cart when placed via checkout. */
   @Column({ name: 'cart_id', type: 'uuid', nullable: true })
   cartId!: string | null;
 
   /**
-   * Sales channel that created the order (Phase 7 A-03).
+ * Sales channel that created the order.
    * web | pos | marketplace — default web for storefront checkout.
    */
   @Column({ name: 'order_source', type: 'text', default: 'web' })
   orderSource!: OrderSource;
 
   /**
-   * Primary marketplace vendor when all lines share one vendor (Phase 7 C-02).
+ * Primary marketplace vendor when all lines share one vendor.
    * Null for multi-vendor or non-marketplace orders.
    * FK to `vendors.id` (cross-module ID reference only).
    */
@@ -71,15 +71,15 @@ export class OrderEntity {
   @Column({ name: 'subtotal_minor', type: 'bigint', default: '0' })
   subtotalMinor!: string;
 
-  /** Tax stub — always 0 in Phase 1 (no tax provider). */
+ /** Tax stub — always 0 in (no tax provider). */
   @Column({ name: 'tax_minor', type: 'bigint', default: '0' })
   taxMinor!: string;
 
-  /** Shipping amount from selected rate (Phase 2 B-02). */
+ /** Shipping amount from selected rate. */
   @Column({ name: 'shipping_minor', type: 'bigint', default: '0' })
   shippingMinor!: string;
 
-  /** Promotion discount from PromotionsEngine (Phase 2 D-01). */
+ /** Promotion discount from PromotionsEngine. */
   @Column({ name: 'discount_minor', type: 'bigint', default: '0' })
   discountMinor!: string;
 
@@ -91,11 +91,11 @@ export class OrderEntity {
   @Column({ name: 'gift_card_code', type: 'text', nullable: true })
   giftCardCode!: string | null;
 
-  /** Gift card amount applied in minor units (Phase 4 C-02). */
+ /** Gift card amount applied in minor units. */
   @Column({ name: 'gift_card_minor', type: 'bigint', default: '0' })
   giftCardMinor!: string;
 
-  /** Loyalty points redeemed at checkout (Phase 4 C-03). */
+ /** Loyalty points redeemed at checkout. */
   @Column({ name: 'loyalty_points_redeemed', type: 'integer', default: 0 })
   loyaltyPointsRedeemed!: number;
 

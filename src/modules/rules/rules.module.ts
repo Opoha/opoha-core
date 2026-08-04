@@ -10,7 +10,7 @@ import { RulesResolver } from './rules.resolver';
 import { RulesService } from './rules.service';
 
 /**
- * Core `rules` module (Phase 8 C-01–C-03).
+ * Core `rules` module.
  * Declarative conditions → registered actions on cataloged domain events.
  */
 @Module({

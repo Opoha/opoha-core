@@ -3,7 +3,7 @@ import { Injectable } from '@nestjs/common';
 import type { PaymentProvider, RegisteredPaymentProvider } from './payment-provider';
 
 /**
- * Registry for payment providers (MVP D-08 / Phase 2 A-01).
+ * Registry for payment providers.
  * Plugins register; PaymentEngine orchestrates authorize/capture/refund.
  */
 @Injectable()

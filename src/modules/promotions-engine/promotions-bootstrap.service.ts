@@ -4,7 +4,7 @@ import { PromotionsEngine } from './promotions-engine.service';
 import { TypeOrmPromotionProvider } from './typeorm-promotion.provider';
 
 /**
- * Registers the core TypeORM promotion provider on boot (D-03).
+ * Registers the core TypeORM promotion provider on boot.
  */
 @Injectable()
 export class PromotionsBootstrapService implements OnModuleInit {

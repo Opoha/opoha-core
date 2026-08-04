@@ -8,7 +8,7 @@ import {
   UpdateDateColumn,
 } from 'typeorm';
 
-/** Buyer roles within a company (Phase 5 F-01 / F-02). */
+/** Buyer roles within a company. */
 export const COMPANY_BUYER_ROLES = ['buyer', 'approver', 'admin'] as const;
 export type CompanyBuyerRole = (typeof COMPANY_BUYER_ROLES)[number];
 
@@ -17,7 +17,7 @@ export function isCompanyBuyerRole(value: string): value is CompanyBuyerRole {
 }
 
 /**
- * Customer membership on a B2B company (Phase 5 F-01).
+ * Customer membership on a B2B company.
  * OWNER: b2b module — plugins must not alter this table.
  * Cross-module FKs to `companies.id` (same module) and `customers.id` by id only.
  */

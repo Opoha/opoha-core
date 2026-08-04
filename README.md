@@ -35,13 +35,13 @@ pnpm dev                # NestJS + GraphQL on :4000
 | `GET /health/ready` | Readiness — pings Postgres + Redis (200 / 503) |
 | `POST/GET /graphql` | GraphQL (Apollo playground in dev)             |
 
-## Config (B-02)
+## Config
 
 - `.env` loaded via `dotenv` + Zod (`src/modules/config/env.schema.ts`)
 - Typed `ConfigService` is global; invalid env fails boot
 - Documented keys: `PORT`, `DATABASE_URL`, `REDIS_URL`, `LOG_LEVEL`, `OTEL_ENABLED`, `JWT_SECRET`, `JWT_EXPIRES_IN`, `OPOHA_PLUGINS`, `OPOHA_PLUGINS_PATH`
 
-## Auth (C-01 … C-09)
+## Auth
 
 Staff JWT auth + RBAC + API keys + append-only audit (customers deferred).
 
@@ -50,7 +50,7 @@ Staff JWT auth + RBAC + API keys + append-only audit (customers deferred).
 | `JWT_SECRET`     | **Required in production** (fail-fast). Dev/test use an insecure fallback when unset. |
 | `JWT_EXPIRES_IN` | Default `1h` (jsonwebtoken duration string)                                           |
 
-Password hashes are never exposed in GraphQL types. Seeded `admin` role + permissions from B-07 remain the baseline (`user:*`, `role:*`, `permission:read`, `api-key:*`, `audit:read`).
+Password hashes are never exposed in GraphQL types. Seeded `admin` role + permissions from seed remain the baseline (`user:*`, `role:*`, `permission:read`, `api-key:*`, `audit:read`).
 
 ### GraphQL surface
 
@@ -115,7 +115,7 @@ query AuditLogs {
 
 Send `Authorization: Bearer <accessToken>` on protected operations.
 
-## Event bus (D-01 / D-02)
+## Event bus
 
 In-process NestJS `EventBusService` (`EventBusModule` is global):
 
@@ -125,9 +125,9 @@ In-process NestJS `EventBusService` (`EventBusModule` is global):
 
 Auth catalog (emitted from auth flows): `UserRegistered`, `UserUpdated`, `UserDeleted`, `LoginSucceeded`, `LoginFailed`, `ApiKeyCreated`, `ApiKeyRevoked`.
 
-## Plugin loader (D-03)
+## Plugin loader
 
-Discovery + manifest parse + dependency order (lifecycle install/boot is D-04).
+Discovery + manifest parse + dependency order (lifecycle install/boot follows).
 
 | Env                  | Purpose                                                                                            |
 | -------------------- | -------------------------------------------------------------------------------------------------- |
@@ -146,25 +146,25 @@ OPOHA_PLUGINS_PATH=/path/to/plugins
 
 `PluginLoaderService.load()` validates manifests and topological order without executing plugin entry modules. Cycles and missing dependencies fail with a clear error.
 
-## Logging (B-03)
+## Logging
 
 - Structured JSON logs via `AppLogger`
 - `CorrelationIdMiddleware` sets/propagates `x-request-id` and `x-correlation-id` (UUID if missing)
 
-## Health / readiness (B-04)
+## Health / readiness
 
 - `GET /health/live` — process up
 - `GET /health/ready` — `SELECT 1` via TypeORM + Redis `PING`
   - **200** `{ "status": "ok", "checks": { "postgres": "ok", "redis": "ok" } }`
   - **503** when either check fails (JSON body includes per-check status)
 
-## OpenTelemetry (B-05)
+## OpenTelemetry
 
 - Off by default (`OTEL_ENABLED=false`)
 - When `OTEL_ENABLED=true`, registers a `BasicTracerProvider` with console span exporter
 - Public hook: `import { getTracer } from '@opoha/core'` (no-op tracer when disabled)
 
-## API versioning (B-06)
+## API versioning
 
 - Header: **`X-API-Version`**
 - Default when omitted: **`1`**
@@ -176,7 +176,7 @@ OPOHA_PLUGINS_PATH=/path/to/plugins
 curl -H 'X-API-Version: 1' http://localhost:4000/graphql
 ```
 
-## TypeORM (B-01 / ADR-0010)
+## TypeORM
 
 Auth-owned entities under `src/modules/auth/entities/`; CLI DataSource at `database/data-source.ts`. Spike writeup:
 
@@ -190,7 +190,7 @@ pnpm db:seed
 
 If you previously applied Prisma migrations locally, reset the DB volume first (`pnpm docker:down` with `-v`, then `docker:up`).
 
-### Seed (B-07)
+### Seed
 
 `pnpm db:seed` upserts:
 
@@ -204,13 +204,13 @@ Optional admin **user** (idempotent): set both in `.env` (see `.env.example` com
 - `SEED_ADMIN_EMAIL`
 - `SEED_ADMIN_PASSWORD`
 
-If either is missing, seed skips the user and only applies roles/permissions. Password hashing uses Node `scrypt` for seed-time only (Phase C may replace with argon2/bcrypt).
+If either is missing, seed skips the user and only applies roles/permissions. Password hashing uses Node `scrypt` for seed-time only (may later use argon2/bcrypt).
 
 CLI stubs (from a project checkout): `opoha migrate` / `opoha seed` → see `@opoha/cli`.
 
-## Localization (Phase 1 E)
+## Localization
 
-Single-country deployment foundation — **not** multi-store / multi-currency / multi-language (those land in Phase 5).
+Single-country deployment foundation — **not** multi-store / multi-currency / multi-language (multi-store / multi-currency / multi-language are available separately).
 
 | Field           | Meaning                                  | Default |
 | --------------- | ---------------------------------------- | ------- |
@@ -224,9 +224,9 @@ Single-country deployment foundation — **not** multi-store / multi-currency / 
 | Q   | `localizationSettings`       | `localization:read`   |
 | M   | `updateLocalizationSettings` | `localization:update` |
 
-Table `localization_settings` is a singleton (`key = 'default'`). Full i18n string catalogs and FX rates remain out of scope until Phase 5.
+Table `localization_settings` is a singleton (`key = 'default'`). Full i18n string catalogs and FX rates remain out of scope until enterprise i18n/FX features are enabled.
 
-## Store channel settings (Phase 5 B-03)
+## Store channel settings
 
 Per-store channel configuration owned by the configuration module (`store_channel_settings`).
 
@@ -245,7 +245,7 @@ Per-store channel configuration owned by the configuration module (`store_channe
 
 Defaults are created on first read and when a store is created (`StoreCreated` listener).
 
-## Store currency config (Phase 5 D-01)
+## Store currency config
 
 Per-store display vs settlement currency owned by the currency module (`store_currency_config`).
 
@@ -261,11 +261,11 @@ Per-store display vs settlement currency owned by the currency module (`store_cu
 | Q   | `storeCurrencyConfigList`      | `currency:read`   |
 | M   | `updateStoreCurrencyConfig`    | `currency:update` |
 
-Defaults are created on first read and when a store is created (`StoreCreated` listener). Cart/checkout display conversion: see D-03 below.
+Defaults are created on first read and when a store is created (`StoreCreated` listener). Cart/checkout display conversion: see currency conversion below.
 
-## Exchange rates (Phase 5 D-02)
+## Exchange rates
 
-Global FX table `exchange_rates` (currency module). Rate semantics: **1 `fromCurrencyCode` = `rate` × `toCurrencyCode`**. Unique on `(from, to)`. Manual CRUD uses `source: manual`; FX plugins (D-04) may write other sources via core APIs.
+Global FX table `exchange_rates` (currency module). Rate semantics: **1 `fromCurrencyCode` = `rate` × `toCurrencyCode`**. Unique on `(from, to)`. Manual CRUD uses `source: manual`; FX plugins may write other sources via core APIs.
 
 | Op  | Name                                                | Permission        |
 | --- | --------------------------------------------------- | ----------------- |
@@ -278,7 +278,7 @@ Global FX table `exchange_rates` (currency module). Rate semantics: **1 `fromCur
 
 Mutations publish `ExchangeRateUpdated` (delete sets `rate: null`, `deleted: true`). Same-currency `getRate` returns `1` without a row.
 
-## Cart / checkout display conversion (Phase 5 D-03)
+## Cart / checkout display conversion
 
 Settlement amounts stay on `cart.currencyCode` / `CheckoutTotals` (payment capture). Display conversion uses store-enabled currencies + `exchange_rates`.
 
@@ -296,7 +296,7 @@ Settlement amounts stay on `cart.currencyCode` / `CheckoutTotals` (payment captu
 
 `createCart` defaults `currencyCode` to the store’s `settlementCurrencyCode` when omitted.
 
-## Multi-store catalog filters (Phase 5 B-04)
+## Multi-store catalog filters
 
 | Op  | Args                                 | Behavior                                                            |
 | --- | ------------------------------------ | ------------------------------------------------------------------- |
@@ -305,7 +305,7 @@ Settlement amounts stay on `cart.currencyCode` / `CheckoutTotals` (payment captu
 
 Omit `catalogMode` to use the store’s channel setting. Omit `storeId` for admin/global listing.
 
-## Walking skeleton (H-01 / G-02)
+## Walking skeleton
 
 Automated spine check including Commerce Core catalog → order smoke:
 
@@ -317,7 +317,7 @@ pnpm walking-skeleton
 
 Steps: `docker compose up` → migrate → seed → boot → `/health/*` → GraphQL `login` + `me` → createProduct → createInventoryItem → cart → prepareCheckout → placeOrder → (local multi-repo) `opoha plugin install` + `opoha doctor`.
 
-CI: `.github/workflows/walking-skeleton.yml` checks out sibling `opoha-cli`, `opoha-plugin-sdk`, and `plugin-manual-payment`, builds them, then runs the skeleton **with doctor + plugin install** (H-04) and commerce smoke (G-02). Boundary job: `pnpm test:boundary` (H-02).
+CI: `.github/workflows/walking-skeleton.yml` checks out sibling `opoha-cli`, `opoha-plugin-sdk`, and `plugin-manual-payment`, builds them, then runs the skeleton **with doctor + plugin install** and commerce smoke. Boundary job: `pnpm test:boundary`.
 
 Full multi-repo path (create-opoha + admin UI) is described in the workspace design doc; this package owns the runtime gate.
 
@@ -327,8 +327,8 @@ Full multi-repo path (create-opoha + admin UI) is described in the workspace des
 pnpm build
 pnpm start
 pnpm test
-pnpm test:boundary      # H-02 / G-03 core → plugin / provider SDK audit
-pnpm walking-skeleton   # H-01 + G-02 commerce smoke
+pnpm test:boundary # core → plugin / provider SDK audit
+pnpm walking-skeleton # commerce smoke
 pnpm lint
 pnpm db:migrate
 pnpm db:seed

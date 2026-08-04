@@ -3,7 +3,7 @@ import { Injectable } from '@nestjs/common';
 import type { RegisteredSearchProvider, SearchProvider } from './search-provider';
 
 /**
- * Registry for search providers (Phase 4 A-01 / A-02).
+ * Registry for search providers.
  * Plugins register; SearchEngine orchestrates index / delete / search.
  */
 @Injectable()

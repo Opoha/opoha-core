@@ -12,7 +12,7 @@ import {
 import { B2bQuoteEntity } from './b2b-quote.entity';
 
 /**
- * Line on a B2B buyer quote (Phase 5 F-05).
+ * Line on a B2B buyer quote.
  * OWNER: b2b module — plugins must not alter this table.
  * Cross-module FK to `product_variants.id` by id only.
  */

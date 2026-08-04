@@ -1,7 +1,7 @@
 import { Column, CreateDateColumn, Entity, PrimaryColumn, UpdateDateColumn } from 'typeorm';
 
 /**
- * Store ↔ warehouse allow-list (Phase 5 E-01).
+ * Store ↔ warehouse allow-list.
  * OWNER: warehouses module — plugins must not alter this table.
  * Cross-module FK to `stores.id` only; warehouse FK within warehouses (ADR-0005 / ADR-0010).
  */

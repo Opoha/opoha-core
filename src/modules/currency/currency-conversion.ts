@@ -1,5 +1,5 @@
 /**
- * Pure currency conversion helpers (Phase 5 D-03).
+ * Pure currency conversion helpers.
  *
  * ## Rounding (documented contract)
  *

@@ -7,7 +7,7 @@ import { PluginLoaderService } from './plugin-loader.service';
 import { PluginManagementService } from './plugin-management.service';
 
 /**
- * Runtime plugin host bootstrap (G-02 / AC-MVP-024).
+ * Runtime plugin host bootstrap.
  * Discovers OPOHA_PLUGINS paths on module init; here we dynamically import
  * definitions and restore durable enable state so Payment/Shipping/Tax
  * registries are populated before GraphQL serves traffic.

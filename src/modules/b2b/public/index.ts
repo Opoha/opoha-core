@@ -1,5 +1,5 @@
 /**
- * Public B2B module surface (Phase 5 F).
+ * Public B2B module surface.
  */
 export { B2bModule } from '../b2b.module';
 export { CompanyService } from '../company.service';

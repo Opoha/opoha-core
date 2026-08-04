@@ -4,7 +4,7 @@ import { CoreEventName } from '../../event-bus/event-catalog';
 import type { DomainEvent } from '../../event-bus/domain-event';
 
 export const digitalFulfillmentIssuedDataSchema = z
-  .object({
+.object({
     orderId: z.string().uuid(),
     customerId: z.string().uuid().nullable(),
     downloadTokenIds: z.array(z.string().uuid()),
@@ -12,7 +12,7 @@ export const digitalFulfillmentIssuedDataSchema = z
     lineCount: z.number().int().nonnegative(),
     issuedAt: z.string().min(1),
   })
-  .strict();
+.strict();
 
 export type DigitalFulfillmentIssuedData = z.infer<typeof digitalFulfillmentIssuedDataSchema>;
 export type DigitalFulfillmentIssuedEvent = DomainEvent<DigitalFulfillmentIssuedData>;

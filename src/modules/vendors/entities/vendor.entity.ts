@@ -8,7 +8,7 @@ import {
 } from 'typeorm';
 
 /**
- * Marketplace seller account (Phase 7 C-01).
+ * Marketplace seller account.
  * OWNER: vendors module — plugins must not alter this table.
  * Distinct from `suppliers` (purchase-order supply). Cross-module FK to
  * `stores.id` only (ADR-0005 / ADR-0010).
@@ -39,7 +39,7 @@ export class VendorEntity {
 
   /**
    * Platform commission in basis points (e.g. 1000 = 10%).
-   * Foundation only — no escrow/payout automation in Phase 7.
+ * Foundation only — no escrow/payout automation in.
    */
   @Column({ name: 'commission_bps', type: 'integer', default: 0 })
   commissionBps!: number;

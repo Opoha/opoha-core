@@ -15,7 +15,7 @@ import { CategoryEntity } from './category.entity';
 /**
  * OWNER: catalog module — plugins must not alter this table.
  *
- * Locale-specific category fields (Phase 5 C-01).
+ * Locale-specific category fields.
  * Base `categories` row holds the default-locale content; this table stores
  * overrides for additional BCP 47 locales.
  */

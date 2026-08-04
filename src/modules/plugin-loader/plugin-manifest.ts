@@ -4,11 +4,11 @@ import { z } from 'zod';
 export const PLUGIN_CONTRACT_VERSION = '0.1' as const;
 
 export const pluginManifestSchema = z
-  .object({
+.object({
     id: z
-      .string()
-      .min(1)
-      .regex(/^[a-z0-9]+(?:-[a-z0-9]+)*$/, 'plugin id must be kebab-case'),
+.string()
+.min(1)
+.regex(/^[a-z0-9]+(?:-[a-z0-9]+)*$/, 'plugin id must be kebab-case'),
     version: z.string().min(1),
     contractVersion: z.string().min(1),
     /** Module entry relative to plugin root (dynamically imported by loadDefinitions). */
@@ -17,7 +17,7 @@ export const pluginManifestSchema = z
     description: z.string().optional(),
     dependsOn: z.array(z.string().min(1)).default([]),
     engines: z
-      .object({
+.object({
         payment: z.array(z.string()).optional(),
         shipping: z.array(z.string()).optional(),
         tax: z.array(z.string()).optional(),
@@ -27,11 +27,11 @@ export const pluginManifestSchema = z
         search: z.array(z.string()).optional(),
         fx: z.array(z.string()).optional(),
       })
-      .strict()
-      .optional(),
+.strict()
+.optional(),
     required: z.boolean().default(false),
   })
-  .strict();
+.strict();
 
 export type PluginManifest = z.infer<typeof pluginManifestSchema>;
 

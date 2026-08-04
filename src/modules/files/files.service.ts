@@ -17,7 +17,7 @@ export type CreateFileMetadataInput = {
 };
 
 /**
- * Files abstraction — metadata CRUD only (D-09).
+ * Files abstraction — metadata CRUD only.
  * Blob put/get/delete is deferred to storage plugins via StorageAdapterRegistry.
  */
 @Injectable()

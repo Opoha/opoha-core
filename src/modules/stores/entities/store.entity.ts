@@ -8,9 +8,9 @@ import {
 } from 'typeorm';
 
 /**
- * Application-level store / brand (Phase 5 A-01).
+ * Application-level store / brand.
  * OWNER: stores module — plugins must not alter this table.
- * SaaS multi-tenancy is Phase 10; this is in-deployment store scoping only.
+ * SaaS multi-tenancy is; this is in-deployment store scoping only.
  */
 @Entity({ name: 'stores' })
 export class StoreEntity {

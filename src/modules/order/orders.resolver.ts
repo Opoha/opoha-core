@@ -39,7 +39,7 @@ export class OrdersResolver {
   @Mutation(() => OrderType, {
     name: 'placeOrder',
     description:
-      'Place order from a locked cart through PaymentEngine; copies storeId and validates store context (B-02)',
+ 'Place order from a locked cart through PaymentEngine; copies storeId and validates store context',
   })
   @RequirePermission('order:create')
   placeOrder(
@@ -60,7 +60,7 @@ export class OrdersResolver {
 
   @Mutation(() => OrderType, {
     name: 'approveB2bOrder',
-    description: 'Approve a B2B draft order (draft → approved) (F-03 / F-06)',
+ description: 'Approve a B2B draft order (draft → approved)',
   })
   @RequirePermission('b2b:approve')
   approveB2bOrder(
@@ -72,7 +72,7 @@ export class OrdersResolver {
 
   @Mutation(() => OrderType, {
     name: 'confirmB2bOrder',
-    description: 'Confirm an approved B2B order with payment (approved → confirmed) (F-03 / F-06)',
+ description: 'Confirm an approved B2B order with payment (approved → confirmed)',
   })
   @RequirePermission('b2b:approve')
   confirmB2bOrder(
@@ -84,7 +84,7 @@ export class OrdersResolver {
 
   @Mutation(() => OrderType, {
     name: 'convertB2bQuote',
-    description: 'Convert an accepted B2B quote to a draft company order (F-05 foundation)',
+ description: 'Convert an accepted B2B quote to a draft company order (foundation)',
   })
   @RequirePermission('b2b:convert')
   convertB2bQuote(

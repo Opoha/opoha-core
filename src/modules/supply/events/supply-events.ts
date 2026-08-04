@@ -4,31 +4,31 @@ import { CoreEventName } from '../../event-bus/event-catalog';
 import type { DomainEvent } from '../../event-bus/domain-event';
 
 export const supplierUpdatedDataSchema = z
-  .object({
+.object({
     supplierId: z.string().uuid(),
     code: z.string().min(1),
     name: z.string().min(1),
     isActive: z.boolean(),
     action: z.enum(['created', 'updated', 'deleted']),
   })
-  .strict();
+.strict();
 
 export type SupplierUpdatedData = z.infer<typeof supplierUpdatedDataSchema>;
 
 export const purchaseOrderCreatedDataSchema = z
-  .object({
+.object({
     purchaseOrderId: z.string().uuid(),
     supplierId: z.string().uuid(),
     warehouseId: z.string().uuid(),
     status: z.string().min(1),
     lineCount: z.number().int().nonnegative(),
   })
-  .strict();
+.strict();
 
 export type PurchaseOrderCreatedData = z.infer<typeof purchaseOrderCreatedDataSchema>;
 
 export const purchaseOrderReceivedDataSchema = z
-  .object({
+.object({
     purchaseOrderId: z.string().uuid(),
     supplierId: z.string().uuid(),
     warehouseId: z.string().uuid(),
@@ -36,18 +36,18 @@ export const purchaseOrderReceivedDataSchema = z
     receivedAt: z.string().min(1),
     lineCount: z.number().int().nonnegative(),
   })
-  .strict();
+.strict();
 
 export type PurchaseOrderReceivedData = z.infer<typeof purchaseOrderReceivedDataSchema>;
 
 export const purchaseOrderCancelledDataSchema = z
-  .object({
+.object({
     purchaseOrderId: z.string().uuid(),
     supplierId: z.string().uuid(),
     warehouseId: z.string().uuid(),
     status: z.string().min(1),
   })
-  .strict();
+.strict();
 
 export type PurchaseOrderCancelledData = z.infer<typeof purchaseOrderCancelledDataSchema>;
 

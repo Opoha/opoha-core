@@ -170,11 +170,11 @@ export class PurchaseOrderService {
 
     const snapshot = await this.dataSource.transaction(async (manager) => {
       const po = await manager
-        .getRepository(PurchaseOrderEntity)
-        .createQueryBuilder('po')
-        .setLock('pessimistic_write')
-        .where('po.id = :id', { id })
-        .getOne();
+.getRepository(PurchaseOrderEntity)
+.createQueryBuilder('po')
+.setLock('pessimistic_write')
+.where('po.id = :id', { id })
+.getOne();
 
       if (!po) {
         throw new NotFoundException(`Purchase order ${id} not found`);
@@ -193,14 +193,14 @@ export class PurchaseOrderService {
 
       for (const line of lines) {
         let item = await manager
-          .getRepository(InventoryItemEntity)
-          .createQueryBuilder('item')
-          .setLock('pessimistic_write')
-          .where('item.variantId = :variantId AND item.warehouseId = :warehouseId', {
+.getRepository(InventoryItemEntity)
+.createQueryBuilder('item')
+.setLock('pessimistic_write')
+.where('item.variantId = :variantId AND item.warehouseId = :warehouseId', {
             variantId: line.variantId,
             warehouseId: po.warehouseId,
           })
-          .getOne();
+.getOne();
 
         if (!item) {
           try {
@@ -221,11 +221,11 @@ export class PurchaseOrderService {
             throw error;
           }
           item = await manager
-            .getRepository(InventoryItemEntity)
-            .createQueryBuilder('item')
-            .setLock('pessimistic_write')
-            .where('item.id = :id', { id: item.id })
-            .getOne();
+.getRepository(InventoryItemEntity)
+.createQueryBuilder('item')
+.setLock('pessimistic_write')
+.where('item.id = :id', { id: item.id })
+.getOne();
           if (!item) {
             throw new NotFoundException(
               `Inventory item for variant ${line.variantId} at warehouse ${po.warehouseId} not found`,
@@ -293,11 +293,11 @@ export class PurchaseOrderService {
   async cancel(id: string): Promise<PurchaseOrderType> {
     const snapshot = await this.dataSource.transaction(async (manager) => {
       const po = await manager
-        .getRepository(PurchaseOrderEntity)
-        .createQueryBuilder('po')
-        .setLock('pessimistic_write')
-        .where('po.id = :id', { id })
-        .getOne();
+.getRepository(PurchaseOrderEntity)
+.createQueryBuilder('po')
+.setLock('pessimistic_write')
+.where('po.id = :id', { id })
+.getOne();
 
       if (!po) {
         throw new NotFoundException(`Purchase order ${id} not found`);

@@ -3,7 +3,7 @@ import { Injectable } from '@nestjs/common';
 import type { FXRateProvider, RegisteredFXRateProvider } from './fx-rate-provider';
 
 /**
- * Registry for FX rate providers (Phase 5 D-04).
+ * Registry for FX rate providers.
  * Plugins register; ExchangeRateService.syncFromProvider orchestrates getRate.
  */
 @Injectable()

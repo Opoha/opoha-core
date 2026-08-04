@@ -13,7 +13,7 @@ import {
  * Documented contract for the optional `workflow.engine` provider
  * (see `@opoha/plugin-workflow`). Core never imports the plugin —
  * duck-typed agreement resolved by string token only
- * (Phase 8 E-03 host bridge; ADR core-never-imports-plugins).
+ *.
  */
 export type WorkflowEngineProvider = {
   listDefinitions(): Promise<WorkflowDefinitionLike[]> | WorkflowDefinitionLike[];

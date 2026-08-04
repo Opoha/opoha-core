@@ -6,7 +6,7 @@ import type { StoreCreatedEvent } from '../stores/public';
 import { StoreWarehouseService } from './store-warehouse.service';
 
 /**
- * Seed default warehouse association when a store is created (Phase 5 E-01).
+ * Seed default warehouse association when a store is created.
  */
 @Injectable()
 export class StoreCreatedWarehouseListener implements OnModuleInit {

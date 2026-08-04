@@ -1,4 +1,4 @@
-/** Canonical audit action strings for auth / identity events (AC-MVP-021). */
+/** Canonical audit action strings for auth / identity events. */
 export const AuditAction = {
   LOGIN_SUCCESS: 'auth.login.success',
   LOGIN_FAILURE: 'auth.login.failure',

@@ -47,7 +47,7 @@ function toJobRunType(row: JobRunEntity): JobRunType {
 }
 
 /**
- * Core `jobs` module service (Phase 8 A-02/A-03).
+ * Core `jobs` module service.
  *
  * Ties {@link ScheduledJobRegistry} (in-process handlers), the pluggable
  * {@link JobQueueAdapter} (BullMQ in production; in-memory stub for unit
@@ -169,7 +169,7 @@ export class JobsService implements OnModuleInit {
   }
 
   /**
-   * Fire every registered cron job due at `at` (memory adapter / A-04 jobs gate).
+ * Fire every registered cron job due at `at` (memory adapter / jobs gate).
    * Production BullMQ workers schedule via Redis repeatables instead.
    */
   async runDueAt(

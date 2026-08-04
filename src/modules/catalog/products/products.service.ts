@@ -127,7 +127,7 @@ export class ProductsService {
   ) {}
 
   /**
-   * List products (Phase 5 B-04 / C-02).
+ * List products.
    * When `storeId` is set:
    * - `shared` → shared (`storeId` null) ∪ store-owned
    * - `isolated` → store-owned only

@@ -1,5 +1,5 @@
 /**
- * Transactional notification template contract (Phase 2 E-02).
+ * Transactional notification template contract.
  * Templates render a subject/body from event data; core owns the built-in set,
  * providers (plugins) stay content-agnostic and only deliver.
  */

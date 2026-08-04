@@ -8,7 +8,7 @@ import { AdminExtensionRegistry } from './admin-extension-registry';
 import { AdminExtensionManifestType } from './admin-extensions.types';
 
 /**
- * Server-side admin extension manifest for the admin shell (D-06 / ADR-0006).
+ * Server-side admin extension manifest for the admin shell.
  * Staff-authenticated; requires `plugin:read`.
  */
 @Resolver()

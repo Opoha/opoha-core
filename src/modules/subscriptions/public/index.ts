@@ -1,5 +1,5 @@
 /**
- * Public subscriptions module surface (Phase 7 E-01/E-02/E-03).
+ * Public subscriptions module surface.
  */
 export { SubscriptionsModule } from '../subscriptions.module';
 export { SubscriptionService } from '../subscription.service';

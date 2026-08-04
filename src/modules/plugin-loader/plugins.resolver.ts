@@ -7,7 +7,7 @@ import { PluginManagementService } from './plugin-management.service';
 import { PluginType, UpdatePluginConfigInput } from './plugins.types';
 
 /**
- * Staff GraphQL for plugin management (F-07 / AC-MVP-031).
+ * Staff GraphQL for plugin management.
  */
 @Resolver(() => PluginType)
 @UseGuards(GqlAuthGuard, PermissionsGuard)

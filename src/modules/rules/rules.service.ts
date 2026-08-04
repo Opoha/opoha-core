@@ -91,7 +91,7 @@ function normalizePriority(priority: number | undefined): number {
 }
 
 /**
- * Rule definition CRUD (Phase 8 C-01/C-03).
+ * Rule definition CRUD.
  */
 @Injectable()
 export class RulesService {
@@ -239,7 +239,7 @@ export class RulesService {
       priority: 100,
       description: null,
       conditions: null,
-      ...partial,
+...partial,
       actionRefs,
     });
     const saved = await this.rules.save(row);

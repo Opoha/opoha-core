@@ -48,7 +48,7 @@ export type DisplayTotalsResult = DisplayTotalsInput & {
 
 /**
  * Converts settlement minor amounts to an allowed store display currency
- * using configured exchange rates (Phase 5 D-03).
+ * using configured exchange rates.
  */
 @Injectable()
 export class CurrencyConversionService {
@@ -113,7 +113,7 @@ export class CurrencyConversionService {
 
     if (settlement === display) {
       return {
-        ...totals,
+...totals,
         currencyCode: display,
         settlementCurrencyCode: settlement,
         displayCurrencyCode: display,

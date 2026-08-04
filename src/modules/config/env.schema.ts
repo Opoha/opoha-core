@@ -5,16 +5,16 @@ import { z } from 'zod';
 export const DEV_JWT_SECRET_FALLBACK = 'dev-only-insecure-jwt-secret-change-me';
 
 export const envSchema = z
-  .object({
+.object({
     NODE_ENV: z.enum(['development', 'test', 'production']).default('development'),
     PORT: z.coerce.number().int().positive().default(4000),
     DATABASE_URL: z.string().min(1).default('postgresql://opoha:opoha@localhost:5433/opoha'),
     REDIS_URL: z.string().min(1).default('redis://localhost:6380'),
     LOG_LEVEL: z.enum(['fatal', 'error', 'warn', 'info', 'debug']).default('info'),
     OTEL_ENABLED: z
-      .string()
-      .optional()
-      .transform((value) => ['1', 'true', 'yes', 'on'].includes((value ?? '').toLowerCase())),
+.string()
+.optional()
+.transform((value) => ['1', 'true', 'yes', 'on'].includes((value ?? '').toLowerCase())),
     /** HS256 signing secret. Required in production; optional elsewhere (dev fallback). */
     JWT_SECRET: z.string().min(1).optional(),
     /** jose/jsonwebtoken duration string, e.g. `15m`, `1h`. */
@@ -32,12 +32,12 @@ export const envSchema = z
      */
     OPOHA_PLUGINS_PATH: z.string().optional().default(''),
     /**
-     * Job queue backend: `memory` (unit / default) or `bullmq` (Redis; A-04 wiring).
+ * Job queue backend: `memory` (unit / default) or `bullmq` (Redis; wiring).
      * See docs/readiness/jobs-cron-contracts.md
      */
     OPOHA_JOB_QUEUE: z.enum(['memory', 'bullmq']).optional().default('memory'),
   })
-  .superRefine((data, ctx) => {
+.superRefine((data, ctx) => {
     if (data.NODE_ENV === 'production' && !data.JWT_SECRET) {
       ctx.addIssue({
         code: 'custom',
@@ -63,13 +63,13 @@ export function loadEnv(source?: NodeJS.ProcessEnv): AppEnv {
   const parsed = envSchema.safeParse(source ?? process.env);
   if (!parsed.success) {
     const details = parsed.error.issues
-      .map((issue) => `${issue.path.join('.')}: ${issue.message}`)
-      .join('; ');
+.map((issue) => `${issue.path.join('.')}: ${issue.message}`)
+.join('; ');
     throw new Error(`Invalid environment configuration: ${details}`);
   }
   const data = parsed.data;
   return {
-    ...data,
+...data,
     JWT_SECRET: data.JWT_SECRET ?? DEV_JWT_SECRET_FALLBACK,
   };
 }

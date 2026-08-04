@@ -39,8 +39,8 @@ export function redactSensitive(value: unknown, depth = 0): unknown {
   }
   if (typeof value === 'string') {
     return value
-      .replace(BEARER_RE, `Bearer ${REDACTED}`)
-      .replace(ASSIGNMENT_RE, (_m, key: string) => `${key}=${REDACTED}`);
+.replace(BEARER_RE, `Bearer ${REDACTED}`)
+.replace(ASSIGNMENT_RE, (_m, key: string) => `${key}=${REDACTED}`);
   }
   if (Array.isArray(value)) {
     return value.map((item) => redactSensitive(item, depth + 1));

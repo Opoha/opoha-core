@@ -4,7 +4,7 @@ import { CoreEventName } from '../../event-bus/event-catalog';
 import type { DomainEvent } from '../../event-bus/domain-event';
 
 export const exchangeRateUpdatedDataSchema = z
-  .object({
+.object({
     id: z.string().uuid(),
     fromCurrencyCode: z.string().min(1),
     toCurrencyCode: z.string().min(1),
@@ -13,7 +13,7 @@ export const exchangeRateUpdatedDataSchema = z
     /** True when the row was removed (delete path). */
     deleted: z.boolean().optional(),
   })
-  .strict();
+.strict();
 
 export type ExchangeRateUpdatedData = z.infer<typeof exchangeRateUpdatedDataSchema>;
 

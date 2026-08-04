@@ -13,7 +13,7 @@ export class LocalizationSettingsEntity {
   @Column({ name: 'country_code', type: 'text' })
   countryCode!: string;
 
-  /** ISO 4217 currency code (single currency for Phase 1). */
+ /** ISO 4217 currency code (single currency for). */
   @Column({ name: 'currency_code', type: 'text' })
   currencyCode!: string;
 
@@ -21,7 +21,7 @@ export class LocalizationSettingsEntity {
   @Column({ type: 'text' })
   timezone!: string;
 
-  /** Default BCP 47 locale (language foundation; full i18n in Phase 5). */
+ /** Default BCP 47 locale (language foundation; full i18n in). */
   @Column({ name: 'default_locale', type: 'text' })
   defaultLocale!: string;
 

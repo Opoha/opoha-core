@@ -8,7 +8,7 @@ import {
 } from 'typeorm';
 
 /**
- * B2B company account (Phase 5 F-01).
+ * B2B company account.
  * OWNER: b2b module — plugins must not alter this table.
  * Cross-module FK to `stores.id` only (ADR-0005 / ADR-0010).
  */
@@ -26,7 +26,7 @@ export class CompanyEntity {
   name!: string;
 
   /**
-   * Optional credit limit in minor units (F-04 will enforce).
+ * Optional credit limit in minor units (will enforce).
    * Null = no limit configured yet.
    */
   @Column({ name: 'credit_limit_minor', type: 'bigint', nullable: true })

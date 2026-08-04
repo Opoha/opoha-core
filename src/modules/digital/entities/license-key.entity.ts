@@ -10,7 +10,7 @@ import {
 import type { DigitalLicenseKeyStatus } from '../digital-status';
 
 /**
- * License key issued for a digital order line (Phase 7 D-01).
+ * License key issued for a digital order line.
  * OWNER: digital module — plugins must not alter this table.
  * Cross-module FKs (ID only): orders, order_lines, product_variants, customers.
  */

@@ -181,11 +181,11 @@ export class StockTransferService {
 
     const snapshot = await this.dataSource.transaction(async (manager) => {
       const transfer = await manager
-        .getRepository(StockTransferEntity)
-        .createQueryBuilder('t')
-        .setLock('pessimistic_write')
-        .where('t.id = :id', { id })
-        .getOne();
+.getRepository(StockTransferEntity)
+.createQueryBuilder('t')
+.setLock('pessimistic_write')
+.where('t.id = :id', { id })
+.getOne();
 
       if (!transfer) {
         throw new NotFoundException(`Stock transfer ${id} not found`);
@@ -204,14 +204,14 @@ export class StockTransferService {
 
       for (const line of lines) {
         const item = await manager
-          .getRepository(InventoryItemEntity)
-          .createQueryBuilder('item')
-          .setLock('pessimistic_write')
-          .where('item.variantId = :variantId AND item.warehouseId = :warehouseId', {
+.getRepository(InventoryItemEntity)
+.createQueryBuilder('item')
+.setLock('pessimistic_write')
+.where('item.variantId = :variantId AND item.warehouseId = :warehouseId', {
             variantId: line.variantId,
             warehouseId: transfer.fromWarehouseId,
           })
-          .getOne();
+.getOne();
 
         if (!item) {
           throw new ConflictException(
@@ -294,11 +294,11 @@ export class StockTransferService {
 
     const snapshot = await this.dataSource.transaction(async (manager) => {
       const transfer = await manager
-        .getRepository(StockTransferEntity)
-        .createQueryBuilder('t')
-        .setLock('pessimistic_write')
-        .where('t.id = :id', { id })
-        .getOne();
+.getRepository(StockTransferEntity)
+.createQueryBuilder('t')
+.setLock('pessimistic_write')
+.where('t.id = :id', { id })
+.getOne();
 
       if (!transfer) {
         throw new NotFoundException(`Stock transfer ${id} not found`);
@@ -319,14 +319,14 @@ export class StockTransferService {
 
       for (const line of lines) {
         let item = await manager
-          .getRepository(InventoryItemEntity)
-          .createQueryBuilder('item')
-          .setLock('pessimistic_write')
-          .where('item.variantId = :variantId AND item.warehouseId = :warehouseId', {
+.getRepository(InventoryItemEntity)
+.createQueryBuilder('item')
+.setLock('pessimistic_write')
+.where('item.variantId = :variantId AND item.warehouseId = :warehouseId', {
             variantId: line.variantId,
             warehouseId: transfer.toWarehouseId,
           })
-          .getOne();
+.getOne();
 
         if (!item) {
           try {
@@ -347,11 +347,11 @@ export class StockTransferService {
             throw error;
           }
           item = await manager
-            .getRepository(InventoryItemEntity)
-            .createQueryBuilder('item')
-            .setLock('pessimistic_write')
-            .where('item.id = :id', { id: item.id })
-            .getOne();
+.getRepository(InventoryItemEntity)
+.createQueryBuilder('item')
+.setLock('pessimistic_write')
+.where('item.id = :id', { id: item.id })
+.getOne();
           if (!item) {
             throw new NotFoundException(
               `Inventory item for variant ${line.variantId} at warehouse ${transfer.toWarehouseId} not found`,
@@ -417,11 +417,11 @@ export class StockTransferService {
   async cancel(id: string): Promise<StockTransferType> {
     const snapshot = await this.dataSource.transaction(async (manager) => {
       const transfer = await manager
-        .getRepository(StockTransferEntity)
-        .createQueryBuilder('t')
-        .setLock('pessimistic_write')
-        .where('t.id = :id', { id })
-        .getOne();
+.getRepository(StockTransferEntity)
+.createQueryBuilder('t')
+.setLock('pessimistic_write')
+.where('t.id = :id', { id })
+.getOne();
 
       if (!transfer) {
         throw new NotFoundException(`Stock transfer ${id} not found`);

@@ -1,5 +1,5 @@
 /**
- * Declarative rule conditions + action refs (Phase 8 C-01/C-02).
+ * Declarative rule conditions + action refs.
  */
 
 export type RuleConditionEquals = {

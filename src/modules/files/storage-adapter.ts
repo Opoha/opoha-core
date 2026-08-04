@@ -1,6 +1,6 @@
 /**
  * Storage adapter port — plugins implement; core never imports S3/localfs SDKs.
- * Shape mirrors `@opoha/plugin-sdk` StorageAdapter (D-07 / D-09).
+ * Shape mirrors `@opoha/plugin-sdk` StorageAdapter.
  */
 export type StoragePutInput = {
   key: string;

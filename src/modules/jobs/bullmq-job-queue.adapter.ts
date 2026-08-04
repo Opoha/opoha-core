@@ -7,13 +7,13 @@ import { InMemoryJobQueueAdapter } from './in-memory-job-queue.adapter';
 import type { ScheduledJobHandler } from './scheduled-job';
 
 /**
- * BullMQ-backed cron bridge (Phase 8 A-03/A-04).
+ * BullMQ-backed cron bridge.
  *
  * When `OPOHA_JOB_QUEUE=bullmq` and Redis is reachable, repeatable jobs use
  * BullMQ. Until Redis/BullMQ are wired in the process, this adapter delegates
  * to {@link InMemoryJobQueueAdapter} so unit gates stay Redis-free.
  *
- * Jobs gate (A-04) uses the memory adapter + `runDueAt` (work plan: test
+ * Jobs gate uses the memory adapter + `runDueAt` (work plan: test
  * double for CI). Optional live Redis/BullMQ integration smoke is deferred
  * to the Phase F automation walking-skeleton.
  */

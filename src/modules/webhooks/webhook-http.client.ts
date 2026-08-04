@@ -1,5 +1,5 @@
 /**
- * Injectable HTTP port for outbound webhook delivery (Phase 8 D-02).
+ * Injectable HTTP port for outbound webhook delivery.
  * Production uses global fetch; tests inject a mock.
  */
 export type WebhookHttpRequest = {

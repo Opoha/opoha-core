@@ -26,7 +26,7 @@ type ShipmentCreatedData = {
 
 /**
  * Bridges order/payment/shipment domain events to templated transactional emails
- * (Phase 2 E-03). Uses `sendTemplated` / sendOrSkip semantics: no notification
+ *. Uses `sendTemplated` / sendOrSkip semantics: no notification
  * provider registered simply means no email goes out yet — never fails checkout.
  */
 @Injectable()

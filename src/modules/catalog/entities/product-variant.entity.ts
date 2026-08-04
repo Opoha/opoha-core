@@ -42,7 +42,7 @@ export class ProductVariantEntity {
   currencyCode!: string;
 
   /**
-   * Authoritative fulfillment mode at purchase (Phase 7 A-02).
+ * Authoritative fulfillment mode at purchase.
    * physical | digital | service
    */
   @Column({ name: 'fulfillment_mode', type: 'text', default: 'physical' })

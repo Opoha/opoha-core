@@ -3,7 +3,7 @@ import { Injectable } from '@nestjs/common';
 import type { RegisteredShippingMethod, ShippingMethodProvider } from './shipping-method';
 
 /**
- * Registry for shipping methods (D-08 / AC-MVP-027 / Phase 2 B-01+B-02).
+ * Registry for shipping methods.
  * Providers expose quoteRates; ShippingEngine.quote orchestrates across methods.
  */
 @Injectable()

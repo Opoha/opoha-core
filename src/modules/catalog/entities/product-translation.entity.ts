@@ -15,7 +15,7 @@ import { ProductEntity } from './product.entity';
 /**
  * OWNER: catalog module — plugins must not alter this table.
  *
- * Locale-specific product fields (Phase 5 C-01).
+ * Locale-specific product fields.
  * Base `products` row holds the default-locale content; this table stores
  * overrides for additional BCP 47 locales.
  */

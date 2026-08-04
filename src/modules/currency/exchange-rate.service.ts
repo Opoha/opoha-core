@@ -105,7 +105,7 @@ export class ExchangeRateService {
 
   /**
    * Lookup rate for a currency pair. Same-currency returns 1 without a row.
-   * Throws when a cross-currency rate is missing (D-03 consumers should catch).
+ * Throws when a cross-currency rate is missing (consumers should catch).
    */
   async getRate(fromCurrencyCode: string, toCurrencyCode: string): Promise<number> {
     const from = assertCurrencyCode(fromCurrencyCode, 'fromCurrencyCode');
@@ -231,7 +231,7 @@ export class ExchangeRateService {
 
   /**
    * Fetch live quotes from a registered FX provider and upsert them as
-   * manual-equivalent rows with `source` set to the provider code (Phase 5 D-04).
+ * manual-equivalent rows with `source` set to the provider code.
    * Optional — core never calls a provider SDK directly; the registered
    * provider object (registered by a plugin) is the only bridge.
    */

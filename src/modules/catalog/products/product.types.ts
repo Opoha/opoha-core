@@ -33,7 +33,7 @@ export class ProductType {
   storeId!: string | null;
 
   /**
-   * Marketplace vendor that lists this product (Phase 7 C-02).
+ * Marketplace vendor that lists this product.
    * Null = merchant-owned / not marketplace-scoped.
    */
   @Field(() => ID, { nullable: true })
@@ -49,7 +49,7 @@ export class ProductType {
   variants?: ProductVariantType[];
 
   /**
-   * Populated by a field resolver hook (Phase 4 D-04) — null when no review
+ * Populated by a field resolver hook — null when no review
    * plugin is installed/enabled. Never a DB column on this type.
    */
   @Field(() => ProductReviewAggregateType, { nullable: true })
@@ -58,7 +58,7 @@ export class ProductType {
 
 @ObjectType({
   description:
-    'Rating aggregate for a product, contributed by an optional review plugin (Phase 4 D-04)',
+ 'Rating aggregate for a product, contributed by an optional review plugin',
 })
 export class ProductReviewAggregateType {
   @Field(() => Float)

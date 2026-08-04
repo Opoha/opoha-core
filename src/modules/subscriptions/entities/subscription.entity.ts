@@ -10,7 +10,7 @@ import {
 import type { SubscriptionStatus } from '../subscription-status';
 
 /**
- * Customer subscription schedule state (Phase 7 E-01).
+ * Customer subscription schedule state.
  * OWNER: subscriptions module — plugins must not alter this table.
  * Cross-module FKs (ID only): subscription_plans, customers, stores.
  */
@@ -35,7 +35,7 @@ export class SubscriptionEntity {
   @Index('subscriptions_status_idx')
   status!: SubscriptionStatus;
 
-  /** Payment engine provider code used for renewal charges (E-03). */
+ /** Payment engine provider code used for renewal charges. */
   @Column({ name: 'payment_provider_code', type: 'text', default: 'manual' })
   paymentProviderCode!: string;
 

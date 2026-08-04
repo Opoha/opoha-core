@@ -1,7 +1,7 @@
 import type { DomainEvent } from '../event-bus/domain-event';
 
 /**
- * Context passed to registered rule action handlers (Phase 8 C-02/C-03).
+ * Context passed to registered rule action handlers.
  */
 export type RuleActionContext = {
   /** Rule definition code that matched. */

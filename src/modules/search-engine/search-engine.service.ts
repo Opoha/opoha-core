@@ -13,7 +13,7 @@ import type {
 
 /**
  * Search engine — register / get / list providers + index / delete / search.
- * Catalog listeners (A-03) enqueue via indexDocument / deleteDocument.
+ * Catalog listeners enqueue via indexDocument / deleteDocument.
  */
 @Injectable()
 export class SearchEngine {
@@ -120,11 +120,11 @@ export class SearchEngine {
     const provider = this.resolveProvider(code);
     try {
       const result = await provider.search({
-        ...input,
+...input,
         type: input.type ?? 'product',
       });
       return {
-        ...result,
+...result,
         providerCode: result.providerCode || provider.code,
       };
     } catch (err) {

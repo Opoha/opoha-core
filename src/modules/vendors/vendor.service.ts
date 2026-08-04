@@ -268,7 +268,7 @@ export class VendorService {
   }
 
   /**
-   * Associate a catalog product with a marketplace vendor (C-02).
+ * Associate a catalog product with a marketplace vendor.
    * Clears association when vendorId is null.
    */
   async assignProductVendor(

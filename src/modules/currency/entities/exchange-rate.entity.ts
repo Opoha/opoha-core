@@ -11,7 +11,7 @@ import {
 /**
  * Manual (or provider-written) FX rate: 1 `fromCurrencyCode` = `rate` × `toCurrencyCode`.
  * OWNER: currency module — plugins must not alter this table (ADR-0005 / ADR-0010).
- * Provider plugins write via core public APIs only (D-04).
+ * Provider plugins write via core public APIs only.
  */
 @Entity({ name: 'exchange_rates' })
 @Unique('exchange_rates_from_to_key', ['fromCurrencyCode', 'toCurrencyCode'])
@@ -37,7 +37,7 @@ export class ExchangeRateEntity {
   rate!: number;
 
   /**
-   * Rate provenance. Core manual CRUD uses `manual`; FX plugins (D-04) may set
+ * Rate provenance. Core manual CRUD uses `manual`; FX plugins may set
    * other values (e.g. provider id) without owning this table.
    */
   @Column({ type: 'text', default: 'manual' })

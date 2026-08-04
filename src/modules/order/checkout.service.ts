@@ -33,15 +33,15 @@ import {
 
 /**
  * Checkout prepare — reserve stock for cart lines and compute totals.
- * Shipping from cart selection (B-03); tax via TaxEngine (C-03);
- * promotions via PromotionsEngine TypeORM provider (D-01 / D-03);
- * gift cards via GiftCardService quote (Phase 4 C-02);
- * loyalty via LoyaltyService quote (Phase 4 C-03).
- * Publishes CheckoutPrepared for analytics sinks (Phase 4 F-02).
- * Phase 5 B-02: validates cart storeId against request store context.
- * Phase 5 D-03: converts settlement totals to display currency via rates.
- * Phase 5 E-02: reservations prefer warehouses linked to the cart store.
- * Phase 7 D-02: digital/service SKUs skip inventory reservation and do not
+ * Shipping from cart selection; tax via TaxEngine;
+ * promotions via PromotionsEngine TypeORM provider;
+ * gift cards via GiftCardService quote;
+ * loyalty via LoyaltyService quote.
+ * Publishes CheckoutPrepared for analytics sinks.
+ *: validates cart storeId against request store context.
+ *: converts settlement totals to display currency via rates.
+ *: reservations prefer warehouses linked to the cart store.
+ *: digital/service SKUs skip inventory reservation and do not
  * require shipping selection.
  */
 @Injectable()
@@ -88,7 +88,7 @@ export class CheckoutService {
       contextStoreId,
     });
 
-    // Re-apply B2B company price list overrides before tax/promo (F-04).
+ // Re-apply B2B company price list overrides before tax/promo.
     await this.carts.applyCompanyPriceList(cartId);
     let pricedLines = lines;
     if (cart.companyId) {
@@ -118,7 +118,7 @@ export class CheckoutService {
     try {
       for (const line of pricedLines) {
         const mode = modeByVariant.get(line.variantId);
-        // Digital / service: no stock reservation, no shipping requirement (D-02).
+ // Digital / service: no stock reservation, no shipping requirement.
         if (isNonPhysicalFulfillment(mode)) {
           continue;
         }

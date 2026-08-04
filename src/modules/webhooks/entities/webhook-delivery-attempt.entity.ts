@@ -3,7 +3,7 @@ import { Column, CreateDateColumn, Entity, Index, PrimaryGeneratedColumn } from 
 import type { WebhookDeliveryStatus } from '../webhook-status';
 
 /**
- * Outbound webhook delivery attempt / log row (Phase 8 D-01).
+ * Outbound webhook delivery attempt / log row.
  * OWNER: webhooks module — plugins must not alter this table.
  */
 @Entity({ name: 'webhook_delivery_attempts' })

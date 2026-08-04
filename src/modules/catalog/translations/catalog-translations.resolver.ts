@@ -11,7 +11,7 @@ import {
 import { CatalogTranslationsService } from './catalog-translations.service';
 
 /**
- * Catalog translation write/list GraphQL (Phase 5 C-03).
+ * Catalog translation write/list GraphQL.
  * Read overlays remain on product/category queries via `locale` / Accept-Language.
  */
 @Resolver()

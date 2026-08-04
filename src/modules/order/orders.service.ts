@@ -167,9 +167,9 @@ export class OrdersService {
   }
 
   /**
-   * Place order from a locked cart (Phase 2 A-04).
+ * Place order from a locked cart.
    * Authorizes via PaymentEngine; `zero` also captures immediately.
-   * B2B carts with `companyId` create a `draft` order (F-03) — no payment until
+ * B2B carts with `companyId` create a `draft` order — no payment until
    * `approveB2bOrder` → `confirmB2bOrder`.
    */
   async placeOrder(input: PlaceOrderInput, context?: StoreContextRef | null): Promise<OrderType> {
@@ -210,7 +210,7 @@ export class OrdersService {
 
     for (const line of lines) {
       const mode = fulfillmentByVariant.get(line.variantId);
-      // Digital / service SKUs skip inventory reservation (D-02).
+ // Digital / service SKUs skip inventory reservation.
       if (isNonPhysicalFulfillment(mode)) {
         continue;
       }
@@ -281,7 +281,7 @@ export class OrdersService {
       );
     }
 
-    // B2B path (F-03): draft order, defer payment + gift/loyalty redeem.
+ // B2B path: draft order, defer payment + gift/loyalty redeem.
     if (cart.companyId) {
       if (!cart.customerId) {
         throw new BadRequestException(
@@ -557,7 +557,7 @@ export class OrdersService {
       note: `Auto-confirmed after ${methodLabel} payment path (${payment.status})`,
     });
 
-    // Phase 7 B-02/B-03 — POS channel sale completed against shared inventory.
+ // / — POS channel sale completed against shared inventory.
     if (orderSource === 'pos') {
       await this.eventBus.publish({
         eventName: CoreEventName.PosSaleCompleted,
@@ -583,7 +583,7 @@ export class OrdersService {
       lines: savedLines,
     });
 
-    // Phase 7 D-02 — issue download tokens / license keys for digital SKUs.
+ // issue download tokens / license keys for digital SKUs.
     // Digital carts do not require shipping selection.
     await this.digital.issueForOrder({
       orderId: order.id,
@@ -599,7 +599,7 @@ export class OrdersService {
   }
 
   /**
-   * Convert an accepted B2B quote into a draft company order (F-05 foundation).
+ * Convert an accepted B2B quote into a draft company order (foundation).
    * Skips cart/inventory reservation — full CPQ/checkout path deferred.
    */
   async convertB2bQuote(input: { quoteId: string }): Promise<OrderType> {
@@ -680,7 +680,7 @@ export class OrdersService {
   }
 
   /**
-   * Approve a B2B draft order (F-03): draft → approved.
+ * Approve a B2B draft order: draft → approved.
    */
   async approveB2bOrder(input: {
     orderId: string;
@@ -705,7 +705,7 @@ export class OrdersService {
   }
 
   /**
-   * Confirm an approved B2B order with payment (F-03): approved → confirmed.
+ * Confirm an approved B2B order with payment: approved → confirmed.
    */
   async confirmB2bOrder(input: { orderId: string; paymentMethod?: string }): Promise<OrderType> {
     const paymentMethod = (input.paymentMethod ?? 'manual').trim();
@@ -839,7 +839,7 @@ export class OrdersService {
   }
 
   /**
-   * Apply an allowed status transition and publish timeline events (D-05).
+ * Apply an allowed status transition and publish timeline events.
    */
   async updateStatus(input: UpdateOrderStatusInput): Promise<OrderType> {
     if (!isOrderStatus(input.status)) {
@@ -921,7 +921,7 @@ export class OrdersService {
     });
   }
 
-  /** Map variant ids → fulfillment modes from catalog (D-02). */
+ /** Map variant ids → fulfillment modes from catalog. */
   private async resolveFulfillmentModesByVariantIds(
     variantIds: string[],
   ): Promise<Map<string, string>> {
@@ -945,7 +945,7 @@ export class OrdersService {
     return result;
   }
 
-  /** Map variant ids → marketplace vendor ids from catalog products (C-02). */
+ /** Map variant ids → marketplace vendor ids from catalog products. */
   private async resolveVendorIdsByVariantIds(
     variantIds: string[],
   ): Promise<Map<string, string | null>> {

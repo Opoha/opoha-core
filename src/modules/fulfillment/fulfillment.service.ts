@@ -341,14 +341,14 @@ export class FulfillmentService {
 
       for (const line of lines) {
         const item = await manager
-          .getRepository(InventoryItemEntity)
-          .createQueryBuilder('item')
-          .setLock('pessimistic_write')
-          .where('item.variantId = :variantId AND item.warehouseId = :warehouseId', {
+.getRepository(InventoryItemEntity)
+.createQueryBuilder('item')
+.setLock('pessimistic_write')
+.where('item.variantId = :variantId AND item.warehouseId = :warehouseId', {
             variantId: line.variantId,
             warehouseId: fulfillment.warehouseId,
           })
-          .getOne();
+.getOne();
 
         if (!item) {
           throw new ConflictException(
@@ -636,11 +636,11 @@ export class FulfillmentService {
 
   private async lockFulfillment(manager: EntityManager, id: string): Promise<FulfillmentEntity> {
     const fulfillment = await manager
-      .getRepository(FulfillmentEntity)
-      .createQueryBuilder('f')
-      .setLock('pessimistic_write')
-      .where('f.id = :id', { id })
-      .getOne();
+.getRepository(FulfillmentEntity)
+.createQueryBuilder('f')
+.setLock('pessimistic_write')
+.where('f.id = :id', { id })
+.getOne();
 
     if (!fulfillment) {
       throw new NotFoundException(`Fulfillment ${id} not found`);

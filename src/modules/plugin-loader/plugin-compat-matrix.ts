@@ -1,5 +1,5 @@
 /**
- * Official plugin compatibility matrix (Phase 9 E-01/E-02).
+ * Official plugin compatibility matrix.
  *
  * Source of truth for the *decision* (which plugins are certified) is the
  * workspace work plan Decisions table, mirrored in

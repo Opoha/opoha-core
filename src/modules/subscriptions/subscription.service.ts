@@ -121,7 +121,7 @@ function requirePositiveMinor(value: string): string {
 }
 
 /**
- * Subscription plans + schedule state (Phase 7 E-01/E-03).
+ * Subscription plans + schedule state.
  * Renewal charges are placed via the core payment engine — never a provider
  * SDK import (ADR-0003).
  */
@@ -216,7 +216,7 @@ export class SubscriptionService {
     return rows.map(toSubscriptionRecord);
   }
 
-  /** Create an active subscription for a customer against a plan (E-02). */
+ /** Create an active subscription for a customer against a plan. */
   async subscribe(input: SubscribeToPlanInput): Promise<SubscriptionRecord> {
     const customerId = input.customerId?.trim();
     if (!customerId) {
@@ -269,7 +269,7 @@ export class SubscriptionService {
     return toSubscriptionRecord(saved);
   }
 
-  /** Subscriptions whose next billing date has arrived (renewal job path, E-03). */
+ /** Subscriptions whose next billing date has arrived (renewal job path). */
   async findDueForRenewal(asOf: Date = new Date()): Promise<SubscriptionRecord[]> {
     const rows = await this.subscriptions.find({
       where: [
@@ -283,7 +283,7 @@ export class SubscriptionService {
 
   /**
    * Charge a subscription for its current billing period via the payment
-   * engine and advance the schedule on success (E-03 renewal path).
+ * engine and advance the schedule on success (renewal path).
    * Publishes `SubscriptionRenewed` only when the charge is captured.
    */
   async renew(

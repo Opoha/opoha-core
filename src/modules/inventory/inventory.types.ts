@@ -128,7 +128,7 @@ export class ReserveInventoryInput {
   reference?: string;
 }
 
-/** Internal checkout reservation scoped to a store’s warehouse allow-list (E-02). */
+/** Internal checkout reservation scoped to a store’s warehouse allow-list. */
 export type ReserveInventoryForStoreInput = {
   variantId: string;
   storeId: string;

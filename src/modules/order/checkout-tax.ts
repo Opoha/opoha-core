@@ -17,7 +17,7 @@ export function resolveCartPricingMode(cart: CartEntity): TaxPricingMode {
 }
 
 /**
- * Build TaxEngine input from a cart + lines (C-03).
+ * Build TaxEngine input from a cart + lines.
  * Default tax class is `standard` until catalog carries taxClassCode (later).
  */
 export function buildTaxCalculateInput(
@@ -56,7 +56,7 @@ export function buildTaxCalculateInput(
 }
 
 /**
- * Build PromotionsEngine input from a cart + lines (D-01).
+ * Build PromotionsEngine input from a cart + lines.
  */
 export function buildPromotionApplyInput(
   cart: CartEntity,
@@ -125,7 +125,7 @@ export function totalsWithTax(args: {
 }
 
 /**
- * Apply a gift card amount to post-promo/tax totals (C-02).
+ * Apply a gift card amount to post-promo/tax totals.
  * Caps by remaining total; never increases total.
  */
 export function applyGiftCardToTotals(
@@ -142,14 +142,14 @@ export function applyGiftCardToTotals(
   }
   const nextTotal = priorTotal - gift;
   return {
-    ...totals,
+...totals,
     giftCardMinor: gift.toString(),
     totalMinor: nextTotal.toString(),
   };
 }
 
 /**
- * Apply loyalty redeem amount to post-gift-card totals (C-03).
+ * Apply loyalty redeem amount to post-gift-card totals.
  * Caps by remaining total; never increases total.
  */
 export function applyLoyaltyToTotals(
@@ -166,7 +166,7 @@ export function applyLoyaltyToTotals(
   }
   const nextTotal = priorTotal - loyalty;
   return {
-    ...totals,
+...totals,
     loyaltyMinor: loyalty.toString(),
     totalMinor: nextTotal.toString(),
   };

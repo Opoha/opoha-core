@@ -4,7 +4,7 @@ import { CoreEventName } from '../../event-bus/event-catalog';
 import type { DomainEvent } from '../../event-bus/domain-event';
 
 const storeEventDataSchema = z
-  .object({
+.object({
     storeId: z.string().uuid(),
     code: z.string().min(1),
     name: z.string().min(1),
@@ -13,7 +13,7 @@ const storeEventDataSchema = z
     defaultCurrencyCode: z.string().min(1),
     defaultLocale: z.string().min(1),
   })
-  .strict();
+.strict();
 
 export const storeCreatedDataSchema = storeEventDataSchema;
 export const storeUpdatedDataSchema = storeEventDataSchema;

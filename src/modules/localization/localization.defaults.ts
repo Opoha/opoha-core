@@ -1,4 +1,4 @@
-/** Seed / fallback values for single-country Phase 1 deployments. */
+/** Seed / fallback values for single-country deployments. */
 export const DEFAULT_LOCALIZATION_SETTINGS = {
   countryCode: 'US',
   currencyCode: 'USD',

@@ -5,7 +5,7 @@ import type { TaxCalculateInput, TaxCalculateResult, TaxProvider } from './tax-p
 
 /**
  * Tax engine — register / get / list providers + calculate orchestration.
- * Checkout wiring uses {@link TaxEngine.calculateOrZero} (C-03).
+ * Checkout wiring uses {@link TaxEngine.calculateOrZero}.
  */
 @Injectable()
 export class TaxEngine {
@@ -60,7 +60,7 @@ export class TaxEngine {
   }
 
   /**
-   * Checkout helper (C-03): when no provider is registered, tax is zero so
+ * Checkout helper: when no provider is registered, tax is zero so
    * prepareCheckout / placeOrder still succeed until a plugin registers.
    */
   async calculateOrZero(

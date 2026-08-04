@@ -1,5 +1,5 @@
 /**
- * Public segments module surface (Phase 4 E-01 / E-02 / E-04).
+ * Public segments module surface.
  */
 export { SegmentsModule } from '../segments.module';
 export { SegmentsService } from '../segments.service';

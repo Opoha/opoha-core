@@ -4,7 +4,7 @@ import { CoreEventName } from '../../event-bus/event-catalog';
 import type { DomainEvent } from '../../event-bus/domain-event';
 
 const paymentEventBaseSchema = z
-  .object({
+.object({
     paymentId: z.string().min(1),
     orderId: z.string().min(1),
     providerCode: z.string().min(1),
@@ -12,7 +12,7 @@ const paymentEventBaseSchema = z
     currencyCode: z.string().min(1),
     externalId: z.string().nullable(),
   })
-  .strict();
+.strict();
 
 export const paymentAuthorizedDataSchema = paymentEventBaseSchema;
 export type PaymentAuthorizedData = z.infer<typeof paymentAuthorizedDataSchema>;
@@ -27,10 +27,10 @@ export type PaymentRefundedData = z.infer<typeof paymentRefundedDataSchema>;
 export type PaymentRefundedEvent = DomainEvent<PaymentRefundedData>;
 
 export const paymentFailedDataSchema = paymentEventBaseSchema
-  .extend({
+.extend({
     errorMessage: z.string().nullable(),
   })
-  .strict();
+.strict();
 
 export type PaymentFailedData = z.infer<typeof paymentFailedDataSchema>;
 export type PaymentFailedEvent = DomainEvent<PaymentFailedData>;

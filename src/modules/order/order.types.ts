@@ -35,7 +35,7 @@ export class CartType {
   id!: string;
 
   @Field(() => ID, {
-    description: 'Store channel this cart belongs to (Phase 5 B-02)',
+ description: 'Store channel this cart belongs to',
   })
   storeId!: string;
 
@@ -44,7 +44,7 @@ export class CartType {
 
   @Field(() => ID, {
     nullable: true,
-    description: 'B2B company for approval workflow (Phase 5 F-03)',
+ description: 'B2B company for approval workflow',
   })
   companyId!: string | null;
 
@@ -101,7 +101,7 @@ export class CartType {
 
   @Field(() => String, {
     nullable: true,
-    description: 'Coupon code for PromotionsEngine (D-01)',
+ description: 'Coupon code for PromotionsEngine',
   })
   couponCode!: string | null;
 
@@ -112,7 +112,7 @@ export class CartType {
 
   @Field(() => String, {
     nullable: true,
-    description: 'Gift card code for GiftCardService redeem (C-02)',
+ description: 'Gift card code for GiftCardService redeem',
   })
   giftCardCode!: string | null;
 
@@ -122,7 +122,7 @@ export class CartType {
   giftCardMinor!: string;
 
   @Field(() => Int, {
-    description: 'Loyalty points requested for redeem at checkout (C-03)',
+ description: 'Loyalty points requested for redeem at checkout',
   })
   loyaltyPointsToRedeem!: number;
 
@@ -154,14 +154,14 @@ export class CreateCartInput {
 
   @Field(() => ID, {
     nullable: true,
-    description: 'B2B company id; enables draft → approve → confirm (F-03)',
+ description: 'B2B company id; enables draft → approve → confirm',
   })
   companyId?: string;
 
   @Field(() => String, {
     nullable: true,
     description:
-      'Settlement currency (ISO 4217). Defaults to store settlementCurrencyCode when omitted (D-03).',
+ 'Settlement currency (ISO 4217). Defaults to store settlementCurrencyCode when omitted.',
   })
   currencyCode?: string;
 }
@@ -201,17 +201,17 @@ export class CheckoutTotalsType {
   subtotalMinor!: string;
 
   @Field(() => String, {
-    description: 'Promotion discount in minor units (D-01)',
+ description: 'Promotion discount in minor units',
   })
   discountMinor!: string;
 
   @Field(() => String, {
-    description: 'Gift card amount applied in minor units (C-02)',
+ description: 'Gift card amount applied in minor units',
   })
   giftCardMinor!: string;
 
   @Field(() => String, {
-    description: 'Loyalty redeem amount applied in minor units (C-03)',
+ description: 'Loyalty redeem amount applied in minor units',
   })
   loyaltyMinor!: string;
 
@@ -227,7 +227,7 @@ export class CheckoutTotalsType {
 
 @ObjectType({
   description:
-    'Checkout totals converted to a store-enabled display currency (Phase 5 D-03). ' +
+ 'Checkout totals converted to a store-enabled display currency. ' +
     'Rounding: half_up to nearest minor unit; rate is 1 from=settlement → to=display.',
 })
 export class CheckoutDisplayTotalsType {
@@ -295,7 +295,7 @@ export class CheckoutPreviewType {
 
   @Field(() => CheckoutDisplayTotalsType, {
     description:
-      'Display-currency totals via configured exchange rates (D-03). ' +
+ 'Display-currency totals via configured exchange rates. ' +
       'Defaults to store primary display currency when displayCurrencyCode omitted.',
   })
   displayTotals!: CheckoutDisplayTotalsType;
@@ -319,7 +319,7 @@ export class OrderLineType {
 
   @Field(() => ID, {
     nullable: true,
-    description: 'Marketplace vendor for this line (Phase 7 C-02)',
+ description: 'Marketplace vendor for this line',
   })
   vendorId!: string | null;
 
@@ -342,7 +342,7 @@ export class OrderType {
   id!: string;
 
   @Field(() => ID, {
-    description: 'Store channel this order belongs to (Phase 5 B-02)',
+ description: 'Store channel this order belongs to',
   })
   storeId!: string;
 
@@ -351,7 +351,7 @@ export class OrderType {
 
   @Field(() => ID, {
     nullable: true,
-    description: 'B2B company when order requires approval (Phase 5 F-03)',
+ description: 'B2B company when order requires approval',
   })
   companyId!: string | null;
 
@@ -359,13 +359,13 @@ export class OrderType {
   cartId!: string | null;
 
   @Field(() => String, {
-    description: 'Sales channel: web | pos | marketplace (Phase 7 A-03)',
+ description: 'Sales channel: web | pos | marketplace',
   })
   orderSource!: string;
 
   @Field(() => ID, {
     nullable: true,
-    description: 'Primary marketplace vendor when all lines share one vendor (Phase 7 C-02)',
+ description: 'Primary marketplace vendor when all lines share one vendor',
   })
   vendorId!: string | null;
 
@@ -385,7 +385,7 @@ export class OrderType {
   shippingMinor!: string;
 
   @Field(() => String, {
-    description: 'Promotion discount in minor units (D-01)',
+ description: 'Promotion discount in minor units',
   })
   discountMinor!: string;
 
@@ -468,7 +468,7 @@ export class SelectCartShippingInput {
 }
 
 @InputType({
-  description: 'Set tax pricing mode and jurisdiction on a cart before prepareCheckout (C-03)',
+ description: 'Set tax pricing mode and jurisdiction on a cart before prepareCheckout',
 })
 export class SetCartTaxContextInput {
   @Field(() => ID)
@@ -499,7 +499,7 @@ export class SetCartTaxContextInput {
 }
 
 @InputType({
-  description: 'Set or clear a coupon code on a cart for PromotionsEngine (D-01)',
+ description: 'Set or clear a coupon code on a cart for PromotionsEngine',
 })
 export class SetCartCouponInput {
   @Field(() => ID)
@@ -513,7 +513,7 @@ export class SetCartCouponInput {
 }
 
 @InputType({
-  description: 'Set or clear a gift card code on a cart for GiftCardService (C-02)',
+ description: 'Set or clear a gift card code on a cart for GiftCardService',
 })
 export class SetCartGiftCardInput {
   @Field(() => ID)
@@ -527,7 +527,7 @@ export class SetCartGiftCardInput {
 }
 
 @InputType({
-  description: 'Set loyalty points to redeem on a cart for LoyaltyService (C-03)',
+ description: 'Set loyalty points to redeem on a cart for LoyaltyService',
 })
 export class SetCartLoyaltyPointsInput {
   @Field(() => ID)

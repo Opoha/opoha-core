@@ -34,7 +34,7 @@ type RefundCompletedData = {
 
 /**
  * Mirrors key warehouse / fulfillment / RMA domain events into `audit_logs`
- * for activity-log surfaces (Phase 3 F-03).
+ * for activity-log surfaces.
  */
 @Injectable()
 export class ActivityAuditListener implements OnModuleInit {

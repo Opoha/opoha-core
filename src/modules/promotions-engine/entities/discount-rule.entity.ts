@@ -12,7 +12,7 @@ export type DiscountRuleKind =
   'percentage' | 'fixed_amount' | 'free_shipping' | 'bxgy' | 'automatic';
 
 /**
- * Automatic discount rule (Phase 2 D-02).
+ * Automatic discount rule.
  * OWNER: promotions-engine module — plugins must not alter this table.
  * Coupon codes live on {@link CouponEntity}; this table is for non-code rules.
  */
@@ -62,7 +62,7 @@ export class DiscountRuleEntity {
   @Column({ type: 'integer', default: 0 })
   priority!: number;
 
-  /** When true, may combine with other automatic rules (D-03+). */
+ /** When true, may combine with other automatic rules. */
   @Column({ type: 'boolean', default: false })
   stackable!: boolean;
 
@@ -77,7 +77,7 @@ export class DiscountRuleEntity {
 
   /**
    * Rule conditions (e.g. BXGY buy/get SKUs, customer segments).
-   * Phase 4 E-03: may include `segmentIds` / `segmentCodes` to restrict
+ *: may include `segmentIds` / `segmentCodes` to restrict
    * automatic discounts to matching customer segments.
    * Shape is provider-interpreted; core stores opaquely.
    */

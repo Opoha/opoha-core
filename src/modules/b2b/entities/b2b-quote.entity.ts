@@ -25,7 +25,7 @@ export function isB2bQuoteStatus(value: string): value is B2bQuoteStatus {
 }
 
 /**
- * B2B buyer quote / purchase-order foundation (Phase 5 F-05).
+ * B2B buyer quote / purchase-order foundation.
  * Distinct from supply-module `purchase_orders` (supplier inbound POs).
  * OWNER: b2b module — plugins must not alter this table.
  */

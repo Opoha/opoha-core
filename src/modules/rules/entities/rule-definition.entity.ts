@@ -10,7 +10,7 @@ import {
 import type { RuleActionRef, RuleConditions } from '../rule-conditions';
 
 /**
- * Declarative automation rule (Phase 8 C-01).
+ * Declarative automation rule.
  * OWNER: rules module — plugins must not alter this table.
  */
 @Entity({ name: 'rule_definitions' })

@@ -3,7 +3,7 @@ import { Injectable } from '@nestjs/common';
 import type { PromotionRuleProvider, RegisteredPromotionRuleProvider } from './promotion-rule';
 
 /**
- * Registry for promotion rule providers (Phase 2 D-01).
+ * Registry for promotion rule providers.
  * Plugins register; PromotionsEngine aggregates apply() across active providers.
  */
 @Injectable()

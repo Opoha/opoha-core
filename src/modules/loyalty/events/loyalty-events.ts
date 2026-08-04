@@ -4,7 +4,7 @@ import { CoreEventName } from '../../event-bus/event-catalog';
 import type { DomainEvent } from '../../event-bus/domain-event';
 
 export const loyaltyPointsAccruedDataSchema = z
-  .object({
+.object({
     accountId: z.string().uuid(),
     customerId: z.string().uuid(),
     points: z.number().int().positive(),
@@ -12,13 +12,13 @@ export const loyaltyPointsAccruedDataSchema = z
     orderId: z.string().uuid().nullable(),
     accruedAt: z.string().min(1),
   })
-  .strict();
+.strict();
 
 export type LoyaltyPointsAccruedData = z.infer<typeof loyaltyPointsAccruedDataSchema>;
 export type LoyaltyPointsAccruedEvent = DomainEvent<LoyaltyPointsAccruedData>;
 
 export const loyaltyPointsRedeemedDataSchema = z
-  .object({
+.object({
     accountId: z.string().uuid(),
     customerId: z.string().uuid(),
     points: z.number().int().positive(),
@@ -27,7 +27,7 @@ export const loyaltyPointsRedeemedDataSchema = z
     orderId: z.string().uuid().nullable(),
     redeemedAt: z.string().min(1),
   })
-  .strict();
+.strict();
 
 export type LoyaltyPointsRedeemedData = z.infer<typeof loyaltyPointsRedeemedDataSchema>;
 export type LoyaltyPointsRedeemedEvent = DomainEvent<LoyaltyPointsRedeemedData>;

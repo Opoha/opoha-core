@@ -1,5 +1,5 @@
 /**
- * Public currency module surface (Phase 5 D).
+ * Public currency module surface.
  */
 export { CurrencyModule } from '../currency.module';
 export { StoreCurrencyConfigService } from '../store-currency-config.service';

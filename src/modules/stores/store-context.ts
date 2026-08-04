@@ -1,5 +1,5 @@
 /**
- * Request store scoping helpers (Phase 5 A-03).
+ * Request store scoping helpers.
  * Prefer header over JWT claim when both are present.
  */
 
@@ -43,8 +43,8 @@ export function extractStoreContextFromHeaders(headers: HeaderMap): StoreContext
     return { source: 'none' };
   }
   return {
-    ...(storeId ? { storeId } : {}),
-    ...(storeCode ? { storeCode } : {}),
+...(storeId ? { storeId } : {}),
+...(storeCode ? { storeCode } : {}),
     source: 'header',
   };
 }
@@ -70,8 +70,8 @@ export function extractStoreContextFromJwt(
     return { source: 'none' };
   }
   return {
-    ...(storeId ? { storeId } : {}),
-    ...(storeCode ? { storeCode } : {}),
+...(storeId ? { storeId } : {}),
+...(storeCode ? { storeCode } : {}),
     source: 'jwt',
   };
 }

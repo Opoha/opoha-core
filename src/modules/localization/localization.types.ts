@@ -1,7 +1,7 @@
 import { Field, InputType, ObjectType } from '@nestjs/graphql';
 
 @ObjectType({
-  description: 'Single-country deployment localization settings (Phase 1 foundation)',
+ description: 'Single-country deployment localization settings',
 })
 export class LocalizationSettingsType {
   @Field(() => String, { description: 'ISO 3166-1 alpha-2 country code' })

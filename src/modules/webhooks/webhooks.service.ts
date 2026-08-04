@@ -129,7 +129,7 @@ function normalizeEventNames(eventNames: string[] | undefined): string[] {
 }
 
 /**
- * Webhook endpoint CRUD + delivery log reads (Phase 8 D-01/D-03).
+ * Webhook endpoint CRUD + delivery log reads.
  */
 @Injectable()
 export class WebhooksService {
@@ -280,7 +280,7 @@ export class WebhooksService {
     const row = this.endpoints.create({
       enabled: true,
       eventNames: [],
-      ...partial,
+...partial,
     });
     return this.endpoints.save(row);
   }

@@ -16,7 +16,7 @@ import type { ContributionRegistry } from './contribution-registry';
 
 /**
  * Registration API handed to plugins during install/boot/enable/disable/uninstall.
- * Mirrors `@opoha/plugin-sdk` PluginContext (D-07).
+ * Mirrors `@opoha/plugin-sdk` PluginContext.
  */
 export type PluginRegistrationContext = {
   readonly pluginId: string;
@@ -42,16 +42,16 @@ export type PluginRegistrationContext = {
   registerNotificationProvider(provider: NotificationProvider): void;
   registerStorageAdapter(adapter: StorageAdapter): void;
   registerSearchProvider(provider: SearchProvider): void;
-  /** Register a live FX rate provider (Phase 5 D-04, optional). */
+ /** Register a live FX rate provider. */
   registerFXProvider(provider: FXRateProvider): void;
-  /** Register a cron-style scheduled job (Phase 8 A-01/A-03). */
+ /** Register a cron-style scheduled job. */
   registerScheduledJob(input: RegisterScheduledJobInput): void;
-  /** Register a rule action handler (Phase 8 C-02/C-03). */
+ /** Register a rule action handler. */
   registerRuleAction(input: RegisterRuleActionInput): void;
 };
 
 /**
- * In-process plugin module contract invoked by the loader (D-04 / D-05).
+ * In-process plugin module contract invoked by the loader.
  * Authors should prefer `definePlugin` from `@opoha/plugin-sdk`.
  */
 export type PluginDefinition = {

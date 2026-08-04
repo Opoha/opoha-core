@@ -1,5 +1,5 @@
 /**
- * Public loyalty module surface (Phase 4 C-03 / C-04 / C-05).
+ * Public loyalty module surface.
  */
 export { LoyaltyModule } from '../loyalty.module';
 export { LoyaltyService } from '../loyalty.service';

@@ -86,7 +86,7 @@ function statusForBalance(balance: bigint, current: GiftCardStatus): GiftCardSta
 }
 
 /**
- * Gift card issue / purchase / redeem with TypeORM-owned balance ledger (C-01/C-02).
+ * Gift card issue / purchase / redeem with TypeORM-owned balance ledger.
  */
 @Injectable()
 export class GiftCardService {
@@ -298,11 +298,11 @@ export class GiftCardService {
 
   private async lockByCode(manager: EntityManager, code: string): Promise<GiftCardEntity | null> {
     return manager
-      .getRepository(GiftCardEntity)
-      .createQueryBuilder('gc')
-      .setLock('pessimistic_write')
-      .where('gc.code = :code', { code })
-      .getOne();
+.getRepository(GiftCardEntity)
+.createQueryBuilder('gc')
+.setLock('pessimistic_write')
+.where('gc.code = :code', { code })
+.getOne();
   }
 
   private assertRedeemable(card: GiftCardEntity, expectedCurrency?: string): void {

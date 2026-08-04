@@ -1,9 +1,9 @@
 /**
  * Notification provider port — plugins implement; core never imports SMTP/Resend/SendGrid.
- * Phase 2 E-01: send abstraction for transactional email (and future channels).
+ *: send abstraction for transactional email (and future channels).
  */
 
-/** Delivery channel; email is the Phase 2 primary. */
+/** Delivery channel; email is the primary. */
 export type NotificationChannel = 'email' | 'sms' | 'push' | string;
 
 /** Recipient address fragment — providers use the fields they need. */
@@ -17,7 +17,7 @@ export type NotificationRecipient = {
 
 /**
  * Payload handed to a notification provider.
- * Templates (E-02) may pre-render subject/body; raw providers may render from templateCode + data.
+ * Templates may pre-render subject/body; raw providers may render from templateCode + data.
  */
 export type NotificationSendInput = {
   /** Template code (order.confirmation, payment.captured, shipment.created, …). */

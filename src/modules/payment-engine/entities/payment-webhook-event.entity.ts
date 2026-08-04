@@ -1,7 +1,7 @@
 import { Column, CreateDateColumn, Entity, Index, PrimaryGeneratedColumn } from 'typeorm';
 
 /**
- * Deduped provider webhook events (Phase 2 A-05).
+ * Deduped provider webhook events.
  * OWNER: payment-engine — plugins must not alter this table.
  */
 @Entity({ name: 'payment_webhook_events' })

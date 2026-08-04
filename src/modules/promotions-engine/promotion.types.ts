@@ -205,7 +205,7 @@ export class CreateCouponInput {
 
   @Field(() => String, {
     nullable: true,
-    description: 'JSON-encoded opaque metadata (E-03: segmentIds / segmentCodes)',
+ description: 'JSON-encoded opaque metadata (segmentIds / segmentCodes)',
   })
   metadataJson?: string;
 }
@@ -256,7 +256,7 @@ export class UpdateCouponInput {
 
   @Field(() => String, {
     nullable: true,
-    description: 'JSON-encoded opaque metadata (E-03: segmentIds / segmentCodes)',
+ description: 'JSON-encoded opaque metadata (segmentIds / segmentCodes)',
   })
   metadataJson?: string;
 }
@@ -304,13 +304,13 @@ export class CreateDiscountRuleInput {
 
   @Field(() => String, {
     nullable: true,
-    description: 'JSON-encoded rule conditions (BXGY; E-03: segmentIds / segmentCodes)',
+ description: 'JSON-encoded rule conditions (BXGY; segmentIds / segmentCodes)',
   })
   conditionsJson?: string;
 
   @Field(() => String, {
     nullable: true,
-    description: 'JSON-encoded opaque metadata (E-03: segmentIds / segmentCodes)',
+ description: 'JSON-encoded opaque metadata (segmentIds / segmentCodes)',
   })
   metadataJson?: string;
 }
@@ -358,13 +358,13 @@ export class UpdateDiscountRuleInput {
 
   @Field(() => String, {
     nullable: true,
-    description: 'JSON-encoded rule conditions (BXGY; E-03: segmentIds / segmentCodes)',
+ description: 'JSON-encoded rule conditions (BXGY; segmentIds / segmentCodes)',
   })
   conditionsJson?: string;
 
   @Field(() => String, {
     nullable: true,
-    description: 'JSON-encoded opaque metadata (E-03: segmentIds / segmentCodes)',
+ description: 'JSON-encoded opaque metadata (segmentIds / segmentCodes)',
   })
   metadataJson?: string;
 }

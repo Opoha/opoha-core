@@ -3,7 +3,7 @@ import { Column, CreateDateColumn, Entity, Index, PrimaryGeneratedColumn } from 
 import type { JobRunStatus } from '../job-status';
 
 /**
- * Job execution observability row (Phase 8 A-02).
+ * Job execution observability row.
  * OWNER: jobs module — plugins must not alter this table.
  */
 @Entity({ name: 'job_runs' })

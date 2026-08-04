@@ -1,5 +1,5 @@
 /**
- * Lightweight timing helpers for Phase 9 service microbenchmarks (C-02).
+ * Lightweight timing helpers for service microbenchmarks.
  * No external load tools; CI-friendly Vitest harness.
  */
 
@@ -60,7 +60,7 @@ export function evaluateScenario(
 ): ScenarioResult {
   return {
     id,
-    ...stats,
+...stats,
     targetP95Ms,
     pass: stats.p95 <= targetP95Ms,
   };

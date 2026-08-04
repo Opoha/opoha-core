@@ -1,7 +1,7 @@
 import { Field, ID, InputType, Int, ObjectType } from '@nestjs/graphql';
 
 @ObjectType('SubscriptionPlan', {
-  description: 'Recurring billing plan (Phase 7)',
+ description: 'Recurring billing plan',
 })
 export class SubscriptionPlanType {
   @Field(() => ID)
@@ -39,7 +39,7 @@ export class SubscriptionPlanType {
 }
 
 @ObjectType('Subscription', {
-  description: 'Customer subscription schedule state (Phase 7)',
+ description: 'Customer subscription schedule state',
 })
 export class SubscriptionType {
   @Field(() => ID)

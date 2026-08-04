@@ -1,6 +1,6 @@
 /**
  * Promotion rule provider port — plugins implement; core orchestrates apply.
- * Phase 2 D-01: coupons / automatic discounts extend this surface (D-02+ entities).
+ *: coupons / automatic discounts extend this surface (entities).
  */
 
 /** Line item fragment for promotion evaluation. */

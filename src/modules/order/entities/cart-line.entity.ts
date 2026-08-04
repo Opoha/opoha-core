@@ -33,7 +33,7 @@ export class CartLineEntity {
   @Column({ name: 'unit_price_minor', type: 'bigint' })
   unitPriceMinor!: string;
 
-  /** Inventory reservation created during checkout prepare (D-02). */
+ /** Inventory reservation created during checkout prepare. */
   @Column({ name: 'reservation_id', type: 'uuid', nullable: true })
   reservationId!: string | null;
 

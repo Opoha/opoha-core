@@ -3,7 +3,7 @@ import { Injectable } from '@nestjs/common';
 import type { RegisteredStorageAdapter, StorageAdapter } from './storage-adapter';
 
 /**
- * In-memory registry for storage adapters registered by plugins (D-09).
+ * In-memory registry for storage adapters registered by plugins.
  */
 @Injectable()
 export class StorageAdapterRegistry {

@@ -14,7 +14,7 @@ import { ProductVariantEntity } from './product-variant.entity';
 /**
  * OWNER: catalog module — plugins must not alter this table.
  *
- * Store scope (Phase 5 B-01):
+ * Store scope:
  * - `storeId` null → shared catalog (visible to all stores)
  * - `storeId` set → store-owned (isolated to that store)
  * Slug uniqueness is enforced by partial DB indexes (see CatalogStoreScope migration).
@@ -40,7 +40,7 @@ export class ProductEntity {
   isActive!: boolean;
 
   /**
-   * Default fulfillment mode for new variants (Phase 7 A-02).
+ * Default fulfillment mode for new variants.
    * Variant `fulfillmentMode` is authoritative at purchase.
    */
   @Column({ name: 'fulfillment_mode', type: 'text', default: 'physical' })
@@ -54,7 +54,7 @@ export class ProductEntity {
   storeId!: string | null;
 
   /**
-   * Marketplace vendor that lists this product (Phase 7 C-02).
+ * Marketplace vendor that lists this product.
    * FK to `vendors.id` (cross-module ID reference only).
    * Column owned by catalog; vendors table owned by vendors module.
    */

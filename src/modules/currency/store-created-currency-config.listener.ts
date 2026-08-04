@@ -6,7 +6,7 @@ import type { StoreCreatedEvent } from '../stores/public';
 import { StoreCurrencyConfigService } from './store-currency-config.service';
 
 /**
- * Seed default currency config when a store is created (Phase 5 D-01).
+ * Seed default currency config when a store is created.
  */
 @Injectable()
 export class StoreCreatedCurrencyConfigListener implements OnModuleInit {

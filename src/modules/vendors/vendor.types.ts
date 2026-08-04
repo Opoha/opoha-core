@@ -1,7 +1,7 @@
 import { Field, ID, InputType, Int, ObjectType } from '@nestjs/graphql';
 
 @ObjectType('MarketplaceVendor', {
-  description: 'Marketplace seller account (Phase 7)',
+ description: 'Marketplace seller account',
 })
 export class VendorType {
   @Field(() => ID)

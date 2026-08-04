@@ -84,7 +84,7 @@ export class StoreWarehouseService {
   }
 
   /**
-   * Throws when warehouse is not associated with the store (E-02/E-03 guards).
+ * Throws when warehouse is not associated with the store (/ guards).
    */
   async assertWarehouseAllowedForStore(storeId: string, warehouseId: string): Promise<void> {
     const link = await this.links.findOne({
@@ -105,7 +105,7 @@ export class StoreWarehouseService {
   }
 
   /**
-   * Transfer guard (E-03): optional store scope, else require shared store when both warehouses are linked.
+ * Transfer guard: optional store scope, else require shared store when both warehouses are linked.
    */
   async assertTransferAllowed(
     fromWarehouseId: string,

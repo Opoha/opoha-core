@@ -4,7 +4,7 @@ import { CoreEventName } from '../../event-bus/event-catalog';
 import type { DomainEvent } from '../../event-bus/domain-event';
 
 export const warehouseUpdatedDataSchema = z
-  .object({
+.object({
     warehouseId: z.string().uuid(),
     code: z.string().min(1),
     name: z.string().min(1),
@@ -12,20 +12,20 @@ export const warehouseUpdatedDataSchema = z
     isDefault: z.boolean(),
     action: z.enum(['created', 'updated', 'deleted']),
   })
-  .strict();
+.strict();
 
 export type WarehouseUpdatedData = z.infer<typeof warehouseUpdatedDataSchema>;
 
 export type WarehouseUpdatedEvent = DomainEvent<WarehouseUpdatedData>;
 
 export const storeWarehouseUpdatedDataSchema = z
-  .object({
+.object({
     storeId: z.string().uuid(),
     warehouseId: z.string().uuid(),
     isPrimary: z.boolean(),
     action: z.enum(['linked', 'unlinked']),
   })
-  .strict();
+.strict();
 
 export type StoreWarehouseUpdatedData = z.infer<typeof storeWarehouseUpdatedDataSchema>;
 

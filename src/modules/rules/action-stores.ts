@@ -1,5 +1,5 @@
 /**
- * In-memory customer tag store for rule action stubs (Phase 8 C-03).
+ * In-memory customer tag store for rule action stubs.
  * Live customer tagging / segment membership can wire later.
  */
 export class CustomerTagStore {
@@ -41,7 +41,7 @@ export type EmittedNotificationStub = {
 };
 
 /**
- * In-memory notification emit stub for rule actions (Phase 8 C-03).
+ * In-memory notification emit stub for rule actions.
  */
 export class NotificationEmitStore {
   private readonly items: EmittedNotificationStub[] = [];

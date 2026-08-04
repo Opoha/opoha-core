@@ -50,7 +50,7 @@ function parsePositivePoints(raw: number, field: string): number {
 }
 
 /**
- * Loyalty accounts + ledger: accrue on capture, redeem at checkout (C-03).
+ * Loyalty accounts + ledger: accrue on capture, redeem at checkout.
  */
 @Injectable()
 export class LoyaltyService {
@@ -323,10 +323,10 @@ export class LoyaltyService {
     customerId: string,
   ): Promise<LoyaltyAccountEntity | null> {
     return manager
-      .getRepository(LoyaltyAccountEntity)
-      .createQueryBuilder('la')
-      .setLock('pessimistic_write')
-      .where('la.customer_id = :customerId', { customerId })
-      .getOne();
+.getRepository(LoyaltyAccountEntity)
+.createQueryBuilder('la')
+.setLock('pessimistic_write')
+.where('la.customer_id = :customerId', { customerId })
+.getOne();
   }
 }

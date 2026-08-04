@@ -1,6 +1,6 @@
 import { randomBytes } from 'node:crypto';
 
-/** Gift card lifecycle statuses (Phase 4 C-01). */
+/** Gift card lifecycle statuses. */
 export const GIFT_CARD_STATUSES = ['active', 'redeemed', 'disabled', 'expired'] as const;
 
 export type GiftCardStatus = (typeof GIFT_CARD_STATUSES)[number];

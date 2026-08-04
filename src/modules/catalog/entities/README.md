@@ -4,7 +4,7 @@
 
 Plugins must not alter these tables. Cross-module references use IDs resolved via services/DataLoaders.
 
-## Store scope (Phase 5 B-01 / B-04)
+## Store scope
 
 Products and categories carry optional `store_id` (FK to `stores.id`):
 
@@ -22,7 +22,7 @@ When `catalogMode` is omitted, the store’s `store_channel_settings.catalog_mod
 
 Existing single-store rows migrate as **shared** (`store_id` NULL). A default store is seeded only when none exists; catalog rows are not reassigned to it.
 
-## Translations (Phase 5 C-01)
+## Translations
 
 `product_translations` / `category_translations` hold locale overrides for `name` / `slug` / `description`:
 
@@ -31,4 +31,4 @@ Existing single-store rows migrate as **shared** (`store_id` NULL). A default st
 | `product_translations`  | `product_id` → `products.id` (CASCADE)    | `(product_id, locale)`  |
 | `category_translations` | `category_id` → `categories.id` (CASCADE) | `(category_id, locale)` |
 
-The base `products` / `categories` row always holds the default-locale content. A translation row overlays `name` and, when non-null, `slug` / `description`; a `null` override falls back to the base value. `CatalogTranslationsService` (`src/modules/catalog/translations/`) owns reads/writes and the overlay logic; `products` / `categories` GraphQL queries accept a `locale` arg (falling back to `Accept-Language`) to apply it (Phase 5 C-02).
+The base `products` / `categories` row always holds the default-locale content. A translation row overlays `name` and, when non-null, `slug` / `description`; a `null` override falls back to the base value. `CatalogTranslationsService` (`src/modules/catalog/translations/`) owns reads/writes and the overlay logic; `products` / `categories` GraphQL queries accept a `locale` arg (falling back to `Accept-Language`) to apply it.

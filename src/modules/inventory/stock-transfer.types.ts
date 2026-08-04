@@ -75,7 +75,7 @@ export class CreateStockTransferInput {
 
   @Field(() => ID, {
     nullable: true,
-    description: 'Optional store scope — both warehouses must be linked to this store (E-03)',
+ description: 'Optional store scope — both warehouses must be linked to this store',
   })
   storeId?: string;
 

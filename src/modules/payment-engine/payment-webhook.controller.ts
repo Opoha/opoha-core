@@ -4,7 +4,7 @@ import { PaymentEngine } from './payment-engine.service';
 import type { PaymentWebhookResult } from './payment-provider';
 
 /**
- * HTTP ingress for payment provider webhooks (Phase 2 A-05).
+ * HTTP ingress for payment provider webhooks.
  * Auth is provider-signature based (validated inside provider.handleWebhook).
  */
 @Controller('webhooks/payments')

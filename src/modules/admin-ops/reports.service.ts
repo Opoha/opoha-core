@@ -41,11 +41,11 @@ export class ReportsService {
     assertWindow(input.from, input.to);
 
     const qb = this.orders
-      .createQueryBuilder('o')
-      .select('o.status', 'status')
-      .addSelect('COUNT(*)', 'orderCount')
-      .addSelect('COALESCE(SUM(CAST(o.totalMinor AS bigint)), 0)', 'totalMinorSum')
-      .groupBy('o.status');
+.createQueryBuilder('o')
+.select('o.status', 'status')
+.addSelect('COUNT(*)', 'orderCount')
+.addSelect('COALESCE(SUM(CAST(o.totalMinor AS bigint)), 0)', 'totalMinorSum')
+.groupBy('o.status');
 
     if (input.from) {
       qb.andWhere('o.createdAt >= :from', { from: input.from });
@@ -68,8 +68,8 @@ export class ReportsService {
 
     const orderCount = byStatus.reduce((sum, row) => sum + row.orderCount, 0);
     const totalMinorSum = byStatus
-      .reduce((sum, row) => sum + BigInt(row.totalMinorSum), 0n)
-      .toString();
+.reduce((sum, row) => sum + BigInt(row.totalMinorSum), 0n)
+.toString();
 
     return {
       orderCount,
@@ -85,18 +85,18 @@ export class ReportsService {
    */
   async inventoryByWarehouse(warehouseId?: string | null): Promise<InventoryByWarehouseRow[]> {
     const qb = this.inventoryItems
-      .createQueryBuilder('i')
-      .innerJoin(WarehouseEntity, 'w', 'w.id = i.warehouseId')
-      .select('i.warehouseId', 'warehouseId')
-      .addSelect('w.code', 'warehouseCode')
-      .addSelect('w.name', 'warehouseName')
-      .addSelect('COUNT(*)', 'skuCount')
-      .addSelect('COALESCE(SUM(i.quantityOnHand), 0)', 'quantityOnHand')
-      .addSelect('COALESCE(SUM(i.quantityReserved), 0)', 'quantityReserved')
-      .groupBy('i.warehouseId')
-      .addGroupBy('w.code')
-      .addGroupBy('w.name')
-      .orderBy('w.code', 'ASC');
+.createQueryBuilder('i')
+.innerJoin(WarehouseEntity, 'w', 'w.id = i.warehouseId')
+.select('i.warehouseId', 'warehouseId')
+.addSelect('w.code', 'warehouseCode')
+.addSelect('w.name', 'warehouseName')
+.addSelect('COUNT(*)', 'skuCount')
+.addSelect('COALESCE(SUM(i.quantityOnHand), 0)', 'quantityOnHand')
+.addSelect('COALESCE(SUM(i.quantityReserved), 0)', 'quantityReserved')
+.groupBy('i.warehouseId')
+.addGroupBy('w.code')
+.addGroupBy('w.name')
+.orderBy('w.code', 'ASC');
 
     if (warehouseId) {
       qb.andWhere('i.warehouseId = :warehouseId', { warehouseId });
@@ -133,10 +133,10 @@ export class ReportsService {
     assertWindow(input.from, input.to);
 
     const statusQb = this.fulfillments
-      .createQueryBuilder('f')
-      .select('f.status', 'status')
-      .addSelect('COUNT(*)', 'count')
-      .groupBy('f.status');
+.createQueryBuilder('f')
+.select('f.status', 'status')
+.addSelect('COUNT(*)', 'count')
+.groupBy('f.status');
 
     if (input.from) {
       statusQb.andWhere('f.createdAt >= :from', { from: input.from });
@@ -158,9 +158,9 @@ export class ReportsService {
     const createdCount = byStatus.reduce((sum, row) => sum + row.count, 0);
 
     const shippedQb = this.fulfillments
-      .createQueryBuilder('f')
-      .where("f.status = 'shipped'")
-      .andWhere('f.shippedAt IS NOT NULL');
+.createQueryBuilder('f')
+.where("f.status = 'shipped'")
+.andWhere('f.shippedAt IS NOT NULL');
 
     if (input.from) {
       shippedQb.andWhere('f.shippedAt >= :from', { from: input.from });

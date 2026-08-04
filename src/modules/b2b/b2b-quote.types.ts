@@ -1,6 +1,6 @@
 import { Field, ID, InputType, Int, ObjectType } from '@nestjs/graphql';
 
-@ObjectType({ description: 'Line on a B2B buyer quote (Phase 5 F-05)' })
+@ObjectType({ description: 'Line on a B2B buyer quote' })
 export class B2bQuoteLineType {
   @Field(() => ID)
   id!: string;
@@ -28,7 +28,7 @@ export class B2bQuoteLineType {
 
 @ObjectType({
   description:
-    'B2B buyer quote / purchase-order foundation (Phase 5 F-05). ' +
+ 'B2B buyer quote / purchase-order foundation. ' +
     'Distinct from supply-module purchase orders.',
 })
 export class B2bQuoteType {

@@ -13,7 +13,7 @@ registerEnumType(StoreCatalogModeGql, {
 });
 
 @ObjectType('StoreChannelSettings', {
-  description: 'Store-scoped channel configuration (Phase 5 B-03)',
+ description: 'Store-scoped channel configuration',
 })
 export class StoreChannelSettingsType {
   @Field(() => ID, { description: 'Store channel id' })

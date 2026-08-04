@@ -500,7 +500,7 @@ export class PaymentEngine {
       aggregateType: 'payment',
       aggregateId: payment.id,
       data: {
-        ...this.paymentEventData(payment),
+...this.paymentEventData(payment),
         errorMessage: payment.errorMessage,
       },
     });

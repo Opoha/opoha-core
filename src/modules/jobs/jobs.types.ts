@@ -1,7 +1,7 @@
 import type { JobRunStatus } from './job-status';
 
 /**
- * GraphQL/service-facing shapes for jobs observability (Phase 8 A-02/A-03).
+ * GraphQL/service-facing shapes for jobs observability.
  */
 export type JobDefinitionType = {
   id: string;

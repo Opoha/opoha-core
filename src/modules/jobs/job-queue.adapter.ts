@@ -1,7 +1,7 @@
 import type { ScheduledJobHandler } from './scheduled-job';
 
 /**
- * Queue bridge for cron-style jobs (Phase 8 A-03).
+ * Queue bridge for cron-style jobs.
  * Production: BullMQ; unit gates: in-memory stub.
  */
 export type UpsertCronJobInput = {

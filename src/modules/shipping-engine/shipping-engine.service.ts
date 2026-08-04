@@ -9,7 +9,7 @@ import type {
 } from './shipping-method';
 
 /**
- * Shipping engine — register / get / list methods + quote orchestration (B-02).
+ * Shipping engine — register / get / list methods + quote orchestration.
  * Persisting a selected rate onto cart/order is done by the order module via
  * {@link findQuotedRate} validation helpers.
  */
@@ -47,7 +47,7 @@ export class ShippingEngine {
       }
       for (const rate of quoted) {
         rates.push({
-          ...rate,
+...rate,
           methodCode: method.code,
           methodDisplayName: method.displayName,
         });
@@ -98,7 +98,7 @@ export class ShippingEngine {
     this.requireNonNegativeMinor(match.amount.amountMinor);
 
     return {
-      ...match,
+...match,
       methodCode: provider.code,
       methodDisplayName: provider.displayName,
     };

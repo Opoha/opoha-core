@@ -1,6 +1,6 @@
 /**
- * Order lifecycle statuses (Phase 1 D-03 + Phase 5 F-03 B2B).
- * Transitions enforced in D-05 / F-03.
+ * Order lifecycle statuses.
+ * Transitions enforced in /.
  */
 export const ORDER_STATUSES = [
   'pending',
@@ -20,7 +20,7 @@ export function isOrderStatus(value: string): value is OrderStatus {
 }
 
 /**
- * Allowed status transitions (D-05 + F-03).
+ * Allowed status transitions.
  * Terminal: fulfilled, cancelled.
  * B2B path: draft → approved → confirmed.
  */

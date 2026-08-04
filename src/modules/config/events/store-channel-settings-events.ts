@@ -4,13 +4,13 @@ import { CoreEventName } from '../../event-bus/event-catalog';
 import type { DomainEvent } from '../../event-bus/domain-event';
 
 export const storeChannelSettingsUpdatedDataSchema = z
-  .object({
+.object({
     storeId: z.string().uuid(),
     timezone: z.string().min(1),
     countryCode: z.string().min(1),
     catalogMode: z.enum(['shared', 'isolated']),
   })
-  .strict();
+.strict();
 
 export type StoreChannelSettingsUpdatedData = z.infer<typeof storeChannelSettingsUpdatedDataSchema>;
 

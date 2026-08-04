@@ -66,7 +66,7 @@ export function meetsMinSubtotal(
 
 /**
  * Compute a single rule/coupon discount against merchandise subtotal.
- * BXGY is deferred (returns zero) until D-05 follow-on.
+ * BXGY is deferred (returns zero) until follow-on.
  */
 export function computeRuleDiscount(
   rule: DiscountableRule,
@@ -215,14 +215,14 @@ export function mergePromotionApplications(
  * single highest-priority non-stackable when no stackables qualify (or when
  * the non-stackable has higher priority than any stackable — exclusive win).
  *
- * Policy (D-03): if any qualifying non-stackable has priority >= every
+ * Policy: if any qualifying non-stackable has priority >= every
  * qualifying stackable, apply only that non-stackable; otherwise apply all
  * qualifying stackables (ignore lower-priority non-stackables).
  */
 export function selectAutomaticRules(rules: DiscountRuleEntity[]): DiscountRuleEntity[] {
   const qualifying = rules
-    .filter((r) => isWithinSchedule(discountRuleToDiscountable(r)))
-    .sort((a, b) => b.priority - a.priority || a.code.localeCompare(b.code));
+.filter((r) => isWithinSchedule(discountRuleToDiscountable(r)))
+.sort((a, b) => b.priority - a.priority || a.code.localeCompare(b.code));
 
   if (qualifying.length === 0) {
     return [];

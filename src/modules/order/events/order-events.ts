@@ -6,19 +6,19 @@ import { ORDER_SOURCES } from '../entities/order-source';
 import { ORDER_STATUSES } from '../entities/order-status';
 
 export const cartCreatedDataSchema = z
-  .object({
+.object({
     cartId: z.string().uuid(),
     storeId: z.string().uuid().optional(),
     customerId: z.string().uuid().nullable(),
     currencyCode: z.string().min(1),
   })
-  .strict();
+.strict();
 
 export type CartCreatedData = z.infer<typeof cartCreatedDataSchema>;
 export type CartCreatedEvent = DomainEvent<CartCreatedData>;
 
 const cartLineBaseSchema = z
-  .object({
+.object({
     cartId: z.string().uuid(),
     lineId: z.string().uuid(),
     variantId: z.string().uuid(),
@@ -26,7 +26,7 @@ const cartLineBaseSchema = z
     unitPriceMinor: z.string().min(1),
     currencyCode: z.string().min(1),
   })
-  .strict();
+.strict();
 
 export const cartLineAddedDataSchema = cartLineBaseSchema;
 export type CartLineAddedData = z.infer<typeof cartLineAddedDataSchema>;
@@ -37,7 +37,7 @@ export type CartLineUpdatedData = z.infer<typeof cartLineUpdatedDataSchema>;
 export type CartLineUpdatedEvent = DomainEvent<CartLineUpdatedData>;
 
 export const cartLineRemovedDataSchema = z
-  .object({
+.object({
     cartId: z.string().uuid(),
     lineId: z.string().uuid(),
     variantId: z.string().uuid(),
@@ -45,13 +45,13 @@ export const cartLineRemovedDataSchema = z
     unitPriceMinor: z.string().min(1),
     currencyCode: z.string().min(1),
   })
-  .strict();
+.strict();
 
 export type CartLineRemovedData = z.infer<typeof cartLineRemovedDataSchema>;
 export type CartLineRemovedEvent = DomainEvent<CartLineRemovedData>;
 
 export const checkoutPreparedDataSchema = z
-  .object({
+.object({
     cartId: z.string().uuid(),
     storeId: z.string().uuid().optional(),
     customerId: z.string().uuid().nullable(),
@@ -63,7 +63,7 @@ export const checkoutPreparedDataSchema = z
     totalMinor: z.string().min(1),
     lineCount: z.number().int().nonnegative(),
   })
-  .strict();
+.strict();
 
 export type CheckoutPreparedData = z.infer<typeof checkoutPreparedDataSchema>;
 export type CheckoutPreparedEvent = DomainEvent<CheckoutPreparedData>;
@@ -73,25 +73,25 @@ const orderStatusSchema = z.enum(ORDER_STATUSES);
 const orderSourceSchema = z.enum(ORDER_SOURCES);
 
 export const orderCreatedDataSchema = z
-  .object({
+.object({
     orderId: z.string().uuid(),
     cartId: z.string().uuid().nullable(),
     storeId: z.string().uuid().optional(),
     customerId: z.string().uuid().nullable(),
-    /** Phase 7 omnichannel channel — additive field retained in v1.0 freeze. */
+ /** omnichannel channel — additive field retained in v1.0 freeze. */
     orderSource: orderSourceSchema.optional().default('web'),
     status: orderStatusSchema,
     currencyCode: z.string().min(1),
     totalMinor: z.string().min(1),
     paymentMethod: z.string().min(1),
   })
-  .strict();
+.strict();
 
 export type OrderCreatedData = z.infer<typeof orderCreatedDataSchema>;
 export type OrderCreatedEvent = DomainEvent<OrderCreatedData>;
 
 export const orderPaidDataSchema = z
-  .object({
+.object({
     orderId: z.string().uuid(),
     customerId: z.string().uuid().nullable(),
     currencyCode: z.string().min(1),
@@ -100,24 +100,24 @@ export const orderPaidDataSchema = z
     providerCode: z.string().min(1),
     amountMinor: z.string().min(1),
   })
-  .strict();
+.strict();
 
 export type OrderPaidData = z.infer<typeof orderPaidDataSchema>;
 export type OrderPaidEvent = DomainEvent<OrderPaidData>;
 
 export const orderStatusChangedDataSchema = z
-  .object({
+.object({
     orderId: z.string().uuid(),
     fromStatus: orderStatusSchema.nullable(),
     toStatus: orderStatusSchema,
   })
-  .strict();
+.strict();
 
 export type OrderStatusChangedData = z.infer<typeof orderStatusChangedDataSchema>;
 export type OrderStatusChangedEvent = DomainEvent<OrderStatusChangedData>;
 
 export const orderTimelineDataSchema = z
-  .object({
+.object({
     orderId: z.string().uuid(),
     type: z.enum(['created', 'status_changed', 'payment_recorded']),
     fromStatus: orderStatusSchema.nullable(),
@@ -125,17 +125,17 @@ export const orderTimelineDataSchema = z
     paymentMethod: z.string().min(1).nullable(),
     note: z.string().nullable(),
   })
-  .strict();
+.strict();
 
 export type OrderTimelineData = z.infer<typeof orderTimelineDataSchema>;
 export type OrderTimelineEvent = DomainEvent<OrderTimelineData>;
 
 export const orderCancelledDataSchema = z
-  .object({
+.object({
     orderId: z.string().uuid(),
     fromStatus: orderStatusSchema,
   })
-  .strict();
+.strict();
 
 export type OrderCancelledData = z.infer<typeof orderCancelledDataSchema>;
 export type OrderCancelledEvent = DomainEvent<OrderCancelledData>;

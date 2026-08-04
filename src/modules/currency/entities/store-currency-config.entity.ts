@@ -1,7 +1,7 @@
 import { Column, CreateDateColumn, Entity, PrimaryColumn, UpdateDateColumn } from 'typeorm';
 
 /**
- * Per-store display vs settlement currency configuration (Phase 5 D-01).
+ * Per-store display vs settlement currency configuration.
  * OWNER: currency module — plugins must not alter this table.
  * Cross-module FK to `stores.id` only (ADR-0005 / ADR-0010).
  */
@@ -20,7 +20,7 @@ export class StoreCurrencyConfigEntity {
 
   /**
    * Primary customer-facing display currency (ISO 4217).
-   * May differ from settlement when FX conversion is configured (D-02/D-03).
+ * May differ from settlement when FX conversion is configured.
    */
   @Column({ name: 'display_currency_code', type: 'text' })
   displayCurrencyCode!: string;

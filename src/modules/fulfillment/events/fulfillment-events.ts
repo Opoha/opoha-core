@@ -4,7 +4,7 @@ import { CoreEventName } from '../../event-bus/event-catalog';
 import type { DomainEvent } from '../../event-bus/domain-event';
 
 export const shipmentCreatedDataSchema = z
-  .object({
+.object({
     fulfillmentId: z.string().uuid(),
     orderId: z.string().uuid(),
     warehouseId: z.string().uuid(),
@@ -14,7 +14,7 @@ export const shipmentCreatedDataSchema = z
     lineCount: z.number().int().nonnegative(),
     shippedAt: z.string().min(1),
   })
-  .strict();
+.strict();
 
 export type ShipmentCreatedData = z.infer<typeof shipmentCreatedDataSchema>;
 

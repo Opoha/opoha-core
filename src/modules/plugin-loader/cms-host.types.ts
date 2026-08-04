@@ -5,7 +5,7 @@ import { GraphQLJSONObject } from './graphql-json-object.scalar';
 /**
  * Host-side GraphQL shapes for the optional `cms.content` provider
  * (`@opoha/plugin-cms`). Core never imports the plugin — duck-typed only
- * (Phase 4 H-02; ADR core-never-imports-plugins).
+ *.
  */
 @ObjectType('CmsBlock', {
   description: 'CMS content block (plugin-owned)',

@@ -9,7 +9,7 @@ import type { PaymentCapturedData } from '../../payment-engine/events/payment-ev
 import { OrderEntity } from '../entities/order.entity';
 
 /**
- * Bridge PaymentCaptured → OrderPaid for analytics / storefront sinks (F-02).
+ * Bridge PaymentCaptured → OrderPaid for analytics / storefront sinks.
  * Idempotency key for sinks: `data.paymentId` (at-least-once bus delivery).
  */
 @Injectable()

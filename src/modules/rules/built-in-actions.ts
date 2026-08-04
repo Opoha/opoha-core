@@ -2,7 +2,7 @@ import type { RuleActionRegistry } from './rule-action.registry';
 import { customerTagStore, notificationEmitStore } from './action-stores';
 
 /**
- * Registers core built-in rule actions (Phase 8 C-03).
+ * Registers core built-in rule actions.
  * - `customer.tag` — tags customerId from event data (in-memory stub)
  * - `notification.emit` — records a notification stub for observability
  */

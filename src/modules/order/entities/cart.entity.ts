@@ -15,7 +15,7 @@ export type CartStatus = 'open' | 'locked' | 'converted' | 'abandoned';
 /**
  * OWNER: order module — plugins must not alter this table.
  *
- * Store scope (Phase 5 B-02): every cart is bound to a store channel.
+ * Store scope: every cart is bound to a store channel.
  * Line items must be products visible to that store (shared or owned).
  */
 @Entity({ name: 'carts' })
@@ -35,7 +35,7 @@ export class CartEntity {
   customerId!: string | null;
 
   /**
-   * Optional B2B company for approval workflow (Phase 5 F-03).
+ * Optional B2B company for approval workflow.
    * FK to `companies.id` (cross-module ID reference only).
    */
   @Column({ name: 'company_id', type: 'uuid', nullable: true })
@@ -47,11 +47,11 @@ export class CartEntity {
   @Column({ name: 'currency_code', type: 'text', default: 'USD' })
   currencyCode!: string;
 
-  /** Selected ShippingMethodProvider.code (Phase 2 B-02). */
+ /** Selected ShippingMethodProvider.code. */
   @Column({ name: 'shipping_method_code', type: 'text', nullable: true })
   shippingMethodCode!: string | null;
 
-  /** Selected rate/service code from quoteRates (Phase 2 B-02). */
+ /** Selected rate/service code from quoteRates. */
   @Column({ name: 'shipping_rate_code', type: 'text', nullable: true })
   shippingRateCode!: string | null;
 
@@ -61,7 +61,7 @@ export class CartEntity {
 
   /**
    * Whether catalog prices include tax (`inclusive`) or exclude it (`exclusive`).
-   * Phase 2 C-03 — drives TaxEngine.calculate + checkout totals.
+   * Drives TaxEngine.calculate + checkout totals.
    */
   @Column({ name: 'tax_pricing_mode', type: 'text', default: 'exclusive' })
   taxPricingMode!: 'inclusive' | 'exclusive';
@@ -84,7 +84,7 @@ export class CartEntity {
   @Column({ name: 'tax_minor', type: 'bigint', default: '0' })
   taxMinor!: string;
 
-  /** Optional coupon code for PromotionsEngine (Phase 2 D-01). */
+ /** Optional coupon code for PromotionsEngine. */
   @Column({ name: 'coupon_code', type: 'text', nullable: true })
   couponCode!: string | null;
 
@@ -92,7 +92,7 @@ export class CartEntity {
   @Column({ name: 'discount_minor', type: 'bigint', default: '0' })
   discountMinor!: string;
 
-  /** Optional gift card code for GiftCardService redeem (Phase 4 C-02). */
+ /** Optional gift card code for GiftCardService redeem. */
   @Column({ name: 'gift_card_code', type: 'text', nullable: true })
   giftCardCode!: string | null;
 
@@ -100,7 +100,7 @@ export class CartEntity {
   @Column({ name: 'gift_card_minor', type: 'bigint', default: '0' })
   giftCardMinor!: string;
 
-  /** Loyalty points the buyer intends to redeem at checkout (C-03). */
+ /** Loyalty points the buyer intends to redeem at checkout. */
   @Column({ name: 'loyalty_points_to_redeem', type: 'integer', default: 0 })
   loyaltyPointsToRedeem!: number;
 

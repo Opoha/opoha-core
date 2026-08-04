@@ -1,6 +1,6 @@
 /**
  * Search provider port — plugins implement; core never imports Meilisearch/OpenSearch/Algolia.
- * Phase 4 A-01: indexDocument / deleteDocument / search.
+ *: indexDocument / deleteDocument / search.
  */
 
 /** Document type indexed by a search provider (products first; CMS later). */

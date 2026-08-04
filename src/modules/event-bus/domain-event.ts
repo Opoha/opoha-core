@@ -5,16 +5,16 @@ import { z } from 'zod';
  * @see docs/design/event-bus-design.md
  */
 export const domainEventMetadataSchema = z
-  .object({
+.object({
     correlationId: z.string().min(1).optional(),
     actorId: z.string().min(1).optional(),
   })
-  .strict();
+.strict();
 
 export type DomainEventMetadata = z.infer<typeof domainEventMetadataSchema>;
 
 export const domainEventEnvelopeSchema = z
-  .object({
+.object({
     eventId: z.string().uuid(),
     eventName: z.string().min(1),
     occurredAt: z.string().datetime(),
@@ -24,7 +24,7 @@ export const domainEventEnvelopeSchema = z
     data: z.unknown(),
     metadata: domainEventMetadataSchema.optional(),
   })
-  .strict();
+.strict();
 
 export type DomainEventEnvelope = z.infer<typeof domainEventEnvelopeSchema>;
 

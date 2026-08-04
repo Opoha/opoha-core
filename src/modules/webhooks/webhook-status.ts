@@ -6,7 +6,7 @@ export function isWebhookDeliveryStatus(value: string): value is WebhookDelivery
   return (WEBHOOK_DELIVERY_STATUSES as readonly string[]).includes(value);
 }
 
-/** Default max attempts before dead-letter (Phase 8 D-02). */
+/** Default max attempts before dead-letter. */
 export const DEFAULT_WEBHOOK_MAX_ATTEMPTS = 5;
 
 /**

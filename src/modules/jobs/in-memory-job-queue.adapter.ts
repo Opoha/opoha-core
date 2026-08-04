@@ -8,7 +8,7 @@ import type { JobExecuteHook, JobQueueAdapter, UpsertCronJobInput } from './job-
 type StoredCron = UpsertCronJobInput;
 
 /**
- * In-memory / test double for BullMQ cron bridge (Phase 8 A-03/A-04).
+ * In-memory / test double for BullMQ cron bridge.
  * Stores cron registrations and executes handlers on {@link trigger}
  * or when {@link runDueAt} finds a matching expression (jobs gate smoke).
  */
@@ -41,7 +41,7 @@ export class InMemoryJobQueueAdapter implements JobQueueAdapter {
   }
 
   /**
-   * Fire every registered job whose cron matches `at` (A-04 gate path).
+ * Fire every registered job whose cron matches `at` (gate path).
    * Returns queue job ids keyed by job code.
    */
   async runDueAt(at: Date, attempt = 1): Promise<Map<string, string>> {

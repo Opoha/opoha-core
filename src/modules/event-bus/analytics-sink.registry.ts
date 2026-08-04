@@ -3,7 +3,7 @@ import { Injectable } from '@nestjs/common';
 import type { AnalyticsSink, RegisteredAnalyticsSink } from './analytics-sink';
 
 /**
- * Registry for analytics sinks (Phase 4 F-04).
+ * Registry for analytics sinks.
  * Plugins / storefront adapters register a sink; AnalyticsSinkDispatcher
  * forwards cataloged analytics events (ANALYTICS_EVENT_NAMES) to active sinks.
  * Mirrors SearchProviderRegistry — core never imports the sink implementation.

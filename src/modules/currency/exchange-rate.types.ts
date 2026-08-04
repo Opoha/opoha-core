@@ -1,7 +1,7 @@
 import { Field, Float, ID, InputType, ObjectType } from '@nestjs/graphql';
 
 @ObjectType('ExchangeRate', {
-  description: 'FX rate: 1 fromCurrencyCode = rate × toCurrencyCode (Phase 5 D-02)',
+ description: 'FX rate: 1 fromCurrencyCode = rate × toCurrencyCode',
 })
 export class ExchangeRateType {
   @Field(() => ID)
@@ -66,7 +66,7 @@ export class UpdateExchangeRateInput {
 }
 
 @InputType({
-  description: 'Currency pair to quote from a registered FX provider (D-04)',
+ description: 'Currency pair to quote from a registered FX provider',
 })
 export class FXRatePairInput {
   @Field(() => String, { description: 'ISO 4217 source currency' })
@@ -78,7 +78,7 @@ export class FXRatePairInput {
 
 @InputType({
   description:
-    'Sync one or more pairs from a registered FX provider into exchange_rates (D-04, optional)',
+ 'Sync one or more pairs from a registered FX provider into exchange_rates (optional)',
 })
 export class SyncExchangeRatesInput {
   @Field(() => String, {

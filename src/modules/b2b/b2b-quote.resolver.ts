@@ -32,7 +32,7 @@ export class B2bQuoteResolver {
 
   @Mutation(() => B2bQuoteType, {
     name: 'createB2bQuote',
-    description: 'Create a draft B2B quote / buyer PO foundation document (F-05)',
+ description: 'Create a draft B2B quote / buyer PO foundation document',
   })
   @RequirePermission('b2b:create')
   createB2bQuote(

@@ -73,7 +73,7 @@ export class CategoriesService {
   ) {}
 
   /**
-   * List categories (Phase 5 B-04 / C-02).
+ * List categories.
    * When `storeId` is set:
    * - `shared` → shared (`storeId` null) ∪ store-owned
    * - `isolated` → store-owned only

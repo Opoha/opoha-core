@@ -77,7 +77,7 @@ function normalizeRules(rules: SegmentRules | null | undefined): SegmentRules | 
 }
 
 /**
- * Customer segment CRUD + rule-based membership evaluation (Phase 4 E-01 / E-02).
+ * Customer segment CRUD + rule-based membership evaluation.
  */
 @Injectable()
 export class SegmentsService {

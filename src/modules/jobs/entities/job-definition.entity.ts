@@ -8,7 +8,7 @@ import {
 } from 'typeorm';
 
 /**
- * Scheduled job definition (Phase 8 A-02).
+ * Scheduled job definition.
  * OWNER: jobs module — plugins must not alter this table.
  */
 @Entity({ name: 'job_definitions' })
