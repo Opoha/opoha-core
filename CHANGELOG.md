@@ -4,6 +4,16 @@ All notable changes to `@opoha/core` are documented in this file.
 
 The format is based on [Keep a Changelog](https://keepachangelog.com/), and this project adheres to [Semantic Versioning](https://semver.org/).
 
+## [1.0.1] — 2026-08-04
+
+### Fixed
+
+- Load ESM plugins via a CJS `import()` bridge so Vitest/Node hosts do not rewrite dynamic import to `require()`.
+
+### Changed
+
+- Remove internal roadmap Phase/task jargon from GraphQL copy and source comments that ship in type declarations.
+
 ## [1.0.0] — 2026-08-04
 
 First stable release. Public API freeze for GraphQL, domain events, and plugin host surfaces. Persistence remains TypeORM only (ADR-0010).
