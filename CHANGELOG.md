@@ -4,6 +4,12 @@ All notable changes to `@opoha/core` are documented in this file.
 
 The format is based on [Keep a Changelog](https://keepachangelog.com/), and this project adheres to [Semantic Versioning](https://semver.org/).
 
+## [1.0.6] — 2026-08-04
+
+### Fixed
+
+- Enable CORS for Admin / browser GraphQL clients. `CORS_ORIGINS` allowlist (comma-separated); in development, localhost / 127.0.0.1 origins are allowed when unset. Production requires an explicit list.
+
 ## [1.0.5] — 2026-08-04
 
 ### Fixed

@@ -12,6 +12,7 @@ describe('loadEnv', () => {
     expect(env.NODE_ENV).toBe('development');
     expect(env.LOG_LEVEL).toBe('info');
     expect(env.OTEL_ENABLED).toBe(false);
+    expect(env.CORS_ORIGINS).toBe('');
   });
 
   it('coerces PORT and accepts LOG_LEVEL', () => {

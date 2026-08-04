@@ -37,6 +37,12 @@ export const envSchema = z
      * See docs/readiness/jobs-cron-contracts.md
      */
     OPOHA_JOB_QUEUE: z.enum(['memory', 'bullmq']).optional().default('memory'),
+    /**
+     * Comma-separated browser origins allowed to call GraphQL (Admin UI).
+     * Empty in development → any `http(s)://localhost` / `127.0.0.1` origin.
+     * Empty in production → CORS disabled (set explicitly for Admin / storefront).
+     */
+    CORS_ORIGINS: z.string().optional().default(''),
   })
 .superRefine((data, ctx) => {
     if (data.NODE_ENV === 'production' && !data.JWT_SECRET) {
