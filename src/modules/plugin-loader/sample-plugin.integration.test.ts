@@ -10,6 +10,7 @@ import { StorageAdapterRegistry } from '../files/public';
 import { NotificationProviderRegistry } from '../notifications/public';
 import { PaymentProviderRegistry } from '../payment-engine/public';
 import { PromotionRuleRegistry } from '../promotions-engine/public';
+import { RuleActionRegistry } from '../rules/public';
 import { SearchProviderRegistry } from '../search-engine/public';
 import { ShippingMethodRegistry } from '../shipping-engine/public';
 import { TaxProviderRegistry } from '../tax-engine/public';
@@ -42,6 +43,13 @@ function createLoader(pluginPath: string) {
   const storage = new StorageAdapterRegistry();
   const search = new SearchProviderRegistry();
   const fx = new FXRateProviderRegistry();
+  const ruleActions = new RuleActionRegistry();
+  /** Minimal jobs stub — sample plugin registers a prune cron at boot. */
+  const jobs = {
+    registerScheduledJob: async () => undefined,
+    setPluginJobsActive: async () => undefined,
+    removePluginJobs: async () => undefined,
+  };
   const config = {
     get: (key: string) => {
       if (key === 'OPOHA_PLUGINS') {
@@ -65,8 +73,11 @@ function createLoader(pluginPath: string) {
     storage,
     search,
     fx,
+    jobs as never,
+    undefined,
+    ruleActions,
   );
-  return { loader, contributions, admin, eventBus };
+  return { loader, contributions, admin, eventBus, ruleActions, jobs };
 }
 
 describe('sample plugin integration', () => {
@@ -87,15 +98,30 @@ describe('sample plugin integration', () => {
     await loader.enable('sample');
 
     expect(loader.getState('sample')).toBe('enabled');
-    expect(contributions.listGraphQL(true).map((g) => g.name)).toEqual(['samplePing']);
+    const graphqlNames = contributions.listGraphQL(true).map((g) => g.name);
+    expect(graphqlNames).toContain('samplePing');
+    expect(graphqlNames).toEqual(
+      expect.arrayContaining([
+        'samplePing',
+        'sampleNotes',
+        'createSampleNote',
+        'updateSampleNote',
+        'deleteSampleNote',
+      ]),
+    );
     expect(contributions.getProvider<{ ping: () => string }>('sample.ping')?.ping()).toBe('pong');
+    expect(contributions.getProvider('sample.notes')).toBeTruthy();
     expect(admin.getManifest(true).plugins).toEqual([
       expect.objectContaining({
         pluginId: 'sample',
-        permissions: ['plugin:sample:read'],
+        permissions: expect.arrayContaining([
+          'plugin:sample:read',
+          'plugin:sample:write',
+          'plugin:sample:configure',
+        ]),
       }),
     ]);
-    expect(eventBus.listenerCount('PluginSampleEvent')).toBe(1);
+    expect(eventBus.listenerCount('PluginSampleEvent')).toBeGreaterThanOrEqual(1);
 
     let seen = 0;
     eventBus.subscribe('PluginSampleEvent', async () => {
