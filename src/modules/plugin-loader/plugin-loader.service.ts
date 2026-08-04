@@ -1,4 +1,5 @@
 import { existsSync } from 'node:fs';
+import { createRequire } from 'node:module';
 import { join } from 'node:path';
 import { pathToFileURL } from 'node:url';
 
@@ -33,6 +34,17 @@ import {
 } from './plugin-lifecycle';
 import type { DiscoveredPlugin } from './plugin-manifest';
 import { PLUGIN_CONTRACT_VERSION } from './plugin-manifest';
+
+
+/** Plain-JS bridge — see `lib/import-esm.cjs`. */
+const { importEsm } = createRequire(__filename)(
+  join(__dirname, '../../../lib/import-esm.cjs'),
+) as {
+  importEsm: (specifier: string) => Promise<{
+    default?: PluginDefinition;
+    plugin?: PluginDefinition;
+  }>;
+};
 
 export type PluginLoadResult = {
   ordered: DiscoveredPlugin[];
@@ -347,18 +359,12 @@ export class PluginLoaderService implements OnModuleInit {
 
 /**
  * Dynamically import a plugin entry module. Never statically import plugin packages.
- * Uses a Function-wrapped `import()` so TypeScript/CJS emit does not rewrite to
- * `require()` — official plugins are ESM (`"type": "module"`).
+ * Uses `lib/import-esm.cjs` so TypeScript/CJS emit does not rewrite to `require()`,
+ * and Vitest does not hit `ERR_VM_DYNAMIC_IMPORT_CALLBACK_MISSING`.
  */
 export async function importPluginDefinition(entryPath: string): Promise<PluginDefinition> {
   const href = pathToFileURL(entryPath).href;
-  const dynamicImport = new Function('specifier', 'return import(specifier)') as (
-    specifier: string,
-  ) => Promise<{
-    default?: PluginDefinition;
-    plugin?: PluginDefinition;
-  }>;
-  const mod = await dynamicImport(href);
+  const mod = await importEsm(href);
   const definition = mod.default ?? mod.plugin;
   if (
     !definition ||
