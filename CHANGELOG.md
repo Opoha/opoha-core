@@ -4,6 +4,12 @@ All notable changes to `@opoha/core` are documented in this file.
 
 The format is based on [Keep a Changelog](https://keepachangelog.com/), and this project adheres to [Semantic Versioning](https://semver.org/).
 
+## [1.0.4] — 2026-08-04
+
+### Fixed
+
+- Clearer `db:migrate` errors when Postgres refuses the connection (`AggregateError` / `ECONNREFUSED`).
+
 ## [1.0.3] — 2026-08-04
 
 ### Fixed

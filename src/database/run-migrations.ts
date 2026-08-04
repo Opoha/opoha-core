@@ -23,7 +23,21 @@ async function main(): Promise<void> {
 }
 
 main().catch((error: unknown) => {
-  const message = error instanceof Error ? error.message : String(error);
+  let message: string;
+  if (error instanceof AggregateError) {
+    const parts = error.errors.map((e) =>
+      e instanceof Error ? e.message || (e as NodeJS.ErrnoException).code || String(e) : String(e),
+    );
+    message =
+      error.message ||
+      (error as NodeJS.ErrnoException).code ||
+      parts.filter(Boolean).join('; ') ||
+      'connection failed';
+  } else if (error instanceof Error) {
+    message = error.message || (error as NodeJS.ErrnoException).code || String(error);
+  } else {
+    message = String(error);
+  }
   process.stderr.write(`Migration failed: ${message}\n`);
   process.exitCode = 1;
 });
