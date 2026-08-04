@@ -95,9 +95,9 @@ describe('ApiKeysService', () => {
 
     expect(result.secret.startsWith('opk_')).toBe(true);
     expect(result.apiKey.permissionKeys).toEqual(['api-key:read']);
-    expect(saveKey.mock.calls[0][0].keyHash).toBe(
-      hashOpaqueToken(result.secret),
-    );
+    const savedKey = saveKey.mock.calls[0]?.[0];
+    expect(savedKey).toBeDefined();
+    expect(savedKey!.keyHash).toBe(hashOpaqueToken(result.secret));
     expect(audit.append).toHaveBeenCalledWith(
       expect.objectContaining({
         action: AuditAction.API_KEY_CREATE,

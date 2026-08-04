@@ -4,6 +4,12 @@ import type { NextFunction, Request, Response } from 'express';
 import { API_VERSION_HEADER } from './api-version';
 import { ApiVersionMiddleware } from './api-version.middleware';
 
+type VersionedRequest = Request & { apiVersion?: string };
+
+function mockReq(headers: Request['headers'] = {}): VersionedRequest {
+  return { headers } as unknown as VersionedRequest;
+}
+
 function mockRes(): Response & {
   statusCode: number;
   body: unknown;
@@ -44,7 +50,7 @@ function mockRes(): Response & {
 describe('ApiVersionMiddleware', () => {
   it('attaches default version when header is missing', () => {
     const middleware = new ApiVersionMiddleware();
-    const req = { headers: {} } as unknown as Request;
+    const req = mockReq();
     const res = mockRes();
     let called = false;
 
@@ -59,9 +65,7 @@ describe('ApiVersionMiddleware', () => {
 
   it('accepts X-API-Version: 2026-08-03', () => {
     const middleware = new ApiVersionMiddleware();
-    const req = {
-      headers: { [API_VERSION_HEADER]: '2026-08-03' },
-    } as unknown as Request;
+    const req = mockReq({ [API_VERSION_HEADER]: '2026-08-03' });
     const res = mockRes();
     let called = false;
 
@@ -76,9 +80,7 @@ describe('ApiVersionMiddleware', () => {
 
   it('rejects unsupported versions with 400', () => {
     const middleware = new ApiVersionMiddleware();
-    const req = {
-      headers: { [API_VERSION_HEADER]: '9' },
-    } as unknown as Request;
+    const req = mockReq({ [API_VERSION_HEADER]: '9' });
     const res = mockRes();
     let called = false;
 
