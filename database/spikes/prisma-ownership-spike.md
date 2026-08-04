@@ -1,4 +1,4 @@
-# Prisma Ownership Spike (B-01) — SUPERSEDED
+# Prisma Ownership Spike — SUPERSEDED
 
 **Status:** Superseded 2026-08-03 by TypeORM (ADR-0010).
 

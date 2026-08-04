@@ -1,4 +1,4 @@
-# TypeORM Ownership Spike (B-01)
+# TypeORM Ownership Spike
 
 Canonical: opoha-workspace/docs/research/2026-08-03-typeorm-ownership-spike.md
 
